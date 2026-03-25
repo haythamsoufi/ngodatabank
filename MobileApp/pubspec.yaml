@@ -15,7 +15,7 @@ dependencies:
   # WebView and HTTP
   flutter_inappwebview: ^6.0.0
   http: ^1.2.0
-  flutter_dotenv: ^5.1.0
+  flutter_dotenv: ^6.0.0
   web_socket_channel: ^3.0.1
   flutter_html: ^3.0.0-beta.2
 
