@@ -12,7 +12,7 @@ Flask-Limiter==3.5.0  # Rate limiting for API endpoints
 flask-sock>=0.7.0  # WebSocket support for AI chat streaming (mobile-first)
 Werkzeug==2.3.7  # Pin to pre-3.0 for Flask-Login compatibility
 polib==1.2.0  # Added for PO file compilation
-APScheduler==3.10.4  # Added for notification cleanup scheduler
+APScheduler==3.11.2  # Added for notification cleanup scheduler
 python-dotenv==1.0.0
 psutil>=5.9.0  # Optional: Enhanced memory monitoring (falls back to tracemalloc if not installed)
 email_validator
