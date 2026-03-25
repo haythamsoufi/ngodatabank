@@ -25,97 +25,50 @@ Branch protection and rulesets are **not** configured with plain `git`. They are
 | `Website/` | Next.js, public API usage, a11y, performance |
 | `MobileApp/` | Flutter, platform builds, store policies |
 
-## Repository settings applied via GitHub CLI
+## Repository automation (already enabled)
 
-These use **`gh repo edit`** (they work on typical free private repos):
+This **public** repository uses:
+
+- **Branch ruleset** “Protect main” — pull requests required to update `main`, merge methods allowed, stale review dismissal, **resolved review threads required before merge**, no force-push, no branch deletion, and (after the first successful run) **required CodeQL workflow** (see [`.github/ruleset-protect-main.json`](.github/ruleset-protect-main.json); `do_not_enforce_on_create` avoids blocking empty branches).
+- **Secret scanning** and **secret scanning push protection** (`gh repo edit`).
+- **Dependabot** — [`.github/dependabot.yml`](.github/dependabot.yml) (pip/npm/pub + GitHub Actions).
+- **Code scanning** — [`.github/workflows/codeql.yml`](.github/workflows/codeql.yml) for `javascript-typescript` and `python` over `Backoffice/` and `Website/` (see [`.github/codeql/codeql-config.yml`](.github/codeql/codeql-config.yml)).
+- **Dependency Review** on pull requests — [`.github/workflows/dependency-review.yml`](.github/workflows/dependency-review.yml).
+
+Security reporting: [`SECURITY.md`](SECURITY.md). Conduct: [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
+
+### Tweaking settings with `gh repo edit`
 
 ```bash
 gh repo edit OWNER/ngodatabank --delete-branch-on-merge --allow-update-branch
-```
-
-Replace `OWNER` with your GitHub user or organization. Optional flags you can toggle:
-
-```bash
-# Examples — use =false to turn off
 gh repo edit OWNER/ngodatabank --enable-auto-merge
-gh repo edit OWNER/ngodatabank --enable-issues
-gh repo edit OWNER/ngodatabank --enable-discussions
+# Optional: --enable-discussions, --enable-wiki=false, etc.
 ```
 
-## Branch protection
-
-### If you are on GitHub Free with a private personal repository
-
-The **REST API** for branch protection and rulesets may return **403** (“Upgrade to GitHub Pro or make this repository public”). You can still configure protection in the browser:
-
-**Settings → Branches → Add branch protection rule** (for `main`), then enable as appropriate:
-
-- Require a pull request before merging  
-- Require approvals (e.g. **1** for teams; **0** if only the maintainer merges their own PRs)  
-- Dismiss stale pull request approvals when new commits are pushed  
-- Require conversation resolution before merging  
-- Do not allow bypassing the above settings (optional; admins can still override in emergencies if allowed)  
-- Do not allow force pushes  
-- Do not allow deletions  
-
-Add **required status checks** only after workflows run on every PR (see *CI note* below).
-
-### If the repo is public or you use GitHub Pro / Enterprise
-
-You can create a **ruleset** with **`gh api`** (save the JSON to a file, then):
-
-```bash
-gh api repos/OWNER/ngodatabank/rulesets --method POST --input ruleset-protect-main.json
-```
-
-Example `ruleset-protect-main.json`:
-
-```json
-{
-  "name": "Protect main",
-  "target": "branch",
-  "enforcement": "active",
-  "conditions": {
-    "ref_name": {
-      "include": ["refs/heads/main"]
-    }
-  },
-  "rules": [
-    {
-      "type": "pull_request",
-      "parameters": {
-        "allowed_merge_methods": ["merge", "squash", "rebase"],
-        "dismiss_stale_reviews_on_push": true,
-        "require_code_owner_review": false,
-        "require_last_push_approval": false,
-        "required_approving_review_count": 1,
-        "required_review_thread_resolution": true
-      }
-    },
-    { "type": "non_fast_forward" },
-    { "type": "deletion" }
-  ]
-}
-```
-
-Adjust `required_approving_review_count` (e.g. `0` for solo maintainers). Inspect rulesets with:
+### Ruleset: inspect, re-apply, or update
 
 ```bash
 gh ruleset list --repo OWNER/ngodatabank
 gh ruleset check main --repo OWNER/ngodatabank
+# After editing .github/ruleset-protect-main.json (includes ruleset id in GitHub UI URL):
+gh api repos/OWNER/ngodatabank/rulesets/RULESET_ID -X PUT --input .github/ruleset-protect-main.json
 ```
 
-Legacy **branch protection** (alternative to rulesets) via API:
+To **create** the ruleset from scratch (new repo or renamed default branch):
 
 ```bash
-gh api repos/OWNER/ngodatabank/branches/main/protection -X PUT --input branch-protection.json
+gh api repos/OWNER/ngodatabank/rulesets --method POST --input .github/ruleset-protect-main.json
 ```
 
-Use GitHub’s docs for the current `branch-protection.json` shape: [Update branch protection](https://docs.github.com/en/rest/branches/branch-protection#update-branch-protection).
+**Private personal repos (GitHub Free):** the ruleset / branch-protection **REST APIs** may return **403** until the repo is **public** or you use **GitHub Pro**; you can still mirror these options under **Settings → Rules → Rulesets** or **Settings → Branches**.
 
-## CI note (required checks)
+### Tightening review requirements
 
-GitHub Actions only loads workflows from **`.github/workflows/` at the repository root**. Workflows under `Backoffice/.github/workflows/` are **not** picked up unless you symlink, copy, or otherwise expose them at the root. Before requiring a check on `main`, ensure a workflow runs on pull requests and note the **exact check name** as shown in the PR “Checks” tab.
+`required_approving_review_count` is **0** so a solo maintainer is not blocked (GitHub does not allow self-approval on the same account). When a second maintainer joins, raise it to **1** in the ruleset and optionally add **CODEOWNERS** + `require_code_owner_review`.
+
+## CI note (root workflows)
+
+GitHub Actions only loads workflows from **`.github/workflows/` at the repository root**. Workflows under `Backoffice/.github/workflows/` are **not** executed unless mirrored or moved to the root. After the first **CodeQL** run on a PR, confirm the check name in the PR **Checks** tab if you add more required workflows to the ruleset.
 
 ## Security and secrets
 
