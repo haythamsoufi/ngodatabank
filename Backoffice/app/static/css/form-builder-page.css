@@ -1,0 +1,33 @@
+/* Form builder page - loading gate, section collapse, drag-and-drop (moved from inline template styles) */
+
+.form-builder-loading #form-builder-ui {
+    display: none !important;
+}
+.form-builder-loading #form-builder-loading {
+    display: flex !important;
+}
+#form-builder-loading {
+    display: none;
+}
+
+.section-item.section-collapsed .section-body {
+    display: none;
+}
+.section-item.section-collapsed .section-header-row {
+    border-bottom-width: 0;
+}
+
+.page-row.dragging {
+    opacity: 0.5;
+    background: #f3f4f6;
+}
+.page-row.drop-above {
+    border-top: 2px solid #3b82f6;
+}
+.page-row.drop-below {
+    border-bottom: 2px solid #3b82f6;
+}
+.drag-handle {
+    cursor: move;
+    user-select: none;
+}

@@ -1,0 +1,201 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Deploy to Webapp
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      version:
+        description: 'Image version tag (e.g., v1.1, v1.2)'
+        required: true
+        default: 'v1.7'
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    permissions:
+      contents: read #This is required for actions/checkout
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          # Needed so we can diff against the previous commit to detect dependency changes.
+          fetch-depth: 2
+
+      - name: Detect dependency changes (requirements/Dockerfile)
+        id: deps
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if git rev-parse --verify HEAD^ >/dev/null 2>&1; then
+            changed_files="$(git diff --name-only HEAD^..HEAD -- \
+              Backoffice/requirements.txt \
+              Backoffice/Dockerfile \
+              Backoffice/.dockerignore || true)"
+            if [ -n "${changed_files}" ]; then
+              echo "Dependency-related files changed:"
+              echo "${changed_files}"
+              echo "deps_changed=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "No dependency-related file changes detected."
+              echo "deps_changed=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            # First build (or shallow history edge case). Populate registry cache.
+            echo "No previous commit available; treating as deps change to warm cache."
+            echo "deps_changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Free disk space
+        run: |
+          echo "Disk space before cleanup:"
+          df -h
+
+          # This cleanup step can take ~1-2 minutes. Only run it when disk is tight.
+          # GitHub runners usually have enough space; your build was already starting with ~19G free.
+          avail_gb="$(df -BG / | tail -1 | awk '{gsub("G","",$4); print $4}')"
+          echo "Available disk on /: ${avail_gb}G"
+
+          if [ "${avail_gb}" -ge 15 ]; then
+            echo "Skipping cleanup (>=15G free)."
+            exit 0
+          fi
+
+          echo "Running cleanup (<15G free)."
+          # Remove unnecessary packages and files
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          # Clean up Python/pip caches
+          sudo rm -rf ~/.cache/pip
+          sudo rm -rf /root/.cache/pip
+          # Clean up Docker resources
+          docker system prune -af --volumes || true
+          # Clean up Docker buildx cache (local only; registry cache is still used)
+          docker buildx prune -af || true
+
+          echo "Disk space after cleanup:"
+          df -h
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to container registry
+        uses: docker/login-action@v4
+        with:
+          registry: ifrcimage.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push container image (fast path; no cache export)
+        if: steps.deps.outputs.deps_changed != 'true'
+        uses: docker/build-push-action@v7
+        with:
+          context: ./Backoffice
+          file: ./Backoffice/Dockerfile
+          push: true
+          tags: |
+            ifrcimage.azurecr.io/databank_backend:${{ inputs.version }}
+            ifrcimage.azurecr.io/databank_backend:${{ github.sha }}
+          cache-from: type=registry,ref=ifrcimage.azurecr.io/databank_backend:buildcache
+          platforms: linux/amd64
+          provenance: false
+          # `Backoffice/.dockerignore` keeps the build context small.
+          # Used by Backoffice/app/__init__.py to generate static_url(...)?v=...
+          # Make this change every deployment so clients always fetch updated JS/CSS.
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+            ASSET_VERSION=${{ github.sha }}
+            GIT_SHA=${{ github.sha }}
+            RELEASE_VERSION=${{ inputs.version }}
+
+      - name: Build and push container image (update registry build cache)
+        if: steps.deps.outputs.deps_changed == 'true'
+        uses: docker/build-push-action@v7
+        with:
+          context: ./Backoffice
+          file: ./Backoffice/Dockerfile
+          push: true
+          tags: |
+            ifrcimage.azurecr.io/databank_backend:${{ inputs.version }}
+            ifrcimage.azurecr.io/databank_backend:${{ github.sha }}
+          cache-from: type=registry,ref=ifrcimage.azurecr.io/databank_backend:buildcache
+          # Full cache export is expensive (~2 minutes), so only do it when deps change.
+          cache-to: type=registry,ref=ifrcimage.azurecr.io/databank_backend:buildcache,mode=max
+          platforms: linux/amd64
+          provenance: false
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+            ASSET_VERSION=${{ github.sha }}
+            GIT_SHA=${{ github.sha }}
+            RELEASE_VERSION=${{ inputs.version }}
+
+      - name: Clean up Docker resources
+        if: always()
+        run: |
+          echo "Disk space before cleanup:"
+          df -h
+          # Remove dangling images and build cache
+          docker builder prune -af || true
+          docker buildx prune -af || true
+          docker image prune -af || true
+          docker system prune -af --volumes || true
+          # Clean up any remaining Python/pip caches
+          sudo rm -rf ~/.cache/pip || true
+          sudo rm -rf /root/.cache/pip || true
+          echo "Disk space after cleanup:"
+          df -h
+
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: build
+    environment: ${{ inputs.environment }}
+    permissions:
+      contents: read
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+      - name: Set deployment target
+        id: config
+        run: |
+          if [ "${{ inputs.environment }}" = "production" ]; then
+            echo "app_name=ifrc-databank-prod" >> "$GITHUB_OUTPUT"
+          else
+            echo "app_name=ifrc-databank-staging-2" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy to Azure Web App (production)
+        if: inputs.environment == 'production'
+        id: deploy-to-webapp-prod
+        uses: azure/webapps-deploy@v3.0.7
+        with:
+          app-name: ${{ steps.config.outputs.app_name }}
+          slot-name: 'Production'
+          images: 'ifrcimage.azurecr.io/databank_backend:${{ inputs.version }}'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+
+      - name: Deploy to Azure Web App (staging)
+        if: inputs.environment == 'staging'
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3.0.7
+        with:
+          app-name: ${{ steps.config.outputs.app_name }}
+          slot-name: 'Production'
+          images: 'ifrcimage.azurecr.io/databank_backend:${{ inputs.version }}'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}

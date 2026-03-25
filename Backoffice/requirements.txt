@@ -1,0 +1,85 @@
+# ========== File: requirements.txt ==========
+Flask==2.3.3
+Flask-SQLAlchemy==3.1.1
+Flask-Login==0.6.2
+Flask-Migrate==4.0.5
+Flask-Mail==0.9.1
+Flask-WTF==1.2.1
+Flask-Cors==4.0.0 # Added previously for API
+Flask-Babel==4.0.0  # Added for internationalization
+Flask-Compress==1.14  # Enable gzip compression for faster asset delivery
+Flask-Limiter==3.5.0  # Rate limiting for API endpoints
+flask-sock>=0.7.0  # WebSocket support for AI chat streaming (mobile-first)
+Werkzeug==2.3.7  # Pin to pre-3.0 for Flask-Login compatibility
+polib==1.2.0  # Added for PO file compilation
+APScheduler==3.10.4  # Added for notification cleanup scheduler
+python-dotenv==1.0.0
+psutil>=5.9.0  # Optional: Enhanced memory monitoring (falls back to tracemalloc if not installed)
+email_validator
+alembic
+psycopg2-binary
+PyMuPDF
+Pillow
+openpyxl==3.1.2
+pandas
+XlsxWriter
+reportlab>=4.0.0  # Added for PDF generation
+user-agents  # Added for user agent parsing in analytics
+weasyprint  # Added for HTML to PDF conversion
+requests  # Added for load testing
+PyJWT==2.8.0
+google-auth>=2.23.0  # For FCM V1 API OAuth2 authentication
+google-auth-oauthlib>=1.0.0  # For OAuth2 flow
+google-auth-httplib2>=0.1.1  # For HTTP transport
+# AI Chatbot Services
+openai>=1.0.0  # Azure OpenAI / GitHub Copilot API integration for chatbot
+google-generativeai  # Google Gemini integration for chatbot (primary)
+# Security Dependencies
+bleach>=6.0.0  # HTML sanitization
+jsonschema>=4.0.0  # JSON schema validation
+waitress>=2.1.0  # Production WSGI server for Windows/local (HTTP only, no WebSocket support)
+gunicorn>=21.2.0  # Production WSGI server for Linux/Azure
+gevent>=23.9.0  # WebSocket support for Windows development (cross-platform, actively maintained)
+gevent-websocket>=0.10.1  # WebSocket upgrade handler for gevent (needed for Flask-Sock)
+# Azure-specific dependencies
+azure-storage-blob>=12.19.0  # Azure Blob Storage for file uploads (optional)
+opencensus-ext-azure>=1.1.9  # Application Insights integration
+opencensus-ext-flask>=0.7.6  # Flask integration for Application Insights
+# Testing Dependencies
+pytest>=7.4.0  # Modern testing framework
+pytest-cov>=4.1.0  # Coverage reporting
+pytest-flask>=1.3.0  # Flask testing utilities
+pytest-mock>=3.12.0  # Mocking utilities
+pytest-xdist>=3.5.0  # Parallel test execution
+# API Documentation
+PyYAML>=6.0  # YAML support for OpenAPI spec
+# Code Formatting and Linting
+black>=23.0.0  # Code formatter
+flake8>=6.0.0  # Linting tool
+
+# ==================== AI/RAG System Dependencies ====================
+# Vector database and embeddings
+pgvector>=0.2.5  # PostgreSQL extension for vector similarity search
+sentence-transformers>=2.3.0  # For local embeddings (fallback)
+tiktoken>=0.5.2  # Token counting for chunking
+
+# Agent framework and tool orchestration
+langchain>=0.1.0  # Agent framework, tool orchestration
+langchain-community>=0.0.10  # Community integrations
+langchain-openai>=0.0.5  # OpenAI function calling integration
+langgraph>=0.0.20  # Advanced agent graphs (optional)
+
+# Document processing
+unstructured>=0.12.0  # Multi-format document parsing
+pdf2image>=1.17.0  # PDF image extraction for multi-modal
+pytesseract>=0.3.10  # OCR for scanned PDFs
+python-docx>=1.1.0  # Word document processing
+xlrd>=2.0.1  # Excel support (older format)
+openpyxl>=3.1.0  # Excel support (newer format) - already present above
+markdown>=3.5  # Markdown processing
+beautifulsoup4>=4.12.0  # HTML parsing
+lxml>=4.9.0  # XML/HTML parser for beautifulsoup
+
+# Performance and caching
+redis>=5.0.0  # Optional: for tool result caching and rate limiting
+diskcache>=5.6.0  # Fallback: disk-based caching

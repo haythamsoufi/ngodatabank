@@ -1,0 +1,8 @@
+{
+  "name": "sample-package",
+  "display_name": "Sample Plugin",
+  "version": "1.0.0",
+  "description": "Starter plugin package for the IFRC Network Databank plugin system.",
+  "author": "IFRC",
+  "license": "MIT"
+}

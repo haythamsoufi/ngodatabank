@@ -1,0 +1,148 @@
+/**
+ * Global button theme. Color semantics (use in all templates, modals, confirmations):
+ *
+ *   GREEN (success):  Submit, Deploy, Confirm, Add, Save (final), Approve, Update,
+ *                     Export, Import – actions that commit or produce something.
+ *   TEAL (primary):   Preview, View, Open, Edit, Reload, Save draft, Save (translations)
+ *                     – actions that navigate or edit without committing.
+ *   PURPLE:           Audit Trail, special view/analytics.
+ *   ORANGE:            Auto-translate, automation – keep distinct from purple and blue.
+ *   RED (danger):      Delete, Remove, Reject.
+ *   GRAY:              Cancel, Close.
+ *
+ * Keep adjacent header actions distinct: e.g. Preview=teal, Audit Trail=purple,
+ * Excel=green, Auto Translate=orange.
+ *
+ * Standard classes: .btn-confirm (green), .btn-cancel (gray), .btn-danger-standard (red).
+ */
+:root {
+  /* Primary (Save draft, Edit, Reload) – teal */
+  --btn-primary: #0d9488;
+  --btn-primary-hover: #0f766e;
+  --btn-primary-active: #115e59;
+  --btn-primary-focus: rgba(13, 148, 136, 0.2);
+
+  /* Success (Submit, Deploy, Confirm, Add, Approve) */
+  --btn-success: #16a34a;
+  --btn-success-hover: #15803d;
+  --btn-success-active: #166534;
+  --btn-success-focus: rgba(22, 163, 74, 0.2);
+
+  /* Danger and other variants */
+  --btn-danger: #dc2626;
+  --btn-danger-hover: #b91c1c;
+  --btn-danger-active: #991b1b;
+  --btn-danger-focus: rgba(220, 38, 38, 0.2);
+}
+
+/* Sharp corners like reference image (no border-radius).
+   Exclude buttons that explicitly opt-in to rounded-full (e.g. FAB/circular buttons). */
+button.bg-blue-600:not(.rounded-full),
+button.bg-green-600:not(.rounded-full),
+button.bg-red-600:not(.rounded-full),
+button.bg-orange-600:not(.rounded-full),
+button.bg-purple-600:not(.rounded-full),
+a.bg-blue-600,
+a.bg-green-600,
+a.bg-red-600,
+a.bg-orange-600,
+a.bg-purple-600,
+.professional-action-btn,
+/* Cancel / secondary buttons (gray, white, bordered) */
+button.bg-white:not(.rounded-full),
+button.bg-gray-50:not(.rounded-full),
+button.bg-gray-200:not(.rounded-full),
+button.bg-gray-300:not(.rounded-full),
+button.bg-gray-400:not(.rounded-full),
+a.bg-gray-200,
+a.bg-gray-300,
+a.bg-white,
+.close-modal-btn,
+button.close-modal:not(.rounded-full),
+.btn-secondary,
+.btn-danger,
+.btn-confirm,
+.btn-cancel,
+.btn-danger-standard {
+  border-radius: 0 !important;
+}
+
+/* Flat style :active (pressed) state – matches image: default → hover → active (darker) */
+.bg-blue-600:active,
+.bg-teal-600:active {
+  background-color: var(--btn-primary-active) !important;
+}
+.bg-green-600:active {
+  background-color: var(--btn-success-active) !important;
+}
+.bg-red-600:active {
+  background-color: var(--btn-danger-active) !important;
+}
+
+/* Standard modal/confirmation buttons – use these classes for consistent style + sharp corners */
+.btn-confirm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+  background-color: var(--btn-success);
+  color: white;
+}
+.btn-confirm:hover { background-color: var(--btn-success-hover); }
+.btn-confirm:active { background-color: var(--btn-success-active); }
+.btn-confirm:focus { outline: none; box-shadow: 0 0 0 2px var(--btn-success-focus); }
+
+.btn-cancel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid #d1d5db;
+  border-radius: 0;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  background-color: #fff;
+  color: #374151;
+}
+.btn-cancel:hover { background-color: #f9fafb; }
+
+.btn-danger-standard {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  background-color: var(--btn-danger);
+  color: white;
+}
+.btn-danger-standard:hover { background-color: var(--btn-danger-hover); }
+.btn-danger-standard:active { background-color: var(--btn-danger-active); }
+.btn-danger-standard:focus { outline: none; box-shadow: 0 0 0 2px var(--btn-danger-focus); }
+
+/* Shared modal visuals (used by confirmation dialogs and admin delete modals). */
+.modal-backdrop {
+  background-color: rgba(107, 114, 128, 0.75);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+button.modal-action-btn,
+a.modal-action-btn {
+  border-radius: 0.375rem !important;
+}
