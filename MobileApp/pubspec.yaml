@@ -29,7 +29,7 @@ dependencies:
   provider: ^6.1.1
 
   # Connectivity
-  connectivity_plus: ^6.0.0
+  connectivity_plus: ^7.0.0
 
   # Navigation and URLs
   url_launcher: ^6.2.0
