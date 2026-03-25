@@ -46,7 +46,7 @@ dependencies:
   cupertino_icons: ^1.0.6
   device_info_plus: ^10.1.0
   package_info_plus: ^8.0.0
-  uuid: ^4.5.1
+  uuid: ^4.5.3
 
   # Error Tracking
   sentry_flutter: ^8.0.0
