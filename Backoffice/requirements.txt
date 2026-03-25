@@ -7,7 +7,7 @@ Flask-Mail==0.9.1
 Flask-WTF==1.2.1
 Flask-Cors==4.0.0 # Added previously for API
 Flask-Babel==4.0.0  # Added for internationalization
-Flask-Compress==1.14  # Enable gzip compression for faster asset delivery
+Flask-Compress==1.23  # Enable gzip compression for faster asset delivery
 Flask-Limiter==3.5.0  # Rate limiting for API endpoints
 flask-sock>=0.7.0  # WebSocket support for AI chat streaming (mobile-first)
 Werkzeug==2.3.7  # Pin to pre-3.0 for Flask-Login compatibility
