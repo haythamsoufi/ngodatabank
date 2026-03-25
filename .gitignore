@@ -111,6 +111,8 @@ pnpm-debug.log*
 !.github/workflows/
 !.github/workflows/**/*.yml
 !.github/workflows/**/*.yaml
+!.github/PULL_REQUEST_TEMPLATE.md
+!.github/ISSUE_TEMPLATE/
 
 # Root helper scripts (local only)
 *.docx

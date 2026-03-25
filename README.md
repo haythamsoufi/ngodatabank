@@ -708,6 +708,8 @@ For detailed setup instructions, architecture documentation, and troubleshooting
 
 We welcome contributions that embrace the **vibe coding philosophy** — rapid iteration, pragmatic solutions, and AI-assisted development are all encouraged!
 
+For branching, pull requests, branch protection (GitHub / `gh`), and collaboration conventions, see **[CONTRIBUTING.md](CONTRIBUTING.md)**.
+
 - Follow the established structure and update docs when adding features.
 - Test thoroughly before submitting changes.
 - Use the migration procedures for database changes.
