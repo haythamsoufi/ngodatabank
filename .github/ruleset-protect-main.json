@@ -23,14 +23,12 @@
     { "type": "non_fast_forward" },
     { "type": "deletion" },
     {
-      "type": "workflows",
+      "type": "required_status_checks",
       "parameters": {
         "do_not_enforce_on_create": true,
-        "workflows": [
-          {
-            "path": ".github/workflows/codeql.yml",
-            "repository_id": 1191684692
-          }
+        "strict_required_status_checks_policy": true,
+        "required_status_checks": [
+          { "context": "Analyze (CodeQL)" }
         ]
       }
     }
