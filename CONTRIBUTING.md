@@ -29,7 +29,7 @@ Branch protection and rulesets are **not** configured with plain `git`. They are
 
 This **public** repository uses:
 
-- **Branch ruleset** “Protect main” — pull requests required to update `main`, merge methods allowed, stale review dismissal, **resolved review threads required before merge**, no force-push, no branch deletion, and (after the first successful run) **required CodeQL workflow** (see [`.github/ruleset-protect-main.json`](.github/ruleset-protect-main.json); `do_not_enforce_on_create` avoids blocking empty branches).
+- **Branch ruleset** “Protect main” — pull requests required to update `main`, merge methods allowed, stale review dismissal, **resolved review threads required before merge**, no force-push, no branch deletion, and a **required status check** named **`Analyze (CodeQL)`** (see [`.github/ruleset-protect-main.json`](.github/ruleset-protect-main.json); `do_not_enforce_on_create` on that rule avoids blocking brand-new branches).
 - **Secret scanning** and **secret scanning push protection** (`gh repo edit`).
 - **Dependabot** — [`.github/dependabot.yml`](.github/dependabot.yml) (pip/npm/pub + GitHub Actions).
 - **Code scanning** — [`.github/workflows/codeql.yml`](.github/workflows/codeql.yml) for `javascript-typescript` and `python` over `Backoffice/` and `Website/` (see [`.github/codeql/codeql-config.yml`](.github/codeql/codeql-config.yml)).
