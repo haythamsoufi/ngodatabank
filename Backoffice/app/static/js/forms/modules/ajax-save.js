@@ -166,7 +166,6 @@ async function saveFormOnce(options = {}) {
         }
 
         if (result === null && !response.ok) {
-            // Non-JSON response (e.g. HTML 403 from proxy/WAF). Show a user-friendly message.
             const friendly403 = response.status === 403
                 ? 'Save was rejected (403). Refresh the page and try again. If the problem continues, your session or security token may have expired.'
                 : `Save failed (${response.status}). Refresh the page and try again, or contact support if it persists.`;

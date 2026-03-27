@@ -573,7 +573,7 @@ def try_answer_from_upr_metadata(query: str, results: list[dict]) -> tuple[str, 
                     if pns_amt and year:
                         parts.append(f"- **Through Participating National Societies (PNS funding)** for **{year}**: **{pns_amt}**")
                     if total_amt and year:
-                        parts.append(f"- **Total IFRC network funding requirement** for **{year}**: **{total_amt}** (overall total, not the PNS amount)")
+                        parts.append(f"- **Total federation network funding requirement** for **{year}**: **{total_amt}** (overall total, not the PNS amount)")
                     return ("\n".join(parts).strip(), r)
                 continue
             if pns_intent == "multilateral":
@@ -582,7 +582,7 @@ def try_answer_from_upr_metadata(query: str, results: list[dict]) -> tuple[str, 
                     if pns_amt and year:
                         parts.append(f"- **Through Participating National Societies (PNS funding)** for **{year}**: **{pns_amt}**")
                     if total_amt and year:
-                        parts.append(f"- **Total IFRC network funding requirement** for **{year}**: **{total_amt}** (overall total, not the PNS amount)")
+                        parts.append(f"- **Total federation network funding requirement** for **{year}**: **{total_amt}** (overall total, not the PNS amount)")
                     return ("\n".join(parts).strip(), r)
                 continue
 
@@ -590,7 +590,7 @@ def try_answer_from_upr_metadata(query: str, results: list[dict]) -> tuple[str, 
             if pns_amt and year:
                 parts.append(f"- **Through Participating National Societies (PNS funding)** for **{year}**: **{pns_amt}**")
             if total_amt and year:
-                parts.append(f"- **Total IFRC network funding requirement** for **{year}**: **{total_amt}** (overall total, not the PNS amount)")
+                parts.append(f"- **Total federation network funding requirement** for **{year}**: **{total_amt}** (overall total, not the PNS amount)")
             if bi:
                 parts.append("- **Bilateral (no \\*)**: " + "; ".join([str(x) for x in bi]))
             if ml:

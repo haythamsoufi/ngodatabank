@@ -13,7 +13,7 @@
     "organizationalStructure": "Estructura Organizacional",
     "apiBuilder": "Constructor de API",
     "language": "Idioma",
-    "siteTitle": "Banco de Datos de la Red IFRC",
+    "siteTitle": "Banco de datos NGO Databank",
     "databank": "Banco de Datos",
     "login": "Iniciar Sesión",
     "openMainMenu": "Abrir menú principal"
@@ -25,7 +25,7 @@
   },
   "homepage": {
     "hero": {
-      "title": "El Banco de Datos de la Red IFRC",
+      "title": "El Banco de datos NGO Databank",
       "subtitle": "Acceso a datos, visualizaciones e información",
       "description": "Explora datos humanitarios integrales, indicadores y publicaciones de la Federación Internacional de Sociedades de la Cruz Roja y de la Media Luna Roja.",
       "exploreButton": "Explorar Datos",
@@ -58,7 +58,7 @@
       },
       "chat": {
         "title": "Chat con Nuestros Datos",
-        "description": "Haz preguntas sobre los datos de IFRC en lenguaje natural.",
+        "description": "Haz preguntas sobre los datos de la plataforma en lenguaje natural.",
         "button": "Chat con Datos →"
       },
       "countries": {
@@ -81,7 +81,7 @@
       },
       "story3": {
         "title": "Descubre Más Historias",
-        "description": "Explora el impacto del trabajo de IFRC alrededor del mundo.",
+        "description": "Explora el impacto del trabajo de la plataforma alrededor del mundo.",
         "link": "Ver Todas las Actualizaciones →"
       }
     },
@@ -123,11 +123,11 @@
   "indicatorBank": {
     "title": "Banco de Indicadores",
     "meta": {
-      "description": "Explora indicadores del banco de indicadores de la red IFRC."
+      "description": "Explora indicadores del banco de indicadores de la NGO Databank."
     },
     "hero": {
-      "title": "Banco de Indicadores de la Red IFRC",
-      "description": "Explora nuestra colección integral de indicadores utilizados en las operaciones de la red IFRC."
+      "title": "Banco de indicadores NGO Databank",
+      "description": "Explora nuestra colección integral de indicadores utilizados en las operaciones de la NGO Databank."
     },
     "loading": {
       "title": "Cargando Banco de Indicadores",
@@ -221,11 +221,11 @@
   "resources": {
     "title": "Recursos",
     "meta": {
-      "description": "Explora informes de investigación, publicaciones y recursos de la red IFRC."
+      "description": "Explora informes de investigación, publicaciones y recursos de la NGO Databank."
     },
     "hero": {
       "title": "Recursos",
-      "description": "Informes de investigación, publicaciones y recursos de la red IFRC"
+      "description": "Informes de investigación, publicaciones y recursos de la NGO Databank"
     },
     "loading": {
       "title": "Cargando Recursos",
@@ -282,7 +282,7 @@
   "dataVisualization": {
     "title": "Visualización de Datos",
     "meta": {
-      "description": "Explora visualizaciones de datos interactivas de la red IFRC."
+      "description": "Explora visualizaciones de datos interactivas de la NGO Databank."
     },
     "hero": {
       "title": "Visualización de Datos",
@@ -307,7 +307,7 @@
   "exploreData": {
     "title": "Explorar Datos",
     "meta": {
-      "description": "Crea visualizaciones de datos personalizadas y explora datos de la red IFRC seleccionando indicadores, países y tipos de gráficos."
+      "description": "Crea visualizaciones de datos personalizadas y explora datos de la NGO Databank seleccionando indicadores, países y tipos de gráficos."
     },
     "hero": {
       "title": "Explorar Datos",
@@ -418,14 +418,14 @@
   "chat": {
     "title": "Chat con nuestros datos",
     "meta": {
-      "description": "Haz preguntas sobre los datos de IFRC usando el asistente de IA."
+      "description": "Haz preguntas sobre los datos de la plataforma usando el asistente de IA."
     },
     "hero": {
       "title": "Chat con nuestros datos",
-      "description": "Escribe tus preguntas sobre los datos de IFRC a continuación."
+      "description": "Escribe tus preguntas sobre los datos de la plataforma a continuación."
     },
     "messages": {
-      "welcome": "¡Hola! ¿Cómo puedo ayudarte a explorar los datos de IFRC hoy?",
+      "welcome": "¡Hola! ¿Cómo puedo ayudarte a explorar los datos de la plataforma hoy?",
       "thinking": "Pensando...",
       "placeholder": "Pregunta sobre financiamiento, programas, países..."
     },
@@ -433,13 +433,13 @@
       "send": "Enviar"
     },
     "placeholder": {
-      "response": "Recibí tu mensaje: \"{{message}}\". Como marcador de posición, no puedo acceder a datos en tiempo real aún, pero estoy diseñado para responder preguntas sobre actividades de IFRC, financiamiento e impacto basado en el banco de datos disponible."
+      "response": "Recibí tu mensaje: \"{{message}}\". Como marcador de posición, no puedo acceder a datos en tiempo real aún, pero estoy diseñado para responder preguntas sobre actividades de NGO Databank, financiamiento e impacto basado en el banco de datos disponible."
     }
   },
   "globalOverview": {
     "title": "Vista General Global",
     "meta": {
-      "description": "Explora datos humanitarios globales e indicadores de la red IFRC."
+      "description": "Explora datos humanitarios globales e indicadores de la NGO Databank."
     },
     "hero": {
       "title": "Vista General Global",
@@ -554,14 +554,14 @@
       "humanitarianIndicators": "¿Cuáles son los indicadores humanitarios clave?"
     },
     "aiResponses": {
-      "afghanRedCrescent": "En los últimos años, la Sociedad del Creciente Rojo Afgano (ARCS) se ha basado en gran medida en su red de voluntarios para responder a desastres naturales, crisis de salud y emergencias relacionadas con conflictos en todo Afganistán. En 2013, la ARCS reportó tener alrededor de 23,440 voluntarios activos (<a href=\"https://arcs.af/sites/default/files/2021-05/English%20Booklet%20size%209%20x%2014%20cm.pdf\" target=\"_blank\" class=\"text-ngodb-red hover:text-ngodb-red-dark underline\">fuente</a>), contribuyendo a actividades en casi todas las provincias. Una revisión longitudinal de los esfuerzos de participación de voluntarios de la ARCS, apoyada por la Cruz Roja Sueca y el CICR, se detalla en un estudio de caso (<a href=\"https://ifrc.org/sites/default/files/2024-10/Longitudunal%20Review%20Case%20study_Afghan%20Red%20Crescent.pdf\" target=\"_blank\" class=\"text-ngodb-red hover:text-ngodb-red-dark underline\">fuente</a>). Los voluntarios jugaron roles cruciales en emergencias importantes como las avalanchas de 2015, el terremoto de Paktika en 2022 y los terremotos de Herat en 2023. Según el <a href=\"/resources\" class=\"text-ngodb-red hover:text-ngodb-red-dark underline inline-flex items-center\"><svg class=\"w-4 h-4 mr-1\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path strokeLinecap=\"round\" strokeLinejoin=\"round\" strokeWidth={2} d=\"M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1\" /></svg>Informe Everyone Counts 2022</a> de la IFRC, la ARCS reportó 393,077 voluntarios contribuyendo más de 2.1 millones de horas de servicio, incluyendo 257,437 horas en actividades relacionadas con la salud, con 56,456 personas capacitadas y 31,600 recibiendo primeros auxilios. Estas cifras destacan la escala e impacto del voluntariado en las operaciones de la ARCS, aunque otras fuentes sugieren fluctuaciones en el número de voluntarios a lo largo del tiempo.",
-      "disasterResponse": "La red IFRC responde a cientos de desastres y emergencias anualmente, proporcionando asistencia humanitaria crítica en todo el mundo. En 2023, la IFRC apoyó más de 1,000 operaciones de respuesta a desastres, alcanzando a más de 160 millones de personas afectadas por desastres relacionados con el clima, conflictos y emergencias de salud. Las áreas de respuesta clave incluyen refugio de emergencia, seguridad alimentaria, agua y saneamiento, servicios de salud y apoyo psicosocial. La respuesta a desastres de la red está coordinada a través del Fondo de Emergencia para Respuesta a Desastres (DREF) de la IFRC y Llamamientos de Emergencia, asegurando asistencia rápida y efectiva a las comunidades afectadas.",
-      "humanitarianIndicators": "La Base de Datos de la Red IFRC rastrea varios indicadores humanitarios clave incluyendo voluntarios, personal, unidades locales, donantes de sangre, beneficiarios de primeros auxilios, personas alcanzadas, ingresos y gastos. Estos indicadores proporcionan insights integrales sobre la capacidad, alcance e impacto de la red en diferentes regiones y contextos. Los datos ayudan a medir el progreso hacia los objetivos humanitarios e informan la toma de decisiones estratégicas para operaciones futuras.",
+      "afghanRedCrescent": "En los últimos años, la Sociedad del Creciente Rojo Afgano (ARCS) se ha basado en gran medida en su red de voluntarios para responder a desastres naturales, crisis de salud y emergencias relacionadas con conflictos en todo Afganistán. En 2013, la ARCS reportó tener alrededor de 23,440 voluntarios activos (<a href=\"https://arcs.af/sites/default/files/2021-05/English%20Booklet%20size%209%20x%2014%20cm.pdf\" target=\"_blank\" class=\"text-ngodb-red hover:text-ngodb-red-dark underline\">fuente</a>), contribuyendo a actividades en casi todas las provincias. Una revisión longitudinal de los esfuerzos de participación de voluntarios de la ARCS, apoyada por la Cruz Roja Sueca y el CICR, se detalla en un estudio de caso (<a href=\"https://ifrc.org/sites/default/files/2024-10/Longitudunal%20Review%20Case%20study_Afghan%20Red%20Crescent.pdf\" target=\"_blank\" class=\"text-ngodb-red hover:text-ngodb-red-dark underline\">fuente</a>). Los voluntarios jugaron roles cruciales en emergencias importantes como las avalanchas de 2015, el terremoto de Paktika en 2022 y los terremotos de Herat en 2023. Según el <a href=\"/resources\" class=\"text-ngodb-red hover:text-ngodb-red-dark underline inline-flex items-center\"><svg class=\"w-4 h-4 mr-1\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path strokeLinecap=\"round\" strokeLinejoin=\"round\" strokeWidth={2} d=\"M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1\" /></svg>Informe Everyone Counts 2022</a> de la NGO Databank, la ARCS reportó 393,077 voluntarios contribuyendo más de 2.1 millones de horas de servicio, incluyendo 257,437 horas en actividades relacionadas con la salud, con 56,456 personas capacitadas y 31,600 recibiendo primeros auxilios. Estas cifras destacan la escala e impacto del voluntariado en las operaciones de la ARCS, aunque otras fuentes sugieren fluctuaciones en el número de voluntarios a lo largo del tiempo.",
+      "disasterResponse": "La NGO Databank responde a cientos de desastres y emergencias anualmente, proporcionando asistencia humanitaria crítica en todo el mundo. En 2023, la plataforma apoyó más de 1,000 operaciones de respuesta a desastres, alcanzando a más de 160 millones de personas afectadas por desastres relacionados con el clima, conflictos y emergencias de salud. Las áreas de respuesta clave incluyen refugio de emergencia, seguridad alimentaria, agua y saneamiento, servicios de salud y apoyo psicosocial. La respuesta a desastres de la red está coordinada a través del Fondo de Emergencia para Respuesta a Desastres (DREF) de la plataforma y Llamamientos de Emergencia, asegurando asistencia rápida y efectiva a las comunidades afectadas.",
+      "humanitarianIndicators": "La Base de Datos de la Red NGO Databank rastrea varios indicadores humanitarios clave incluyendo voluntarios, personal, unidades locales, donantes de sangre, beneficiarios de primeros auxilios, personas alcanzadas, ingresos y gastos. Estos indicadores proporcionan insights integrales sobre la capacidad, alcance e impacto de la red en diferentes regiones y contextos. Los datos ayudan a medir el progreso hacia los objetivos humanitarios e informan la toma de decisiones estratégicas para operaciones futuras.",
       "regionalComparison": "La comparación regional del número de voluntarios muestra niveles variables de participación en diferentes partes del mundo. África y Asia típicamente tienen el mayor número de voluntarios, reflejando los extensos programas basados en la comunidad en estas regiones. Europa y las Américas muestran fuerte participación de voluntarios en áreas específicas como respuesta a desastres y servicios de salud. El Medio Oriente demuestra participación creciente de voluntarios, particularmente en respuesta de emergencia e iniciativas de salud comunitaria."
     },
     "chartTitles": {
       "arcsVolunteers": "Voluntarios ARCS (2019-2023)",
-      "disasterResponse": "Operaciones de Respuesta a Desastres IFRC (2019-2023)",
+      "disasterResponse": "Operaciones de Respuesta a Desastres NGO Databank (2019-2023)",
       "humanitarianIndicators": "Indicadores Humanitarios Clave (2023)",
       "regionalComparison": "Voluntarios por Región (2023)",
       "afghanistanVolunteers": "Voluntarios en Afganistán ({{year}})"
@@ -574,7 +574,7 @@
   "countries": {
     "title": "Perfiles de Países",
     "meta": {
-      "description": "Explora actividades y datos de IFRC por país."
+      "description": "Explora actividades y datos de la plataforma por país."
     },
     "hero": {
       "title": "Perfiles de Países",
@@ -665,7 +665,7 @@
     },
     "backToBank": "Volver al Banco de Indicadores"
   },
-        "footer": {
+  "footer": {
     "copyright": "© 2024 {orgName}. Todos los derechos reservados.",
     "privacy": "Política de Privacidad",
     "terms": "Términos de Servicio",
@@ -679,11 +679,11 @@
     "api": {
       "readDocs": "Leer la documentación de la API"
     },
-    "orgLogoAlt": "Logotipo de IFRC",
+    "orgLogoAlt": "Logotipo de NGO Databank",
     "organizationName": "Federación Internacional de Sociedades de la Cruz Roja y de la Media Luna Roja",
     "developerTools": {
       "title": "Herramientas de Desarrollo",
-      "description": "Construye y prueba endpoints de API para acceder a datos de IFRC programáticamente",
+      "description": "Construye y prueba endpoints de API para acceder a datos de la plataforma programáticamente",
       "moreInfo": "Para más detalles, consulta la documentación de la API que cubre endpoints, parámetros, paginación y la opción de desagregación.",
       "readDocs": "Leer la documentación de la API"
     },
@@ -692,11 +692,11 @@
   "downloadApps": {
     "title": "Descargar Aplicaciones Móviles",
     "meta": {
-      "description": "Descarga la aplicación móvil del Banco de Datos de la Red IFRC para dispositivos Android e iOS."
+      "description": "Descarga la aplicación móvil del Banco de datos NGO Databank para dispositivos Android e iOS."
     },
     "hero": {
       "title": "Descargar Aplicaciones Móviles",
-      "description": "Obtén la aplicación móvil del Banco de Datos de la Red IFRC para dispositivos Android e iOS."
+      "description": "Obtén la aplicación móvil del Banco de datos NGO Databank para dispositivos Android e iOS."
     },
     "android": {
       "title": "Aplicación Android",
@@ -727,219 +727,219 @@
       }
     }
   },
-    "apiBuilder": {
+  "apiBuilder": {
+    "title": "Constructor de Puntos de Entrada API",
+    "meta": {
+      "description": "Construir y probar puntos de entrada API para acceder a datos de la plataforma."
+    },
+    "hero": {
       "title": "Constructor de Puntos de Entrada API",
-      "meta": {
-        "description": "Construir y probar puntos de entrada API para acceder a datos de IFRC."
+      "description": "Construir y probar puntos de entrada API para acceder a datos de la plataforma programáticamente."
+    },
+    "navigation": {
+      "overview": "Resumen",
+      "documentation": "Documentación",
+      "builder": "Constructor"
+    },
+    "description": {
+      "title": "API de Acceso a Datos",
+      "text": "Usa esta herramienta para construir puntos de entrada API para acceder a datos de la plataforma. El punto de entrada de datos te permite recuperar envíos de formularios, indicadores y otros datos con varios filtros y parámetros.",
+      "note": "Nota: Esta herramienta es solo para el punto de entrada público de datos. Para acceso completo a la API, contacta al administrador."
+    },
+    "endpoint": {
+      "title": "Punto de Entrada",
+      "method": "GET",
+      "path": "http://localhost:5000/api/v1/data",
+      "description": "Recuperar datos de formularios y envíos de la plataforma (clave API incluida automáticamente)"
+    },
+    "parameters": {
+      "title": "Parámetros de Consulta",
+      "description": "Selecciona y configura los parámetros que quieres incluir en tu solicitud de API:",
+      "clearAll": "Limpiar Todo",
+      "loadingOptions": "Cargando opciones de parámetros...",
+      "template_id": {
+        "label": "Plantilla",
+        "description": "Filtrar por plantilla de formulario específica",
+        "placeholder": "Seleccionar plantilla"
       },
-      "hero": {
-        "title": "Constructor de Puntos de Entrada API",
-        "description": "Construir y probar puntos de entrada API para acceder a datos de IFRC programáticamente."
+      "submission_id": {
+        "label": "ID de Envío",
+        "description": "Filtrar por ID de envío específico",
+        "placeholder": "Ingresar ID de envío (número)"
       },
-      "navigation": {
-        "overview": "Resumen",
-        "documentation": "Documentación",
-        "builder": "Constructor"
-      },
-      "description": {
-        "title": "API de Acceso a Datos",
-        "text": "Usa esta herramienta para construir puntos de entrada API para acceder a datos de IFRC. El punto de entrada de datos te permite recuperar envíos de formularios, indicadores y otros datos con varios filtros y parámetros.",
-        "note": "Nota: Esta herramienta es solo para el punto de entrada público de datos. Para acceso completo a la API, contacta al administrador."
-      },
-      "endpoint": {
-        "title": "Punto de Entrada",
-        "method": "GET",
-        "path": "http://localhost:5000/api/v1/data",
-        "description": "Recuperar datos de formularios y envíos de IFRC (clave API incluida automáticamente)"
-      },
-      "parameters": {
-        "title": "Parámetros de Consulta",
-        "description": "Selecciona y configura los parámetros que quieres incluir en tu solicitud de API:",
-        "clearAll": "Limpiar Todo",
-        "loadingOptions": "Cargando opciones de parámetros...",
-        "template_id": {
-          "label": "Plantilla",
-          "description": "Filtrar por plantilla de formulario específica",
-          "placeholder": "Seleccionar plantilla"
-        },
-        "submission_id": {
-          "label": "ID de Envío",
-          "description": "Filtrar por ID de envío específico",
-          "placeholder": "Ingresar ID de envío (número)"
-        },
-        "item_type": {
-          "label": "Tipo de Elemento",
-          "description": "Filtrar por tipo de elemento",
-          "placeholder": "Seleccionar tipo de elemento",
-          "options": {
-            "indicator": "Indicador",
-            "question": "Pregunta",
-            "document_field": "Campo de Documento"
-          }
-        },
-        "item_id": {
-          "label": "ID de Elemento",
-          "description": "Filtrar por ID de elemento de formulario",
-          "placeholder": "Ingresar ID de elemento (número)"
-        },
-        "period_name": {
-          "label": "Nombre del Período",
-          "description": "Filtrar por nombre del período",
-          "placeholder": "Ingresar nombre del período"
-        },
-        "country_id": {
-          "label": "País",
-          "description": "Filtrar por país específico",
-          "placeholder": "Seleccionar país"
-        },
-        "submission_type": {
-          "label": "Tipo de Envío",
-          "description": "Filtrar por tipo de envío",
-          "placeholder": "Seleccionar tipo de envío",
-          "options": {
-            "assigned": "Asignado",
-            "public": "Público"
-          }
-        },
-        "disagg": {
-          "label": "Incluir Desagregación",
-          "description": "Incluir datos de desagregación en los resultados cuando estén disponibles",
-          "placeholder": "Seleccionar sí o no"
-        },
-        "page": {
-          "label": "Página",
-          "description": "Número de página para paginación (predeterminado: 1)",
-          "placeholder": "Ingresa número de página"
-        },
-        "per_page": {
-          "label": "Elementos por Página",
-          "description": "Número de elementos por página (predeterminado: 20)",
-          "placeholder": "Ingresa elementos por página"
+      "item_type": {
+        "label": "Tipo de Elemento",
+        "description": "Filtrar por tipo de elemento",
+        "placeholder": "Seleccionar tipo de elemento",
+        "options": {
+          "indicator": "Indicador",
+          "question": "Pregunta",
+          "document_field": "Campo de Documento"
         }
       },
-      "generatedUrl": {
-        "title": "URL Generada",
-        "description": "Tu URL de punto de entrada API con los parámetros seleccionados:",
-        "copy": "Copiar URL",
-        "copied": "¡Copiado!",
-        "test": "Probar Punto de Entrada",
-        "testing": "Probando...",
-        "error": "Error al probar punto de entrada"
+      "item_id": {
+        "label": "ID de Elemento",
+        "description": "Filtrar por ID de elemento de formulario",
+        "placeholder": "Ingresar ID de elemento (número)"
       },
-      "response": {
-        "title": "Vista Previa de Respuesta",
-        "loading": "Cargando respuesta...",
-        "error": "Error al cargar respuesta",
-        "noData": "No hay datos devueltos",
-        "status": "Estado: {{code}}",
-        "showRaw": "Mostrar respuesta cruda"
+      "period_name": {
+        "label": "Nombre del Período",
+        "description": "Filtrar por nombre del período",
+        "placeholder": "Ingresar nombre del período"
       },
-      "examples": {
-        "title": "Consultas de Ejemplo",
-        "description": "Prueba estas consultas de ejemplo para comenzar:",
-        "allData": "Todos los datos",
-        "assignedSubmissions": "Solo envíos asignados",
-        "publicSubmissions": "Solo envíos públicos",
-        "indicatorsOnly": "Solo indicadores",
-        "first10Results": "Primeros 10 resultados",
-        "dataFromTemplate": "Datos de {{templateName}}",
-        "dataFromCountry": "Datos de {{countryName}}"
+      "country_id": {
+        "label": "País",
+        "description": "Filtrar por país específico",
+        "placeholder": "Seleccionar país"
       },
-      "docs": {
-        "title": "Documentación de la API",
-        "intro": "Construye solicitudes y aprende a usar efectivamente la API de la Base de Datos. A continuación se encuentran los elementos esenciales para autenticación, filtrado, paginación y desagregación.",
-        "authentication": "Autenticación",
-        "authInstruction": "Pasa tu clave API a través del parámetro de consulta {{param}}.",
-        "queryParameters": "Parámetros de Consulta",
-        "examplesTitle": "Ejemplos",
-        "exampleBasic": "Solicitud básica (sin desagregación)",
-        "exampleDisagg": "Incluir datos de desagregación",
-        "exampleFilterPaginate": "Filtrar por plantilla, período y paginar",
-        "exampleCurlTitle": "Ejemplo cURL",
-        "errorsTitle": "Errores",
-        "errors": {
-          "400": "400: Parámetro o valor inválido",
-          "401": "401: Clave API faltante o inválida",
-          "404": "404: Recurso no encontrado",
-          "500": "500: Error del servidor"
+      "submission_type": {
+        "label": "Tipo de Envío",
+        "description": "Filtrar por tipo de envío",
+        "placeholder": "Seleccionar tipo de envío",
+        "options": {
+          "assigned": "Asignado",
+          "public": "Público"
         }
       },
-      "labels": {
-        "baseUrl": "URL Base",
-        "endpoint": "Punto de Entrada"
+      "disagg": {
+        "label": "Incluir Desagregación",
+        "description": "Incluir datos de desagregación en los resultados cuando estén disponibles",
+        "placeholder": "Seleccionar sí o no"
       },
-      "builder": {
-        "title": "Construir Punto de Entrada"
+      "page": {
+        "label": "Página",
+        "description": "Número de página para paginación (predeterminado: 1)",
+        "placeholder": "Ingresa número de página"
       },
-      "fieldType": {
-        "select": "Selección",
-        "number": "Número",
-        "text": "Texto"
-      },
-      "quickStart": {
-        "title": "Guía de Inicio Rápido",
-        "step1": "Selecciona los parámetros que quieres filtrar usando las casillas de verificación",
-        "step2": "Ingresa valores para los parámetros seleccionados",
-        "step3": "Copia la URL generada o pruébala directamente",
-        "step4": "Usa la URL en tus aplicaciones o scripts"
-      },
-      "activeParams": {
-        "title": "Parámetros Activos",
-        "none": "No hay parámetros seleccionados"
-      },
-      "download": {
-        "excel": "Descargar como Excel",
-        "preparingExcel": "Preparando Excel…"
+      "per_page": {
+        "label": "Elementos por Página",
+        "description": "Número de elementos por página (predeterminado: 20)",
+        "placeholder": "Ingresa elementos por página"
       }
     },
-    "countryProfile": {
-      "title": "Perfil de País",
-      "loading": {
-        "title": "Cargando Perfil de País",
-        "description": "Por favor espera mientras obtenemos el perfil del país..."
-      },
-      "error": {
-        "title": "Error de Perfil de País",
-        "notFound": "Perfil de País No Encontrado",
-        "loadFailed": "No se pudo cargar los datos del perfil. Puede que no esté disponible aún."
-      },
-      "hero": {
-        "nationalSociety": "Sociedad Nacional"
-      },
-      "sections": {
-        "atAGlance": "A Simple Vista",
-        "ourWork": "Nuestro Trabajo en {{country}}",
-        "keyIndicators": "Indicadores Clave",
-        "operationalAreas": "Áreas Operacionales",
-        "relatedPublications": "Publicaciones Relacionadas"
-      },
-      "stats": {
-        "peopleAssisted": "Personas Asistidas (Último Año)",
-        "activePrograms": "Programas Activos",
-        "keyFocusAreas": "Áreas de Enfoque Clave"
-      },
-      "indicators": {
-        "period": "Período",
-        "moreCharts": "¡Gráficos más detallados próximamente!"
-      },
-      "map": {
-        "placeholder": "Marcador de Posición del Mapa Interactivo del País",
-        "adminLevels": {
-          "ADM0": "País",
-          "ADM1": "Provincia",
-          "ADM2": "Distrito",
-          "ADM3": "Subdistrito",
-          "label": "Nivel"
-        }
-      },
-      "publications": {
-        "comingSoon": "Las publicaciones específicas de {{country}} se listarán aquí una vez que se implemente el filtrado del backend.",
-        "viewAll": "Ver todas las publicaciones"
-      },
-      "actions": {
-        "backToList": "Volver a la Lista de Países"
+    "generatedUrl": {
+      "title": "URL Generada",
+      "description": "Tu URL de punto de entrada API con los parámetros seleccionados:",
+      "copy": "Copiar URL",
+      "copied": "¡Copiado!",
+      "test": "Probar Punto de Entrada",
+      "testing": "Probando...",
+      "error": "Error al probar punto de entrada"
+    },
+    "response": {
+      "title": "Vista Previa de Respuesta",
+      "loading": "Cargando respuesta...",
+      "error": "Error al cargar respuesta",
+      "noData": "No hay datos devueltos",
+      "status": "Estado: {{code}}",
+      "showRaw": "Mostrar respuesta cruda"
+    },
+    "examples": {
+      "title": "Consultas de Ejemplo",
+      "description": "Prueba estas consultas de ejemplo para comenzar:",
+      "allData": "Todos los datos",
+      "assignedSubmissions": "Solo envíos asignados",
+      "publicSubmissions": "Solo envíos públicos",
+      "indicatorsOnly": "Solo indicadores",
+      "first10Results": "Primeros 10 resultados",
+      "dataFromTemplate": "Datos de {{templateName}}",
+      "dataFromCountry": "Datos de {{countryName}}"
+    },
+    "docs": {
+      "title": "Documentación de la API",
+      "intro": "Construye solicitudes y aprende a usar efectivamente la API de la Base de Datos. A continuación se encuentran los elementos esenciales para autenticación, filtrado, paginación y desagregación.",
+      "authentication": "Autenticación",
+      "authInstruction": "Pasa tu clave API a través del parámetro de consulta {{param}}.",
+      "queryParameters": "Parámetros de Consulta",
+      "examplesTitle": "Ejemplos",
+      "exampleBasic": "Solicitud básica (sin desagregación)",
+      "exampleDisagg": "Incluir datos de desagregación",
+      "exampleFilterPaginate": "Filtrar por plantilla, período y paginar",
+      "exampleCurlTitle": "Ejemplo cURL",
+      "errorsTitle": "Errores",
+      "errors": {
+        "400": "400: Parámetro o valor inválido",
+        "401": "401: Clave API faltante o inválida",
+        "404": "404: Recurso no encontrado",
+        "500": "500: Error del servidor"
       }
     },
+    "labels": {
+      "baseUrl": "URL Base",
+      "endpoint": "Punto de Entrada"
+    },
+    "builder": {
+      "title": "Construir Punto de Entrada"
+    },
+    "fieldType": {
+      "select": "Selección",
+      "number": "Número",
+      "text": "Texto"
+    },
+    "quickStart": {
+      "title": "Guía de Inicio Rápido",
+      "step1": "Selecciona los parámetros que quieres filtrar usando las casillas de verificación",
+      "step2": "Ingresa valores para los parámetros seleccionados",
+      "step3": "Copia la URL generada o pruébala directamente",
+      "step4": "Usa la URL en tus aplicaciones o scripts"
+    },
+    "activeParams": {
+      "title": "Parámetros Activos",
+      "none": "No hay parámetros seleccionados"
+    },
+    "download": {
+      "excel": "Descargar como Excel",
+      "preparingExcel": "Preparando Excel…"
+    }
+  },
+  "countryProfile": {
+    "title": "Perfil de País",
+    "loading": {
+      "title": "Cargando Perfil de País",
+      "description": "Por favor espera mientras obtenemos el perfil del país..."
+    },
+    "error": {
+      "title": "Error de Perfil de País",
+      "notFound": "Perfil de País No Encontrado",
+      "loadFailed": "No se pudo cargar los datos del perfil. Puede que no esté disponible aún."
+    },
+    "hero": {
+      "nationalSociety": "Sociedad Nacional"
+    },
+    "sections": {
+      "atAGlance": "A Simple Vista",
+      "ourWork": "Nuestro Trabajo en {{country}}",
+      "keyIndicators": "Indicadores Clave",
+      "operationalAreas": "Áreas Operacionales",
+      "relatedPublications": "Publicaciones Relacionadas"
+    },
+    "stats": {
+      "peopleAssisted": "Personas Asistidas (Último Año)",
+      "activePrograms": "Programas Activos",
+      "keyFocusAreas": "Áreas de Enfoque Clave"
+    },
+    "indicators": {
+      "period": "Período",
+      "moreCharts": "¡Gráficos más detallados próximamente!"
+    },
+    "map": {
+      "placeholder": "Marcador de Posición del Mapa Interactivo del País",
+      "adminLevels": {
+        "ADM0": "País",
+        "ADM1": "Provincia",
+        "ADM2": "Distrito",
+        "ADM3": "Subdistrito",
+        "label": "Nivel"
+      }
+    },
+    "publications": {
+      "comingSoon": "Las publicaciones específicas de {{country}} se listarán aquí una vez que se implemente el filtrado del backend.",
+      "viewAll": "Ver todas las publicaciones"
+    },
+    "actions": {
+      "backToList": "Volver a la Lista de Países"
+    }
+  },
   "indicatorDetail": {
     "title": "Detalles del Indicador",
     "error": {
@@ -995,11 +995,11 @@
   "disaggregationAnalysis": {
     "title": "Análisis de Desagregación",
     "meta": {
-      "description": "Análisis completo de datos desagregados en todos los indicadores de la IFRC, incluidos voluntarios, personal, liderazgo y personas alcanzadas por sexo y grupos de edad"
+      "description": "Análisis completo de datos desagregados en todos los indicadores de la plataforma, incluidos voluntarios, personal, liderazgo y personas alcanzadas por sexo y grupos de edad"
     },
     "hero": {
       "title": "Análisis de Desagregación",
-      "description": "Análisis completo de datos desagregados en todos los indicadores de la IFRC, incluidos voluntarios, personal, miembros de la junta directiva y personas alcanzadas, con especial atención a la representación de género en el liderazgo y el voluntariado"
+      "description": "Análisis completo de datos desagregados en todos los indicadores de la plataforma, incluidos voluntarios, personal, miembros de la junta directiva y personas alcanzadas, con especial atención a la representación de género en el liderazgo y el voluntariado"
     },
     "stats": {
       "avgDisaggregation": "Desagregación Promedio",

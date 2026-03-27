@@ -119,14 +119,16 @@ const processingCancelWrap = document.getElementById('processingStatusCancelWrap
 const processingCancelBtn = document.getElementById('processingStatusCancelBtn');
 const processingPollers = new Map();
 
-const AI_DOCS_IMPORT_JOB_STORAGE_KEY = 'ai_docs_ifrc_import_job';
+const AI_DOCS_IMPORT_JOB_STORAGE_KEY = 'ai_docs_external_api_import_job';
+const LEGACY_AI_DOCS_IMPORT_JOB_STORAGE_KEY = 'ai_docs_ifrc_import_job';
 const AI_DOCS_REPROCESS_JOB_STORAGE_KEY = 'ai_docs_bulk_reprocess_job';
 const AI_DOCS_META_REPROCESS_JOB_STORAGE_KEY = 'ai_docs_bulk_reprocess_metadata_job';
 const AI_DOCS_DONE_STATUSES = ['completed', 'failed', 'not_found'];
 
 function getStoredImportJob() {
     try {
-        const raw = sessionStorage.getItem(AI_DOCS_IMPORT_JOB_STORAGE_KEY);
+        let raw = sessionStorage.getItem(AI_DOCS_IMPORT_JOB_STORAGE_KEY);
+        if (!raw) raw = sessionStorage.getItem(LEGACY_AI_DOCS_IMPORT_JOB_STORAGE_KEY);
         return raw ? JSON.parse(raw) : null;
     } catch (e) {
         return null;
@@ -136,6 +138,7 @@ function getStoredImportJob() {
 function setStoredImportJob(data) {
     try {
         sessionStorage.setItem(AI_DOCS_IMPORT_JOB_STORAGE_KEY, JSON.stringify(data));
+        try { sessionStorage.removeItem(LEGACY_AI_DOCS_IMPORT_JOB_STORAGE_KEY); } catch (e2) { /* ignore */ }
         return true;
     } catch (e) {
         return false;
@@ -145,6 +148,7 @@ function setStoredImportJob(data) {
 function clearStoredImportJob() {
     try {
         sessionStorage.removeItem(AI_DOCS_IMPORT_JOB_STORAGE_KEY);
+        sessionStorage.removeItem(LEGACY_AI_DOCS_IMPORT_JOB_STORAGE_KEY);
     } catch (e) { /* ignore */ }
 }
 
@@ -264,7 +268,7 @@ function hideProcessingBanner() {
     if (processingCancelWrap) processingCancelWrap.classList.add('hidden');
 }
 
-// IFRC bulk import job tracking (server-side job; survives page reload)
+// External API bulk import job tracking (server-side job; survives page reload)
 let ifrcImportJobPollIntervalId = null;
 let ifrcImportJobId = null;
 
@@ -412,7 +416,7 @@ function renderTrackedProcessingBar() {
     });
 
     if (!entries.length) {
-        // IMPORTANT: During IFRC import, we may render before the first doc is tracked
+        // IMPORTANT: During external API import, we may render before the first doc is tracked
         // (e.g. while PDFs are still downloading and no ai_document_id exists yet).
         // Do not hide the banner (and cancel) in that moment.
         const importInProgress = window.aiDocsImportProgress &&
@@ -770,7 +774,7 @@ async function refreshAiDocumentGridRowFromApi(docId) {
 
 /**
  * Fetch documents from API and reload the documents grid (no full page reload).
- * Used after upload or IFRC import success.
+ * Used after upload or external API import success.
  * Paginates through all pages so the grid is never truncated to the API's per-page limit.
  */
 async function reloadDocumentsGrid() {
@@ -1006,17 +1010,17 @@ const columnDefs = [
                 return _scopePill('bg-blue-100 text-blue-800', 'fas fa-globe', '{{ _("Global") }}');
             }
 
-            // IFRC Regional scope badge (no country list)
+            // Regional scope badge (no country list)
             if (scope === 'regional' && countries.length === 0) {
                 return _scopePill('bg-purple-100 text-purple-800', 'fas fa-map', '{{ _("Regional") }}');
             }
 
-            // IFRC Regional with countries: badge only; full list on hover via tooltip
+            // Regional with countries: badge only; full list on hover via tooltip
             if (scope === 'regional' && countries.length > 0) {
                 return _scopePill('bg-purple-100 text-purple-800', 'fas fa-map', '{{ _("Regional") }}');
             }
 
-            // Cluster (multi-country / NS set, not an IFRC region label)
+            // Cluster (multi-country / NS set, not a platform region label)
             // Note: theme maps `blue` and `teal` to the same palette — do not use teal here or Cluster matches Global.
             if (scope === 'cluster') {
                 return _scopePill('bg-amber-100 text-amber-800', 'fas fa-layer-group', '{{ _("Cluster") }}');
@@ -1932,7 +1936,7 @@ function initializeTabs() {
                 // Populate type + country filters only; document list loads when user clicks Search or Refresh.
                 await ensureIfrcFilterDropdowns();
             } catch (err) {
-                console.error('IFRC tab load:', err);
+                console.error('External API tab load:', err);
             }
         }
     });
@@ -2002,7 +2006,7 @@ function initializeTabs() {
         });
     }
 
-    // IFRC API search and refresh buttons
+    // External API search and refresh buttons
     const ifrcSearchBtn = document.getElementById('ifrcSearchBtn');
     const ifrcRefreshBtn = document.getElementById('ifrcRefreshBtn');
 
@@ -2013,7 +2017,7 @@ function initializeTabs() {
                 await ensureIfrcFilterDropdowns();
                 await loadIfrcApiDocuments();
             } catch (err) {
-                console.error('IFRC search:', err);
+                console.error('External API search:', err);
             }
         });
     }
@@ -2025,7 +2029,7 @@ function initializeTabs() {
                 await ensureIfrcFilterDropdowns();
                 await loadIfrcApiDocuments();
             } catch (err) {
-                console.error('IFRC refresh:', err);
+                console.error('External API refresh:', err);
             }
         });
     }
@@ -2268,7 +2272,7 @@ function updateSelectedCount() {
     }
 }
 
-// IFRC API documents import functionality
+// External API documents import functionality
 let selectedIfrcDocuments = new Set();
 let ifrcImportInProgress = false;
 let ifrcImportCancelled = false;
@@ -2425,7 +2429,7 @@ async function loadIfrcTypes(countryName) {
             updateIfrcTypeFilterSummary();
         }
     } catch (error) {
-        console.error('Error loading IFRC document types:', error);
+        console.error('Error loading external API document types:', error);
     }
 }
 
@@ -2499,7 +2503,7 @@ async function loadIfrcCountries(appealsTypeIds) {
     }
 }
 
-/** Populate IFRC type multiselect and country dropdown (first tab visit, Search, Refresh). */
+/** Populate document-type multiselect and country dropdown (first tab visit, Search, Refresh). */
 async function ensureIfrcFilterDropdowns() {
     await Promise.all([loadIfrcTypes(''), loadIfrcCountries('')]);
 }
@@ -2548,10 +2552,10 @@ async function loadIfrcApiDocuments() {
                            '<p>' + (typeof escapeHtml === 'function' ? escapeHtml(errorMsg) : errorMsg.replace(/</g, '&lt;').replace(/>/g, '&gt;')) + '</p></div>';
         }
     } catch (error) {
-        console.error('Error loading IFRC API documents:', error);
+        console.error('Error loading external API documents:', error);
         list.innerHTML = '<div class="text-center py-8 text-red-600">' +
                        '<i class="fas fa-exclamation-triangle text-2xl mb-2"></i>' +
-                       '<p>{{ _("Failed to load documents from IFRC API") }}</p></div>';
+                       '<p>{{ _("Failed to load documents from external API") }}</p></div>';
     } finally {
         loading.classList.add('hidden');
     }
@@ -3018,7 +3022,7 @@ function resumeBulkMetaReprocessJobIfAny() {
     startBulkMetaReprocessJobPolling(stored.jobId);
 }
 
-// Import selected IFRC documents (server-side bulk job; parallel)
+// Import selected documents from external API (server-side bulk job; parallel)
 async function importIfrcDocuments() {
     const importBtn = document.getElementById('ifrcImportSelectedBtn');
     if (!importBtn || selectedIfrcDocuments.size === 0) return;
@@ -3048,7 +3052,7 @@ async function importIfrcDocuments() {
         return {
             url: url,
             title: title,
-            is_public: true,  // IFRC API imports are public by default (network-wide content)
+            is_public: true,  // External API imports are public by default (network-wide content)
             country_id: (Number.isFinite(countryId) ? countryId : null),
             country_name: countryName,
         };

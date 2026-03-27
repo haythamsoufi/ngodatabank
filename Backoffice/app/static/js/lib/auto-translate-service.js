@@ -54,7 +54,7 @@
      * @param {string[]} params.target_languages - Target language codes
      * @param {string} [params.permission_context] - Permission context
      * @param {string} [params.permission_code] - Permission code
-     * @param {string} [params.translation_service] - e.g. 'ifrc'
+     * @param {string} [params.translation_service] - hosted service id (default internal key: 'ifrc')
      * @param {string} [params.definition] - Optional definition
      * @returns {Promise<{success: boolean, translations: Object}>}
      */

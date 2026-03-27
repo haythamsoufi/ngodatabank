@@ -503,11 +503,11 @@ class Config:
     # reusing it as an API key couples two independent security controls.
     API_KEY = os.environ.get("API_KEY")
 
-    # IFRC API / document import configuration (used by AI document import endpoints)
+    # External GO/document API credentials (used by AI document import endpoints; IFRC_* env names retained)
     # SECURITY: credentials must come from environment or secret store (never hardcoded).
     IFRC_API_USER = os.environ.get("IFRC_API_USER") or os.environ.get("IFRC_API_USERNAME")
     IFRC_API_PASSWORD = os.environ.get("IFRC_API_PASSWORD")
-    # Comma-separated host allowlist for fetching IFRC documents (SSRF protection).
+    # Comma-separated host allowlist for external document fetch (SSRF protection).
     # Defaults are intentionally restrictive; expand via env if needed.
     IFRC_DOCUMENT_ALLOWED_HOSTS = [
         h.strip().lower()
@@ -803,8 +803,9 @@ class Config:
     # system-manager auth (and localhost-only in production), so it is safe to leave on.
     ENABLE_DBINFO = _parse_bool(os.environ.get('ENABLE_DBINFO'), default=True)
 
-    # Debug Logging Configuration - force false to reduce logging noise
-    VERBOSE_FORM_DEBUG = False  # Always disable verbose debug logging
+    # Verbose app/form debug: DEBUG log level, debug_utils helpers, guarded admin debug logs.
+    # Env: true/false only (see _parse_bool). Default false; avoid true in production unless troubleshooting.
+    VERBOSE_FORM_DEBUG = _parse_bool(os.environ.get("VERBOSE_FORM_DEBUG"), default=False)
 
     # Memory Monitoring Configuration
     MEMORY_MONITORING_ENABLED = _parse_bool(os.environ.get('MEMORY_MONITORING_ENABLED'), default=False)
@@ -842,14 +843,14 @@ class Config:
     flask_config = os.environ.get('FLASK_CONFIG', '').lower()
     if flask_config == 'production':
         EMAIL_API_KEY = os.environ.get('EMAIL_API_KEY_PROD') or os.environ.get('EMAIL_API_KEY', '')
-        EMAIL_API_URL = os.environ.get('EMAIL_API_URL_PROD', 'https://microservices.ifrc.org/Email/api/Email')
+        EMAIL_API_URL = os.environ.get('EMAIL_API_URL_PROD', '')
     elif flask_config == 'staging':
         EMAIL_API_KEY = os.environ.get('EMAIL_API_KEY_STG') or os.environ.get('EMAIL_API_KEY', '')
-        EMAIL_API_URL = os.environ.get('EMAIL_API_URL_STG', 'https://microservices-staging.ifrc.org/Email/api/Email')
+        EMAIL_API_URL = os.environ.get('EMAIL_API_URL_STG', '')
     else:
         # Default to staging for development
         EMAIL_API_KEY = os.environ.get('EMAIL_API_KEY_STG') or os.environ.get('EMAIL_API_KEY', '')
-        EMAIL_API_URL = os.environ.get('EMAIL_API_URL_STG', 'https://microservices-staging.ifrc.org/Email/api/Email')
+        EMAIL_API_URL = os.environ.get('EMAIL_API_URL_STG', '')
 
     # Admin email addresses for notifications
     admin_emails_str = os.environ.get('ADMIN_EMAILS', '')

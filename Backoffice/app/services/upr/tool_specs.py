@@ -82,7 +82,7 @@ UPR_TOOL_SPECS = [
         "type": "function",
         "function": {
             "name": "get_upr_kpi_values_for_all_countries",
-            "description": "Get UPR KPI values (branches, local_units, volunteers, staff) for ALL countries from document-extracted metadata (Unified Plans). Use ONLY when: (1) the user explicitly asked for 'from UPR', 'from Unified Plans', or 'from documents' for this metric — then use this tool only and add a clear note that values are from UPR documents; OR (2) to FILL GAPS after get_indicator_values_for_all_countries — add only countries that have no FDRS value. For volunteers/staff/branches/local units, FDRS (get_indicator_values_for_all_countries) is the primary source; call it first. Do NOT use if the user asked for 'databank only'. Returns rows (country_id, country_name, iso3, region, value, source). Each row's 'region' is IFRC Region. When the user asks for 'continent', use this field as IFRC Region — do not add a separate continent column or use model knowledge.",
+            "description": "Get UPR KPI values (branches, local_units, volunteers, staff) for ALL countries from document-extracted metadata (Unified Plans). Use ONLY when: (1) the user explicitly asked for 'from UPR', 'from Unified Plans', or 'from documents' for this metric — then use this tool only and add a clear note that values are from UPR documents; OR (2) to FILL GAPS after get_indicator_values_for_all_countries — add only countries that have no FDRS value. For volunteers/staff/branches/local units, FDRS (get_indicator_values_for_all_countries) is the primary source; call it first. Do NOT use if the user asked for 'databank only'. Returns rows (country_id, country_name, iso3, region, value, source). Each row's 'region' is the platform operational region. When the user asks for 'continent', use this field as operational region — do not add a separate continent column or use model knowledge.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -102,7 +102,7 @@ UPR_TOOL_SPECS = [
             "description": (
                 "Analyze Unified Plan documents in one pass and classify which plans mention a focus area or theme. "
                 "Works for any thematic area: built-in areas (cash, cea, livelihoods, social_protection) and "
-                "any other IFRC-relevant theme such as migration, displacement, migration_displacement, climate, "
+                "any other federation-relevant theme such as migration, displacement, migration_displacement, climate, "
                 "mhpss, pgi, health, disaster_risk_reduction, or any free-text label (use underscores). "
                 "Returns per-plan flags, country-grouped counts, and plans where none of the target areas are found. "
                 "USE THIS TOOL — not get_indicator_value — whenever the user asks which Unified Plans include, "

@@ -43,7 +43,7 @@ def get_effective_request_user():
 
 def can_view_non_public_form_items(user) -> bool:
     """
-    Determine if a user may view non-public (IFRC Network) form items.
+    Determine if a user may view non-public (organization-network / internal) form items.
 
     Returns True for: system managers, admins, users with data-explore RBAC, or users
     whose email belongs to the organization domain (same-org / internal users, e.g.

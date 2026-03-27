@@ -1,11 +1,11 @@
 services:
   db:
     image: pgvector/pgvector:pg15
-    container_name: ifrc-postgres
+    container_name: ngo-databank-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-app}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
-      POSTGRES_DB: ${POSTGRES_DB:-ifrc_databank}
+      POSTGRES_DB: ${POSTGRES_DB:-ngo_databank}
     ports:
       - "5432:5432"
     volumes:
@@ -19,17 +19,17 @@ services:
 
   db-test:
     image: pgvector/pgvector:pg15
-    container_name: ifrc-postgres-test
+    container_name: ngo-databank-postgres-test
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-app}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
-      POSTGRES_DB: ${POSTGRES_DB_TEST:-ifrc_databank_test}
+      POSTGRES_DB: ${POSTGRES_DB_TEST:-ngo_databank_test}
     ports:
       - "5433:5432"
     volumes:
       - pgdata_test:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB_TEST:-ifrc_databank_test}"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB_TEST:-ngo_databank_test}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -37,7 +37,7 @@ services:
 
   db-init:
     build: ./Backoffice
-    container_name: ifrc-db-init
+    container_name: ngo-databank-db-init
     volumes:
       - ./Backoffice/scripts:/app/scripts
       - ./Backoffice/migrations:/app/migrations
@@ -46,7 +46,7 @@ services:
       - FLASK_CONFIG=${BACKOFFICE_FLASK_CONFIG:-development}
       - FLASK_APP=run:app
       - SECRET_KEY=${SECRET_KEY:-vxE-FbviIoGmGoivz1-cmqDhLqGsLv_e9BJ0RP0YNcE}
-      - DATABASE_URL=postgresql+psycopg2://app:app@db:5432/ifrc_databank
+      - DATABASE_URL=postgresql+psycopg2://app:app@db:5432/ngo_databank
       - API_KEY=${API_KEY:-databank2026}
       - ALLOW_INIT_DATA_PROD=${ALLOW_INIT_DATA_PROD:-true}
     depends_on:
@@ -76,7 +76,7 @@ services:
         flask rbac seed 2>&1 &&
         echo '' &&
         echo '=== Fixing database collation version (if needed) ===' &&
-        python -c 'import os; from sqlalchemy import create_engine, text; engine = create_engine(os.environ.get(\"DATABASE_URL\"), isolation_level=\"AUTOCOMMIT\"); conn = engine.connect(); conn.execute(text(\"ALTER DATABASE ifrc_databank REFRESH COLLATION VERSION\")); conn.close()' 2>&1 || echo 'Note: Collation version refresh skipped (may require superuser privileges or already be up to date)' &&
+        python -c 'import os; from sqlalchemy import create_engine, text; engine = create_engine(os.environ.get(\"DATABASE_URL\"), isolation_level=\"AUTOCOMMIT\"); conn = engine.connect(); conn.execute(text(\"ALTER DATABASE ngo_databank REFRESH COLLATION VERSION\")); conn.close()' 2>&1 || echo 'Note: Collation version refresh skipped (may require superuser privileges or already be up to date)' &&
         echo '' &&
         echo 'Creating default data...' &&
         PYTHONPATH=/app python scripts/init_data.py &&
@@ -105,20 +105,21 @@ services:
     environment:
       - FLASK_CONFIG=${BACKOFFICE_FLASK_CONFIG:-development}
       - SECRET_KEY=${SECRET_KEY:-vxE-FbviIoGmGoivz1-cmqDhLqGsLv_e9BJ0RP0YNcE}
-      - DATABASE_URL=postgresql+psycopg2://app:app@db:5432/ifrc_databank
-      - DEV_DATABASE_URL=postgresql+psycopg2://app:app@db:5432/ifrc_databank
-      - TEST_DATABASE_URL=postgresql+psycopg2://app:app@db-test:5432/ifrc_databank_test
+      - DATABASE_URL=postgresql+psycopg2://app:app@db:5432/ngo_databank
+      - DEV_DATABASE_URL=postgresql+psycopg2://app:app@db:5432/ngo_databank
+      - TEST_DATABASE_URL=postgresql+psycopg2://app:app@db-test:5432/ngo_databank_test
       - API_KEY=${API_KEY:-databank2026}
       - APP_VERSION=1.0.0
       - LOG_LEVEL=INFO
-      - FCM_SERVICE_ACCOUNT_PATH=/app/ifrc-data-firebase-adminsdk-fbsvc-8ea8e91acd.json
-      - FCM_PROJECT_ID=ifrc-data
+      # Push notifications (optional): mount your Firebase JSON under Backoffice/ and set these in .env
+      - FCM_SERVICE_ACCOUNT_PATH=${FCM_SERVICE_ACCOUNT_PATH:-}
+      - FCM_PROJECT_ID=${FCM_PROJECT_ID:-}
       - SKIP_MIGRATIONS=1  # Migrations handled by db-init service
       - SSE_ENABLED=false  # Disable SSE by default (set to true to enable)
       # Optional: Uncomment and set these if you need email/translation services
       # - EMAIL_API_KEY=${EMAIL_API_KEY:-}
       # - EMAIL_API_KEY_STG=${EMAIL_API_KEY_STG:-}
-      # - IFRC_TRANSLATE_API_KEY=${IFRC_TRANSLATE_API_KEY:-}
+      # - IFRC_TRANSLATE_API_KEY=${IFRC_TRANSLATE_API_KEY:-}  # optional hosted translation (env name retained)
       - LIBRE_TRANSLATE_URL=http://libretranslate:5000  # LibreTranslate service URL
     volumes:
       - ./Backoffice/app:/app/app
@@ -127,7 +128,7 @@ services:
       - ./Backoffice/tests:/app/tests  # Bind-mount tests for live iteration
       - ./Backoffice/instance:/app/instance
       - ./Backoffice/uploads:/data/uploads
-      - ./Backoffice/logs:/var/log/ifrc-databank
+      - ./Backoffice/logs:/var/log/ngo-databank
       - ./Backoffice/run.py:/app/run.py
       - ./Backoffice/requirements.txt:/app/requirements.txt
     depends_on:
@@ -144,7 +145,7 @@ services:
       context: ./Website
       args:
         NEXT_PUBLIC_API_URL: http://localhost:5000
-    container_name: ifrc-website
+    container_name: ngo-databank-website
     ports:
       - "3000:3000"
     environment:

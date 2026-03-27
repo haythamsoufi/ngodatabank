@@ -13,7 +13,7 @@
     "organizationalStructure": "组织结构",
     "apiBuilder": "API构建器",
     "language": "语言",
-    "siteTitle": "IFRC网络数据库",
+    "siteTitle": "NGO 数据库",
     "databank": "数据库",
     "login": "登录",
     "openMainMenu": "打开主菜单"
@@ -25,7 +25,7 @@
   },
   "homepage": {
     "hero": {
-      "title": "IFRC网络数据库",
+      "title": "NGO 数据库",
       "subtitle": "访问数据、可视化和洞察",
       "description": "探索来自国际红十字与红新月联合会综合人道主义数据、指标和出版物。",
       "exploreButton": "探索数据",
@@ -58,7 +58,7 @@
       },
       "chat": {
         "title": "与我们的数据聊天",
-        "description": "用自然语言询问IFRC数据相关问题。",
+        "description": "用自然语言询问平台数据相关问题。",
         "button": "与数据聊天 →"
       },
       "countries": {
@@ -81,7 +81,7 @@
       },
       "story3": {
         "title": "发现更多故事",
-        "description": "探索IFRC在全球工作的影响。",
+        "description": "探索人道主义网络在全球工作的影响。",
         "link": "查看所有更新 →"
       }
     },
@@ -123,11 +123,11 @@
   "indicatorBank": {
     "title": "指标库",
     "meta": {
-      "description": "浏览IFRC网络指标库中的指标。"
+      "description": "浏览NGO 指标库中的指标。"
     },
     "hero": {
-      "title": "IFRC网络指标库",
-      "description": "探索我们在IFRC网络运营中使用的综合指标集合。"
+      "title": "NGO 指标库",
+      "description": "探索我们在NGO Databank 运营中使用的综合指标集合。"
     },
     "loading": {
       "title": "正在加载指标库",
@@ -221,11 +221,11 @@
   "resources": {
     "title": "资源",
     "meta": {
-      "description": "浏览IFRC网络的研究报告、出版物和资源。"
+      "description": "浏览NGO Databank 的研究报告、出版物和资源。"
     },
     "hero": {
       "title": "资源",
-      "description": "IFRC网络的研究报告、出版物和资源"
+      "description": "NGO Databank 的研究报告、出版物和资源"
     },
     "loading": {
       "title": "正在加载资源",
@@ -282,7 +282,7 @@
   "dataVisualization": {
     "title": "数据可视化",
     "meta": {
-      "description": "探索IFRC网络的交互式数据可视化。"
+      "description": "探索NGO Databank 的交互式数据可视化。"
     },
     "hero": {
       "title": "数据可视化",
@@ -307,7 +307,7 @@
   "exploreData": {
     "title": "探索数据",
     "meta": {
-      "description": "通过选择指标、国家和图表类型创建自定义数据可视化并探索IFRC网络数据。"
+      "description": "通过选择指标、国家和图表类型创建自定义数据可视化并探索NGO Databank 数据。"
     },
     "hero": {
       "title": "探索数据",
@@ -418,14 +418,14 @@
   "chat": {
     "title": "与我们的数据聊天",
     "meta": {
-      "description": "使用AI助手询问IFRC数据相关问题。"
+      "description": "使用AI助手询问平台数据相关问题。"
     },
     "hero": {
       "title": "与我们的数据聊天",
-      "description": "在下面输入您关于IFRC数据的问题。"
+      "description": "在下面输入您关于平台数据的问题。"
     },
     "messages": {
-      "welcome": "你好！我今天如何帮助您探索IFRC数据？",
+      "welcome": "你好！我今天如何帮助您探索平台数据？",
       "thinking": "思考中...",
       "placeholder": "询问资金、项目、国家..."
     },
@@ -433,13 +433,13 @@
       "send": "发送"
     },
     "placeholder": {
-      "response": "我收到了您的消息：\"{{message}}\"。作为占位符，我还无法访问实时数据，但我被设计为基于可用数据库回答有关IFRC活动、资金和影响的问题。"
+      "response": "我收到了您的消息：\"{{message}}\"。作为占位符，我还无法访问实时数据，但我被设计为基于可用数据库回答有关人道主义活动、资金和影响的问题。"
     }
   },
   "globalOverview": {
     "title": "全球概览",
     "meta": {
-      "description": "探索IFRC网络的全球人道主义数据和指标。"
+      "description": "探索NGO Databank 的全球人道主义数据和指标。"
     },
     "hero": {
       "title": "全球概览",
@@ -554,14 +554,14 @@
       "humanitarianIndicators": "主要的人道主义指标是什么？"
     },
     "aiResponses": {
-      "afghanRedCrescent": "在过去几年中，阿富汗红新月会（ARCS）在很大程度上依赖其志愿者网络来应对阿富汗各地的自然灾害、健康危机和冲突相关的紧急情况。2013年，ARCS报告了约23,440名活跃志愿者（<a href=\"https://arcs.af/sites/default/files/2021-05/English%20Booklet%20size%209%20x%2014%20cm.pdf\" target=\"_blank\" class=\"text-ngodb-red hover:text-ngodb-red-dark underline\">来源</a>），在几乎所有省份的活动中做出贡献。ARCS志愿者参与努力的纵向审查，由瑞典红十字会和ICRC支持，在案例研究中详细说明（<a href=\"https://ifrc.org/sites/default/files/2024-10/Longitudunal%20Review%20Case%20study_Afghan%20Red%20Crescent.pdf\" target=\"_blank\" class=\"text-ngodb-red hover:text-ngodb-red-dark underline\">来源</a>）。志愿者在重大紧急情况中发挥了关键作用，如2015年的雪崩、2022年的帕克蒂卡地震和2023年的赫拉特地震。根据IFRC的<a href=\"/resources\" class=\"text-ngodb-red hover:text-ngodb-red-dark underline inline-flex items-center\"><svg class=\"w-4 h-4 mr-1\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path strokeLinecap=\"round\" strokeLinejoin=\"round\" strokeWidth={2} d=\"M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1\" /></svg>Everyone Counts 2022报告</a>，ARCS报告了393,077名志愿者贡献了超过210万小时的服务，包括健康相关活动中的257,437小时，培训了56,456人，31,600人接受了急救。这些数字突出了ARCS运营中志愿服务的规模和影响，尽管其他来源表明志愿者数量随时间波动。",
-      "disasterResponse": "IFRC网络每年应对数百起灾害和紧急情况，在全球提供关键的人道主义援助。2023年，IFRC支持了1,000多起灾害响应行动，覆盖了受气候相关灾害、冲突和健康紧急情况影响的超过1.6亿人。主要响应领域包括紧急避难所、粮食安全、水和卫生、医疗服务以及心理社会支持。网络的灾害响应通过IFRC的灾害响应紧急基金（DREF）和紧急呼吁进行协调，确保为受影响社区提供快速有效的援助。",
-      "humanitarianIndicators": "IFRC网络数据库跟踪几个关键的人道主义指标，包括志愿者、工作人员、地方单位、献血者、急救接受者、受益人群、收入和支出。这些指标提供了关于网络在不同地区和背景下能力、覆盖范围和影响的全面见解。数据有助于衡量实现人道主义目标的进展，并为未来行动的战略决策提供信息。",
+      "afghanRedCrescent": "在过去几年中，阿富汗红新月会（ARCS）在很大程度上依赖其志愿者网络来应对阿富汗各地的自然灾害、健康危机和冲突相关的紧急情况。2013年，ARCS报告了约23,440名活跃志愿者（<a href=\"https://arcs.af/sites/default/files/2021-05/English%20Booklet%20size%209%20x%2014%20cm.pdf\" target=\"_blank\" class=\"text-ngodb-red hover:text-ngodb-red-dark underline\">来源</a>），在几乎所有省份的活动中做出贡献。ARCS志愿者参与努力的纵向审查，由瑞典红十字会和ICRC支持，在案例研究中详细说明（<a href=\"https://ifrc.org/sites/default/files/2024-10/Longitudunal%20Review%20Case%20study_Afghan%20Red%20Crescent.pdf\" target=\"_blank\" class=\"text-ngodb-red hover:text-ngodb-red-dark underline\">来源</a>）。志愿者在重大紧急情况中发挥了关键作用，如2015年的雪崩、2022年的帕克蒂卡地震和2023年的赫拉特地震。根据NGO Databank 的<a href=\"/resources\" class=\"text-ngodb-red hover:text-ngodb-red-dark underline inline-flex items-center\"><svg class=\"w-4 h-4 mr-1\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path strokeLinecap=\"round\" strokeLinejoin=\"round\" strokeWidth={2} d=\"M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1\" /></svg>Everyone Counts 2022报告</a>，ARCS报告了393,077名志愿者贡献了超过210万小时的服务，包括健康相关活动中的257,437小时，培训了56,456人，31,600人接受了急救。这些数字突出了ARCS运营中志愿服务的规模和影响，尽管其他来源表明志愿者数量随时间波动。",
+      "disasterResponse": "全球人道主义网络每年应对数百起灾害和紧急情况，在全球提供关键援助。2023年，该网络支持了1,000多起灾害响应行动，覆盖了受气候相关灾害、冲突和健康紧急情况影响的超过1.6亿人。主要响应领域包括紧急避难所、粮食安全、水和卫生、医疗服务以及心理社会支持。响应行动通常通过灾害应急基金（DREF）和紧急呼吁进行协调，以便为受影响社区提供快速有效的援助。",
+      "humanitarianIndicators": "NGO 数据库跟踪几个关键的人道主义指标，包括志愿者、工作人员、地方单位、献血者、急救接受者、受益人群、收入和支出。这些指标提供了关于网络在不同地区和背景下能力、覆盖范围和影响的全面见解。数据有助于衡量实现人道主义目标的进展，并为未来行动的战略决策提供信息。",
       "regionalComparison": "志愿者数量的区域比较显示了世界不同地区参与的不同水平。非洲和亚洲通常拥有最多的志愿者，反映了这些地区广泛的社区项目。欧洲和美洲在特定领域如灾害响应和医疗服务方面显示出强大的志愿者参与。中东特别在应急响应和社区健康倡议方面表现出不断增长的志愿者参与。"
     },
     "chartTitles": {
       "arcsVolunteers": "ARCS志愿者（2019-2023）",
-      "disasterResponse": "IFRC灾害响应行动（2019-2023）",
+      "disasterResponse": "灾害响应行动（2019-2023）",
       "humanitarianIndicators": "关键人道主义指标（2023）",
       "regionalComparison": "按地区划分的志愿者（2023）",
       "afghanistanVolunteers": "阿富汗志愿者（{{year}}）"
@@ -574,7 +574,7 @@
   "countries": {
     "title": "国家概况",
     "meta": {
-      "description": "按国家探索IFRC活动和数据。"
+      "description": "按国家探索人道主义活动与数据。"
     },
     "hero": {
       "title": "国家概况",
@@ -643,11 +643,11 @@
     "api": {
       "readDocs": "阅读 API 文档"
     },
-    "orgLogoAlt": "IFRC 标志",
+    "orgLogoAlt": "组织标志",
     "organizationName": "红十字与红新月会国际联合会",
     "developerTools": {
       "title": "开发者工具",
-      "description": "构建和测试API端点以编程方式访问IFRC数据",
+      "description": "构建和测试API端点以编程方式访问平台数据",
       "moreInfo": "有关完整说明，请阅读 API 文档，涵盖端点、参数、分页以及分类选项。",
       "readDocs": "阅读 API 文档"
     },
@@ -656,11 +656,11 @@
   "downloadApps": {
     "title": "下载移动应用",
     "meta": {
-      "description": "下载IFRC网络数据库移动应用，适用于Android和iOS设备。"
+      "description": "下载NGO 数据库移动应用，适用于Android和iOS设备。"
     },
     "hero": {
       "title": "下载移动应用",
-      "description": "获取IFRC网络数据库移动应用，适用于Android和iOS设备。"
+      "description": "获取NGO 数据库移动应用，适用于Android和iOS设备。"
     },
     "android": {
       "title": "Android应用",
@@ -694,11 +694,11 @@
   "apiBuilder": {
     "title": "API端点构建器",
     "meta": {
-      "description": "构建和测试用于访问IFRC数据的API端点。"
+      "description": "构建和测试用于访问平台数据的API端点。"
     },
     "hero": {
       "title": "API端点构建器",
-      "description": "构建和测试API端点以编程方式访问IFRC数据。"
+      "description": "构建和测试API端点以编程方式访问平台数据。"
     },
     "navigation": {
       "overview": "概述",
@@ -707,80 +707,80 @@
     },
     "description": {
       "title": "数据访问API",
-      "text": "使用此工具构建API端点以访问IFRC数据。数据端点允许您使用各种过滤器和参数检索表单提交、指标和其他数据。",
+      "text": "使用此工具构建API端点以访问平台数据。数据端点允许您使用各种过滤器和参数检索表单提交、指标和其他数据。",
       "note": "注意：此工具仅适用于公共数据端点。如需完整API访问，请联系管理员。"
     },
     "endpoint": {
       "title": "端点",
       "method": "GET",
       "path": "http://localhost:5000/api/v1/data",
-      "description": "从IFRC表单和提交中检索数据（API密钥自动包含）"
+      "description": "从表单和提交中检索数据（API密钥自动包含）"
     },
-          "parameters": {
-        "title": "查询参数",
-        "description": "选择并配置您要在API请求中包含的参数：",
-        "clearAll": "清除全部",
-        "loadingOptions": "正在加载参数选项...",
-        "template_id": {
-          "label": "模板",
-          "description": "按特定表单模板筛选",
-          "placeholder": "选择模板"
-        },
-        "submission_id": {
-          "label": "提交ID",
-          "description": "按特定提交ID筛选",
-          "placeholder": "输入提交ID（数字）"
-        },
-        "item_type": {
-          "label": "项目类型",
-          "description": "按项目类型筛选",
-          "placeholder": "选择项目类型",
-          "options": {
-            "indicator": "指标",
-            "question": "问题",
-            "document_field": "文档字段"
-          }
-        },
-        "item_id": {
-          "label": "项目ID",
-          "description": "按表单项目ID筛选",
-          "placeholder": "输入项目ID（数字）"
-        },
-        "period_name": {
-          "label": "期间名称",
-          "description": "按期间名称筛选",
-          "placeholder": "输入期间名称"
-        },
-        "country_id": {
-          "label": "国家",
-          "description": "按特定国家筛选",
-          "placeholder": "选择国家"
-        },
-        "submission_type": {
-          "label": "提交类型",
-          "description": "按提交类型过滤",
-          "placeholder": "选择提交类型",
-          "options": {
-            "assigned": "已分配",
-            "public": "公开"
-          }
-        },
-        "disagg": {
-          "label": "包含分类数据",
-          "description": "在结果中包含分类数据（如果可用）",
-          "placeholder": "选择是或否"
-        },
-        "page": {
-          "label": "页面",
-          "description": "分页的页码（默认：1）",
-          "placeholder": "输入页码"
-        },
-        "per_page": {
-          "label": "每页项目数",
-          "description": "每页项目数（默认：20）",
-          "placeholder": "输入每页项目数"
+    "parameters": {
+      "title": "查询参数",
+      "description": "选择并配置您要在API请求中包含的参数：",
+      "clearAll": "清除全部",
+      "loadingOptions": "正在加载参数选项...",
+      "template_id": {
+        "label": "模板",
+        "description": "按特定表单模板筛选",
+        "placeholder": "选择模板"
+      },
+      "submission_id": {
+        "label": "提交ID",
+        "description": "按特定提交ID筛选",
+        "placeholder": "输入提交ID（数字）"
+      },
+      "item_type": {
+        "label": "项目类型",
+        "description": "按项目类型筛选",
+        "placeholder": "选择项目类型",
+        "options": {
+          "indicator": "指标",
+          "question": "问题",
+          "document_field": "文档字段"
         }
       },
+      "item_id": {
+        "label": "项目ID",
+        "description": "按表单项目ID筛选",
+        "placeholder": "输入项目ID（数字）"
+      },
+      "period_name": {
+        "label": "期间名称",
+        "description": "按期间名称筛选",
+        "placeholder": "输入期间名称"
+      },
+      "country_id": {
+        "label": "国家",
+        "description": "按特定国家筛选",
+        "placeholder": "选择国家"
+      },
+      "submission_type": {
+        "label": "提交类型",
+        "description": "按提交类型过滤",
+        "placeholder": "选择提交类型",
+        "options": {
+          "assigned": "已分配",
+          "public": "公开"
+        }
+      },
+      "disagg": {
+        "label": "包含分类数据",
+        "description": "在结果中包含分类数据（如果可用）",
+        "placeholder": "选择是或否"
+      },
+      "page": {
+        "label": "页面",
+        "description": "分页的页码（默认：1）",
+        "placeholder": "输入页码"
+      },
+      "per_page": {
+        "label": "每页项目数",
+        "description": "每页项目数（默认：20）",
+        "placeholder": "输入每页项目数"
+      }
+    },
     "generatedUrl": {
       "title": "生成的URL",
       "description": "您的API端点URL，包含所选参数：",
@@ -790,72 +790,72 @@
       "testing": "测试中...",
       "error": "测试端点时出错"
     },
-          "response": {
-        "title": "响应预览",
-        "loading": "正在加载响应...",
-        "error": "加载响应时出错",
-        "noData": "没有返回数据",
-        "status": "状态：{{code}}",
-        "showRaw": "显示原始响应"
-      },
-          "examples": {
-        "title": "示例查询",
-        "description": "尝试这些示例查询开始：",
-        "allData": "所有数据",
-        "assignedSubmissions": "仅限已分配的提交",
-        "publicSubmissions": "仅限公开提交",
-        "indicatorsOnly": "仅限指标",
-        "first10Results": "前10个结果",
-        "dataFromTemplate": "来自{{templateName}}的数据",
-        "dataFromCountry": "来自{{countryName}}的数据"
-      },
-      "docs": {
-        "title": "API文档",
-        "intro": "构建请求并学习如何有效使用数据库API。以下是认证、过滤、分页和分类的基本要素。",
-        "authentication": "认证",
-        "authInstruction": "通过查询参数{{param}}传递您的API密钥。",
-        "queryParameters": "查询参数",
-        "examplesTitle": "示例",
-        "exampleBasic": "基本请求（无分类）",
-        "exampleDisagg": "包含分类数据",
-        "exampleFilterPaginate": "按模板、期间过滤和分页",
-        "exampleCurlTitle": "cURL示例",
-        "errorsTitle": "错误",
-        "errors": {
-          "400": "400：无效参数或值",
-          "401": "401：缺少或无效的api_key",
-          "404": "404：找不到资源",
-          "500": "500：服务器错误"
-        }
-      },
-      "labels": {
-        "baseUrl": "基础URL",
-        "endpoint": "端点"
-      },
-      "builder": {
-        "title": "构建端点"
-      },
-      "fieldType": {
-        "select": "选择",
-        "number": "数字",
-        "text": "文本"
-      },
-      "quickStart": {
-        "title": "快速开始指南",
-        "step1": "使用复选框选择要过滤的参数",
-        "step2": "为选定的参数输入值",
-        "step3": "复制生成的URL或直接测试",
-        "step4": "在您的应用程序或脚本中使用URL"
-      },
-      "activeParams": {
-        "title": "活动参数",
-        "none": "没有选择参数"
-      },
-      "download": {
-        "excel": "下载为Excel",
-        "preparingExcel": "正在准备Excel…"
+    "response": {
+      "title": "响应预览",
+      "loading": "正在加载响应...",
+      "error": "加载响应时出错",
+      "noData": "没有返回数据",
+      "status": "状态：{{code}}",
+      "showRaw": "显示原始响应"
+    },
+    "examples": {
+      "title": "示例查询",
+      "description": "尝试这些示例查询开始：",
+      "allData": "所有数据",
+      "assignedSubmissions": "仅限已分配的提交",
+      "publicSubmissions": "仅限公开提交",
+      "indicatorsOnly": "仅限指标",
+      "first10Results": "前10个结果",
+      "dataFromTemplate": "来自{{templateName}}的数据",
+      "dataFromCountry": "来自{{countryName}}的数据"
+    },
+    "docs": {
+      "title": "API文档",
+      "intro": "构建请求并学习如何有效使用数据库API。以下是认证、过滤、分页和分类的基本要素。",
+      "authentication": "认证",
+      "authInstruction": "通过查询参数{{param}}传递您的API密钥。",
+      "queryParameters": "查询参数",
+      "examplesTitle": "示例",
+      "exampleBasic": "基本请求（无分类）",
+      "exampleDisagg": "包含分类数据",
+      "exampleFilterPaginate": "按模板、期间过滤和分页",
+      "exampleCurlTitle": "cURL示例",
+      "errorsTitle": "错误",
+      "errors": {
+        "400": "400：无效参数或值",
+        "401": "401：缺少或无效的api_key",
+        "404": "404：找不到资源",
+        "500": "500：服务器错误"
       }
     },
+    "labels": {
+      "baseUrl": "基础URL",
+      "endpoint": "端点"
+    },
+    "builder": {
+      "title": "构建端点"
+    },
+    "fieldType": {
+      "select": "选择",
+      "number": "数字",
+      "text": "文本"
+    },
+    "quickStart": {
+      "title": "快速开始指南",
+      "step1": "使用复选框选择要过滤的参数",
+      "step2": "为选定的参数输入值",
+      "step3": "复制生成的URL或直接测试",
+      "step4": "在您的应用程序或脚本中使用URL"
+    },
+    "activeParams": {
+      "title": "活动参数",
+      "none": "没有选择参数"
+    },
+    "download": {
+      "excel": "下载为Excel",
+      "preparingExcel": "正在准备Excel…"
+    }
+  },
   "indicatorDetail": {
     "title": "指标详情",
     "error": {
@@ -911,11 +911,11 @@
   "disaggregationAnalysis": {
     "title": "分类分析",
     "meta": {
-      "description": "对所有IFRC指标的分类数据进行全面分析，包括志愿者、工作人员、领导层以及按性别和年龄组分类的受益人群"
+      "description": "对所有平台指标的分类数据进行全面分析，包括志愿者、工作人员、领导层以及按性别和年龄组分类的受益人群"
     },
     "hero": {
       "title": "分类分析",
-      "description": "对所有IFRC指标的分类数据进行全面分析，包括志愿者、工作人员、理事会成员和受益人群，特别关注领导层和志愿服务中的性别代表性"
+      "description": "对所有平台指标的分类数据进行全面分析，包括志愿者、工作人员、理事会成员和受益人群，特别关注领导层和志愿服务中的性别代表性"
     },
     "stats": {
       "avgDisaggregation": "平均分类",

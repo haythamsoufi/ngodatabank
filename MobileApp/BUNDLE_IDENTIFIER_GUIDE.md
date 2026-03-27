@@ -8,7 +8,7 @@ This guide explains how to configure bundle identifiers for different organizati
 - Android: `com.ngo.databank`
 - iOS: `com.ngo.databank`
 
-**IFRC Configuration:**
+**Example alternate bundle (sample profile `ifrc` in this repo):**
 - Android: `com.ifrc.databank`
 - iOS: `com.ifrc.databank`
 
@@ -23,9 +23,9 @@ This guide explains how to configure bundle identifiers for different organizati
 
 The `name` field in `pubspec.yaml` is the Dart package name (e.g. `ngo_databank_app`), not the Play/App Store bundle identifier.
 
-**IFRC vs default deep links / labels:** For IFRC builds, align display name, app label, and URL scheme with your org (e.g. `ifrcdatabank`) in the manifest and `Info.plist` as needed.
+**Custom org builds:** align display name, app label, and URL scheme with your org in the manifest and `Info.plist` as needed.
 
-## Changing Bundle Identifier for IFRC Builds
+## Changing bundle ID for another organization (example uses `ifrc`)
 
 ### Method 1: Manual Update (Before Building)
 
@@ -53,7 +53,7 @@ PRODUCT_BUNDLE_IDENTIFIER = com.ifrc.databank;
 Also update `ios/Runner/Info.plist`:
 ```xml
 <key>CFBundleDisplayName</key>
-<string>IFRC Network Databank</string>
+<string>NGO Databank</string>
 ```
 
 ### Method 2: Using Script (Recommended)
@@ -75,7 +75,7 @@ if [ "$ORG" == "ifrc" ]; then
     sed -i '' 's/PRODUCT_BUNDLE_IDENTIFIER = com\.ngo\.databank/PRODUCT_BUNDLE_IDENTIFIER = com.ifrc.databank/g' ios/Runner.xcodeproj/project.pbxproj
     sed -i '' 's/PRODUCT_BUNDLE_IDENTIFIER = com\.ngo\.databank\.RunnerTests/PRODUCT_BUNDLE_IDENTIFIER = com.ifrc.databank.RunnerTests/g' ios/Runner.xcodeproj/project.pbxproj
     
-    echo "Bundle identifier set to IFRC"
+    echo "Bundle identifier set (example: ifrc)"
 else
     # Android
     sed -i '' 's/namespace "com\.ifrc\.databank"/namespace "com.ngo.databank"/g' android/app/build.gradle
@@ -91,7 +91,7 @@ fi
 
 **Usage:**
 ```bash
-# Set to IFRC
+# Example: `ifrc` bundle IDs
 ./scripts/set-bundle-id.sh ifrc
 
 # Set to NGO (default)
@@ -113,7 +113,7 @@ if ($Org -eq "ifrc") {
     (Get-Content ios/Runner.xcodeproj/project.pbxproj) -replace 'PRODUCT_BUNDLE_IDENTIFIER = com\.ngo\.databank', 'PRODUCT_BUNDLE_IDENTIFIER = com.ifrc.databank' | Set-Content ios/Runner.xcodeproj/project.pbxproj
     (Get-Content ios/Runner.xcodeproj/project.pbxproj) -replace 'PRODUCT_BUNDLE_IDENTIFIER = com\.ngo\.databank\.RunnerTests', 'PRODUCT_BUNDLE_IDENTIFIER = com.ifrc.databank.RunnerTests' | Set-Content ios/Runner.xcodeproj/project.pbxproj
     
-    Write-Host "Bundle identifier set to IFRC"
+    Write-Host "Bundle identifier set (example: ifrc)"
 } else {
     # Android
     (Get-Content android/app/build.gradle) -replace 'namespace "com\.ifrc\.databank"', 'namespace "com.ngo.databank"' | Set-Content android/app/build.gradle
@@ -129,7 +129,7 @@ if ($Org -eq "ifrc") {
 
 **Usage:**
 ```powershell
-# Set to IFRC
+# Example: `ifrc` bundle IDs
 .\scripts\set-bundle-id.ps1 -Org ifrc
 
 # Set to NGO (default)
@@ -140,11 +140,11 @@ if ($Org -eq "ifrc") {
 
 ### Play Store (Android)
 - **Default (NGO Databank):** Use `com.ngo.databank`
-- **IFRC:** Use `com.ifrc.databank` (requires separate Play Store listing)
+- **Sample alternate ID in repo:** `com.ifrc.databank` (requires a separate Play Store listing if you use it)
 
 ### App Store (iOS)
 - **Default (NGO Databank):** Use `com.ngo.databank`
-- **IFRC:** Use `com.ifrc.databank` (requires separate App Store listing)
+- **Sample alternate ID in repo:** `com.ifrc.databank` (requires a separate App Store listing if you use it)
 
 ## Important Notes
 
@@ -173,4 +173,4 @@ grep -n "PRODUCT_BUNDLE_IDENTIFIER" ios/Runner.xcodeproj/project.pbxproj
 ## Current Status
 
 ✅ **Default:** `com.ngo.databank` (for Play Store publication)
-✅ **IFRC:** `com.ifrc.databank` (for IFRC-specific builds)
+✅ **Example alternate:** `com.ifrc.databank` (only if you intentionally ship a second app id)

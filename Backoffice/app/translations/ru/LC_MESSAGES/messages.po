@@ -1,10 +1,10 @@
-# Russian translations for IFRC Network Databank.
-# Copyright (C) 2024 IFRC
-# This file is distributed under the same license as the IFRC Network
-# Databank project.
+# Russian translations for NGO Databank.
+# Copyright (C) 2024 NGO Databank contributors
+# This file is distributed under the same license as the NGO Databank
+# project.
 msgid ""
 msgstr ""
-"Project-Id-Version: IFRC Network Databank 1.0\n"
+"Project-Id-Version: NGO Databank 1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-25 12:16+0100\n"
 "PO-Revision-Date: 2024-01-01 12:00+0000\n"

@@ -111,7 +111,7 @@ def get_upr_prompt_section() -> str:
         "Time series – UPR:\n"
         "- When both sources have a value for the same year: use one row, prefer the databank value (especially submitted/approved). Use UPR only when the databank has no value for that year.\n"
         "\n"
-        "IFRC Region – UPR tools:\n"
+        "Operational region – UPR tools:\n"
         "- Tools that return the region field: get_indicator_values_for_all_countries, get_upr_kpi_values_for_all_countries, list_documents, search_documents.\n"
         "- Map/list with a metric (e.g. \"volunteers in MENA\"): use get_upr_kpi_values_for_all_countries(metric) or get_indicator_values_for_all_countries; filter by region.\n"
         "- For \"documents in region + metric\": merge list_documents(\"UPL-\") with the appropriate bulk tool. Do NOT call get_country_information in a loop.\n"

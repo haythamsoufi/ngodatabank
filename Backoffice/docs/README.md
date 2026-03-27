@@ -1,6 +1,6 @@
 # Documentation
 
-This section helps you use the IFRC Network Databank Backoffice.
+This section helps you use the NGO Databank Backoffice.
 
 ## Getting started
 

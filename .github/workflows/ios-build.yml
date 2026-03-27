@@ -20,7 +20,7 @@ on:
           - http://localhost:5000
           - http://10.0.2.2:5000
           - https://backoffice-databank.fly.dev
-          - https://databank-stage.ifrc.org
+          - https://your-backoffice.example.org
         default: 'https://backoffice-databank.fly.dev'
       frontend_url:
         description: 'Frontend/Website URL'
@@ -112,7 +112,7 @@ jobs:
 
           # Change app display name based on environment
           # This allows users to identify which version is which on their device
-          ENV_DISPLAY_NAME="IFRC Data (CI - ${{ inputs.environment }})"
+          ENV_DISPLAY_NAME="NGO Databank (CI - ${{ inputs.environment }})"
           /usr/libexec/PlistBuddy -c "Print :CFBundleDisplayName" ios/Runner/Info.plist > /dev/null 2>&1 && \
             /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName '$ENV_DISPLAY_NAME'" ios/Runner/Info.plist || \
             /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string '$ENV_DISPLAY_NAME'" ios/Runner/Info.plist

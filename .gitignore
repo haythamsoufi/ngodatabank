@@ -15,7 +15,6 @@ Website/public/geoboundaries
 
 Backoffice/node_modules/
 node_modules/
-IFRC Project files/
 
 # OS-generated files
 .DS_Store
@@ -129,9 +128,7 @@ pnpm-debug.log*
 
 # Accidental files
 /hell -NoProfile -Command git status -sb
-/ifrc.dump
 /app.db
-Backoffice/IFRC_External_ID
 *.zip
 
 # Windows-specific problematic files

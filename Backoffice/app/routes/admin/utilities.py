@@ -2230,7 +2230,7 @@ def api_auto_translate():
             # Fallback defaults (language codes) from runtime config
             configured = current_app.config.get('TRANSLATABLE_LANGUAGES') or []
             target_languages = [lc for lc in (configured or []) if lc != 'en']
-        translation_service = data.get('translation_service', 'ifrc')  # Default to IFRC
+        translation_service = data.get('translation_service', 'ifrc')  # Default hosted service (internal id "ifrc")
         service_name = translation_service  # Map to existing parameter for backward compatibility
 
         if not text:

@@ -1,5 +1,8 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
+#
+# Container registry image names and Azure web app names below are environment-specific.
+# Replace them with your org’s ACR login server and App Service names before relying on this workflow.
 
 name: Deploy to Webapp
 

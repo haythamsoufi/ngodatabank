@@ -13,7 +13,7 @@ Usage::
     html = render_admin_email_template(
         template_str,
         user_name="Alice",
-        org_name="IFRC",
+        org_name="Your organization",
     )
 """
 from __future__ import annotations

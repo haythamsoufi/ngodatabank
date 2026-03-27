@@ -43,7 +43,10 @@ class DebugManager:
         else:
             # Use INFO level for better visibility while avoiding debug noise
             log_level = logging.INFO
-            app.logger.debug('INFO level logging enabled - set VERBOSE_FORM_DEBUG=true for detailed debug logging')
+            # INFO so operators see the hint when console is at INFO (default non-verbose path)
+            app.logger.info(
+                "INFO-level logging enabled; set VERBOSE_FORM_DEBUG=true for detailed debug logging"
+            )
 
         # Configure console output if LOG_TO_STDOUT is enabled
         # Default to True for production deployments (Azure, Docker, etc.) where stdout logging is expected

@@ -24,12 +24,21 @@ from app.models.organization import NationalSociety
 from app.forms.form_builder import (
     FormTemplateForm, FormSectionForm, IndicatorForm, QuestionForm, DocumentFieldForm
 )
-from app.routes.admin.shared import admin_required, admin_permission_required, permission_required, get_localized_sector_name, get_localized_subsector_name, check_template_access
+from app.routes.admin.shared import (
+    admin_required,
+    admin_permission_required,
+    permission_required,
+    system_manager_required,
+    get_localized_sector_name,
+    get_localized_subsector_name,
+    check_template_access,
+)
 from app.utils.request_utils import is_json_request
 from app.utils.api_authentication import get_user_allowed_template_ids
 from app.utils.user_analytics import log_admin_action
 from app.utils.template_excel_service import TemplateExcelService
 from app.utils.kobo_xls_import_service import KoboXlsImportService
+from app.utils.kobo_data_import_service import KoboDataImportService
 from app.utils.error_handling import handle_view_exception, handle_json_view_exception
 from app.services.section_duplication_service import SectionDuplicationService
 from app.services.item_duplication_service import ItemDuplicationService
@@ -308,6 +317,345 @@ def import_kobo_xls():
             flash(w, "info")
 
     return redirect(url_for("form_builder.edit_template", template_id=result['template_id']))
+
+
+# ---------------------------------------------------------------------------
+# KoBo Data Import Wizard (import submission data from KoBo data exports)
+# ---------------------------------------------------------------------------
+
+@bp.route("/kobo-data-import", methods=["GET"])
+@admin_required
+@system_manager_required
+def kobo_data_import():
+    """Render the KoBo data import wizard page."""
+    from app.utils.form_localization import get_localized_template_name
+
+    countries = Country.query.filter_by(status='Active').order_by(Country.name).all()
+
+    templates = FormTemplate.query.all()
+
+    template_choices = []
+    for t in templates:
+        name = get_localized_template_name(t)
+        if name:
+            template_choices.append({'id': t.id, 'name': name})
+    template_choices.sort(key=lambda x: x['name'].lower())
+
+    return render_template(
+        "admin/templates/kobo_data_import.html",
+        title="Import KoBo Data",
+        countries=countries,
+        template_choices=template_choices,
+    )
+
+
+@bp.route("/kobo-data-import/analyze", methods=["POST"])
+@admin_required
+@system_manager_required
+def kobo_data_import_analyze():
+    """Analyze an uploaded KoBo data export Excel file (AJAX)."""
+    import os, uuid, tempfile
+    from flask import jsonify
+
+    if 'file' not in request.files:
+        return jsonify({'success': False, 'message': 'No file provided'}), 400
+
+    f = request.files['file']
+    if not f or f.filename == '':
+        return jsonify({'success': False, 'message': 'No file selected'}), 400
+
+    valid, error_msg, ext = validate_upload_extension_and_mime(f, EXCEL_EXTENSIONS)
+    if not valid:
+        return jsonify({'success': False, 'message': error_msg or 'Invalid file type'}), 400
+
+    file_bytes = f.read()
+    if len(file_bytes) > 50 * 1024 * 1024:
+        return jsonify({'success': False, 'message': 'File too large (max 50 MB)'}), 400
+
+    result = KoboDataImportService.analyze(file_bytes)
+
+    if result.get('success'):
+        upload_dir = os.path.join(current_app.instance_path, 'tmp')
+        os.makedirs(upload_dir, exist_ok=True)
+        file_id = str(uuid.uuid4())
+        tmp_path = os.path.join(upload_dir, f'{file_id}.xlsx')
+        with open(tmp_path, 'wb') as tf:
+            tf.write(file_bytes)
+        session['kobo_data_import_file'] = tmp_path
+        session['kobo_data_import_id'] = file_id
+        result['file_id'] = file_id
+
+    return jsonify(result)
+
+
+@bp.route("/kobo-data-import/match-entities", methods=["POST"])
+@admin_required
+@system_manager_required
+def kobo_data_import_match():
+    """Try to match entity names to countries (AJAX).
+
+    If entity_column_index is provided, extracts all unique values from the
+    stored temp file so matching covers every entity (not just samples).
+    """
+    import os
+    from flask import jsonify
+
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({'success': False, 'message': 'No data provided'}), 400
+
+    entity_names = data.get('entity_names', [])
+    entity_col_idx = data.get('entity_column_index')
+
+    if entity_col_idx is not None:
+        tmp_path = session.get('kobo_data_import_file')
+        if tmp_path and os.path.exists(tmp_path):
+            try:
+                with open(tmp_path, 'rb') as f:
+                    file_bytes = f.read()
+                entity_names = KoboDataImportService.extract_unique_entities(
+                    file_bytes,
+                    int(entity_col_idx),
+                    submission_filter=data.get('submission_filter', 'all'),
+                    validation_status_column_index=data.get('validation_status_column_index'),
+                )
+            except Exception:
+                pass
+
+    if not entity_names:
+        return jsonify({
+            'success': False,
+            'message': (
+                'No entity names found. Your submission filter may exclude every row, or the export may be '
+                'missing _validation_status. Try “All rows” or re-export with validation metadata.'
+            ),
+        }), 400
+
+    mapping = KoboDataImportService.try_match_entities(entity_names)
+
+    countries = Country.query.filter_by(status='Active').order_by(Country.name).all()
+    country_list = [{'id': c.id, 'name': c.name} for c in countries]
+
+    return jsonify({
+        'success': True,
+        'entity_mapping': mapping,
+        'countries': country_list,
+    })
+
+
+@bp.route("/kobo-data-import/preview", methods=["POST"])
+@admin_required
+@system_manager_required
+def kobo_data_import_preview():
+    """Return a preview of the mapped data for the AG Grid table (AJAX)."""
+    import os
+    from flask import jsonify
+
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({'success': False, 'message': 'No configuration provided'}), 400
+
+    file_id = data.get('file_id')
+    stored_id = session.get('kobo_data_import_id')
+    tmp_path = session.get('kobo_data_import_file')
+
+    if not file_id or file_id != stored_id or not tmp_path or not os.path.exists(tmp_path):
+        return jsonify({'success': False, 'message': 'Upload session expired. Please re-upload the file.'}), 400
+
+    try:
+        with open(tmp_path, 'rb') as f:
+            file_bytes = f.read()
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Cannot read uploaded file: {e}'}), 500
+
+    from app.utils.kobo_data_import_service import KoboDataImportService
+    result = KoboDataImportService.generate_preview(
+        file_bytes,
+        entity_column_index=data.get('entity_column_index'),
+        columns_to_import=data.get('columns_to_import', []),
+        entity_mapping=data.get('entity_mapping', {}),
+        duplicate_strategy=data.get('duplicate_strategy', 'latest'),
+        submission_time_column_index=data.get('submission_time_column_index'),
+        submission_filter=data.get('submission_filter', 'all'),
+        validation_status_column_index=data.get('validation_status_column_index'),
+        max_rows=data.get('max_rows', 100),
+        existing_template_id=data.get('existing_template_id'),
+        column_to_item_mapping=data.get('column_to_item_mapping'),
+    )
+    return jsonify(result)
+
+
+@bp.route("/kobo-data-import/template-structure", methods=["POST"])
+@admin_required
+@system_manager_required
+def kobo_data_import_template_structure():
+    """Return sections and items for an existing template (AJAX)."""
+    from flask import jsonify
+    from app.utils.form_localization import get_localized_template_name
+
+    data = request.get_json(silent=True)
+    if not data or not data.get('template_id'):
+        return jsonify({'success': False, 'message': 'template_id is required'}), 400
+
+    template_id = int(data['template_id'])
+    template = FormTemplate.query.get(template_id)
+    if not template:
+        return jsonify({'success': False, 'message': 'Template not found'}), 404
+
+    version = template.published_version
+    if not version:
+        version = template.versions.order_by(FormTemplateVersion.version_number.desc()).first()
+    if not version:
+        return jsonify({'success': False, 'message': 'Template has no version'}), 400
+
+    sections = FormSection.query.filter_by(
+        template_id=template.id, version_id=version.id
+    ).order_by(FormSection.order).all()
+
+    result_sections = []
+    all_items = []
+    for sec in sections:
+        items = FormItem.query.filter_by(
+            section_id=sec.id, template_id=template.id, version_id=version.id
+        ).order_by(FormItem.order).all()
+        item_list = []
+        for item in items:
+            opts = list(item.allowed_disaggregation_options or [])
+            has_slice_opts = any(o in opts for o in ('sex', 'age', 'sex_age'))
+            item_info = {
+                'id': item.id,
+                'label': item.label or '',
+                'type': item.type or item.item_type or '',
+                'section_id': sec.id,
+                'section_name': sec.name or 'Unnamed',
+                'is_indicator': item.is_indicator,
+                'unit': item.unit,
+                'supports_disaggregation': bool(item.supports_disaggregation),
+                'allowed_disaggregation_options': opts,
+                'effective_sex_categories': list(item.effective_sex_categories) if item.is_indicator else [],
+                'effective_age_groups': list(item.effective_age_groups) if item.is_indicator else [],
+                'indirect_reach': bool(item.indirect_reach) if item.is_indicator else False,
+                'show_disagg_mapping': bool(
+                    item.is_indicator and item.supports_disaggregation and has_slice_opts
+                ),
+            }
+            item_list.append(item_info)
+            all_items.append(item_info)
+        result_sections.append({
+            'id': sec.id,
+            'name': sec.name or 'Unnamed',
+            'order': sec.order,
+            'items': item_list,
+        })
+
+    return jsonify({
+        'success': True,
+        'template_id': template.id,
+        'template_name': get_localized_template_name(template, version=version),
+        'version_id': version.id,
+        'sections': result_sections,
+        'items': all_items,
+    })
+
+
+@bp.route("/kobo-data-import/map-columns", methods=["POST"])
+@admin_required
+@system_manager_required
+def kobo_data_import_map_columns():
+    """Auto-map KoBo columns to an existing template's items (AJAX)."""
+    from flask import jsonify
+
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({'success': False, 'message': 'No data provided'}), 400
+
+    kobo_columns = data.get('kobo_columns', [])
+    template_items = data.get('template_items', [])
+
+    if not kobo_columns or not template_items:
+        return jsonify({'success': False, 'message': 'kobo_columns and template_items are required'}), 400
+
+    mappings = KoboDataImportService.map_columns_to_template(kobo_columns, template_items)
+    matched = sum(1 for m in mappings if m['item_id'] is not None)
+
+    return jsonify({
+        'success': True,
+        'mappings': mappings,
+        'matched_count': matched,
+        'total_columns': len(mappings),
+    })
+
+
+@bp.route("/kobo-data-import/execute", methods=["POST"])
+@admin_required
+@system_manager_required
+def kobo_data_import_execute():
+    """Execute the KoBo data import (AJAX)."""
+    import os
+    from flask import jsonify
+
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({'success': False, 'message': 'No configuration provided'}), 400
+
+    file_id = data.get('file_id')
+    stored_id = session.get('kobo_data_import_id')
+    tmp_path = session.get('kobo_data_import_file')
+
+    if not file_id or file_id != stored_id or not tmp_path or not os.path.exists(tmp_path):
+        return jsonify({'success': False, 'message': 'Upload session expired. Please re-upload the file.'}), 400
+
+    try:
+        with open(tmp_path, 'rb') as f:
+            file_bytes = f.read()
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Cannot read uploaded file: {e}'}), 500
+
+    sub_time_idx = None
+    if data.get('submission_time_column_index') is not None:
+        sub_time_idx = data['submission_time_column_index']
+
+    vs_idx = data.get('validation_status_column_index')
+    if vs_idx is not None:
+        try:
+            vs_idx = int(vs_idx)
+        except (TypeError, ValueError):
+            vs_idx = None
+
+    config = {
+        'template_name': data.get('template_name', 'KoBo Data Import'),
+        'period_name': data.get('period_name', 'Imported'),
+        'entity_column_index': data.get('entity_column_index'),
+        'columns_to_import': data.get('columns_to_import', []),
+        'entity_mapping': data.get('entity_mapping', {}),
+        'create_template': data.get('create_template', True),
+        'import_data': data.get('import_data', True),
+        'owned_by': current_user.id,
+        'duplicate_strategy': data.get('duplicate_strategy', 'latest'),
+        'submission_time_column_index': sub_time_idx,
+        'submission_filter': data.get('submission_filter', 'all'),
+        'validation_status_column_index': vs_idx,
+        'existing_template_id': data.get('existing_template_id'),
+        'column_to_item_mapping': data.get('column_to_item_mapping', {}),
+    }
+
+    result = KoboDataImportService.execute_import(file_bytes, config)
+
+    # Clean up temp file
+    try:
+        os.remove(tmp_path)
+        session.pop('kobo_data_import_file', None)
+        session.pop('kobo_data_import_id', None)
+    except Exception:
+        pass
+
+    if result.get('success'):
+        log_admin_action('kobo_data_import', {
+            'template_id': result.get('template_id'),
+            'counts': result.get('counts'),
+        })
+
+    return jsonify(result)
 
 
 @bp.route("/templates/new", methods=["GET", "POST"])
@@ -4083,7 +4431,7 @@ def _update_item_config(form_item, form, request_form):
             allow_over_100 = False
     form_item.config['allow_over_100'] = bool(allow_over_100)
 
-    # Privacy (dropdown, defaults to IFRC Network)
+    # Privacy (dropdown, defaults to organization network / internal visibility)
     try:
         if hasattr(form, 'privacy') and hasattr(form.privacy, 'data') and form.privacy.data:
             _pv = str(form.privacy.data).strip().lower()

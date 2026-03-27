@@ -489,7 +489,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (inner.metric) lines.push('metric: ' + inner.metric);
         if (inner.count != null) lines.push('row_count: ' + inner.count);
         if (inner.period) lines.push('period: ' + inner.period);
-        if (inner.note_ifrc_region) lines.push('note: ' + inner.note_ifrc_region);
+        var regionNote = inner.note_platform_region || inner.note_ifrc_region;
+        if (regionNote) lines.push('note: ' + regionNote);
 
         if (inner.alternative_indicators && inner.alternative_indicators.length) {
             lines.push('alternative_indicators: ' + inner.alternative_indicators.map(function(a) {

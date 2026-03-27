@@ -233,18 +233,18 @@
             pointer-events: none !important;
         }
 
-        /* System Manager badge: icon-only on smaller screens */
+        /* System Manager badge: full label only at xl+ so icon-only runs with the lg nav bar before title wrap */
         .system-manager-label {
             display: none;
         }
 
-        @media (min-width: 1024px) {
+        @media (min-width: 1280px) {
             .system-manager-label {
                 display: inline;
             }
 
             .system-manager-icon {
-                margin-right: 0.375rem;
+                margin-inline-end: 0.375rem;
             }
         }
     </style>
@@ -256,14 +256,17 @@
             // Check for mobile app indicators (including user agent check)
             const userAgent = navigator.userAgent || '';
             const isMobileApp = window.isMobileApp === true ||
+                               window.NGODatabankMobileApp === true ||
                                window.IFRCMobileApp === true ||
                                userAgent.includes('wv') || // Android WebView
                                userAgent.includes('Flutter') || // Flutter WebView
-                               userAgent.includes('IFRC-Databank'); // Custom identifier
+                               userAgent.includes('NGO-Databank') ||
+                               userAgent.includes('IFRC-Databank'); // legacy custom UA
 
             if (isMobileApp) {
                 // Set flag immediately
                 window.isMobileApp = true;
+                window.NGODatabankMobileApp = true;
                 window.IFRCMobileApp = true;
 
                 // Set attribute on document element as soon as possible
@@ -551,7 +554,7 @@
                 {% endblock %}
             </nav>
             <div class="sidebar-footer">
-                {{ _('Powered by') }} <a href="https://haythamsoufi.github.io/databank" target="_blank" rel="noopener noreferrer" class="text-blue-300 hover:text-blue-200 underline transition-colors duration-150">{{ ORG_NAME }} <i class="fas fa-external-link-alt text-xs ml-1" aria-hidden="true"></i></a>
+                {{ _('Powered by') }} <a href="https://github.com/haythamsoufi/ngodatabank" target="_blank" rel="noopener noreferrer" class="text-blue-300 hover:text-blue-200 underline transition-colors duration-150">{{ _('NGO Databank') }} <i class="fas fa-external-link-alt text-xs ml-1" aria-hidden="true"></i></a>
             </div>
         </aside>
         {% endif %}
@@ -560,15 +563,15 @@
             <nav class="{% if is_system_manager %}nav-system-manager{% elif is_focal_point %}nav-focal-point{% else %}bg-red-700{% endif %} px-4 text-white shadow-md sticky top-0 z-30 h-16 flex items-center">
                 <div id="navContainer" class="container mx-auto h-full flex justify-between items-center">
                     <div class="flex nav-menu-wrapper space-x-8 h-full items-center">
-                        <div class="flex items-center">
+                        <div class="flex items-center min-w-0 flex-1 nav-brand-cluster">
                             {% set _nav_logo = ((ORGANIZATION_BRANDING or {}).get('organization_logo_path') or '')|trim %}
                             {% if _nav_logo %}
                             <img src="{{ static_url(_nav_logo) }}" alt="{{ ORG_NAME }} Logo" class="org-logo-img" data-hide-on-error="true" data-show-next-on-error="flex">
                             {% endif %}
                             <span class="org-logo-placeholder" {% if _nav_logo %}style="display:none"{% endif %} aria-hidden="true">{{ (ORG_SHORT_NAME or ORG_NAME or 'DB')[:2] | upper }}</span>
-                            <a href="{{ url_for('admin.admin_dashboard') if is_admin_user else url_for('main.dashboard') }}" class="nav-brand-title text-2xl font-semibold text-white font-sans tracking-tight">{{ ORG_NAME }}</a>
+                            <a href="{{ url_for('admin.admin_dashboard') if is_admin_user else url_for('main.dashboard') }}" class="nav-brand-title min-w-0 text-2xl font-semibold text-white font-sans tracking-tight">{{ ORG_NAME }}</a>
                             {% if is_system_manager %}
-                            <span class="system-manager-badge ml-3 px-2.5 py-1 text-xs font-medium rounded-md text-blue-300">
+                            <span class="system-manager-badge ml-3 px-2.5 py-1 text-xs font-medium rounded-md text-blue-300" title="{{ _('System Manager') }}" aria-label="{{ _('System Manager') }}">
                                 <i class="fas fa-shield-alt system-manager-icon" aria-hidden="true"></i>
                                 <span class="system-manager-label">{{ _('System Manager') }}</span>
                             </span>
@@ -1071,7 +1074,7 @@
             {% endblock %}
         </nav>
         <div class="sidebar-footer">
-             {{ _('Powered by') }} <a href="https://haythamsoufi.github.io/databank" target="_blank" rel="noopener noreferrer" class="text-blue-300 hover:text-blue-200 underline transition-colors duration-150">{{ ORG_NAME }} <i class="fas fa-external-link-alt text-xs ml-1" aria-hidden="true"></i></a>
+             {{ _('Powered by') }} <a href="https://github.com/haythamsoufi/ngodatabank" target="_blank" rel="noopener noreferrer" class="text-blue-300 hover:text-blue-200 underline transition-colors duration-150">{{ _('NGO Databank') }} <i class="fas fa-external-link-alt text-xs ml-1" aria-hidden="true"></i></a>
         </div>
     </div>
     {% endif %}
@@ -1177,6 +1180,7 @@
     <script src="{{ static_url('js/layout.js') }}"></script>
     <script src="{{ static_url('js/confirm-dialogs.js') }}"></script>
     <script src="{{ static_url('js/lib/modal-utils.js') }}"></script>
+    <script src="{{ static_url('js/lib/platform-error-reporter.js') }}"></script>
     <script src="{{ static_url('js/lib/api-fetch.js') }}"></script>
     <script src="{{ static_url('js/lib/auto-translate-service.js') }}"></script>
     <script src="{{ static_url('js/components.js') }}"></script>

@@ -900,7 +900,7 @@ export const ItemModal = {
         optPublic.textContent = 'Public';
         const optIfrc = document.createElement('option');
         optIfrc.value = 'ifrc_network';
-        optIfrc.textContent = 'IFRC Network';
+        optIfrc.textContent = 'Organization network';
         select.appendChild(optPublic);
         select.appendChild(optIfrc);
         // Default to Public for new items

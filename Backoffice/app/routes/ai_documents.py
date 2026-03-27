@@ -145,7 +145,7 @@ def _validate_ifrc_fetch_url(url: str) -> tuple[bool, str]:
     allowed_hosts = current_app.config.get("IFRC_DOCUMENT_ALLOWED_HOSTS") or []
     allowed_hosts = [str(h).strip().lower().strip(".") for h in allowed_hosts if str(h).strip()]
     if not allowed_hosts:
-        return False, "IFRC document import is not configured (no allowed hosts)"
+        return False, "External document import is not configured (no allowed hosts)"
 
     is_allowed = any(host == ah or host.endswith("." + ah) for ah in allowed_hosts)
     if not is_allowed:
@@ -3506,7 +3506,7 @@ def _fetch_ifrc_public_site_types():
     try:
         response = requests.get(
             "https://go-api.ifrc.org/Api/PublicSiteTypes",
-            headers={"User-Agent": "IFRC-Network-Databank/1.0", "Accept": "application/json"},
+            headers={"User-Agent": "NGO-Databank/1.0", "Accept": "application/json"},
             auth=auth,
             timeout=15,
         )
@@ -3549,7 +3549,7 @@ def list_ifrc_api_types():
     """
     auth = _get_ifrc_basic_auth()
     if not auth:
-        return json_server_error('IFRC API credentials are not configured. Set IFRC_API_USER and IFRC_API_PASSWORD.')
+        return json_server_error('External document API credentials are not configured. Set IFRC_API_USER and IFRC_API_PASSWORD.')
     api_types = _fetch_ifrc_public_site_types()
     unified_ids = {t['id'] for t in _UNIFIED_PLANNING_TYPES}
     unified_names = {t['name'].lower() for t in _UNIFIED_PLANNING_TYPES}
@@ -3579,7 +3579,7 @@ def _fetch_ifrc_appeals_filter_options(*, appeals_type_ids: Optional[str] = None
     try:
         response = requests.get(
             api_url,
-            headers={"User-Agent": "IFRC-Network-Databank/1.0", "Accept": "application/json"},
+            headers={"User-Agent": "NGO-Databank/1.0", "Accept": "application/json"},
             auth=auth,
             timeout=30,
         )
@@ -3607,7 +3607,7 @@ def list_ifrc_api_filter_options():
 
     auth = _get_ifrc_basic_auth()
     if not auth:
-        return json_server_error("IFRC API credentials not configured")
+        return json_server_error("External document API credentials not configured")
 
     type_mapping = dict(APPEALS_TYPE_LEGACY_MAPPING)
     for t in _fetch_ifrc_public_site_types():
@@ -3622,7 +3622,7 @@ def list_ifrc_api_filter_options():
         # Fetch all types, filter by country, return unique types
         items = _fetch_ifrc_appeals_filter_options(appeals_type_ids=None)
         if items is None:
-            return json_server_error("Failed to fetch IFRC appeals")
+            return json_server_error("Failed to fetch appeals from external document API")
         q = country_name.strip()
         exact_pat = safe_ilike_pattern(q, prefix=False, suffix=False)
         contains_pat = safe_ilike_pattern(q)
@@ -3655,7 +3655,7 @@ def list_ifrc_api_filter_options():
         # Fetch by type, return unique countries
         items = _fetch_ifrc_appeals_filter_options(appeals_type_ids=appeals_type_ids)
         if items is None:
-            return json_server_error("Failed to fetch IFRC appeals")
+            return json_server_error("Failed to fetch appeals from external document API")
         seen_codes = set()
         countries_list = []
         for item in items:
@@ -3737,14 +3737,14 @@ def list_ifrc_api_documents():
 
         # Prepare headers for IFRC API request
         headers = {
-            'User-Agent': 'IFRC-Network-Databank/1.0',
+            'User-Agent': 'NGO-Databank/1.0',
             'Accept': 'application/json',
         }
 
         # Use Basic Authentication (configured via environment)
         auth = _get_ifrc_basic_auth()
         if not auth:
-            return json_server_error('IFRC API credentials are not configured. Set IFRC_API_USER and IFRC_API_PASSWORD.')
+            return json_server_error('External document API credentials are not configured. Set IFRC_API_USER and IFRC_API_PASSWORD.')
 
         # Fetch from IFRC API
         try:
@@ -3754,16 +3754,16 @@ def list_ifrc_api_documents():
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 401:
                 logger.error(f"IFRC API authentication failed: {e}", exc_info=True)
-                return json_auth_required('IFRC API authentication failed. Please check credentials.')
+                return json_auth_required('External document API authentication failed. Please check credentials.')
             else:
                 logger.error(f"IFRC API HTTP error: {e}", exc_info=True)
-                return json_error(f'IFRC API error: {e.response.status_code} - {e.response.text[:200]}', e.response.status_code)
+                return json_error(f'External document API error: {e.response.status_code} - {e.response.text[:200]}', e.response.status_code)
         except requests.exceptions.RequestException as e:
             logger.error(f"IFRC API request failed: {e}", exc_info=True)
             return json_server_error(GENERIC_ERROR_MESSAGE)
 
         if not isinstance(data, list):
-            return json_server_error('Invalid response format from IFRC API')
+            return json_server_error('Invalid response format from external document API')
 
         # Process documents
         processed_docs = []
@@ -3911,14 +3911,14 @@ def _download_ifrc_document(url: str):
     """
     import hashlib
 
-    headers = {'User-Agent': 'IFRC-Network-Databank/1.0'}
+    headers = {'User-Agent': 'NGO-Databank/1.0'}
     ok, reason = _validate_ifrc_fetch_url(url)
     if not ok:
         raise ValueError(f"Blocked URL: {reason}")
 
     auth = _get_ifrc_basic_auth()
     if not auth:
-        raise RuntimeError("IFRC API credentials are not configured (IFRC_API_USER/IFRC_API_PASSWORD)")
+        raise RuntimeError("External document API credentials are not configured (IFRC_API_USER/IFRC_API_PASSWORD)")
 
     response = _ifrc_get_with_validated_redirects(
         url,

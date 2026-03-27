@@ -1,6 +1,6 @@
 # NGO Databank Mobile App
 
-Generic Flutter mobile application for NGO databank ecosystems. Can be configured for any organization (currently configured for IFRC Network Databank).
+Generic Flutter mobile application for NGO Databank ecosystems. Point it at your Backoffice URL and organization profile (`assets/config/organization_config.*.json`).
 
 ## Features
 
@@ -90,7 +90,7 @@ Generic Flutter mobile application for NGO databank ecosystems. Can be configure
    ```bash
    flutter run
    ```
-
+   **For staging (your deployed Backoffice URL):**
    **For staging (databank-stage.ifrc.org):**
    ```bash
    flutter run --dart-define=STAGING=true
@@ -164,7 +164,7 @@ See the [Documentation](#documentation) section below for architecture and setup
 
 The app supports two authentication methods:
 
-1. **Email/Password**: Standard login with credentials
+2. **Azure AD B2C**: Single sign-on with your organization’s identity provider (when configured)
 2. **Azure AD B2C**: Single sign-on with IFRC Federation Account (coming soon)
 
 Quick test logins are available for development:
@@ -216,11 +216,11 @@ Cache is automatically refreshed on pull-to-refresh or app resume.
 
 The app supports organization-specific branding and configuration through JSON files. See `assets/config/README.md` for details.
 
-**Default:** Uses generic "NGO Databank" branding  
+**Example:** Use `--dart-define=ORGANIZATION_CONFIG=ifrc` when building a profile named `ifrc` in `assets/config/` (add your own JSON profile for other orgs).
 **IFRC:** Use `--dart-define=ORGANIZATION_CONFIG=ifrc` when building
 
 Example:
-```bash
+# Build with a named organization profile (example: ifrc)
 # Build with IFRC configuration
 flutter build appbundle --release --dart-define=ORGANIZATION_CONFIG=ifrc --dart-define=PRODUCTION=true
 
@@ -233,7 +233,7 @@ flutter build appbundle --release --dart-define=PRODUCTION=true
 ### Environment Configuration
 
 The app supports three environments:
-- **Development** (default): Uses `http://localhost:5000` (backend) and `http://localhost:3000` (frontend)
+- **Staging**: Uses your configured staging Backoffice URL (see `assets/config/`) and optionally `https://website-databank.fly.dev` for the public site when set up that way
 - **Staging**: Uses `https://databank-stage.ifrc.org` (backoffice) and `https://website-databank.fly.dev` (website - same as production)
 - **Production**: Uses `https://backoffice-databank.fly.dev` (backoffice) and `https://website-databank.fly.dev` (website)
 
@@ -244,7 +244,7 @@ To build a production APK that connects to fly.dev:
 ```bash
 flutter build apk --release --dart-define=PRODUCTION=true
 ```
-
+To build a staging APK that connects to your staging Backoffice:
 To build a staging APK that connects to databank-stage.ifrc.org:
 
 ```bash
@@ -294,7 +294,7 @@ After building with `--dart-define=PRODUCTION=true`, the app will:
 - Load website pages from `https://website-databank.fly.dev`
 - Use HTTPS for all network requests
 
-After building with `--dart-define=STAGING=true`, the app will:
+- Connect to your staging Backoffice base URL for API calls
 - Connect to `https://databank-stage.ifrc.org` for API calls (backoffice)
 - Load website pages from `https://website-databank.fly.dev` (production website)
 - Use HTTPS for all network requests
@@ -384,8 +384,7 @@ If you experience authentication issues:
 - **[lib/utils/THEME_GUIDE.md](lib/utils/THEME_GUIDE.md)**: Theming
 
 ## Privacy Policy
-
-The IFRC Network Databank Mobile App collects and processes user data as described in our Privacy Policy.
+The NGO Databank mobile app collects and processes user data as described in your deployment’s Privacy Policy.
 
 **Privacy Policy URL:** https://website-databank.fly.dev/privacy-policy
 
@@ -397,8 +396,9 @@ For detailed information about data collection, usage, and user rights, please v
 
 ## License
 
-**Proprietary - IFRC Network Use Only**
+**Proprietary — see repository LICENSE**
 
+This mobile app component is part of the NGO Databank ecosystem. Licensing and authorized use are defined in [LICENSE](../../LICENSE); do not use or distribute outside the terms that apply to your deployment.
 This mobile app component is part of the IFRC Network Databank ecosystem, which is proprietary software developed by Haytham ALSOUFI as an individual and is licensed for use by the International Federation of Red Cross and Red Crescent Societies (IFRC) Secretariat and its network of National Societies. Use is restricted to the IFRC network only. See [LICENSE](../../LICENSE) for complete license terms.
 
 For licensing inquiries, permissions, or questions about authorized use, please contact:

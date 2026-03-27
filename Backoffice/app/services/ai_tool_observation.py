@@ -319,7 +319,7 @@ def compact_tool_observation_for_llm(
             _platform_note = (
                 f"CRITICAL INSTRUCTION — NO MARKDOWN TABLE: The platform ALREADY renders a "
                 f"complete, sortable, interactive table with ALL {_row_count} rows and all "
-                f"requested columns (IFRC Region from platform data, estimated income group, "
+                f"requested columns (operational region from platform data, estimated income group, "
                 f"population, and proportion when the user asked for them). "
                 f"You MUST NOT output any markdown table — not a full table, not a partial "
                 f"table, not even the first 10 rows. Any markdown table you output will be "

@@ -147,7 +147,7 @@ def log_platform_error():
 
         # Map error codes to event types and severity
         error_mapping = {
-            403: ('platform_403_forbidden', 'medium'),
+            403: ('platform_403_forbidden', 'high'),
             502: ('platform_502_bad_gateway', 'high'),
             503: ('platform_503_service_unavailable', 'high')
         }

@@ -18,13 +18,13 @@ docker-compose up -d
 
 ```bash
 # Check if the container is running
-docker ps | grep ifrc-postgres-test
+docker ps | grep ngo-databank-postgres-test
 
 # Check the logs
 docker-compose logs db-test
 
 # Test the connection (from host machine)
-docker exec -it ifrc-postgres-test psql -U app -d ifrc_databank_test -c "SELECT version();"
+docker exec -it ngo-databank-postgres-test psql -U app -d ngo_databank_test -c "SELECT version();"
 ```
 
 ### 3. Run Migrations on Test Database (Optional)
@@ -34,7 +34,7 @@ The test database will be automatically set up by pytest fixtures using `db.crea
 ```bash
 # Run migrations on test database
 docker-compose run --rm backoffice sh -c "
-  export DATABASE_URL=postgresql+psycopg2://app:app@db-test:5432/ifrc_databank_test
+  export DATABASE_URL=postgresql+psycopg2://app:app@db-test:5432/ngo_databank_test
   export FLASK_CONFIG=testing
   flask db upgrade
 "
@@ -47,14 +47,14 @@ docker-compose run --rm backoffice sh -c "
 docker-compose exec backoffice pytest
 
 # Or run tests from your host machine (make sure TEST_DATABASE_URL points to port 5433)
-export TEST_DATABASE_URL=postgresql+psycopg2://app:app@localhost:5433/ifrc_databank_test
+export TEST_DATABASE_URL=postgresql+psycopg2://app:app@localhost:5433/ngo_databank_test
 pytest
 ```
 
 ## Connection Details
 
-- **Container name**: `ifrc-postgres-test`
-- **Database name**: `ifrc_databank_test` (configurable via `POSTGRES_DB_TEST` env var)
+- **Container name**: `ngo-databank-postgres-test`
+- **Database name**: `ngo_databank_test` (configurable via `POSTGRES_DB_TEST` env var)
 - **Username**: `app` (configurable via `POSTGRES_USER` env var)
 - **Password**: `app` (configurable via `POSTGRES_PASSWORD` env var)
 - **Port (host)**: `5433` (maps to container port `5432`)
@@ -64,12 +64,12 @@ pytest
 
 ### From Inside Docker Containers
 ```
-postgresql+psycopg2://app:app@db-test:5432/ifrc_databank_test
+postgresql+psycopg2://app:app@db-test:5432/ngo_databank_test
 ```
 
 ### From Host Machine
 ```
-postgresql+psycopg2://app:app@localhost:5433/ifrc_databank_test
+postgresql+psycopg2://app:app@localhost:5433/ngo_databank_test
 ```
 
 ## Environment Variables
@@ -79,7 +79,7 @@ You can customize the test database by setting these in your `.env` file or envi
 ```bash
 POSTGRES_USER=app                    # Database user (default: app)
 POSTGRES_PASSWORD=app               # Database password (default: app)
-POSTGRES_DB_TEST=ifrc_databank_test  # Test database name (default: ifrc_databank_test)
+POSTGRES_DB_TEST=ngo_databank_test  # Test database name (default: ngo_databank_test)
 ```
 
 ## Troubleshooting
@@ -90,7 +90,7 @@ If you see errors about the database already existing, you can reset it:
 ```bash
 # Stop and remove the test database container and volume
 docker-compose down db-test
-docker volume rm ifrc-network-databank_pgdata_test
+docker volume rm <compose_project_name>_pgdata_test
 
 # Start fresh
 docker-compose up -d db-test
@@ -118,5 +118,5 @@ To completely remove the test database:
 docker-compose down db-test
 
 # Remove the volume (deletes all test data)
-docker volume rm ifrc-network-databank_pgdata_test
+docker volume rm <compose_project_name>_pgdata_test
 ```

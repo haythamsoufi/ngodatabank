@@ -4,7 +4,7 @@ Use this guide when you need to understand what quantitative data is required fo
 
 ## Overview
 
-Unified planning and reporting adopts a results-based management approach: set objectives and targets during planning, then report against them. It also adopts a Federation-wide approach, representing all international support the IFRC network provides to National Societies, centered on their priorities.
+Unified planning and reporting adopts a results-based management approach: set objectives and targets during planning, then report against them. It also adopts a Federation-wide approach, representing all international support the partner network provides to National Societies, centered on their priorities.
 
 Unified plans are reported on a **bi-yearly basis**:
 
@@ -25,15 +25,15 @@ Both narrative and quantitative data are reported, including a set of **mandator
 Additional indicators are encouraged, especially when:
 
 - there are ongoing emergency operations
-- they are selected jointly by a National Society and IFRC network partners for managerial purposes or donor requirements
+- they are selected jointly by a National Society and federation partners for managerial purposes or donor requirements
 
-These should be drawn from the [IFRC network Indicator Bank](https://indicatorbank.ifrc.org).
+These should be drawn from your deployment’s Indicator Bank (configure the URL for your organization).
 
 ### Why this data matters
 
 - **Evidence-based decision-making** — collected data supports monitoring, prioritization, and resource mobilization at global and country level.
-- **Global and country plans** — mandatory core indicators feed the aggregated IFRC network view in the Global Plan, Annual Report, and country plans.
-- **Constitutional reporting** — mandatory indicators (plus some additional ones) serve as the basis for the FDRS annual data collection used by the IFRC Governing Board, General Assembly, the databank website, and the *Everyone Counts* report.
+- **Global and country plans** — mandatory core indicators feed the aggregated network-wide view in the Global Plan, Annual Report, and country plans.
+- **Constitutional reporting** — mandatory indicators (plus some additional ones) serve as the basis for the FDRS annual data collection used by your organization’s governing bodies, General Assembly, the databank website, and the *Everyone Counts* report.
 
 ## Planning versus reporting — key datasets
 
@@ -43,7 +43,7 @@ These should be drawn from the [IFRC network Indicator Bank](https://indicatorba
 | Key targets of people to be reached by Strategic Priority | Full set of core impact and reach indicators by Strategic Priority and Enabling Function |
 | | Additional indicators (user-selected from the Indicator Bank) |
 | | Emergency Appeals indicators |
-| Funding requirements (host NS), with segregated view of support sought from participating NSs and IFRC | Total income and expenditure (host NS), with segregated view of participating NSs and IFRC income and expenditure linked to the country action |
+| Funding requirements (host NS), with segregated view of support sought from participating NSs and the central secretariat | Total income and expenditure (host NS), with segregated view of participating NSs and central-secretariat income and expenditure linked to the country action |
 | Planned bilateral support | Received bilateral support |
 
 ## Key definitions
@@ -64,12 +64,12 @@ These four indicators appear in both the planning and reporting forms.
 | Term | Definition |
 |---|---|
 | **Funding requirements** | The total financial resources needed to implement operations, programmes, or appeals — including humanitarian assistance, operational expenses, logistics, and personnel. Requirements should be annualized, including for emergency appeals. They should include expected opening balance, secured funding, and expected funding for each year, reflecting a realistic level of ambition. |
-| **HNS other funding sources** | The host National Society's funding requirements requested from sources outside the IFRC network. Collecting this gives a complete picture of funding requirements in a country. |
-| **Bilateral support** | Direct cooperation between two National Societies, where one provides assistance (financial, technical, or operational) to another without going through the IFRC. |
+| **HNS other funding sources** | The host National Society's funding requirements requested from sources outside the federation network. Collecting this gives a complete picture of funding requirements in a country. |
+| **Bilateral support** | Direct cooperation between two National Societies, where one provides assistance (financial, technical, or operational) to another without going through the central secretariat. |
 
 ### Key sources of data
 
-While data is discussed and provided at country level through the unified planning and reporting process (keeping the National Society at the centre), financial data from participating National Societies and IFRC require additional levels of validation and extraction. This ensures that externally communicated ambitions and reporting are validated by headquarters of all partners to the National Society.
+While data is discussed and provided at country level through the unified planning and reporting process (keeping the National Society at the centre), financial data from participating National Societies and the central secretariat require additional levels of validation and extraction. This ensures that externally communicated ambitions and reporting are validated by headquarters of all partners to the National Society.
 
 ---
 
@@ -92,12 +92,12 @@ See [key definitions](#key-national-society-figures) above for what each term me
 
 ### People to be reached
 
-This section summarizes the people to be reached by the host National Society, including support from IFRC network partners. It contains two matrices:
+This section summarizes the people to be reached by the host National Society, including support from federation partners. It contains two matrices:
 
 - **Longer term programmes** — enter the number of people to be reached under each Strategic Priority.
-- **Emergency Appeals** — enter the number of people to be reached for emergency operations for which an IFRC Emergency Appeal will continue into the planning year. Only estimate the portion falling within the planning year (for example, if an appeal runs July 2025 – June 2026, only estimate January – June 2026).
+- **Emergency Appeals** — enter the number of people to be reached for emergency operations for which a federation-level emergency appeal will continue into the planning year. Only estimate the portion falling within the planning year (for example, if an appeal runs July 2025 – June 2026, only estimate January – June 2026).
 
-> Only include IFRC Emergency Appeals — do not include DREFs, EAPs, or projects.
+> Only include federation-level emergency appeals of this type — do not include DREFs, EAPs, or projects.
 
 ### Planned bilateral support
 
@@ -111,7 +111,7 @@ This section is broken into **three sub-sections** — one for the current assig
 
 Each sub-section contains two matrices:
 
-- **HNS and IFRC Secretariat** — enter the funding requirements from the host National Society and IFRC.
+- **HNS and central secretariat** — enter the funding requirements from the host National Society and the central secretariat.
 - **Participating National Societies (PNSs)** — enter the funding requirements from each PNS listed in the Planned Bilateral Support section.
 
 Values are in CHF. See [key definitions](#high-level-financial-indicators) above for what funding requirements entail.
@@ -150,14 +150,14 @@ This section contains the mandatory core indicators organized by Strategic Prior
 | **SP 5 — Values, power and inclusion** | Educational programmes; access to education; protection, gender and inclusion; community engagement and accountability; information feedback |
 | **EF 1 — Strategic and operational coordination** | Government-led coordination platforms; interagency/international coordination platforms |
 | **EF 2 — National Society development** | Auxiliary role strategy; NS development plan; youth engagement strategies; volunteer health and accident coverage |
-| **EF 3 — Humanitarian diplomacy** | Participation in IFRC-led campaigns; domestic advocacy strategy |
+| **EF 3 — Humanitarian diplomacy** | Participation in federation-led campaigns; domestic advocacy strategy |
 | **EF 4 — Accountability and agility** | PSEA policy; PSEA action plan; integrity and reputational risk; digital transformation; data management system |
 
 For each indicator:
 
 - First clarify whether the indicator is **applicable** or **not applicable** to your National Society.
 - If applicable but data is not available, select **"Applicable — data not available"**.
-- Indicators in statement format (e.g. "National Society participates in IFRC-led campaigns") do not require sex/age breakdown — selecting "Applicable" is sufficient.
+- Indicators in statement format (e.g. "National Society participates in federation-led campaigns") do not require sex/age breakdown — selecting "Applicable" is sufficient.
 
 #### Other Indicators
 
@@ -170,7 +170,7 @@ This page shows **active Emergency Appeals** pulled from the GO platform. For ea
 - Select the Strategic Priority first, then choose indicators from the dropdown.
 - You can add multiple indicators per appeal.
 
-> Only IFRC Emergency Appeals appear here — DREFs, EAPs, and projects are not included.
+> Only federation-level emergency appeals of this type appear here — DREFs, EAPs, and projects are not included.
 
 ### Page 3 — Funding
 
@@ -178,11 +178,11 @@ This page contains three items:
 
 | Field | Description |
 |---|---|
-| **NS Total Funding (CHF)** | A matrix to enter the host National Society's total funding (income + opening balance) for the reporting year, broken down by source. HNS reports all non-IFRC-network sources (government, ICRC, UN, and others). |
+| **NS Total Funding (CHF)** | A matrix to enter the host National Society's total funding (income + opening balance) for the reporting year, broken down by source. HNS reports all sources outside the federation network (government, ICRC, UN, and others). |
 | **NS Total Expenditure (CHF)** | The host National Society's total expenditure for the reporting year. |
 | **Optional breakdown by SP/EF (CHF)** | An optional matrix to break down funding by Strategic Priority and Enabling Function. |
 
-> **PNS funding data** is collected separately through PNS headquarters. **IFRC Secretariat** funding and expenditure are reported through formal IFRC financial systems (ERP).
+> **PNS funding data** is collected separately through PNS headquarters. **Central secretariat** funding and expenditure are reported through your organization’s formal financial systems (e.g. ERP).
 
 ### Page 4 — Bilateral Support
 
@@ -204,8 +204,7 @@ A free-text field to add any comments or additional information about the data y
 
 For questions about this process or this guidance:
 
-- **Rania Alerksoussi** — rania.alerksoussi@ifrc.org
-- **Haytham Alsoufi** — haytham.alsoufi@ifrc.org
+- Use your organization’s published support contacts for questions about this guidance.
 
 ## Related
 

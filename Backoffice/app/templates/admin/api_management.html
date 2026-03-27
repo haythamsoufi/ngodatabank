@@ -774,13 +774,21 @@ try {
 
         // Load API key from local storage (client-side only)
         const apiKeyInput = document.getElementById('apiKeyInput');
-        const API_KEY_STORAGE = 'ifrc_api_management_api_key';
+        const API_KEY_STORAGE = 'ngo_databank_api_management_api_key';
+        const LEGACY_API_KEY_STORAGE = 'ifrc_api_management_api_key';
         if (apiKeyInput) {
             try {
-                apiKeyInput.value = localStorage.getItem(API_KEY_STORAGE) || '';
+                let stored = localStorage.getItem(API_KEY_STORAGE);
+                if (!stored) {
+                    stored = localStorage.getItem(LEGACY_API_KEY_STORAGE) || '';
+                    if (stored) localStorage.setItem(API_KEY_STORAGE, stored);
+                }
+                apiKeyInput.value = stored || '';
             } catch (e) {}
             apiKeyInput.addEventListener('input', function() {
-                try { localStorage.setItem(API_KEY_STORAGE, this.value || ''); } catch (e) {}
+                try {
+                    localStorage.setItem(API_KEY_STORAGE, this.value || '');
+                } catch (e) {}
                 updateGeneratedUrl();
                 updateEndpointLinks();
             });

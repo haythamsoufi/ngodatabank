@@ -1,6 +1,6 @@
 # File: Backoffice/app/services/governance_metrics_service.py
 """
-Governance metrics for the Admin Governance dashboard (IFRC humanitarian context).
+Governance metrics for the Admin Governance dashboard (federation / NS–secretariat style deployments).
 
 Aggregates: focal point / data owner coverage, access control (RBAC),
 reporting timeliness and quality, FDRS document compliance, metadata (Indicator Bank /

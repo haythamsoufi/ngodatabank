@@ -20,7 +20,7 @@ on:
           - http://localhost:5000
           - http://10.0.2.2:5000
           - https://backoffice-databank.fly.dev
-          - https://databank-stage.ifrc.org
+          - https://your-backoffice.example.org
         default: 'https://backoffice-databank.fly.dev'
       frontend_url:
         description: 'Frontend/Website URL'
@@ -98,7 +98,7 @@ jobs:
             sed -i 's/android:label="[^"]*"/android:label="IFRC Data (CI)"/g' android/app/src/main/AndroidManifest.xml || true
             # If android:label doesn't exist, we'll add it to the application tag
             if ! grep -q 'android:label' android/app/src/main/AndroidManifest.xml; then
-              sed -i 's/<application\([^>]*\)>/<application android:label="IFRC Data (CI)"\1>/g' android/app/src/main/AndroidManifest.xml
+              sed -i 's/<application\([^>]*\)>/<application android:label="NGO Databank (CI)"\1>/g' android/app/src/main/AndroidManifest.xml
             fi
           fi
 

@@ -56,7 +56,7 @@ https://website-databank.fly.dev/
 ### Monorepo structure
 
 ```text
-IFRC Network Databank/
+NGO Databank/
 ├─ Backoffice/
 │  ├─ docs/                 # Documentation (API, features, setup, migration, translation, indicators)
 │  ├─ config/               # Configuration files and setup scripts
@@ -284,7 +284,7 @@ The fastest way to get started is using Docker Compose:
 ```bash
 # 1. Clone the repository
 git clone <repository-url>
-cd "IFRC Network Databank"
+cd "NGO Databank"
 
 # 2. Start all services with automatic database initialization
 docker-compose up -d
@@ -464,7 +464,7 @@ The easiest way to get started is using Docker Compose, which sets up the comple
 
 ```bash
 # Clone and navigate to the project
-cd "IFRC Network Databank"
+cd "NGO Databank"
 
 # Start all services (database, migrations, backoffice, translation service)
 docker-compose up -d
@@ -481,15 +481,17 @@ docker-compose build --no-cache backoffice
 
 ### What Docker Compose Sets Up
 
+Default Postgres database and container names are generic (`ngo_databank`, `ngo-databank-postgres`). Override `POSTGRES_DB` in compose or your `.env` if you must keep a legacy database name (e.g. after an existing volume migration).
+
 The `docker-compose.yml` includes:
 
-1. **PostgreSQL Database** (`ifrc-postgres`)
+1. **PostgreSQL Database** (`ngo-databank-postgres`)
    - Port: 5432
-   - Database: `ifrc_databank`
+   - Database: `ngo_databank` (override with `POSTGRES_DB`)
    - User: `app` / Password: `app`
    - Persistent data storage
 
-2. **Database Initialization** (`ifrc-db-init`)
+2. **Database Initialization** (`ngo-databank-db-init`)
    - Runs `flask db upgrade` to create all tables
    - Runs once and exits
    - Ensures database is ready before backoffice starts
@@ -534,7 +536,7 @@ Create a `.env` file in the Backoffice directory to customize:
 # Database
 POSTGRES_USER=app
 POSTGRES_PASSWORD=app
-POSTGRES_DB=ifrc_databank
+POSTGRES_DB=ngo_databank
 
 # Flask
 FLASK_CONFIG=production
@@ -573,7 +575,7 @@ docker-compose exec backoffice flask db upgrade
 docker-compose exec backoffice flask db current
 
 # Access database directly
-docker-compose exec db psql -U app -d ifrc_databank
+docker-compose exec db psql -U app -d ngo_databank
 ```
 
 ## API overview

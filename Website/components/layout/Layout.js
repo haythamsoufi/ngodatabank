@@ -38,6 +38,9 @@ export default function Layout({ children }) {
         return {};
       })();
 
+  const i18nSiteTitle = initialTranslations?.navigation?.siteTitle || 'NGO Databank';
+  const defaultSiteTitle = getPublicOrganizationName(i18nSiteTitle);
+
   // Ensure consistent JSON stringification with proper escaping
   const i18nJson = (() => {
     try {
@@ -56,12 +59,13 @@ export default function Layout({ children }) {
       if (typeof window !== 'undefined') {
         // Check for window.isMobileApp flag set by Flutter app
         const isMobile = window.isMobileApp === true ||
+                        window.NGODatabankMobileApp === true ||
                         window.IFRCMobileApp === true ||
                         document.documentElement.getAttribute('data-mobile-app') === 'true' ||
-                        // Also check for the X-Mobile-App header via request headers (if available)
                         (typeof navigator !== 'undefined' &&
                          navigator.userAgent &&
-                         navigator.userAgent.includes('IFRC-Databank-Flutter'));
+                         (navigator.userAgent.includes('NGO-Databank-Flutter') ||
+                          navigator.userAgent.includes('IFRC-Databank-Flutter')));
 
         setIsMobileApp(isMobile);
 

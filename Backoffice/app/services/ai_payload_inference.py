@@ -356,7 +356,7 @@ def _build_country_table(d: dict, query: str = "") -> Optional[Dict[str, Any]]:
 
     columns: List[Dict[str, Any]] = [
         {"key": "country_name", "label": "Country", "sortable": True, "type": "text"},
-        {"key": "region", "label": "IFRC Region", "sortable": True, "type": "text"},
+        {"key": "region", "label": "Operational region", "sortable": True, "type": "text"},
         {"key": "value", "label": metric or "Value", "sortable": True, "type": "number"},
     ]
     if has_period:

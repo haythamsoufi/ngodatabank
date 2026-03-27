@@ -66,7 +66,7 @@
   {% from "macros/modal_shell.html" import modal_shell %}
   {% call modal_shell('fdrs-sync-modal', _('FDRS Data Sync Settings'), max_width='max-w-md', close_id='fdrs-sync-modal-close') %}
       <div class="space-y-4">
-        <p class="text-sm text-gray-600">{{ _('Sync FDRS data from data-api.ifrc.org into form data for this template.') }}</p>
+        <p class="text-sm text-gray-600">{{ _('Sync FDRS data from your configured FDRS / data API endpoint into form data for this template.') }}</p>
         <div>
           <label for="fdrs-sync-years" class="block text-sm font-medium text-gray-700 mb-1">{{ _('Years (comma-separated)') }}</label>
           <input type="text"

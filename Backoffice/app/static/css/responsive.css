@@ -503,12 +503,19 @@
         max-width: calc(100vw - 4rem);
         overflow-wrap: anywhere;
     }
+    /* Icon-only system manager badge stays visible; reserve space beside wrapped title */
+    .nav-system-manager .nav-brand-title {
+        max-width: calc(100vw - 6.5rem);
+    }
 }
 
 @media (max-width: 360px) {
     .nav-brand-title {
         font-size: 1rem;
         max-width: calc(100vw - 3rem);
+    }
+    .nav-system-manager .nav-brand-title {
+        max-width: calc(100vw - 5.5rem);
     }
 }
 

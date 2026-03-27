@@ -1533,7 +1533,7 @@ class AIToolsRegistry:
                 "type": "function",
                 "function": {
                     "name": "get_indicator_values_for_all_countries",
-                    "description": "Get indicator values from the databank (Indicator Bank / FDRS) for ALL countries in one call. PRIMARY source for volunteers, staff, branches, local units: call this FIRST for those metrics. Use for list/table across countries. When the user asks for countries above a threshold (e.g. 'more than 10000 volunteers'), pass min_value so the tool returns only those countries — then display every row. After this, use get_upr_kpi_values_for_all_countries only to fill gaps (countries with no FDRS value) unless the user explicitly asked for 'from UPR' or 'from documents'. Do NOT use if the user asked for 'documents only' or 'from reports only'. Each row includes a 'region' field (IFRC Region: Asia Pacific, MENA, Europe & CA, Africa, Americas). When the user asks for 'continent', that means IFRC Region — use this field only; do not add a separate continent column or use geographic continents from model knowledge.",
+                    "description": "Get indicator values from the databank (Indicator Bank / FDRS) for ALL countries in one call. PRIMARY source for volunteers, staff, branches, local units: call this FIRST for those metrics. Use for list/table across countries. When the user asks for countries above a threshold (e.g. 'more than 10000 volunteers'), pass min_value so the tool returns only those countries — then display every row. After this, use get_upr_kpi_values_for_all_countries only to fill gaps (countries with no FDRS value) unless the user explicitly asked for 'from UPR' or 'from documents'. Do NOT use if the user asked for 'documents only' or 'from reports only'. Each row includes a 'region' field (operational region: Asia Pacific, MENA, Europe & CA, Africa, Americas). When the user asks for 'continent', that means operational region — use this field only; do not add a separate continent column or use geographic continents from model knowledge.",
                     "parameters": {
                         "type": "object",
                         "properties": {
@@ -1686,7 +1686,7 @@ class AIToolsRegistry:
                             },
                             "guideline_query": {
                                 "type": "string",
-                                "description": "Query to find relevant guidelines (e.g., 'WHO volunteer standards', 'IFRC blood donation requirements')"
+                                "description": "Query to find relevant guidelines (e.g., 'WHO volunteer standards', 'blood donation safety requirements')"
                             },
                             "period": {
                                 "type": "string",

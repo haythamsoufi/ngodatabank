@@ -1,31 +1,33 @@
-# Contributor Covenant Code of Conduct
+# Code of conduct
 
-## Our pledge
+We want collaboration on NGO Databank to be **dependable and humane**: useful for people working in **humanitarian data and reporting**, and respectful for contributors from many countries, languages, and backgrounds.
 
-We pledge to make participation in our community a harassment-free experience for everyone, regardless of age, body size, visible or invisible disability, ethnicity, sex characteristics, gender identity and expression, level of experience, education, socio-economic status, nationality, personal appearance, race, caste, color, religion, or sexual identity and orientation.
+This is not a legal document. It is a shared baseline so issues get resolved early and work stays focused on the mission.
 
-## Our standards
+## What we expect
 
-Examples of behavior that contributes to a positive environment include:
+- **Assume good intent, verify impact.** Ask questions when behaviour or wording is unclear. Prefer curiosity over accusation in public threads.
+- **Respect language and context.** The product is multilingual; review comments and UI copy should avoid demeaning stereotypes, mock accents, or “jokes” at the expense of any group or nationality.
+- **Be careful with sensitive data topics.** The codebase and issues sometimes discuss indicators, demographics, or country-level data. Do not use **real individuals’** stories as hypotheticals; do not share **non-public** programme or personal data in issues, PRs, or chat. Stick to anonymised examples.
+- **Give and take feedback on the work.** Critique code, docs, and product behaviour—not people. Accept revisions as normal; offer concrete suggestions when you disagree.
+- **No harassment or exclusion.** Unwelcome sexual attention, slurs, threats, stalking, or sustained bad-faith argument are not acceptable here or in related community spaces.
 
-- Demonstrating empathy and kindness toward other people
-- Being respectful of differing opinions, viewpoints, and experiences
-- Giving and gracefully accepting constructive feedback
-- Accepting responsibility and apologizing to those affected by our mistakes, and learning from the experience
-- Focusing on what is best not just for us as individuals, but for the overall community
+## What we do not want
 
-Examples of unacceptable behavior include:
+- Personal attacks, pile-ons, or coordinated harassment
+- Publishing private information (contact details, tokens, internal URLs with credentials) without permission
+- Disruptive spam, astroturfing, or repeated off-topic derailment of technical threads
 
-- The use of sexualized language or imagery, and sexual attention or advances of any kind
-- Trolling, insulting or derogatory comments, and personal or political attacks
-- Public or private harassment
-- Publishing others’ private information without explicit permission
-- Other conduct which could reasonably be considered inappropriate in a professional setting
+## Reporting and enforcement
 
-## Enforcement
+If you see a violation or feel unsafe, contact the maintainers at **haythamsoufi@outlook.com**. You may also use GitHub’s reporting tools where appropriate.
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the maintainers at **haythamsoufi@outlook.com**. All complaints will be reviewed and investigated promptly and fairly.
+Maintainers may remove content, lock threads, or block accounts for repeated or serious breaches. We will aim to respond in a **timely and fair** way; outcomes depend on severity and context.
+
+## Scope
+
+This applies to GitHub (issues, PRs, discussions), and to other spaces the maintainers designate as project community venues.
 
 ## Attribution
 
-This Code of Conduct is adapted from the [Contributor Covenant](https://www.contributor-covenant.org), version 2.1, available at [https://www.contributor-covenant.org/version/2/1/code_of_conduct.html](https://www.contributor-covenant.org/version/2/1/code_of_conduct.html).
+Inspired by community codes of conduct used in open source, including ideas aligned with the [Contributor Covenant](https://www.contributor-covenant.org/) (version 2.1). This text is customised for NGO Databank’s humanitarian and multilingual context.

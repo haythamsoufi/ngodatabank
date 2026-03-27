@@ -2034,7 +2034,7 @@ def get_indicator_values_for_all_countries(
             "count": len(rows_out),
             "alternative_indicators": alternatives,
             "resolved_indicator": resolved_indicator,
-            "note_ifrc_region": "Use each row's 'region' for the IFRC Region column (platform data). When the user asks for continent, that means IFRC Region — use this field; do not add a separate continent column or use model knowledge. Allowed values: Asia Pacific, MENA, Europe & CA, Africa, Americas.",
+            "note_platform_region": "Use each row's 'region' for the Operational region column (platform data). When the user asks for continent, that means operational region — use this field; do not add a separate continent column or use model knowledge. Allowed values: Asia Pacific, MENA, Europe & CA, Africa, Americas.",
         }
     except Exception as e:
         logger.error("get_indicator_values_for_all_countries error: %s", e, exc_info=True)

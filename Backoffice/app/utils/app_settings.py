@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Sequence
 
 try:
-    from flask import current_app
+    from flask import current_app, has_app_context
     from app.models import SystemSettings
     from app.extensions import db
 except Exception as e:  # pragma: no cover - allows usage outside app context
@@ -13,6 +13,9 @@ except Exception as e:  # pragma: no cover - allows usage outside app context
     current_app = None  # type: ignore
     SystemSettings = None  # type: ignore
     db = None  # type: ignore
+
+    def has_app_context():  # type: ignore
+        return False
 
 
 logger = logging.getLogger(__name__)
@@ -38,40 +41,49 @@ def _get_settings_path() -> str:
     return os.path.join(config_dir, "app_settings.json")
 
 
+def _read_settings_json_file() -> Dict:
+    """Load settings from legacy JSON file (no DB / no app context)."""
+    settings_path = _get_settings_path()
+    try:
+        if not os.path.exists(settings_path):
+            return {}
+        with open(settings_path, "r", encoding="utf-8") as f:
+            return json.load(f) or {}
+    except Exception as e:
+        logger.debug("JSON settings read failed: %s", e)
+        return {}
+
+
+def _write_settings_json_file(settings: Dict) -> bool:
+    """Persist settings to legacy JSON file (no DB / no app context)."""
+    settings_path = _get_settings_path()
+    try:
+        with open(settings_path, "w", encoding="utf-8") as f:
+            json.dump(settings, f, ensure_ascii=False, indent=2)
+        return True
+    except Exception as e:
+        logger.debug("JSON settings write failed: %s", e)
+        return False
+
+
 def read_settings() -> Dict:
     """Read settings from database. Returns empty dict if no settings exist.
 
     This function now reads from the database instead of JSON file.
-    For backward compatibility during migration, it falls back to JSON file if DB is not available.
+    For backward compatibility during migration, it falls back to JSON file if DB is not available
+    or if there is no Flask application context (e.g. CLI, imports, background threads).
     """
     if SystemSettings is None or db is None:
-        # Fallback to JSON file if DB models not available (e.g., during migration)
-        settings_path = _get_settings_path()
-        try:
-            if not os.path.exists(settings_path):
-                return {}
-            with open(settings_path, "r", encoding="utf-8") as f:
-                return json.load(f) or {}
-        except Exception as e:
-            logger.debug("JSON settings fallback read failed (no DB): %s", e)
-            return {}
+        return _read_settings_json_file()
+
+    if not has_app_context():
+        return _read_settings_json_file()
 
     try:
-        # Read from database
-        all_settings = SystemSettings.get_all_as_dict()
-        return all_settings
+        return SystemSettings.get_all_as_dict()
     except Exception as e:
         logger.debug("DB settings read failed, trying JSON fallback: %s", e)
-        # If DB read fails, try JSON fallback for migration period
-        settings_path = _get_settings_path()
-        try:
-            if not os.path.exists(settings_path):
-                return {}
-            with open(settings_path, "r", encoding="utf-8") as f:
-                return json.load(f) or {}
-        except Exception as e2:
-            logger.debug("JSON settings fallback read failed: %s", e2)
-            return {}
+        return _read_settings_json_file()
 
 
 def write_settings(settings: Dict, user_id: Optional[int] = None) -> bool:
@@ -81,15 +93,10 @@ def write_settings(settings: Dict, user_id: Optional[int] = None) -> bool:
     Each key-value pair in the settings dict is stored as a separate row.
     """
     if SystemSettings is None or db is None:
-        # Fallback to JSON file if DB models not available
-        settings_path = _get_settings_path()
-        try:
-            with open(settings_path, "w", encoding="utf-8") as f:
-                json.dump(settings, f, ensure_ascii=False, indent=2)
-            return True
-        except Exception as e:
-            logger.debug("JSON settings write failed: %s", e)
-            return False
+        return _write_settings_json_file(settings)
+
+    if not has_app_context():
+        return _write_settings_json_file(settings)
 
     try:
         # Write each setting to database as a separate row

@@ -47,8 +47,8 @@ chmod +x azure-deploy.sh
 Follow `Backoffice/azure/DEPLOYMENT_GUIDE.md`
 
 After completion, note down:
-- ✅ Resource Group name (e.g., `rg-ifrc-databank-prod`)
-- ✅ Web App name (e.g., `ifrc-databank-prod-abc123`)
+- ✅ Resource Group name (e.g., `rg-ngo-databank-prod`)
+- ✅ Web App name (e.g., `ngo-databank-prod-abc123`)
 
 ---
 
@@ -58,8 +58,8 @@ Get your Web App's deployment credentials:
 
 ```powershell
 # Set your actual values
-$RESOURCE_GROUP = "rg-ifrc-databank-prod"
-$WEBAPP_NAME = "ifrc-databank-prod-abc123"
+$RESOURCE_GROUP = "rg-ngo-databank-prod"
+$WEBAPP_NAME = "ngo-databank-prod-abc123"
 
 # Download publish profile
 az webapp deployment list-publishing-profiles `
@@ -113,7 +113,7 @@ env:
 Change to:
 ```yaml
 env:
-  AZURE_WEBAPP_NAME: ifrc-databank-prod-abc123  # Your actual Web App name
+  AZURE_WEBAPP_NAME: ngo-databank-prod-abc123  # Your actual Web App name
   PYTHON_VERSION: '3.11'
   NODE_VERSION: '18'
 ```

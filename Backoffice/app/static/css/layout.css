@@ -444,17 +444,30 @@ html, body {
     backdrop-filter: blur(4px);
     font-weight: 500;
     letter-spacing: 0.01em;
+    flex-shrink: 0;
+}
+
+/* Let org title use remaining width after icon-only badge (label hidden below 1280px in layout.html) */
+.nav-system-manager .nav-brand-cluster {
+    min-width: 0;
+}
+
+.nav-system-manager .nav-brand-cluster .nav-brand-title {
+    min-width: 0;
+}
+
+/* Tighter icon-only badge padding when “System Manager” label is hidden */
+@media (max-width: 1279px) {
+    .nav-system-manager .system-manager-badge {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        padding-top: 0.25rem;
+        padding-bottom: 0.25rem;
+    }
 }
 
 @keyframes pulse-glow {
     /* Removed animation for minimal design */
-}
-
-/* Hide system manager badge on small screens (phones) */
-@media (max-width: 640px) {
-    .system-manager-badge {
-        display: none !important;
-    }
 }
 
 /* System Manager top-nav buttons - minimal modern style */

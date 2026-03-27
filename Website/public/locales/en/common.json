@@ -33,7 +33,7 @@
     "hero": {
       "title": "The NGO Databank",
       "subtitle": "Access to data, visualizations, and insights",
-      "description": "Explore comprehensive humanitarian data, indicators, and publications from the International Federation of Red Cross and Red Crescent Societies.",
+      "description": "Explore comprehensive humanitarian data, indicators, and publications from the NGO Databank ecosystem.",
       "exploreButton": "Explore Data",
       "learnMoreButton": "Learn More"
     },
@@ -629,7 +629,7 @@
       "humanitarianIndicators": "What are the key humanitarian indicators?"
     },
     "aiResponses": {
-      "afghanRedCrescent": "Over the past years, the Afghan Red Crescent Society (ARCS) has relied heavily on its volunteer network to respond to natural disasters, health crises, and conflict-related emergencies across Afghanistan. In 2013, ARCS reported having around 23,440 active volunteers (<a href=\"https://arcs.af/sites/default/files/2021-05/English%20Booklet%20size%209%20x%2014%20cm.pdf\" target=\"_blank\" class=\"text-ngodb-red hover:text-ngodb-red-dark underline\">source</a>), contributing to activities in nearly all provinces. A longitudinal review of ARCS's volunteer engagement efforts, supported by the Swedish Red Cross and ICRC, is detailed in a case study (<a href=\"https://ifrc.org/sites/default/files/2024-10/Longitudunal%20Review%20Case%20study_Afghan%20Red%20Crescent.pdf\" target=\"_blank\" class=\"text-ngodb-red hover:text-ngodb-red-dark underline\">source</a>). Volunteers played crucial roles in major emergencies such as the 2015 avalanches, the 2022 Paktika earthquake, and the 2023 Herat earthquakes. According to the IFRC's <a href=\"/resources\" class=\"text-ngodb-red hover:text-ngodb-red-dark underline inline-flex items-center\"><svg class=\"w-4 h-4 mr-1\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path strokeLinecap=\"round\" strokeLinejoin=\"round\" strokeWidth={2} d=\"M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1\" /></svg>Everyone Counts Report 2022</a>, ARCS reported 393,077 volunteers contributing over 2.1 million hours of service, including 257,437 hours in health-related activities, with 56,456 people trained and 31,600 receiving first aid. These figures highlight the scale and impact of volunteerism in ARCS operations, though other sources suggest fluctuations in volunteer numbers over time.",
+      "afghanRedCrescent": "Over the past years, the Afghan Red Crescent Society (ARCS) has relied heavily on its volunteer network to respond to natural disasters, health crises, and conflict-related emergencies across Afghanistan. In 2013, ARCS reported having around 23,440 active volunteers (<a href=\"https://arcs.af/sites/default/files/2021-05/English%20Booklet%20size%209%20x%2014%20cm.pdf\" target=\"_blank\" class=\"text-ngodb-red hover:text-ngodb-red-dark underline\">source</a>), contributing to activities in nearly all provinces. A longitudinal review of ARCS's volunteer engagement efforts, supported by the Swedish Red Cross and ICRC, is detailed in a case study (<a href=\"https://ifrc.org/sites/default/files/2024-10/Longitudunal%20Review%20Case%20study_Afghan%20Red%20Crescent.pdf\" target=\"_blank\" class=\"text-ngodb-red hover:text-ngodb-red-dark underline\">source</a>). Volunteers played crucial roles in major emergencies such as the 2015 avalanches, the 2022 Paktika earthquake, and the 2023 Herat earthquakes. According to the NGO Databank's <a href=\"/resources\" class=\"text-ngodb-red hover:text-ngodb-red-dark underline inline-flex items-center\"><svg class=\"w-4 h-4 mr-1\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path strokeLinecap=\"round\" strokeLinejoin=\"round\" strokeWidth={2} d=\"M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1\" /></svg>Everyone Counts Report 2022</a>, ARCS reported 393,077 volunteers contributing over 2.1 million hours of service, including 257,437 hours in health-related activities, with 56,456 people trained and 31,600 receiving first aid. These figures highlight the scale and impact of volunteerism in ARCS operations, though other sources suggest fluctuations in volunteer numbers over time.",
       "disasterResponse": "Humanitarian networks respond to hundreds of disasters and emergencies annually, providing critical assistance worldwide. In 2023, large-scale disaster response reached many millions of people affected by climate-related disasters, conflicts, and health emergencies. Key response areas include emergency shelter, food security, water and sanitation, health services, and psychosocial support. Response is often coordinated through emergency funds and appeals, ensuring rapid assistance to affected communities.",
       "humanitarianIndicators": "The databank tracks several key humanitarian indicators including volunteers, staff, local units, blood donors, first aid recipients, people reached, income, and expenditure. These indicators provide comprehensive insights into the network's capacity, reach, and impact across different regions and contexts. The data helps measure progress towards humanitarian goals and informs strategic decision-making for future operations.",
       "regionalComparison": "Regional comparison of volunteer numbers shows varying levels of engagement across different parts of the world. Africa and Asia typically have the highest volunteer numbers, reflecting the extensive community-based programs in these regions. Europe and the Americas show strong volunteer engagement in specific areas like disaster response and health services. The Middle East demonstrates growing volunteer participation, particularly in emergency response and community health initiatives."
@@ -1125,7 +1125,7 @@
     },
     "hero": {
       "title": "Disaggregation Analysis",
-      "description": "Comprehensive analysis of disaggregated data across all IFRC indicators including volunteers, staff, governing board members, and people reached, with special focus on gender representation in leadership and volunteering"
+      "description": "Comprehensive analysis of disaggregated data across all platform indicators including volunteers, staff, governing board members, and people reached, with special focus on gender representation in leadership and volunteering"
     },
     "stats": {
       "avgDisaggregation": "Avg Disaggregation",
@@ -1248,7 +1248,7 @@
       "staffTitle": "Women in Staff - Trends Over Time",
       "staffChartTitle": "Percentage of Women in Staff Positions Over Time",
       "volunteers": "Women in Volunteers - Trends Over Time",
-      "volunteersTitle": "Women in Volunteers - Trends Over Time",
+      "volunteersTitle": "Percentage of Women in Volunteering Over Time",
       "volunteeringChartTitle": "Percentage of Women in Volunteering Over Time",
       "leadershipOverTime": "Women in Leadership Over Time",
       "volunteeringOverTime": "Women in Volunteering Over Time",
@@ -1258,16 +1258,13 @@
       "noVolunteeringTrend": "No volunteering trend data available",
       "noTrendData": "No trend data available",
       "noComparisonData": "No comparison data available",
-      "volunteersTitle": "Percentage of Women in Volunteering Over Time",
       "comparison": "Women's Participation Comparison - All Categories",
       "comparisonTitle": "Governing Board vs Staff vs Volunteers",
       "comparisonDescription": "Women's Participation Across All Categories",
       "latestPeriodSummary": "Latest Period Summary",
       "noGoverningBoardData": "No governing board trend data available",
       "noStaffData": "No staff trend data available",
-      "noVolunteersData": "No volunteering trend data available",
-      "noComparisonData": "No comparison data available",
-      "noTrendData": "No trend data available"
+      "noVolunteersData": "No volunteering trend data available"
     },
     "loading": {
       "message": "Loading disaggregated data..."

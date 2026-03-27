@@ -43,7 +43,7 @@ depends_on:
 ```yaml
 environment:
   - FLASK_CONFIG=production
-  - DATABASE_URL=postgresql://app:app@db:5432/ifrc
+  - DATABASE_URL=postgresql://app:app@db:5432/ngo_databank
   - LIBRETRANSLATE_URL=http://libretranslate:5000
 ```
 

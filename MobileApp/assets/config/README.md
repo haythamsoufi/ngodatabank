@@ -14,7 +14,7 @@ organization_config.{organization}.json
 ```
 
 For example:
-- `organization_config.ifrc.json` - IFRC-specific configuration
+- `organization_config.ifrc.json` - example organization profile (sample; replace with your org’s file)
 - `organization_config.oxfam.json` - Oxfam-specific configuration
 - `organization_config.unicef.json` - UNICEF-specific configuration
 
@@ -67,7 +67,7 @@ Each configuration file should follow this structure:
 When building the app, specify the organization using the `ORGANIZATION_CONFIG` environment variable:
 
 ```bash
-# For IFRC
+# Example named profile (ifrc)
 flutter build appbundle --release --dart-define=ORGANIZATION_CONFIG=ifrc --dart-define=PRODUCTION=true
 
 # For generic NGO Databank (default)
@@ -94,9 +94,9 @@ All colors should be specified in hex format with or without the `#` prefix:
 
 Both formats are supported.
 
-## Example: IFRC Configuration
+## Example profile
 
-See `organization_config.ifrc.json` for a complete example of an organization-specific configuration.
+See `organization_config.ifrc.json` for a sample organization-specific configuration you can copy and adapt.
 
 ## Fallback Behavior
 
@@ -109,7 +109,7 @@ If an organization-specific config file is not found, the app will:
 
 After modifying a configuration file:
 1. Rebuild the app: `flutter clean && flutter pub get`
-2. Rebuild the bundle: `flutter build appbundle --release --dart-define=ORGANIZATION_CONFIG=ifrc`
+2. Rebuild the bundle: `flutter build appbundle --release --dart-define=ORGANIZATION_CONFIG=your_profile`
 
 ## Notes
 

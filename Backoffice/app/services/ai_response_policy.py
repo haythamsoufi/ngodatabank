@@ -250,10 +250,12 @@ def sanitize_agent_answer(text: str, *, has_table_payload: bool = False) -> str:
             "",
             text,
         )
-        # In this system continent = IFRC Region (platform data). No separate continent column.
-        text = re.sub(r"IFRC Region \(est\.?\)", "IFRC Region", text)
-        text = re.sub(r"(?im)\bContinent\s*\(est\.?\)", "IFRC Region", text)
-        text = re.sub(r"(?im)\bContinent\b(?!\s*\(est)", "IFRC Region", text)
+        # In this system continent = operational region (platform data). No separate continent column.
+        text = re.sub(r"IFRC Region \(est\.?\)", "Operational region", text)
+        text = re.sub(r"(?im)\bIFRC Region\b", "Operational region", text)
+        text = re.sub(r"Operational region \(est\.?\)", "Operational region", text)
+        text = re.sub(r"(?im)\bContinent\s*\(est\.?\)", "Operational region", text)
+        text = re.sub(r"(?im)\bContinent\b(?!\s*\(est)", "Operational region", text)
         # Strip fake UI elements the model sometimes generates.
         text = re.sub(r"(?im)^\s*Download\s+(?:Excel|CSV|File)\s*$", "", text)
         text = re.sub(r"(?im)^\s*Show\s+\d+\s+more\s+rows?\s*$", "", text)

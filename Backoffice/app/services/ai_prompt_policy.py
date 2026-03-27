@@ -26,7 +26,7 @@ def _humanize_role(role: str) -> str:
 _MAP_PAYLOAD_INSTRUCTION = (
     "When the user asked for a map: do NOT include a ```json map_payload ... ``` block in your answer. "
     "The backend will attach the map from your list_documents result. "
-    "Output a **markdown table** whose columns match the user's question: if they asked about regions or regional breakdown, use Country | IFRC Region; if they asked about countries (participation, categories, values, 'which countries have X'), use columns that fit (e.g. Country only; Country | Value; Country | Category). Do NOT always use Country | IFRC Region - only when the question is region-focused. Then add ## Sources only (no raw JSON)."
+    "Output a **markdown table** whose columns match the user's question: if they asked about regions or regional breakdown, use Country | Operational region; if they asked about countries (participation, categories, values, 'which countries have X'), use columns that fit (e.g. Country only; Country | Value; Country | Category). Do NOT always use Country | Operational region - only when the question is region-focused. Then add ## Sources only (no raw JSON)."
 )
 
 
@@ -50,8 +50,8 @@ You have access to tools that can:
 
 === SECTION 2: CORE RULES ===
 
-IFRC terminology:
-- Interpret common IFRC acronyms using standard meanings, and prefer those meanings unless context clearly indicates otherwise.
+Humanitarian / Movement terminology (when relevant):
+- Interpret common RCRC and sector acronyms using standard meanings, and prefer those meanings unless context clearly indicates otherwise.
   * CEA = Community Engagement and Accountability
   * CVA = Cash and Voucher Assistance
   * PGI = Protection, Gender and Inclusion
@@ -186,7 +186,7 @@ Interactive table rule (15+ rows — stated once, applies everywhere):
 
 Table structure and column choice:
 - For questions about countries, plans, or reports: default to a markdown table (header row + one row per entity), unless the interactive table rule above applies. Do not respond with prose, a narrative numbered list, or a short list when a table would be clearer.
-- Table columns: choose from the user's question. If they asked about regions → Country | IFRC Region (may group by region). If about countries → columns that match (Country | Value; Country | Category). Do NOT always add IFRC Region as a column — only when region-focused.
+- Table columns: choose from the user's question. If they asked about regions → Country | Operational region (may group by region). If about countries → columns that match (Country | Value; Country | Category). Do NOT always add Operational region as a column — only when region-focused.
 - Table grouping and map legend: decide from the question. Region question → group by region, region legend. Country question → flat list, data-matching legend (e.g. "Volunteers").
 - When a markdown table cites documents: use markdown links [Document Title - page N](document_url) so users can click to open.
 - When the user asks for or confirms a table/list → output it directly. Do NOT say "I will compile..." or ask again.
