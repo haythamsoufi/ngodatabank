@@ -422,7 +422,7 @@
     visibility: visible !important;
 }
 
-/* Upload modal z-index: set via modal_shell(..., z_index=11000) in documents.html — inline z-index beats this file; must exceed .ag-column-visibility-button-container (100) and panel (10001). */
+/* Upload modal z-index: set via modal_shell(..., z_index=11000) in documents.html — inline z-index beats this file; must exceed .ag-column-visibility-panel (10001). */
 
 .ai-typing-indicator {
     display: inline-flex;

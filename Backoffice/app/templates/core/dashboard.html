@@ -127,13 +127,13 @@
                             {% set is_overdue = item.type == 'assigned' and item.date_info and item.date_info.date() < current_date %}
 
                             {# Apply conditional styling based on type #}
-                            <div class="p-4 rounded-lg shadow-md flex flex-col justify-between relative {# Added relative for delete button positioning #}
+                            <div class="p-4 rounded-lg shadow-md flex flex-col justify-between relative transition-all duration-200 ease-out hover:shadow-xl hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:hover:shadow-md {# Added relative for delete button positioning #}
                                         {% if item.is_public %}
-                                            bg-purple-50 border-2 border-purple-500 ring-2 ring-purple-300 {# Different color for public submissions #}
+                                            bg-purple-50 border-2 border-purple-500 ring-2 ring-purple-300 hover:border-purple-600 hover:ring-purple-400/80 {# Different color for public submissions #}
                                         {% elif is_overdue %}
-                                            bg-gray-50 border-2 border-red-500 ring-2 ring-red-300
+                                            bg-gray-50 border-2 border-red-500 ring-2 ring-red-300 hover:border-red-600 hover:ring-red-400/80
                                         {% else %}
-                                            bg-gray-50 border border-gray-300
+                                            bg-gray-50 border border-gray-300 hover:border-gray-400 hover:bg-white
                                         {% endif %}">
 
                                 {# NEW: Delete button for self-reported assignments #}

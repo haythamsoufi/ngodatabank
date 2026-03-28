@@ -9,7 +9,7 @@
     margin-bottom: 10px;
     display: flex;
     justify-content: flex-end;
-    z-index: 100;
+    z-index: 1;
 }
 
 /* Clear All Filters Button */

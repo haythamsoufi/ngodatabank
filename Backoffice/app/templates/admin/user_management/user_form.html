@@ -1,7 +1,7 @@
 {% extends "core/layout.html" %}
 {% from "macros/breadcrumbs.html" import breadcrumb %}
 
-{% block title %}{{ "Edit User" if user else "Add New User" }}{% endblock %}
+{% block title %}{{ user.email if user else "Add New User" }}{% endblock %}
 
 {% block content %}
 {% from "components/_page_header.html" import page_header %}
@@ -13,12 +13,13 @@
 {% set can_toggle_user_active = current_is_system_manager or has_permission('admin.users.deactivate') %}
 {% set can_archive_target = user and can_toggle_user_active and (current_is_system_manager or (not target_is_admin)) and (current_user.is_authenticated and user.id != current_user.id) %}
 {% set can_delete_target = user and current_is_system_manager and (current_user.is_authenticated and user.id != current_user.id) %}
+{% set can_view_user_analytics = current_is_system_manager or has_permission('admin.analytics.view') %}
 
 {# Header actions rendered by page_header component #}
 {% set save_label = form.submit.label.text if form.submit and form.submit.label else _('Save') %}
 {% set header_actions = namespace(items=[]) %}
 {% if can_archive_target %}
-    {% if user.active %}
+    {% if user and user.active %}
         {% set __ = header_actions.items.append({
             'type': 'button',
             'text': _('Deactivate'),
@@ -46,19 +47,22 @@
     }) %}
 {% endif %}
 {% set __ = header_actions.items.append({
-    'type': 'custom',
-    'content': ('<button type="submit" form="userForm" class="professional-action-btn professional-action-btn-blue">' ~ save_label ~ '</button>')|safe
+    'type': 'submit',
+    'text': save_label,
+    'classes': 'professional-action-btn professional-action-btn-blue',
+    'attributes': {'form': 'userForm'}
 }) %}
 
 {{ page_header(
-    title="Edit User" if user else "Add New User",
+    title=user.email if user else "Add New User",
     icon='fas fa-' + ('user-edit' if user else 'user-plus'),
     breadcrumbs=[
         {'name': 'Admin', 'url': url_for('admin.admin_dashboard')},
         {'name': 'User Management', 'url': url_for('user_management.manage_users')},
-        {'name': "Edit User" if user else "Add New User"}
+        {'name': user.email if user else "Add New User"}
     ],
-    actions=header_actions.items
+    actions=header_actions.items,
+    pin_actions_on_scroll=True
 ) }}
 
 {% set resolved_entity_types = enabled_entity_types if enabled_entity_types is defined else ENABLED_ENTITY_TYPES %}
@@ -75,9 +79,6 @@
 <form id="userForm" method="POST" action="{{ url_for('user_management.edit_user', user_id=user.id) if user else url_for('user_management.new_user') }}">
     {{ form.csrf_token }}
     <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200 mb-24">
-        <h2 class="text-xl font-semibold mb-4 text-gray-700">
-            {{ "Edit User: " + user.email if user else "Add New User" }}
-        </h2>
         {# Ensure `read_only` is always a real boolean (not Jinja Undefined) #}
         {% set read_only = (((user is defined and user) and user_has_role(user, 'system_manager') and (not current_user.is_authenticated or not current_user_has_role('system_manager'))) or false) %}
         {% if user and not user.active %}
@@ -144,6 +145,19 @@
                         <i class="fas fa-mobile-alt mr-2"></i>Registered Devices
                     </button>
                 </li>
+                {% if can_view_user_analytics %}
+                <li class="me-2" role="presentation">
+                    <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300"
+                            id="analytics-tab"
+                            data-tabs-target="#analytics-panel"
+                            type="button"
+                            role="tab"
+                            aria-controls="analytics-panel"
+                            aria-selected="false">
+                        <i class="fas fa-chart-line mr-2"></i>{{ _('Analytics') }}
+                    </button>
+                </li>
+                {% endif %}
                 {% endif %}
             </ul>
         </div>
@@ -243,29 +257,28 @@
 
                         <div class="space-y-4">
 
-                            {# Role Type + Assignments layout: stacked by default, side-by-side for Focal Point #}
-                            <div id="role-type-and-assignments" class="grid grid-cols-1 gap-4 items-start {% if roles_disabled %}opacity-70{% endif %}">
-                                {# Role Type Selector #}
-                                <div>
-                                    <label for="role_type_select" class="block text-sm font-semibold text-gray-700 mb-2">{{ _('Role Type') }}</label>
-                                    {# New users default to Focal Point; existing users use the backend-computed value #}
-                                    {% set default_role_type = computed_role_type if (computed_role_type is defined and computed_role_type) else ('focal_point' if not (user is defined and user) else 'admin') %}
-                                    <select
-                                        id="role_type_select"
-                                        name="role_type"
-                                        class="role-type-selector shadow-sm appearance-none border rounded w-full max-w-xs py-2 px-3 leading-tight sm:text-sm {% if roles_disabled %}bg-gray-100 text-gray-500 cursor-not-allowed border-gray-200{% else %}text-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white{% endif %}"
-                                        {% if roles_disabled %}disabled{% endif %}
-                                    >
-                                        <option value="admin" {% if default_role_type == 'admin' %}selected{% endif %}>{{ _('Admin') }}</option>
-                                        <option value="focal_point" {% if default_role_type == 'focal_point' %}selected{% endif %}>{{ _('Focal Point') }}</option>
-                                    </select>
-                                </div>
+                            {# Role Type Selector #}
+                            <div id="role-type-and-assignments" class="{% if roles_disabled %}opacity-70{% endif %}">
+                                <label for="role_type_select" class="block text-sm font-semibold text-gray-700 mb-2">{{ _('Role Type') }}</label>
+                                {# New users default to Focal Point; existing users use the backend-computed value #}
+                                {% set default_role_type = computed_role_type if (computed_role_type is defined and computed_role_type) else ('focal_point' if not (user is defined and user) else 'admin') %}
+                                <select
+                                    id="role_type_select"
+                                    name="role_type"
+                                    class="role-type-selector shadow-sm appearance-none border rounded w-full max-w-xs py-2 px-3 leading-tight sm:text-sm {% if roles_disabled %}bg-gray-100 text-gray-500 cursor-not-allowed border-gray-200{% else %}text-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white{% endif %}"
+                                    {% if roles_disabled %}disabled{% endif %}
+                                >
+                                    <option value="admin" {% if default_role_type == 'admin' %}selected{% endif %}>{{ _('Admin') }}</option>
+                                    <option value="focal_point" {% if default_role_type == 'focal_point' %}selected{% endif %}>{{ _('Focal Point') }}</option>
+                                </select>
+                            </div>
 
+                            {# Assignment Roles — independent of admin sections, always visible #}
                             {% if rbac_groups.assignment|length %}
                             <div id="roles-assignment-group" class="p-3 border border-gray-200 rounded-md bg-gray-50">
                                 <div class="flex items-center justify-between mb-2">
                                     <div class="text-sm font-semibold text-gray-800">
-                                        <i class="fas fa-tasks mr-2 text-green-600"></i>Assignments
+                                        <i class="fas fa-tasks mr-2 text-green-600"></i>{{ _('Assignment Roles') }}
                                     </div>
                                     <div class="text-xs text-gray-600">{{ rbac_groups.assignment|length }} role(s)</div>
                                 </div>
@@ -273,11 +286,10 @@
                                     {% for subfield in rbac_groups.assignment %}
                                         {% set raw_label = (subfield.label.text or '') %}
                                         {% set display_label = raw_label %}
-                                        {# Avoid repeating "Assignment ..." inside the Assignments group #}
+                                        {# Strip "Assignment " prefix inside the group #}
                                         {% if raw_label.startswith('Assignment ') %}
                                             {% set display_label = raw_label[11:] %}
                                         {% endif %}
-                                        {# Check if this is an Approver role #}
                                         {% set is_approver = 'approver' in raw_label.lower() %}
                                         <label class="flex items-center min-w-0 assignment-role-item {% if is_approver %}assignment-approver-role{% endif %} {% if roles_disabled %}cursor-not-allowed{% endif %}" {% if is_approver %}data-role-type="approver"{% endif %}>
                                             {% if roles_disabled %}
@@ -291,7 +303,6 @@
                                 </div>
                             </div>
                             {% endif %}
-                            </div>
 
                             {# Admin sections - hidden when Focal Point is selected #}
                             <div id="admin-sections" class="admin-sections-container">
@@ -418,7 +429,7 @@
                                     other=[]
                                 ) %}
                                 {% for feature in admin_features %}
-                                    {% if feature in ['Settings', 'Documents'] %}
+                                    {% if feature in ['Settings', 'Documents', 'Docs'] %}
                                         {% set __ = admin_cats.general.append(feature) %}
                                     {% elif feature in ['Plugins'] %}
                                         {# Plugins should appear under General (system managers only) #}
@@ -433,7 +444,7 @@
                                         {% set __ = admin_cats.website.append(feature) %}
                                     {% elif feature in ['Countries & Organization', 'Indicator Bank'] %}
                                         {% set __ = admin_cats.reference.append(feature) %}
-                                    {% elif feature in ['Analytics', 'Audit Trail', 'API', 'Security', 'AI'] %}
+                                    {% elif feature in ['Analytics', 'Audit Trail', 'API', 'Security', 'AI', 'Governance'] %}
                                         {% set __ = admin_cats.analytics.append(feature) %}
                                     {% else %}
                                         {% set __ = admin_cats.other.append(feature) %}
@@ -441,12 +452,12 @@
                                 {% endfor %}
 
                                 {# Helper: render a category block using a preferred feature order (sidebar-ish) #}
-                                {% set ordered_general = ['Settings', 'Documents', 'Plugins'] %}
+                                {% set ordered_general = ['Docs', 'Settings', 'Documents', 'Plugins'] %}
                                 {% set ordered_user_mgmt = ['Users'] %}
                                 {% set ordered_form_data = ['Templates', 'Assignments', 'Data Explorer'] %}
                                 {% set ordered_website = ['Content'] %}
                                 {% set ordered_reference = ['Countries & Organization', 'Indicator Bank'] %}
-                                {% set ordered_analytics = ['Analytics', 'Audit Trail', 'AI', 'API', 'Security'] %}
+                                {% set ordered_analytics = ['Analytics', 'Audit Trail', 'Governance', 'AI', 'API', 'Security'] %}
                                 {% set ordered_other = admin_cats.other %}
 
                                 {# Macro to render a group #}
@@ -650,7 +661,6 @@
                       const coreGroup = document.getElementById('roles-core-group'); // Admin Roles: Presets + Categorized Admin Roles
                       const adminGroup = coreGroup; // Admin roles are now merged into roles-core-group
                       const assignmentGroup = document.getElementById('roles-assignment-group');
-                      const roleTypeAndAssignments = document.getElementById('role-type-and-assignments');
 
                       // Role Type Selector Handler
                       const roleTypeSelect = document.getElementById('role_type_select');
@@ -659,15 +669,6 @@
                       function handleRoleTypeChange() {
                         const selectedType = roleTypeSelect?.value || 'admin';
                         const isFocalPoint = selectedType === 'focal_point';
-
-                        // When focal point is selected, show Role Type + Assignments side-by-side (md+)
-                        if (roleTypeAndAssignments) {
-                          if (isFocalPoint) {
-                            roleTypeAndAssignments.classList.add('md:grid-cols-2');
-                          } else {
-                            roleTypeAndAssignments.classList.remove('md:grid-cols-2');
-                          }
-                        }
 
                         // Show/hide admin sections
                         if (adminSectionsContainer) {
@@ -792,43 +793,21 @@
                         coreEssentialsInputRef = findAdminRoleInput('core', 'essentials only');
                       }
 
+                      // Matches admin_core permissions in rbac_seed_service.py exactly (view-only).
                       const essentialsSpecs = [
-                        { feature: 'Users', action: 'Manage' },
+                        { feature: 'Docs', action: 'View' },
                         { feature: 'Users', action: 'View' },
-                        { feature: 'Templates', action: 'Manage' },
                         { feature: 'Templates', action: 'View' },
-                        { feature: 'Assignments', action: 'Manage' },
                         { feature: 'Assignments', action: 'View' },
-                        { feature: 'Countries & Organization', action: 'Manage' },
                         { feature: 'Countries & Organization', action: 'View' },
                         { feature: 'Indicator Bank', action: 'View' },
                       ];
 
                       function getEssentialsChildren() {
                         const inputs = [];
-                        // Add admin essentials
                         for (const spec of essentialsSpecs) {
                           const inp = findAdminRoleInput(spec.feature, spec.action);
                           if (inp) inputs.push(inp);
-                        }
-                        // Add Essentials assignment roles
-                        // (Assignment Approver, Assignment Editor & Submitter, Assignment Viewer)
-                        if (assignmentGroup) {
-                          const assignmentInputs = Array.from(
-                            assignmentGroup.querySelectorAll('input[type="checkbox"][name="rbac_roles"]')
-                          );
-                          let viewer = null;
-                          let editorSubmitter = null;
-                          let approver = null;
-                          for (const input of assignmentInputs) {
-                            const txt = String(getLabelSpanText(input) || '').trim().toLowerCase();
-                            if (txt === 'viewer') viewer = input;
-                            if (txt === 'editor & submitter' || txt === 'editor and submitter') editorSubmitter = input;
-                            if (txt === 'approver') approver = input;
-                          }
-                          if (viewer) inputs.push(viewer);
-                          if (editorSubmitter) inputs.push(editorSubmitter);
-                          if (approver) inputs.push(approver);
                         }
                         return inputs;
                       }
@@ -1297,14 +1276,7 @@
                     </script>
                     {% endif %}
 
-                    {% if azure_sso_enabled %}
-                        <div class="lg:col-span-3 mb-4">
-                            <div class="p-3 rounded border border-blue-200 bg-blue-50 text-blue-900 text-sm">
-                                <i class="fas fa-info-circle mr-2"></i>
-                                {{ _('Password is managed by organization sign-in (Azure).') }}
-                            </div>
-                        </div>
-                    {% else %}
+                    {% if not azure_sso_enabled %}
                         <div class="lg:col-span-3 mb-4">
                             {{ form.password.label(class="block text-gray-700 text-sm font-semibold mb-2") }}
                             {% if read_only %}
@@ -1325,76 +1297,73 @@
 
             {# Entity Permissions Tab #}
             {% if entity_tabs.order %}
-            <div id="entity-permissions-panel" class="hidden" role="tabpanel" aria-labelledby="entity-permissions-tab">
-                <div class="mb-4">
-                    <h3 class="text-lg font-semibold mb-2 text-gray-800">
-                        <i class="fas fa-sitemap mr-2 text-blue-600"></i>
-                        Entity Permissions
-                    </h3>
+            <div id="entity-permissions-panel" class="hidden space-y-6" role="tabpanel" aria-labelledby="entity-permissions-tab">
+                <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 sm:p-5">
                     <p class="text-sm text-gray-600">
-                        Assign this user to specific organizational entities. Users will have access to data at the level they are assigned.
+                        {{ _('Assign this user to specific organizational entities. Users will have access to data at the level they are assigned.') }}
                     </p>
                 </div>
 
-                {# Entity Sub-Tab Navigation #}
-            <div class="border-b border-gray-200 mb-4">
-                <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="entity-tabs" role="tablist">
-                    {% if has_countries %}
-                    {% set is_countries_active = default_entity_tab == 'countries' %}
-                    <li class="me-2" role="presentation">
-                        <button class="inline-block p-4 border-b-2 rounded-t-lg {% if is_countries_active %}text-blue-600 border-blue-600{% else %}border-transparent hover:text-gray-600 hover:border-gray-300{% endif %}"
-                                id="countries-tab"
-                                data-tabs-target="#countries-panel"
-                                type="button"
-                                role="tab"
-                                aria-controls="countries-panel"
-                                aria-selected="{{ 'true' if is_countries_active else 'false' }}">
-                            <i class="fas fa-flag mr-2"></i>Countries
-                        </button>
-                    </li>
-                    {% endif %}
-                    {% if has_ns_structure %}
-                    {% set is_ns_active = default_entity_tab == 'ns_structure' %}
-                    <li class="me-2" role="presentation">
-                        <button class="inline-block p-4 border-b-2 rounded-t-lg {% if is_ns_active %}text-blue-600 border-blue-600{% else %}border-transparent hover:text-gray-600 hover:border-gray-300{% endif %}"
-                                id="ns-structure-tab"
-                                data-tabs-target="#ns-structure-panel"
-                                type="button"
-                                role="tab"
-                                aria-controls="ns-structure-panel"
-                                aria-selected="{{ 'true' if is_ns_active else 'false' }}">
-                            <i class="fas fa-sitemap mr-2"></i>NS Structure
-                        </button>
-                    </li>
-                    {% endif %}
-                    {% if has_secretariat %}
-                    {% set is_secretariat_active = default_entity_tab == 'secretariat' %}
-                    <li class="me-2" role="presentation">
-                        <button class="inline-block p-4 border-b-2 rounded-t-lg {% if is_secretariat_active %}text-blue-600 border-blue-600{% else %}border-transparent hover:text-gray-600 hover:border-gray-300{% endif %}"
-                                id="secretariat-tab"
-                                data-tabs-target="#secretariat-panel"
-                                type="button"
-                                role="tab"
-                                aria-controls="secretariat-panel"
-                                aria-selected="{{ 'true' if is_secretariat_active else 'false' }}">
-                            <i class="fas fa-building mr-2"></i>Secretariat
-                        </button>
-                    </li>
-                    {% endif %}
-                </ul>
-            </div>
+                <div class="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
+                    {# Entity Sub-Tab Navigation #}
+                    <div class="border-b border-gray-200 bg-gray-50 px-2 sm:px-3">
+                        <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="entity-tabs" role="tablist">
+                            {% if has_countries %}
+                            {% set is_countries_active = default_entity_tab == 'countries' %}
+                            <li class="me-2" role="presentation">
+                                <button class="inline-block px-3 py-3 border-b-2 rounded-t-lg {% if is_countries_active %}text-blue-600 border-blue-600{% else %}border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300{% endif %}"
+                                        id="countries-tab"
+                                        data-tabs-target="#countries-panel"
+                                        type="button"
+                                        role="tab"
+                                        aria-controls="countries-panel"
+                                        aria-selected="{{ 'true' if is_countries_active else 'false' }}">
+                                    <i class="fas fa-flag mr-2"></i>{{ _('Countries') }}
+                                </button>
+                            </li>
+                            {% endif %}
+                            {% if has_ns_structure %}
+                            {% set is_ns_active = default_entity_tab == 'ns_structure' %}
+                            <li class="me-2" role="presentation">
+                                <button class="inline-block px-3 py-3 border-b-2 rounded-t-lg {% if is_ns_active %}text-blue-600 border-blue-600{% else %}border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300{% endif %}"
+                                        id="ns-structure-tab"
+                                        data-tabs-target="#ns-structure-panel"
+                                        type="button"
+                                        role="tab"
+                                        aria-controls="ns-structure-panel"
+                                        aria-selected="{{ 'true' if is_ns_active else 'false' }}">
+                                    <i class="fas fa-sitemap mr-2"></i>{{ _('NS Structure') }}
+                                </button>
+                            </li>
+                            {% endif %}
+                            {% if has_secretariat %}
+                            {% set is_secretariat_active = default_entity_tab == 'secretariat' %}
+                            <li class="me-2" role="presentation">
+                                <button class="inline-block px-3 py-3 border-b-2 rounded-t-lg {% if is_secretariat_active %}text-blue-600 border-blue-600{% else %}border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300{% endif %}"
+                                        id="secretariat-tab"
+                                        data-tabs-target="#secretariat-panel"
+                                        type="button"
+                                        role="tab"
+                                        aria-controls="secretariat-panel"
+                                        aria-selected="{{ 'true' if is_secretariat_active else 'false' }}">
+                                    <i class="fas fa-building mr-2"></i>{{ _('Secretariat') }}
+                                </button>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
 
-            {# Tab Panels #}
-            <div id="entity-tabs-content">
+                    {# Tab Panels #}
+                    <div id="entity-tabs-content" class="p-4 sm:p-5 bg-gray-50">
                 {# Countries Tab #}
                 {% if has_countries %}
-                <div class="p-4 rounded-lg bg-gray-50 {% if default_entity_tab != 'countries' %}hidden{% endif %}" id="countries-panel" role="tabpanel" aria-labelledby="countries-tab">
+                <div class="{% if default_entity_tab != 'countries' %}hidden{% endif %}" id="countries-panel" role="tabpanel" aria-labelledby="countries-tab">
                     <label class="block text-gray-700 text-sm font-semibold mb-2">{{ form.countries.label.text }}</label>
-                    <div class="p-4 border border-gray-200 rounded-md bg-white">
+                    <div class="p-4 border border-gray-200 rounded-lg bg-white shadow-sm">
                         {# Global Select All Checkbox #}
                         <div class="flex items-center mb-4 pb-4 border-b border-gray-200">
                             <input type="checkbox" id="select-all-countries" class="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" {% if read_only %}disabled{% endif %}>
-                            <label for="select-all-countries" class="ml-2 block text-sm font-bold text-gray-800">Select All Countries</label>
+                            <label for="select-all-countries" class="ml-2 block text-sm font-semibold text-gray-800">{{ _('Select all countries') }}</label>
                         </div>
 
                         {# Iterate through regions and their countries #}
@@ -1403,7 +1372,7 @@
                                 <div class="flex items-center mb-2">
                                     {# Region Checkbox (Select/Deselect All in Region) #}
                                     <input type="checkbox" id="select-all-{{ region | replace(' ', '-') }}" class="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 region-select-all" data-region="{{ region | replace(' ', '-') }}" {% if read_only %}disabled{% endif %}>
-                                    <label for="select-all-{{ region | replace(' ', '-') }}" class="ml-2 block text-sm font-bold text-gray-800">{{ region }}</label>
+                                    <label for="select-all-{{ region | replace(' ', '-') }}" class="ml-2 block text-sm font-semibold text-gray-800">{{ region }}</label>
                                 </div>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pl-6 region-countries" data-region="{{ region | replace(' ', '-') }}">
                                     {# Iterate through countries in the current region #}
@@ -1426,19 +1395,20 @@
                 {# NS Structure Tab - Hierarchical view of Branches > Sub-branches > Local Units #}
                 {% endif %}
                 {% if has_ns_structure %}
-                <div class="p-4 rounded-lg bg-gray-50 {% if default_entity_tab != 'ns_structure' %}hidden{% endif %}" id="ns-structure-panel" role="tabpanel" aria-labelledby="ns-structure-tab">
+                <div class="{% if default_entity_tab != 'ns_structure' %}hidden{% endif %}" id="ns-structure-panel" role="tabpanel" aria-labelledby="ns-structure-tab">
                     <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-gray-700 text-sm font-semibold mb-2">Search NS Structure</label>
+                            <label class="block text-gray-700 text-sm font-semibold mb-2" for="ns-structure-search">{{ _('Search NS structure') }}</label>
                             <input type="text"
                                    id="ns-structure-search"
-                                   class="form-input w-full rounded-md border-gray-300"
-                                   placeholder="Search branches, sub-branches, or local units...">
+                                   class="shadow-sm appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 text-sm leading-tight focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="{{ _('Search branches, sub-branches, or local units…') }}">
                         </div>
                         <div>
-                            <label class="block text-gray-700 text-sm font-semibold mb-2">Country</label>
-                            <select id="ns-country-select" class="form-select w-full rounded-md border-gray-300">
-                                <option value="">Select a country</option>
+                            <label class="block text-gray-700 text-sm font-semibold mb-2" for="ns-country-select">{{ _('Country') }}</label>
+                            <select id="ns-country-select"
+                                    class="shadow-sm appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 text-sm leading-tight focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white">
+                                <option value="">{{ _('Select a country') }}</option>
                                 {% for region, countries in countries_by_region.items() %}
                                     <optgroup label="{{ region }}">
                                     {% for country in countries %}
@@ -1449,11 +1419,11 @@
                             </select>
                         </div>
                     </div>
-                    <div id="ns-structure-hierarchy-container" class="bg-white p-4 rounded-md border border-gray-200 max-h-96 overflow-y-auto">
+                    <div id="ns-structure-hierarchy-container" class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm max-h-96 overflow-y-auto">
                         <!-- Hierarchical NS structure will be loaded here by JavaScript -->
-                        <div class="text-center py-4">
-                            <i class="fas fa-info-circle text-gray-400"></i>
-                            <p class="text-sm text-gray-500 mt-2">Select a country to view NS structure.</p>
+                        <div class="text-center py-6 px-4">
+                            <i class="fas fa-info-circle text-gray-300 text-2xl mb-2"></i>
+                            <p class="text-sm text-gray-600">{{ _('Select a country to view NS structure.') }}</p>
                         </div>
                     </div>
                 </div>
@@ -1461,217 +1431,213 @@
                 {# Secretariat Tab - with sub-tabs: Divisions & Departments, Regions #}
                 {% endif %}
                 {% if has_secretariat %}
-                <div class="p-4 rounded-lg bg-gray-50 {% if default_entity_tab != 'secretariat' %}hidden{% endif %}" id="secretariat-panel" role="tabpanel" aria-labelledby="secretariat-tab">
-                    {# Sub-tab navigation #}
-                    <div class="border-b border-gray-200 mb-4">
-                        <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="secretariat-subtabs" role="tablist">
-                            <li class="me-2" role="presentation">
-                                <button class="inline-block p-3 border-b-2 rounded-t-lg text-blue-600 border-blue-600"
-                                        id="secretariat-divisions-tab"
-                                        data-tabs-target="#secretariat-divisions-panel"
-                                        type="button"
-                                        role="tab"
-                                        aria-controls="secretariat-divisions-panel"
-                                        aria-selected="true">
-                                    <i class="fas fa-building mr-2"></i>Divisions & Departments
-                                </button>
-                            </li>
-                            <li class="me-2" role="presentation">
-                                <button class="inline-block p-3 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300"
-                                        id="secretariat-regions-tab"
-                                        data-tabs-target="#secretariat-regions-panel"
-                                        type="button"
-                                        role="tab"
-                                        aria-controls="secretariat-regions-panel"
-                                        aria-selected="false">
-                                    <i class="fas fa-globe-europe mr-2"></i>Regions
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
-
-                    {# Sub-tab panels #}
-                    <div id="secretariat-subtabs-content">
-                        {# Divisions & Departments panel #}
-                        <div class="p-2" id="secretariat-divisions-panel" role="tabpanel" aria-labelledby="secretariat-divisions-tab">
-                            <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-semibold mb-2">Search Secretariat</label>
-                                <input type="text"
-                                       id="secretariat-divisions-search"
-                                       class="form-input w-full rounded-md border-gray-300"
-                                       placeholder="Search divisions or departments...">
-                            </div>
-                            <div id="secretariat-divisions-container" class="bg-white p-4 rounded-md border border-gray-200 max-h-96 overflow-y-auto">
-                                <!-- Hierarchical Secretariat structure will be loaded here by JavaScript -->
-                                <div class="text-center py-4">
-                                    <i class="fas fa-spinner fa-spin text-gray-400"></i>
-                                    <p class="text-sm text-gray-500 mt-2">Loading Secretariat structure...</p>
-                                </div>
-                            </div>
+                <div class="{% if default_entity_tab != 'secretariat' %}hidden{% endif %}" id="secretariat-panel" role="tabpanel" aria-labelledby="secretariat-tab">
+                    <div class="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
+                        {# Sub-tab navigation #}
+                        <div class="border-b border-gray-200 bg-gray-50 px-2 sm:px-3">
+                            <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="secretariat-subtabs" role="tablist">
+                                <li class="me-2" role="presentation">
+                                    <button class="inline-block px-3 py-2.5 border-b-2 rounded-t-lg text-blue-600 border-blue-600"
+                                            id="secretariat-divisions-tab"
+                                            data-tabs-target="#secretariat-divisions-panel"
+                                            type="button"
+                                            role="tab"
+                                            aria-controls="secretariat-divisions-panel"
+                                            aria-selected="true">
+                                        <i class="fas fa-building mr-2"></i>{{ _('Divisions & Departments') }}
+                                    </button>
+                                </li>
+                                <li class="me-2" role="presentation">
+                                    <button class="inline-block px-3 py-2.5 border-b-2 border-transparent rounded-t-lg text-gray-600 hover:text-gray-800 hover:border-gray-300"
+                                            id="secretariat-regions-tab"
+                                            data-tabs-target="#secretariat-regions-panel"
+                                            type="button"
+                                            role="tab"
+                                            aria-controls="secretariat-regions-panel"
+                                            aria-selected="false">
+                                        <i class="fas fa-globe-europe mr-2"></i>{{ _('Regions') }}
+                                    </button>
+                                </li>
+                            </ul>
                         </div>
 
-                        {# Regions panel #}
-                        <div class="hidden p-2" id="secretariat-regions-panel" role="tabpanel" aria-labelledby="secretariat-regions-tab">
-                            <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-semibold mb-2">Search Regions</label>
-                                <input type="text"
-                                       id="secretariat-regions-search"
-                                       class="form-input w-full rounded-md border-gray-300"
-                                       placeholder="Search regional or cluster offices...">
+                        {# Sub-tab panels #}
+                        <div id="secretariat-subtabs-content" class="p-4 sm:p-5 bg-gray-50">
+                            {# Divisions & Departments panel #}
+                            <div id="secretariat-divisions-panel" role="tabpanel" aria-labelledby="secretariat-divisions-tab">
+                                <div class="mb-4">
+                                    <label class="block text-gray-700 text-sm font-semibold mb-2" for="secretariat-divisions-search">{{ _('Search secretariat') }}</label>
+                                    <input type="text"
+                                           id="secretariat-divisions-search"
+                                           class="shadow-sm appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 text-sm leading-tight focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                           placeholder="{{ _('Search divisions or departments…') }}">
+                                </div>
+                                <div id="secretariat-divisions-container" class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm max-h-96 overflow-y-auto">
+                                    <!-- Hierarchical Secretariat structure will be loaded here by JavaScript -->
+                                    <div class="text-center py-6 px-4">
+                                        <i class="fas fa-spinner fa-spin text-blue-600 text-xl mb-2"></i>
+                                        <p class="text-sm text-gray-600">{{ _('Loading secretariat structure…') }}</p>
+                                    </div>
+                                </div>
                             </div>
-                            <div id="secretariat-regions-container" class="bg-white p-4 rounded-md border border-gray-200 max-h-96 overflow-y-auto">
-                                <!-- Hierarchical Regions structure will be loaded here by JavaScript -->
-                                <div class="text-center py-4">
-                                    <i class="fas fa-info-circle text-gray-400"></i>
-                                    <p class="text-sm text-gray-500 mt-2">No structure defined yet</p>
+
+                            {# Regions panel #}
+                            <div class="hidden" id="secretariat-regions-panel" role="tabpanel" aria-labelledby="secretariat-regions-tab">
+                                <div class="mb-4">
+                                    <label class="block text-gray-700 text-sm font-semibold mb-2" for="secretariat-regions-search">{{ _('Search regions') }}</label>
+                                    <input type="text"
+                                           id="secretariat-regions-search"
+                                           class="shadow-sm appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 text-sm leading-tight focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                           placeholder="{{ _('Search regional or cluster offices…') }}">
+                                </div>
+                                <div id="secretariat-regions-container" class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm max-h-96 overflow-y-auto">
+                                    <!-- Hierarchical Regions structure will be loaded here by JavaScript -->
+                                    <div class="text-center py-6 px-4">
+                                        <i class="fas fa-info-circle text-gray-300 text-2xl mb-2"></i>
+                                        <p class="text-sm text-gray-600">{{ _('No structure defined yet.') }}</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 {% endif %}
+                    </div>
                 </div>
             </div>
             {% endif %}
 
             {# Notification Preferences Tab #}
             {% if user %}
-            <div id="notification-preferences-panel" class="hidden" role="tabpanel" aria-labelledby="notification-preferences-tab">
-                <div class="mb-4">
-                    <h3 class="text-lg font-semibold mb-2 text-gray-800">
-                        <i class="fas fa-bell mr-2 text-blue-600"></i>
-                        Notification Preferences
-                    </h3>
-                    <p class="text-sm text-gray-600">
-                        Configure notification preferences for this user. These settings control how and when the user receives notifications.
+            <div id="notification-preferences-panel" class="hidden space-y-6" role="tabpanel" aria-labelledby="notification-preferences-tab">
+                <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 sm:p-5">
+                    <p class="text-sm text-gray-600 mb-4">
+                        {{ _('Configure notification preferences for this user. These settings control how and when the user receives notifications.') }}
                     </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <span class="block text-gray-700 text-sm font-semibold mb-2">{{ _('Sound') }}</span>
+                            <label class="flex items-center space-x-3 cursor-pointer">
+                                <input type="checkbox" name="sound_enabled"
+                                       class="form-checkbox h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                       {% if preferences.sound_enabled %}checked{% endif %}>
+                                <span class="text-sm text-gray-800">{{ _('Enable sound for new notifications') }}</span>
+                            </label>
+                            <p class="text-xs text-gray-500 mt-2 ml-8">{{ _('Plays a sound when new in-app notifications arrive.') }}</p>
+                        </div>
+                        <div>
+                            <label for="notification_frequency" class="block text-gray-700 text-sm font-semibold mb-2">
+                                {{ _('Email frequency') }}
+                            </label>
+                            <select name="notification_frequency" id="notification_frequency"
+                                    class="shadow-sm appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 text-sm leading-tight focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white">
+                                <option value="instant" {% if preferences.notification_frequency == 'instant' %}selected{% endif %}>
+                                    {{ _('Instant') }}
+                                </option>
+                                <option value="daily" {% if preferences.notification_frequency == 'daily' %}selected{% endif %}>
+                                    {{ _('Daily digest') }}
+                                </option>
+                                <option value="weekly" {% if preferences.notification_frequency == 'weekly' %}selected{% endif %}>
+                                    {{ _('Weekly digest') }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="digest-schedule-group-admin" class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-gray-200" style="display: none;">
+                        <div id="digest-day-group-admin" class="pref-group" style="display: none;">
+                            <label for="digest_day" class="block text-gray-700 text-sm font-semibold mb-2">
+                                {{ _('Day of week') }}
+                            </label>
+                            <select name="digest_day" id="digest_day"
+                                    class="shadow-sm appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 text-sm leading-tight focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white">
+                                <option value="monday" {% if preferences.digest_day == 'monday' %}selected{% endif %}>{{ _('Monday') }}</option>
+                                <option value="tuesday" {% if preferences.digest_day == 'tuesday' %}selected{% endif %}>{{ _('Tuesday') }}</option>
+                                <option value="wednesday" {% if preferences.digest_day == 'wednesday' %}selected{% endif %}>{{ _('Wednesday') }}</option>
+                                <option value="thursday" {% if preferences.digest_day == 'thursday' %}selected{% endif %}>{{ _('Thursday') }}</option>
+                                <option value="friday" {% if preferences.digest_day == 'friday' %}selected{% endif %}>{{ _('Friday') }}</option>
+                                <option value="saturday" {% if preferences.digest_day == 'saturday' %}selected{% endif %}>{{ _('Saturday') }}</option>
+                                <option value="sunday" {% if preferences.digest_day == 'sunday' %}selected{% endif %}>{{ _('Sunday') }}</option>
+                            </select>
+                        </div>
+                        <div class="pref-group">
+                            <label for="digest_time" class="block text-gray-700 text-sm font-semibold mb-2">
+                                {{ _('Time (local)') }}
+                            </label>
+                            <input type="time" name="digest_time" id="digest_time"
+                                   class="shadow-sm appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 text-sm leading-tight focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                   value="{% if preferences.digest_time %}{{ preferences.digest_time }}{% else %}09:00{% endif %}">
+                            <p class="text-xs text-gray-500 mt-2">{{ _('When to send the digest email.') }}</p>
+                        </div>
+                    </div>
                 </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <!-- Sound Notifications -->
-                <div>
-                    <label class="flex items-center space-x-3 cursor-pointer">
-                        <input type="checkbox" name="sound_enabled"
-                               class="form-checkbox h-5 w-5 text-blue-600"
-                               {% if preferences.sound_enabled %}checked{% endif %}>
-                        <span class="text-gray-700 font-medium">Enable Sound</span>
-                    </label>
-                    <p class="text-sm text-gray-500 mt-1 ml-8">Play sound for new notifications</p>
-                </div>
+                <div class="rounded-lg border border-gray-200 bg-white p-4 sm:p-5 shadow-sm">
+                    <p class="text-sm font-semibold text-gray-800 mb-1">
+                        <i class="fas fa-sliders-h mr-2 text-blue-600"></i>{{ _('Notification types') }}
+                    </p>
+                    <p class="text-xs text-gray-500 mb-4">{{ _('Choose email and push delivery per notification type.') }}</p>
 
-                <!-- Notification Frequency -->
-                <div>
-                    <label for="notification_frequency" class="block text-gray-700 font-medium mb-2">
-                        Email Frequency
-                    </label>
-                    <select name="notification_frequency" id="notification_frequency" class="form-select w-full">
-                        <option value="instant" {% if preferences.notification_frequency == 'instant' %}selected{% endif %}>
-                            Instant
-                        </option>
-                        <option value="daily" {% if preferences.notification_frequency == 'daily' %}selected{% endif %}>
-                            Daily Digest
-                        </option>
-                        <option value="weekly" {% if preferences.notification_frequency == 'weekly' %}selected{% endif %}>
-                            Weekly Digest
-                        </option>
-                    </select>
+                    <div class="overflow-x-auto rounded-lg border border-gray-200">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ _('Type') }}
+                                    </th>
+                                    <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ _('Email') }}
+                                    </th>
+                                    <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ _('Push') }}
+                                    </th>
+                                </tr>
+                                <tr class="bg-gray-50 border-t border-gray-200">
+                                    <td class="px-4 py-2"></td>
+                                    <td class="px-4 py-2 text-center">
+                                        <label class="inline-flex items-center space-x-2 cursor-pointer group">
+                                            <input type="checkbox" id="select-all-email-admin"
+                                                   class="form-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 focus:ring-2 rounded border-gray-300">
+                                            <span class="text-xs text-gray-700 font-medium group-hover:text-gray-900">{{ _('Select all') }}</span>
+                                        </label>
+                                    </td>
+                                    <td class="px-4 py-2 text-center">
+                                        <label class="inline-flex items-center space-x-2 cursor-pointer group">
+                                            <input type="checkbox" id="select-all-push-admin"
+                                                   class="form-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 focus:ring-2 rounded border-gray-300">
+                                            <span class="text-xs text-gray-700 font-medium group-hover:text-gray-900">{{ _('Select all') }}</span>
+                                        </label>
+                                    </td>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                {% for notif_type in notification_types_info.for_user %}
+                                <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <span class="text-sm text-gray-900">{{ notif_type.replace('_', ' ').title() }}</span>
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-center">
+                                        {% set email_enabled = not preferences.notification_types_enabled or notif_type in preferences.notification_types_enabled %}
+                                        <input type="checkbox"
+                                               name="notification_type_email"
+                                               value="{{ notif_type }}"
+                                               class="notification-type-email-admin form-checkbox h-5 w-5 text-blue-600 focus:ring-blue-500 focus:ring-2 rounded cursor-pointer border-gray-300"
+                                               {% if email_enabled %}checked{% endif %}>
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-center">
+                                        {% set push_enabled = not preferences.push_notification_types_enabled or notif_type in preferences.push_notification_types_enabled %}
+                                        <input type="checkbox"
+                                               name="notification_type_push"
+                                               value="{{ notif_type }}"
+                                               class="notification-type-push-admin form-checkbox h-5 w-5 text-blue-600 focus:ring-blue-500 focus:ring-2 rounded cursor-pointer border-gray-300"
+                                               {% if push_enabled %}checked{% endif %}>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
-
-            <!-- Digest Schedule (shown when daily or weekly is selected) -->
-            <div id="digest-schedule-group-admin" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6" style="display: none;">
-                <!-- Day Selection (for weekly digest) -->
-                <div id="digest-day-group-admin" class="pref-group" style="display: none;">
-                    <label for="digest_day" class="block text-gray-700 font-medium mb-2">
-                        Day of Week
-                    </label>
-                    <select name="digest_day" id="digest_day" class="form-select w-full">
-                        <option value="monday" {% if preferences.digest_day == 'monday' %}selected{% endif %}>Monday</option>
-                        <option value="tuesday" {% if preferences.digest_day == 'tuesday' %}selected{% endif %}>Tuesday</option>
-                        <option value="wednesday" {% if preferences.digest_day == 'wednesday' %}selected{% endif %}>Wednesday</option>
-                        <option value="thursday" {% if preferences.digest_day == 'thursday' %}selected{% endif %}>Thursday</option>
-                        <option value="friday" {% if preferences.digest_day == 'friday' %}selected{% endif %}>Friday</option>
-                        <option value="saturday" {% if preferences.digest_day == 'saturday' %}selected{% endif %}>Saturday</option>
-                        <option value="sunday" {% if preferences.digest_day == 'sunday' %}selected{% endif %}>Sunday</option>
-                    </select>
-                </div>
-
-                <!-- Time Selection -->
-                <div class="pref-group">
-                    <label for="digest_time" class="block text-gray-700 font-medium mb-2">
-                        Time (Local Time)
-                    </label>
-                    <input type="time" name="digest_time" id="digest_time" class="form-input w-full"
-                           value="{% if preferences.digest_time %}{{ preferences.digest_time }}{% else %}09:00{% endif %}">
-                    <p class="text-sm text-gray-500 mt-1">Select the time when you want to receive your digest</p>
-                </div>
-            </div>
-
-            <!-- Notification Types Table -->
-            <div class="mb-4">
-                <h4 class="text-md font-semibold text-gray-900 mb-2">Notification Types</h4>
-                <p class="text-sm text-gray-600 mb-4">Configure which notification types to receive via email and push notifications</p>
-
-                <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th scope="col" class="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                                    Notification Type
-                                </th>
-                                <th scope="col" class="px-6 py-4 text-center text-sm font-semibold text-gray-900">
-                                    Email
-                                </th>
-                                <th scope="col" class="px-6 py-4 text-center text-sm font-semibold text-gray-900">
-                                    Push
-                                </th>
-                            </tr>
-                            <tr class="bg-gray-50 border-t border-gray-200">
-                                <td class="px-6 py-2"></td>
-                                <td class="px-6 py-2 text-center">
-                                    <label class="inline-flex items-center space-x-2 cursor-pointer group">
-                                        <input type="checkbox" id="select-all-email-admin"
-                                               class="form-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 focus:ring-2 rounded">
-                                        <span class="text-sm text-gray-700 font-medium group-hover:text-gray-900">Select All</span>
-                                    </label>
-                                </td>
-                                <td class="px-6 py-2 text-center">
-                                    <label class="inline-flex items-center space-x-2 cursor-pointer group">
-                                        <input type="checkbox" id="select-all-push-admin"
-                                               class="form-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 focus:ring-2 rounded">
-                                        <span class="text-sm text-gray-700 font-medium group-hover:text-gray-900">Select All</span>
-                                    </label>
-                                </td>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            {% for notif_type in notification_types_info.for_user %}
-                            <tr class="hover:bg-gray-50 transition-colors duration-150">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="text-sm font-medium text-gray-900">{{ notif_type.replace('_', ' ').title() }}</span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    {% set email_enabled = not preferences.notification_types_enabled or notif_type in preferences.notification_types_enabled %}
-                                    <input type="checkbox"
-                                           name="notification_type_email"
-                                           value="{{ notif_type }}"
-                                           class="notification-type-email-admin form-checkbox h-5 w-5 text-blue-600 focus:ring-blue-500 focus:ring-2 rounded cursor-pointer"
-                                           {% if email_enabled %}checked{% endif %}>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    {% set push_enabled = not preferences.push_notification_types_enabled or notif_type in preferences.push_notification_types_enabled %}
-                                    <input type="checkbox"
-                                           name="notification_type_push"
-                                           value="{{ notif_type }}"
-                                           class="notification-type-push-admin form-checkbox h-5 w-5 text-blue-600 focus:ring-blue-500 focus:ring-2 rounded cursor-pointer"
-                                           {% if push_enabled %}checked{% endif %}>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
             </div>
             {% endif %}
 
@@ -1679,10 +1645,6 @@
             {% if user %}
             <div id="registered-devices-panel" class="hidden" role="tabpanel" aria-labelledby="registered-devices-tab">
                 <div class="mb-4">
-                    <h3 class="text-lg font-semibold mb-2 text-gray-800">
-                        <i class="fas fa-mobile-alt mr-2 text-blue-600"></i>
-                        Registered Devices
-                    </h3>
                     <p class="text-sm text-gray-600">
                         View all mobile devices registered for push notifications for this user.
                     </p>
@@ -1847,6 +1809,17 @@
             </div>
             {% endif %}
 
+            {# Analytics Tab (lazy-loaded) #}
+            {% if user and can_view_user_analytics %}
+            <div id="analytics-panel" class="hidden" role="tabpanel" aria-labelledby="analytics-tab"
+                 data-analytics-url="{{ url_for('analytics.user_analytics', user_id=user.id, partial=1) }}">
+                <div class="rounded-lg border border-dashed border-gray-300 bg-gray-50 flex flex-col items-center justify-center py-14 px-4" id="analytics-loading">
+                    <i class="fas fa-spinner fa-spin text-blue-600 text-2xl mb-3"></i>
+                    <span class="text-sm text-gray-600">{{ _('Loading analytics...') }}</span>
+                </div>
+            </div>
+            {% endif %}
+
         </div>
     </div>
 
@@ -1908,6 +1881,7 @@
     const previewContainer = document.getElementById('delete-preview-container');
     const unassignContainer = document.getElementById('unassign-preview-container');
     const userForm = document.getElementById('userForm');
+    const userDeletionPreviewUrl = {% if user %}{{ url_for('user_management.user_deletion_preview', user_id=user.id)|tojson }}{% else %}null{% endif %};
 
     window.__clientLog && window.__clientLog('[user_form] actions bootstrap', {
         hasArchiveBtn: !!archiveBtn,
@@ -1936,7 +1910,7 @@
         archiveBtn.addEventListener('click', function(e) {
             e.preventDefault();
             window.__clientLog && window.__clientLog('[user_form] archive button clicked');
-            const isActive = {{ user.active|tojson|safe }};
+            const isActive = {{ (user.active if user else false)|tojson|safe }};
             const msg = isActive
                 ? {{ _('Are you sure you want to deactivate this user? They will not be able to log in.')|tojson|safe }}
                 : {{ _('Are you sure you want to reactivate this user?')|tojson|safe }};
@@ -1968,12 +1942,17 @@
 
         function loadPreview() {
             if (!previewContainer) return;
+            if (!userDeletionPreviewUrl) {
+                previewContainer.innerHTML = '<div class="text-red-600">{{ _("Could not load preview") }}</div>';
+                confirmBtn.disabled = false;
+                return;
+            }
             previewContainer.innerHTML = '<div>{{ _("Loading...") }}</div>';
             if (unassignContainer) unassignContainer.innerHTML = '';
             confirmBtn.disabled = true;
 
             const doFetch = (window.getFetch && window.getFetch()) || fetch;
-            doFetch("{{ url_for('user_management.user_deletion_preview', user_id=user.id) }}")
+            doFetch(userDeletionPreviewUrl)
                 .then(function(r) {
                     window.__clientLog && window.__clientLog('[user_form] delete preview status', r.status);
                     if (!r.ok) throw new Error('Preview request failed with status ' + r.status);
@@ -2224,16 +2203,161 @@
              updateRegionSelectAll(region);
         });
 
+        // Main tab switching + URL query sync (?tab=…&entity_tab=…&secretariat_tab=…)
+        const USER_FORM_TAB = {
+            PARAM_TO_MAIN: {
+                details: 'user-details-panel',
+                user_details: 'user-details-panel',
+                entity: 'entity-permissions-panel',
+                entity_permissions: 'entity-permissions-panel',
+                notifications: 'notification-preferences-panel',
+                notification_preferences: 'notification-preferences-panel',
+                devices: 'registered-devices-panel',
+                registered_devices: 'registered-devices-panel',
+                analytics: 'analytics-panel'
+            },
+            MAIN_TO_PARAM: {
+                'user-details-panel': 'details',
+                'entity-permissions-panel': 'entity',
+                'notification-preferences-panel': 'notifications',
+                'registered-devices-panel': 'devices',
+                'analytics-panel': 'analytics'
+            },
+            PARAM_TO_ENTITY: {
+                countries: 'countries-panel',
+                ns: 'ns-structure-panel',
+                ns_structure: 'ns-structure-panel',
+                secretariat: 'secretariat-panel'
+            },
+            ENTITY_TO_PARAM: {
+                'countries-panel': 'countries',
+                'ns-structure-panel': 'ns_structure',
+                'secretariat-panel': 'secretariat'
+            },
+            PARAM_TO_SEC: {
+                divisions: 'secretariat-divisions-panel',
+                departments: 'secretariat-divisions-panel',
+                regions: 'secretariat-regions-panel'
+            },
+            SEC_TO_PARAM: {
+                'secretariat-divisions-panel': 'divisions',
+                'secretariat-regions-panel': 'regions'
+            }
+        };
+
+        const KNOWN_MAIN_PANEL_IDS = [
+            'user-details-panel',
+            'entity-permissions-panel',
+            'notification-preferences-panel',
+            'registered-devices-panel',
+            'analytics-panel'
+        ];
+
+        function getActiveMainPanelId() {
+            for (let i = 0; i < KNOWN_MAIN_PANEL_IDS.length; i++) {
+                const id = KNOWN_MAIN_PANEL_IDS[i];
+                const el = document.getElementById(id);
+                if (el && !el.classList.contains('hidden')) return id;
+            }
+            return 'user-details-panel';
+        }
+
+        function getActiveEntityPanelId() {
+            const panels = document.querySelectorAll('#entity-tabs-content > div[role="tabpanel"]');
+            for (let i = 0; i < panels.length; i++) {
+                const p = panels[i];
+                if (p && !p.classList.contains('hidden')) return p.id;
+            }
+            return null;
+        }
+
+        function getActiveSecretariatPanelId() {
+            const panels = document.querySelectorAll('#secretariat-subtabs-content > div[role="tabpanel"]');
+            for (let i = 0; i < panels.length; i++) {
+                const p = panels[i];
+                if (p && !p.classList.contains('hidden')) return p.id;
+            }
+            return 'secretariat-divisions-panel';
+        }
+
+        function syncUserFormTabUrl() {
+            const mainId = getActiveMainPanelId();
+            const mainKey = USER_FORM_TAB.MAIN_TO_PARAM[mainId] || 'details';
+            const params = new URLSearchParams();
+            params.set('tab', mainKey);
+
+            if (mainId === 'entity-permissions-panel') {
+                const eid = getActiveEntityPanelId();
+                if (eid && USER_FORM_TAB.ENTITY_TO_PARAM[eid]) {
+                    params.set('entity_tab', USER_FORM_TAB.ENTITY_TO_PARAM[eid]);
+                    if (eid === 'secretariat-panel') {
+                        const sid = getActiveSecretariatPanelId();
+                        if (sid && USER_FORM_TAB.SEC_TO_PARAM[sid]) {
+                            params.set('secretariat_tab', USER_FORM_TAB.SEC_TO_PARAM[sid]);
+                        }
+                    }
+                }
+            }
+
+            const qs = params.toString();
+            const next = window.location.pathname + (qs ? '?' + qs : '') + window.location.hash;
+            const cur = window.location.pathname + window.location.search + window.location.hash;
+            if (next !== cur) {
+                history.replaceState(null, '', next);
+            }
+        }
+
+        function parseMainTabIdFromUrl() {
+            const p = new URLSearchParams(window.location.search);
+            const raw = p.get('tab');
+            if (raw === null || raw === '') return null;
+            const key = String(raw).toLowerCase().replace(/-/g, '_');
+            const id = USER_FORM_TAB.PARAM_TO_MAIN[key];
+            if (!id || !document.getElementById(id)) return null;
+            return id;
+        }
+
+        function parseEntityTabIdFromUrl() {
+            const p = new URLSearchParams(window.location.search);
+            const raw = p.get('entity_tab');
+            if (raw === null || raw === '') return null;
+            const key = String(raw).toLowerCase().replace(/-/g, '_');
+            const id = USER_FORM_TAB.PARAM_TO_ENTITY[key];
+            if (!id || !document.getElementById(id)) return null;
+            return id;
+        }
+
+        function parseSecretariatTabIdFromUrl() {
+            const p = new URLSearchParams(window.location.search);
+            const raw = p.get('secretariat_tab');
+            if (raw === null || raw === '') return null;
+            const key = String(raw).toLowerCase().replace(/-/g, '_');
+            const id = USER_FORM_TAB.PARAM_TO_SEC[key];
+            if (!id || !document.getElementById(id)) return null;
+            return id;
+        }
+
+        function resolveInitialMainTabId() {
+            const fromUrl = parseMainTabIdFromUrl();
+            if (fromUrl) return fromUrl;
+            try {
+                const ls = localStorage.getItem('selectedMainTab');
+                if (ls && document.getElementById(ls)) return ls;
+            } catch (e) { /* ignore */ }
+            return 'user-details-panel';
+        }
+
         // Main tab switching functionality
         const mainTabButtons = document.querySelectorAll('#main-tabs button[role="tab"]');
         const mainTabPanels = document.querySelectorAll('#main-tabs-content > div[role="tabpanel"]');
 
-        function activateMainTab(tabId) {
+        function activateMainTab(tabId, options) {
+            options = options || {};
             // Re-query panels each time to ensure we get all of them (including conditionally rendered ones)
             const allTabPanels = document.querySelectorAll('#main-tabs-content > div[role="tabpanel"]');
 
             // Also get all panels by known IDs as a fallback
-            const knownPanelIds = ['user-details-panel', 'entity-permissions-panel', 'notification-preferences-panel', 'registered-devices-panel'];
+            const knownPanelIds = ['user-details-panel', 'entity-permissions-panel', 'notification-preferences-panel', 'registered-devices-panel', 'analytics-panel'];
             const allPanelsById = knownPanelIds.map(id => document.getElementById(id)).filter(p => p !== null);
 
             // Update tab buttons
@@ -2284,6 +2408,10 @@
             } catch (e) {
                 // Ignore localStorage errors
             }
+
+            if (!options.skipUrl) {
+                syncUserFormTabUrl();
+            }
         }
 
         // Add click handlers to main tabs
@@ -2298,14 +2426,64 @@
             });
         });
 
-        // Always start with the first tab (User Details)
-        activateMainTab('user-details-panel');
+        // Initial main tab: URL query > localStorage > User Details
+        activateMainTab(resolveInitialMainTabId(), { skipUrl: true });
+
+        // Lazy-load Analytics tab content on first activation
+        (function() {
+            var analyticsTab = document.getElementById('analytics-tab');
+            var analyticsPanel = document.getElementById('analytics-panel');
+            if (!analyticsTab || !analyticsPanel) return;
+
+            var analyticsUrl = analyticsPanel.dataset.analyticsUrl;
+            var loaded = false;
+
+            function fetchAnalytics(days) {
+                var url = analyticsUrl;
+                if (days) {
+                    url = url.replace(/([?&])days=\d+/, '$1days=' + days);
+                    if (url === analyticsUrl) {
+                        url += (url.indexOf('?') !== -1 ? '&' : '?') + 'days=' + days;
+                    }
+                }
+                analyticsPanel.innerHTML = '<div class="rounded-lg border border-dashed border-gray-300 bg-gray-50 flex flex-col items-center justify-center py-14 px-4"><i class="fas fa-spinner fa-spin text-blue-600 text-2xl mb-3"></i><span class="text-sm text-gray-600">{{ _("Loading analytics...") }}</span></div>';
+                var fetchFn = (window.getFetch && window.getFetch()) || fetch;
+                fetchFn(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(function(r) { return r.text(); })
+                    .then(function(html) { analyticsPanel.innerHTML = html; })
+                    .catch(function() {
+                        analyticsPanel.innerHTML = '<div class="rounded-lg border border-red-200 bg-red-50 text-center py-10 px-4"><i class="fas fa-exclamation-circle text-red-500 text-2xl mb-2"></i><p class="text-sm text-red-800">{{ _("Failed to load analytics.") }}</p></div>';
+                    });
+            }
+
+            analyticsTab.addEventListener('click', function() {
+                if (loaded) return;
+                loaded = true;
+                fetchAnalytics();
+            });
+
+            analyticsPanel.addEventListener('click', function(ev) {
+                var btn = ev.target.closest('[data-analytics-days]');
+                if (!btn || !analyticsPanel.contains(btn)) return;
+                var days = parseInt(btn.getAttribute('data-analytics-days'), 10);
+                if (!isFinite(days) || days <= 0) return;
+                ev.preventDefault();
+                fetchAnalytics(days);
+            });
+
+            window.ensureUserFormAnalyticsLoaded = function() {
+                if (loaded) return;
+                loaded = true;
+                fetchAnalytics();
+            };
+        })();
 
         // Initialize entity sub-tab switching functionality (within Entity Permissions tab)
         const entityTabButtons = document.querySelectorAll('#entity-tabs button[role="tab"]');
         const entityTabPanels = document.querySelectorAll('#entity-tabs-content > div[role="tabpanel"]');
 
-        function activateEntityTab(tabId) {
+        function activateEntityTab(tabId, options) {
+            options = options || {};
             // Update tab buttons
             entityTabButtons.forEach(btn => {
                 const targetPanelId = btn.getAttribute('data-tabs-target');
@@ -2330,7 +2508,13 @@
             });
 
             // Store selected tab in localStorage
-            localStorage.setItem('selectedEntityTab', tabId);
+            try {
+                localStorage.setItem('selectedEntityTab', tabId);
+            } catch (e) { /* ignore */ }
+
+            if (!options.skipUrl) {
+                syncUserFormTabUrl();
+            }
         }
 
         // Add click handlers to entity tabs
@@ -2352,16 +2536,19 @@
             return null;
         }
 
-        // Initialize with stored tab or default to first available
-        const storedEntityTab = localStorage.getItem('selectedEntityTab');
-        if (storedEntityTab && document.getElementById(storedEntityTab)) {
-            activateEntityTab(storedEntityTab);
-        } else {
-            const fallbackTab = getDefaultEntityTab();
-            if (fallbackTab) {
-                activateEntityTab(fallbackTab);
+        // Entity sub-tab: URL entity_tab > localStorage > first tab
+        (function initEntitySubTab() {
+            if (!document.getElementById('entity-tabs-content')) return;
+            let tabId = parseEntityTabIdFromUrl();
+            if (!tabId) {
+                try {
+                    const ls = localStorage.getItem('selectedEntityTab');
+                    if (ls && document.getElementById(ls)) tabId = ls;
+                } catch (e) { /* ignore */ }
             }
-        }
+            if (!tabId) tabId = getDefaultEntityTab();
+            if (tabId) activateEntityTab(tabId, { skipUrl: true });
+        })();
 
         // ---------------------------------------------------------------------
         // Freeze hierarchy columns (NS Structure and Secretariat tabs)
@@ -2550,7 +2737,8 @@
         // Secretariat sub-tabs behavior
         const secretariatSubtabButtons = document.querySelectorAll('#secretariat-subtabs button[role="tab"]');
         const secretariatSubtabPanels = document.querySelectorAll('#secretariat-subtabs-content > div[role="tabpanel"]');
-        function activateSecretariatSubtab(panelId) {
+        function activateSecretariatSubtab(panelId, options) {
+            options = options || {};
             secretariatSubtabButtons.forEach(btn => {
                 const target = btn.getAttribute('data-tabs-target');
                 if (target === '#' + panelId) {
@@ -2570,7 +2758,13 @@
                     panel.classList.add('hidden');
                 }
             });
-            localStorage.setItem('selectedSecretariatSubtab', panelId);
+            try {
+                localStorage.setItem('selectedSecretariatSubtab', panelId);
+            } catch (e) { /* ignore */ }
+
+            if (!options.skipUrl) {
+                syncUserFormTabUrl();
+            }
         }
         secretariatSubtabButtons.forEach(btn => {
             btn.addEventListener('click', function() {
@@ -2578,11 +2772,31 @@
                 activateSecretariatSubtab(targetPanelId);
             });
         });
-        const storedSecretariatSubtab = localStorage.getItem('selectedSecretariatSubtab');
-        if (storedSecretariatSubtab && document.getElementById(storedSecretariatSubtab)) {
-            activateSecretariatSubtab(storedSecretariatSubtab);
-        } else {
-            activateSecretariatSubtab('secretariat-divisions-panel');
+        (function initSecretariatSubTab() {
+            if (!document.getElementById('secretariat-subtabs')) return;
+            let sid = parseSecretariatTabIdFromUrl();
+            if (!sid) {
+                try {
+                    const ls = localStorage.getItem('selectedSecretariatSubtab');
+                    if (ls && document.getElementById(ls)) sid = ls;
+                } catch (e) { /* ignore */ }
+            }
+            if (!sid) sid = 'secretariat-divisions-panel';
+            if (document.getElementById(sid)) {
+                activateSecretariatSubtab(sid, { skipUrl: true });
+            } else {
+                activateSecretariatSubtab('secretariat-divisions-panel', { skipUrl: true });
+            }
+        })();
+
+        // Normalize / persist tab state in the address bar (bookmarkable / refresh-safe)
+        syncUserFormTabUrl();
+
+        if (typeof window.ensureUserFormAnalyticsLoaded === 'function') {
+            var ap = document.getElementById('analytics-panel');
+            if (ap && !ap.classList.contains('hidden')) {
+                window.ensureUserFormAnalyticsLoaded();
+            }
         }
 
         // Notification preferences select all functionality

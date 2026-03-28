@@ -139,8 +139,6 @@ def _baseline_roles(permission_catalog: List[Tuple[str, str, str]]) -> List[Dict
                 "admin.countries.view",
                 # Indicator bank (view)
                 "admin.indicator_bank.view",
-                # Governance (view)
-                "admin.governance.view",
             ],
         },
         {
@@ -318,6 +316,12 @@ def _baseline_roles(permission_catalog: List[Tuple[str, str, str]]) -> List[Dict
             "permission_codes": ["admin.translations.manage"],
         },
         {
+            "code": "admin_docs_viewer",
+            "name": "Admin: Docs (View)",
+            "description": "View admin documentation and onboarding pages.",
+            "permission_codes": ["admin.docs.view"],
+        },
+        {
             "code": "admin_analytics_viewer",
             "name": "Admin: Analytics (View)",
             "description": "View analytics.",
@@ -346,6 +350,12 @@ def _baseline_roles(permission_catalog: List[Tuple[str, str, str]]) -> List[Dict
             "name": "Admin: AI (Manage)",
             "description": "Manage AI system (AI dashboard, document library, reasoning traces, processing).",
             "permission_codes": ["admin.ai.manage"],
+        },
+        {
+            "code": "admin_governance_viewer",
+            "name": "Admin: Governance (View)",
+            "description": "View the Governance dashboard (focal point coverage, access control, quality, compliance, metadata).",
+            "permission_codes": ["admin.governance.view"],
         },
         {
             "code": "assignment_viewer",

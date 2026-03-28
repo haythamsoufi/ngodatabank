@@ -41,12 +41,8 @@ def safe_remove(*, reason: Optional[str] = None) -> None:
         # Only remove session if we're in an application context
         if has_app_context():
             db.session.remove()
-            if reason:
-                logger.debug("db.session.remove() executed (%s)", reason)
         else:
-            # Silently skip if outside app context (e.g., in call_on_close after request context is gone)
-            if reason:
-                logger.debug("db.session.remove() skipped - no app context (%s)", reason)
+            pass  # Silently skip if outside app context (e.g., in call_on_close after request context is gone)
     except Exception as e:
         logger.warning("db.session.remove() failed (%s): %s", reason or "no_reason", e)
 

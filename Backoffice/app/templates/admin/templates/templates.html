@@ -33,16 +33,6 @@
         'attributes': {'title': _('Create a new template')}
     }) %}
 {% endif %}
-{% if current_is_system_manager %}
-    {% set __ = header_actions.items.append({
-        'type': 'link',
-        'text': _('Import KoBo Data'),
-        'icon': 'fas fa-database',
-        'url': url_for('form_builder.kobo_data_import'),
-        'classes': 'professional-action-btn professional-action-btn-orange',
-        'attributes': {'title': _('Import submission data from a KoBo Toolbox data export')}
-    }) %}
-{% endif %}
 {% if can_manage_lists %}
     {% set __ = header_actions.items.append({
         'type': 'link',

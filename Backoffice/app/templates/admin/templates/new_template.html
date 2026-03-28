@@ -126,12 +126,6 @@
 
 
         <div class="flex items-center justify-end gap-3 mt-6"> {# Align buttons to the right with gap #}
-            {% if current_is_system_manager %}
-            <a href="{{ url_for('form_builder.kobo_data_import') }}" class="inline-flex items-center bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 px-4 shadow transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500" title="{{ _('Import submission data from KoBo data export') }}">
-                <i class="fas fa-database w-4 h-4 mr-2"></i>
-                {{ _('Import KoBo Data') }}
-            </a>
-            {% endif %}
             <button type="button" id="kobo-import-btn" class="inline-flex items-center bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 shadow transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" title="{{ _('Import from Kobo XLSForm') }}">
                 <i class="fas fa-file-import w-4 h-4 mr-2"></i>
                 {{ _('Import from Kobo XLS') }}

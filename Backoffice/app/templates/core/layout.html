@@ -233,7 +233,7 @@
             pointer-events: none !important;
         }
 
-        /* System Manager badge: full label only at xl+ so icon-only runs with the lg nav bar before title wrap */
+        /* System Manager badge + top nav (Dashboard/Documentation): full labels only at xl+ so icon-only frees brand title space in the lg band */
         .system-manager-label {
             display: none;
         }
@@ -581,7 +581,7 @@
                         <div class="hidden lg:flex nav-menu-group h-full">
                             <a href="{{ url_for('main.dashboard') }}" class="nav-menu-button group" title="{{ _('Dashboard') }}">
                                 {{ svg_icon('home', 'w-5 h-5 flex-shrink-0') }}
-                                <span class="font-medium text-sm">{{ _('Dashboard') }}</span>
+                                <span class="nav-menu-button-label font-medium text-sm">{{ _('Dashboard') }}</span>
                             </a>
                             {# Temporarily hidden - NS Structure button
                             <a href="{{ url_for('main.manage_ns_hierarchy') }}" class="nav-menu-button group" title="{{ _('NS Structure') }}">
@@ -600,7 +600,7 @@
 
                             <a href="{{ url_for('help_docs.index') }}" class="nav-menu-button group" title="{{ _('Documentation') }}">
                                 {{ svg_icon('book', 'w-5 h-5 flex-shrink-0') }}
-                                <span class="font-medium text-sm">{{ _('Documentation') }}</span>
+                                <span class="nav-menu-button-label font-medium text-sm">{{ _('Documentation') }}</span>
                             </a>
 
                         </div>
@@ -710,7 +710,7 @@
                 </div>
             </nav>
 
-            <main class="flex-1 overflow-x-hidden bg-gray-100" style="max-height: calc(100vh - 4rem); overflow-y: auto;">
+            <main class="admin-scroll-main flex-1 overflow-x-hidden bg-gray-100" style="max-height: calc(100vh - 4rem); overflow-y: auto;">
                 <div id="flashMessagesContainer" class="container mx-auto px-4 mt-4">
                     {% with messages = get_flashed_messages(with_categories=true) %}
                         {% if messages %}
@@ -1178,6 +1178,7 @@
     <script src="{{ static_url('js/lib/action-router.js') }}"></script>
     <script src="{{ static_url('js/lib/form-submit-guard.js') }}"></script>
     <script src="{{ static_url('js/layout.js') }}"></script>
+    <script src="{{ static_url('js/page-header-pin.js') }}"></script>
     <script src="{{ static_url('js/confirm-dialogs.js') }}"></script>
     <script src="{{ static_url('js/lib/modal-utils.js') }}"></script>
     <script src="{{ static_url('js/lib/platform-error-reporter.js') }}"></script>
@@ -1191,6 +1192,15 @@
     <!-- Cache verification helper (only loaded in debug mode) -->
     {% if config.DEBUG %}
     <script src="{{ static_url('js/cache-verification.js') }}"></script>
+    {% endif %}
+
+    {# Global config for user hover profile popups #}
+    {% set can_manage_users = is_system_manager or has_permission('admin.users.edit') %}
+    {% if can_manage_users %}
+    <script nonce="{{ csp_nonce() }}">
+    window.UserHoverProfileConfig = window.UserHoverProfileConfig || {};
+    window.UserHoverProfileConfig.userDetailUrlPattern = {{ url_for('user_management.edit_user', user_id=0)|replace('0', '{id}')|tojson|safe }};
+    </script>
     {% endif %}
 
     {# Centralized AG Grid i18n for all pages (used by ag-grid helper/libs when loaded) #}

@@ -293,6 +293,15 @@
         popupEl.style.boxShadow = theme.popupShadow || '0 10px 30px rgba(0,0,0,0.25)';
     }
 
+    function getUserDetailUrl(profile) {
+        var config = window.UserHoverProfileConfig || {};
+        var pattern = config.userDetailUrlPattern;
+        if (!pattern) return null;
+        var userId = profile && profile.id;
+        if (userId === null || userId === undefined || userId === '') return null;
+        return pattern.replace('{id}', encodeURIComponent(String(userId)));
+    }
+
     function buildPopupHtml(profile) {
         var displayName = profile.name || profile.email || 'Unknown user';
         var email = profile.email || '';
@@ -374,6 +383,14 @@
             html += '<a href="' + escapeHtml(teamsDeepLink) + '" data-teams-web-link="' + escapeHtml(teamsWebLink) + '" class="ag-user-teams-link" title="Teams Chat" aria-label="Teams Chat" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border:1px solid #bfdbfe;border-radius:9999px;background:#eff6ff;color:#1d4ed8;font-size:13px;text-decoration:none;">';
             html += '<span aria-hidden="true" style="display:block;width:14px;height:14px;background-image:url(\'/static/images/teams-icon.svg\');background-repeat:no-repeat;background-position:center;background-size:contain;"></span>';
             html += '</a>';
+
+            var detailUrl = getUserDetailUrl(profile);
+            if (detailUrl) {
+                html += '<a href="' + escapeHtml(detailUrl) + '" title="User Details" aria-label="User Details" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border:1px solid #93c5fd;border-radius:9999px;background:#eff6ff;color:#2563eb;font-size:13px;text-decoration:none;margin-left:auto;">';
+                html += '<i class="fas fa-user-cog" aria-hidden="true"></i>';
+                html += '</a>';
+            }
+
             html += '</div>';
         }
         return html;

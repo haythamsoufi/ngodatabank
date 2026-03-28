@@ -411,8 +411,10 @@ def user_analytics(user_id):
         desc(UserLoginLog.timestamp)
     ).limit(20).all()
 
+    partial = request.args.get('partial', '0') == '1'
+    template = 'admin/analytics/_user_detail_partial.html' if partial else 'admin/analytics/user_detail.html'
     return render_template(
-        'admin/analytics/user_detail.html',
+        template,
         user=user,
         login_analytics=login_analytics,
         activity_analytics=activity_analytics,

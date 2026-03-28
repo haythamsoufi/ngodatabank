@@ -82,7 +82,7 @@ def _apply_role_type_and_implications(
     seen = set()
     cleaned = [r for r in cleaned if not (r in seen or seen.add(r))]
 
-    _log.warning("[_apply_role_type] ENTER role_type=%r, cleaned_ids=%s", role_type, cleaned)
+    _log.debug("[_apply_role_type] ENTER role_type=%r, cleaned_ids=%s", role_type, cleaned)
 
     try:
         from app.models.rbac import RbacRole
@@ -106,14 +106,14 @@ def _apply_role_type_and_implications(
             _codes = {str(code) for _, code in _rows if code}
             has_admin = any(c.startswith("admin_") or c == "system_manager" for c in _codes)
             has_approver = "assignment_approver" in _codes
-            _log.warning("[_apply_role_type] auto-downgrade check: codes=%s, has_admin=%s, has_approver=%s", _codes, has_admin, has_approver)
+            _log.debug("[_apply_role_type] auto-downgrade check: codes=%s, has_admin=%s, has_approver=%s", _codes, has_admin, has_approver)
             if not has_admin and not has_approver:
                 normalized_role_type = "focal_point"
-                _log.warning("[_apply_role_type] DOWNGRADED to focal_point")
+                _log.debug("[_apply_role_type] DOWNGRADED to focal_point")
         except Exception as e:
             current_app.logger.debug("_apply_role_type auto-downgrade check failed: %s", e)
 
-    _log.warning("[_apply_role_type] normalized_role_type=%s", normalized_role_type)
+    _log.debug("[_apply_role_type] normalized_role_type=%s", normalized_role_type)
 
     required_codes: list[str] = []
     if normalized_role_type == "focal_point":
@@ -137,22 +137,8 @@ def _apply_role_type_and_implications(
         except Exception as e:
             current_app.logger.debug("RBAC code_by_id query failed: %s", e)
 
-    # Essentials (admin_core) includes key assignment roles.
-    # If admin_core is present, ensure these assignment roles are present too.
-    if cleaned and normalized_role_type != "focal_point":
-        try:
-            cleaned_rows = (
-                RbacRole.query.with_entities(RbacRole.id, RbacRole.code)
-                .filter(RbacRole.id.in_(cleaned))
-                .all()
-            )
-            cleaned_codes = {str(code) for rid, code in cleaned_rows if rid and code}
-            if "admin_core" in cleaned_codes:
-                for c in ["assignment_viewer", "assignment_editor_submitter", "assignment_approver"]:
-                    if c not in required_codes:
-                        required_codes.append(c)
-        except Exception as e:
-            current_app.logger.debug("admin_core required_codes check failed: %s", e)
+    # Assignment roles are now independent of admin_core — they must be explicitly assigned.
+    # Do not auto-inject assignment roles based on admin role presence.
 
     # Resolve role IDs in bulk
     target_codes = set(drop_role_codes) | set(required_codes)
@@ -650,7 +636,7 @@ def new_user():
                            enabled_entity_types=enabled_entity_groups,
                            azure_sso_enabled=azure_sso_enabled)
 
-@bp.route("/edit_user/<int:user_id>", methods=["GET", "POST"])
+@bp.route("/users/edit_user/<int:user_id>", methods=["GET", "POST"])
 @permission_required('admin.users.edit')
 def edit_user(user_id):
     """Admin route to edit an existing user."""

@@ -9,6 +9,8 @@
 {% set can_archive_indicators = current_is_system_manager or has_permission('admin.indicator_bank.archive') %}
 {% set can_view_audit = current_is_system_manager or has_permission('admin.audit.view') %}
 {% set can_manage_org = current_is_system_manager or has_permission('admin.organization.manage') %}
+{# Actions dropdown is only relevant when the user can do something beyond read-only viewing. #}
+{% set can_see_actions_dropdown = can_create_indicators or can_edit_indicators or can_archive_indicators or can_review_suggestions or can_view_audit or can_manage_org %}
 
 {% block title %}{{ _('Indicator Bank') }}{% endblock %}
 
@@ -353,6 +355,7 @@
         'attributes': {'title': _('View indicator suggestions')}
     }) %}
 {% endif %}
+{% if can_see_actions_dropdown %}
 {% set __ = header_actions.items.append({
     'type': 'button',
     'text': _('Actions'),
@@ -360,6 +363,25 @@
     'classes': 'professional-action-btn',
     'attributes': {'id': 'actions-dropdown-btn', 'title': _('Additional actions')}
 }) %}
+{% else %}
+{# View-only users: surface both accessible actions directly in the header. #}
+{% set __ = header_actions.items.append({
+    'type': 'link',
+    'text': _('Neural Map'),
+    'url': url_for('system_admin.indicator_bank_neural_map'),
+    'icon': 'fas fa-project-diagram',
+    'classes': 'professional-action-btn',
+    'attributes': {'title': _('Indicator neural map')}
+}) %}
+{# Reuses the same id so the existing JS click handler opens the modal without changes. #}
+{% set __ = header_actions.items.append({
+    'type': 'button',
+    'text': _('Export'),
+    'icon': 'fas fa-file-excel',
+    'classes': 'professional-action-btn',
+    'attributes': {'id': 'export-import-btn', 'title': _('Export indicators to Excel')}
+}) %}
+{% endif %}
 
 {{ page_header(
     title=_('Indicator Bank'),
@@ -373,6 +395,7 @@
 ) }}
 
     <!-- Actions Dropdown Menu (positioned after header) -->
+    {% if can_see_actions_dropdown %}
     <div id="actions-dropdown-menu" class="fixed w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-[9999] hidden">
         <div class="py-2">
                 {% if can_create_indicators %}
@@ -419,6 +442,7 @@
                 {% endif %}
         </div>
     </div>
+    {% endif %}{# can_see_actions_dropdown #}
 
     {% from "components/ag_grid_includes.html" import ag_grid_container %}
     <!-- Main Table Card -->

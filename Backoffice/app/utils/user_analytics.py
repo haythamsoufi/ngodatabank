@@ -900,10 +900,17 @@ def cleanup_inactive_sessions(inactivity_hours=None, max_session_hours=None):
     """
     Clean up inactive sessions and sessions that have exceeded maximum duration.
 
+    Each browser / device login creates a separate UserSessionLog row (same user_id can
+    have several is_active=True rows until logout or cleanup). This does not enforce
+    a single session per user account.
+
     Args:
         inactivity_hours (int): Hours of inactivity before session is considered stale
         max_session_hours (int): Maximum session duration in hours
     """
+    lock_conn = None
+    lock_acquired = False
+    lock_id = None
     try:
         from config import Config
         from flask import current_app
@@ -915,20 +922,23 @@ def cleanup_inactive_sessions(inactivity_hours=None, max_session_hours=None):
             current_app.logger.info(f"Skipping session cleanup - table '{table_name}' not created yet")
             return 0
 
-        lock_conn = None
-        lock_acquired = False
         lock_id = int(current_app.config.get('SESSION_CLEANUP_LOCK_ID', DEFAULT_SESSION_CLEANUP_LOCK_ID))
 
-        lock_conn = db.engine.connect()
-        lock_acquired = lock_conn.execute(
-            text("SELECT pg_try_advisory_lock(:lock_id)"),
-            {"lock_id": lock_id}
-        ).scalar()
-
-        if not lock_acquired:
-            current_app.logger.info("Skipping session cleanup - another worker is running cleanup")
-            lock_conn.close()
-            return 0
+        # PostgreSQL advisory lock avoids duplicate cleanup across workers; SQLite etc. skip the lock.
+        dialect = db.engine.dialect.name
+        if dialect == "postgresql":
+            lock_conn = db.engine.connect()
+            lock_acquired = bool(
+                lock_conn.execute(
+                    text("SELECT pg_try_advisory_lock(:lock_id)"),
+                    {"lock_id": lock_id},
+                ).scalar()
+            )
+            if not lock_acquired:
+                current_app.logger.info("Skipping session cleanup - another worker is running cleanup")
+                lock_conn.close()
+                lock_conn = None
+                return 0
 
         # Use config values if not provided
         if inactivity_hours is None:
@@ -993,7 +1003,7 @@ def cleanup_inactive_sessions(inactivity_hours=None, max_session_hours=None):
     finally:
         if lock_conn is not None:
             try:
-                if lock_acquired:
+                if lock_acquired and lock_id is not None and db.engine.dialect.name == "postgresql":
                     lock_conn.execute(text("SELECT pg_advisory_unlock(:lock_id)"), {"lock_id": lock_id})
             except Exception as unlock_error:
                 current_app.logger.warning(f"Failed to release session cleanup lock: {unlock_error}")

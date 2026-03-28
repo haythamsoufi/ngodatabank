@@ -26,6 +26,7 @@ const CORE_ASSETS = [
   '/static/js/lib/safe-dom.js',
   '/static/js/lib/action-router.js',
   '/static/js/layout.js',
+  '/static/js/page-header-pin.js',
   '/static/js/confirm-dialogs.js',
   '/static/js/components.js',
   '/static/js/flash-messages.js',

@@ -41,8 +41,8 @@ class RbacRole(db.Model):
     permissions = db.relationship(
         "RbacPermission",
         secondary="rbac_role_permission",
-        lazy="dynamic",
-        backref=db.backref("roles", lazy="dynamic"),
+        lazy="select",
+        backref=db.backref("roles", lazy="select"),
     )
 
     def __repr__(self) -> str:  # pragma: no cover

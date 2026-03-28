@@ -572,6 +572,28 @@ nav[class*="nav-"] {
     justify-content: center;
 }
 
+/* lg–xl: icon-only Dashboard/Documentation so brand title keeps one line longer (before xl, same band as .system-manager-label) */
+@media (min-width: 1024px) and (max-width: 1279.98px) {
+    .nav-menu-button > .nav-menu-button-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+    }
+
+    .nav-menu-button {
+        position: relative;
+        padding-left: 0.875rem;
+        padding-right: 0.875rem;
+        gap: 0;
+    }
+}
+
 .nav-menu-button:hover svg {
     opacity: 1;
 }

@@ -615,21 +615,6 @@ def api_get_user_roles(user_id):
         role_ids = [ur.role_id for ur in user_roles]
         roles = RbacRole.query.filter(RbacRole.id.in_(role_ids)).all() if role_ids else []
 
-        # If user has Essentials (admin_core), expose the "included" assignment roles for UI clarity.
-        implied_roles = []
-        try:
-            role_codes = {r.code for r in roles if getattr(r, "code", None)}
-            if "admin_core" in role_codes:
-                essential_assignment_codes = ["assignment_viewer", "assignment_editor_submitter", "assignment_approver"]
-                implied = RbacRole.query.filter(RbacRole.code.in_(essential_assignment_codes)).all()
-                implied_roles = [
-                    {'id': r.id, 'code': r.code, 'name': r.name, 'description': r.description}
-                    for r in implied
-                ]
-        except Exception as e:
-            current_app.logger.debug("RbacRole implied_roles fallback: %s", e)
-            implied_roles = []
-
         return json_ok(
             success=True,
             user={'id': user.id, 'email': user.email, 'name': user.name},
@@ -642,7 +627,6 @@ def api_get_user_roles(user_id):
                 }
                 for r in roles
             ],
-            implied_roles=implied_roles
         )
     except Exception as e:
         return handle_json_view_exception(e, GENERIC_ERROR_MESSAGE, status_code=500)

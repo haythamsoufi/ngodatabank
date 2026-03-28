@@ -67,37 +67,6 @@ def _rbac_cache_set(g, cache_attr: str, key: Any, value: Any) -> None:
 class AuthorizationService:
     """Unified authorization service for all access control decisions."""
 
-    # Admin gate permissions: users with ANY of these permissions are considered "admin"
-    # This list is used in multiple places (route decorators, template checks) - keep in sync!
-    ADMIN_GATE_PERMISSIONS = [
-        "admin.users.view",
-        "admin.users.roles.assign",
-        "admin.users.grants.manage",
-        "admin.access_requests.view",
-        "admin.templates.view",
-        "admin.assignments.view",
-        "admin.settings.manage",
-        "admin.organization.manage",
-        "admin.countries.view",
-        "admin.indicator_bank.view",
-        "admin.analytics.view",
-        "admin.audit.view",
-        "admin.security.view",
-        "admin.security.respond",
-        "admin.data_explore.data_table",
-        "admin.data_explore.analysis",
-        "admin.data_explore.compliance",
-        "admin.governance.view",
-        "admin.resources.manage",
-        "admin.publications.manage",
-        "admin.documents.manage",
-        "admin.ai.manage",
-        "admin.notifications.manage",
-        "admin.translations.manage",
-        "admin.api.manage",
-        "admin.plugins.manage",
-    ]
-
     # Role fallback when permissions are not seeded yet
     ADMIN_ROLE_PREFIXES = ("admin_",)
     ADMIN_ROLE_CODES = {"admin_core"}
@@ -985,8 +954,6 @@ class AuthorizationService:
             }
         return AuthorizationService.has_rbac_permission(user, "assignment.approve", scope=scope)
 
-        # Unreachable
-
     @staticmethod
     def can_reopen_assignment(assignment_entity_status: AssignmentEntityStatus, user) -> bool:
         """
@@ -1026,8 +993,6 @@ class AuthorizationService:
                 "assigned_form_id": assignment_entity_status.assigned_form_id,
             }
         return AuthorizationService.has_rbac_permission(user, "assignment.reopen", scope=scope)
-
-        # Unreachable
 
     @staticmethod
     def check_self_report_access(assignment_entity_status: AssignmentEntityStatus, user) -> bool:
