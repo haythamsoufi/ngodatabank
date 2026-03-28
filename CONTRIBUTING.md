@@ -45,6 +45,11 @@ gh ruleset check main --repo OWNER/REPO
 ```
 
 After editing [`.github/ruleset-protect-main.json`](.github/ruleset-protect-main.json), apply updates with the GitHub API (`gh api ... rulesets/RULESET_ID`) as documented in that file’s surrounding maintainer notes—or mirror the same policy in **Settings → Rules → Rulesets**.
+- **Branch ruleset** “Protect main” — pull requests required to update `main`, merge methods allowed, stale review dismissal, **resolved review threads required before merge**, no force-push, no branch deletion, and a **required status check** named **`Analyze (CodeQL)`** (see [`.github/ruleset-protect-main.json`](.github/ruleset-protect-main.json); `do_not_enforce_on_create` on that rule avoids blocking brand-new branches).
+- **Secret scanning** and **secret scanning push protection** (`gh repo edit`).
+- **Dependabot** — [`.github/dependabot.yml`](.github/dependabot.yml) (pip/npm/pub + GitHub Actions).
+- **Code scanning** — [`.github/workflows/codeql.yml`](.github/workflows/codeql.yml) for `javascript-typescript` and `python` over `Backoffice/` and `Website/` (see [`.github/codeql/codeql-config.yml`](.github/codeql/codeql-config.yml)).
+- **Dependency Review** on pull requests — [`.github/workflows/dependency-review.yml`](.github/workflows/dependency-review.yml).
 
 Automation detail (for reference): Dependabot is configured in [`.github/dependabot.yml`](.github/dependabot.yml); CodeQL in [`.github/workflows/codeql.yml`](.github/workflows/codeql.yml) with [`.github/codeql/codeql-config.yml`](.github/codeql/codeql-config.yml); dependency review in [`.github/workflows/dependency-review.yml`](.github/workflows/dependency-review.yml). If you add a new **required** check to the ruleset, confirm the exact check name in a PR’s **Checks** tab after the first run (e.g. existing **`Analyze (CodeQL)`**).
 
