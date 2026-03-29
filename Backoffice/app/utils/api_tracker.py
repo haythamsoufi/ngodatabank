@@ -13,7 +13,7 @@ def track_api_request():
             return
 
         g.api_start_time = time.time()
-        current_app.logger.debug(f"Starting API request tracking for: {request.path}")
+        current_app.logger.info(f"Starting API request tracking for: {request.path}")
 
 def track_api_response(response):
     """Track API response after it's processed."""
@@ -65,7 +65,7 @@ def track_api_response(response):
 
                     temp_db.add(key_usage)
 
-                    current_app.logger.debug(
+                    current_app.logger.info(
                         f"Tracked API key usage: {api_key_record.client_name} "
                         f"(key_id: {api_key_record.id}, endpoint: {request.path}, "
                         f"status: {response.status_code}, time: {response_time:.2f}ms)"
@@ -73,7 +73,7 @@ def track_api_response(response):
 
                 temp_db.commit()
 
-                current_app.logger.debug(
+                current_app.logger.info(
                     f"Tracked API usage: {request.method} {request.path} "
                     f"(status: {response.status_code}, time: {response_time:.2f}ms)"
                 )

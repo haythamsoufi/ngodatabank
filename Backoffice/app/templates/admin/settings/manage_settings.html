@@ -35,7 +35,8 @@
 ) }}
 
 <div class="bg-white shadow-md border border-gray-200">
-  <form method="POST" action="{{ url_for('settings.manage_settings') }}">
+  {# no-submit-guard: async save calls preventDefault(); global FormSubmitGuard would reset the button in bubble phase. #}
+  <form id="manage-settings-form" class="no-submit-guard" method="POST" action="{{ url_for('settings.manage_settings') }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
 
     {# ── Tab navigation ──────────────────────────────────── #}
@@ -817,7 +818,7 @@
         <input type="checkbox" name="restart" value="1" class="mr-2">
         {{ _('Restart app after saving (recommended to apply across all processes)') }}
       </label>
-      <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">{{ _('Save Settings') }}</button>
+      <button type="submit" id="settings-save-btn" class="inline-flex items-center justify-center gap-2 min-w-44 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none">{{ _('Save Settings') }}</button>
     </div>
 
     </div>{# /p-6 content wrapper #}
@@ -1543,7 +1544,7 @@
   modal.addEventListener('click', function (e) { if (e.target === modal) modal.classList.add('hidden'); });
 
   /* ── Sync translations JSON on form submit ─────── */
-  var form = document.querySelector('form[action]');
+  var form = document.getElementById('manage-settings-form');
   if (form) {
     form.addEventListener('submit', function () {
       document.querySelectorAll('[data-translations-key]').forEach(function (container) {
@@ -1918,7 +1919,7 @@
   });
 
   /* ── Sync in-memory data → hidden inputs on form submit ── */
-  var form = document.querySelector('form[action]');
+  var form = document.getElementById('manage-settings-form');
   if (form) {
     form.addEventListener('submit', function () {
       document.querySelectorAll('.email-template-editor').forEach(function (editor) {
@@ -1965,8 +1966,57 @@
 (function () {
   'use strict';
 
-  var form = document.querySelector('form[action]');
-  if (!form) return;
+  var LOG = '[settings-save]';
+  function log(step, extra) {
+    var msg = LOG + ' ' + step + (extra !== undefined && extra !== null && extra !== '' ? ' ' + extra : '');
+    var emit = window.__consoleSaved && window.__consoleSaved.log;
+    if (emit) emit(msg);
+    else if (window.console && console.log) console.log(msg);
+  }
+
+  var form = document.getElementById('manage-settings-form');
+  if (!form) {
+    log('init-skip', 'no #manage-settings-form');
+    return;
+  }
+  log('init', 'bound');
+
+  var savingLabel = {{ _('Saving...') | tojson }};
+  var savingBtnHtml =
+    '<span class="inline-flex items-center justify-center gap-2">' +
+    '<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full shrink-0" aria-hidden="true"></span>' +
+    '<span>' + savingLabel + '</span></span>';
+
+  function saveButton() {
+    return document.getElementById('settings-save-btn') || form.querySelector('button[type="submit"]');
+  }
+
+  var SAVING_BTN_CLASSES = ['opacity-50', 'cursor-wait', 'pointer-events-none'];
+
+  function setSaveButtonSaving(isSaving, restoreHtml) {
+    var btn = saveButton();
+    if (!btn) {
+      log('button-missing');
+      return;
+    }
+    if (isSaving) {
+      btn.innerHTML = savingBtnHtml;
+      btn.setAttribute('disabled', 'disabled');
+      btn.disabled = true;
+      btn.setAttribute('aria-busy', 'true');
+      btn.setAttribute('aria-disabled', 'true');
+      SAVING_BTN_CLASSES.forEach(function (c) { btn.classList.add(c); });
+      log('ui-saving', 'disabled=' + String(btn.disabled));
+      return;
+    }
+    SAVING_BTN_CLASSES.forEach(function (c) { btn.classList.remove(c); });
+    if (restoreHtml != null) btn.innerHTML = restoreHtml;
+    btn.removeAttribute('disabled');
+    btn.disabled = false;
+    btn.removeAttribute('aria-busy');
+    btn.removeAttribute('aria-disabled');
+    log('ui-restored');
+  }
 
   function decodeEntities(s) {
     if (!s) return '';
@@ -2098,14 +2148,21 @@
 
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
+    if (form.dataset.settingsSaveInFlight === '1') {
+      log('submit-blocked', 'already saving');
+      return;
+    }
+    form.dataset.settingsSaveInFlight = '1';
+    log('submit');
 
-    // Disable the normal submit button to prevent double-submits.
-    var submitBtn = form.querySelector('button[type="submit"]');
-    if (submitBtn) submitBtn.disabled = true;
+    var btn = saveButton();
+    var originalSubmitHtml = btn ? btn.innerHTML : '';
+    setSaveButtonSaving(true);
 
     try {
-      // First: save heavy email templates via JSON (base64) if changed.
+      log('email-templates');
       await saveEmailTemplatesIfChanged();
+      log('email-templates-done');
 
       // Second: submit the "light" settings without email-template blobs.
       // Ensure legacy flag stays off so backend doesn't expect those fields.
@@ -2123,6 +2180,7 @@
 
       var fetchFn = (window.getFetch && window.getFetch()) || fetch;
       var payload = window.formDataToJson ? window.formDataToJson(form) : null;
+      log('main-request');
       var resp = await fetchFn(form.action, {
         method: 'POST',
         body: payload ? JSON.stringify(payload) : new FormData(form),
@@ -2137,11 +2195,14 @@
         throw new Error('Failed to save settings (' + resp.status + ')');
       }
 
+      log('redirect', String(resp.status));
       window.location.href = resp.url || form.action;
     } catch (err) {
+      delete form.dataset.settingsSaveInFlight;
       var m = (err && err.message) ? err.message : 'Failed to save settings';
+      log('error', m);
       if (window.showAlert) window.showAlert(m, 'error'); else console.error(m);
-      if (submitBtn) submitBtn.disabled = false;
+      setSaveButtonSaving(false, originalSubmitHtml);
     }
   });
 })();
