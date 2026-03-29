@@ -1511,8 +1511,9 @@
                 warningDiv.classList.add('hidden');
             }
 
-            // Load translation data
-            fetch('{{ url_for("utilities.edit_translation") }}?msgid=' + encodeURIComponent(msgid), {
+            // Load translation data (base64 encode msgid to avoid WAF false positives on HTML/SQL-like gettext strings)
+            var msgidB64 = btoa(unescape(encodeURIComponent(msgid)));
+            fetch('{{ url_for("utilities.edit_translation") }}?msgid_b64=' + encodeURIComponent(msgidB64), {
                 method: 'GET',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
@@ -1634,16 +1635,17 @@
                 }
             }
 
-            // Submit form
-            const formData = new FormData(form);
+            // Submit form as JSON (WAF-safe: structured data in JSON body)
+            var payload = window.formDataToJson ? window.formDataToJson(form) : null;
+            var fetchFn = (window.getFetch && window.getFetch()) || fetch;
 
-            fetch('{{ url_for("utilities.edit_translation") }}', {
+            fetchFn('{{ url_for("utilities.edit_translation") }}', {
                 method: 'POST',
-                headers: {
-                    'X-CSRFToken': formData.get('csrf_token'),
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: formData
+                body: payload ? JSON.stringify(payload) : new FormData(form),
+                credentials: 'same-origin',
+                headers: payload
+                    ? { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
+                    : { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': new FormData(form).get('csrf_token') }
             })
             .then(response => {
                 if (response.ok) {

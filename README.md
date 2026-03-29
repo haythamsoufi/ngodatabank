@@ -710,7 +710,7 @@ For detailed setup instructions, architecture documentation, and troubleshooting
 
 We welcome contributions that embrace the **vibe coding philosophy** — rapid iteration, pragmatic solutions, and AI-assisted development are all encouraged!
 
-For branching, pull requests, branch protection (GitHub / `gh`), and collaboration conventions, see **[CONTRIBUTING.md](CONTRIBUTING.md)**. For security reports see **[SECURITY.md](SECURITY.md)**; community standards **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)**.
+For branching, pull requests, branch protection (GitHub / `gh`), and collaboration conventions, see **[CONTRIBUTING.md](CONTRIBUTING.md)**. For security reports see **[SECURITY.md](SECURITY.md)**.
 
 - Follow the established structure and update docs when adding features.
 - Test thoroughly before submitting changes.

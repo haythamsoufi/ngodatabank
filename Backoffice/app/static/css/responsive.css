@@ -490,7 +490,19 @@
 /* Extra-small screen hardening: prevent navbar overflow */
 @media (max-width: 640px) {
     #navContainer {
-        flex-wrap: wrap;
+        /* Never wrap — utilities must stay on the same row as the brand */
+        flex-wrap: nowrap;
+        overflow: hidden;
+    }
+    /* Left cluster (logo + title + badge) fills available space and shrinks */
+    .nav-menu-wrapper {
+        flex: 1 1 0;
+        min-width: 0;
+        overflow: hidden;
+    }
+    /* Right cluster (language, notifications, profile) never shrinks off-bar */
+    .nav-utilities {
+        flex-shrink: 0;
     }
     .org-logo-img {
         display: none; /* Hide logo on mobile screens */
@@ -498,24 +510,25 @@
     .nav-brand-title {
         font-size: 1.125rem;
         line-height: 1.2;
-        display: inline-block;
-        white-space: normal;
-        max-width: calc(100vw - 4rem);
-        overflow-wrap: anywhere;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        /* Reserve enough room for the utilities cluster (~5.5rem icons + gap) */
+        max-width: calc(100vw - 5.5rem);
     }
-    /* Icon-only system manager badge stays visible; reserve space beside wrapped title */
+    /* Icon-only system manager badge needs a touch more space */
     .nav-system-manager .nav-brand-title {
-        max-width: calc(100vw - 6.5rem);
+        max-width: calc(100vw - 7rem);
     }
 }
 
 @media (max-width: 360px) {
     .nav-brand-title {
         font-size: 1rem;
-        max-width: calc(100vw - 3rem);
+        max-width: calc(100vw - 5rem);
     }
     .nav-system-manager .nav-brand-title {
-        max-width: calc(100vw - 5.5rem);
+        max-width: calc(100vw - 6.5rem);
     }
 }
 

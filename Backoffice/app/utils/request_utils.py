@@ -8,6 +8,93 @@ from flask import request
 from app.utils.api_helpers import get_json_safe
 
 
+class _JsonFormProxy:
+    """Drop-in replacement for ``request.form`` backed by a parsed JSON dict.
+
+    Supports the subset of the ImmutableMultiDict API used across route
+    handlers and helpers: ``.get()``, ``.getlist()``, ``__contains__``,
+    ``__getitem__``, ``.keys()``, ``.to_dict()``.
+    """
+
+    __slots__ = ("_data",)
+
+    def __init__(self, data: dict):
+        self._data = data if data is not None else {}
+
+    # --- dict-like access ---
+    def get(self, key, default=None, type=None):      # noqa: A002  (shadows builtin; matches Werkzeug sig)
+        val = self._data.get(key, default)
+        if type is not None and val is not None:
+            try:
+                val = type(val)
+            except (ValueError, TypeError):
+                val = default
+        return val
+
+    def getlist(self, key):
+        val = self._data.get(key, [])
+        if isinstance(val, list):
+            return list(val)
+        return [val] if val is not None else []
+
+    def __contains__(self, key):
+        return key in self._data
+
+    def __getitem__(self, key):
+        return self._data[key]
+
+    def keys(self):
+        return self._data.keys()
+
+    def to_dict(self):
+        return dict(self._data)
+
+
+def get_request_data():
+    """Return a form-data-like object for the current request.
+
+    When Content-Type is ``application/json``, returns a
+    :class:`_JsonFormProxy` wrapping the parsed body so callers can keep
+    using ``.get()`` / ``.getlist()`` / ``in`` without branching.
+
+    Otherwise returns ``request.form`` directly.
+
+    Usage in handlers::
+
+        data = get_request_data()
+        version_id = data.get('version_id')
+        items = data.getlist('items')
+    """
+    if _is_json_body():
+        return _JsonFormProxy(get_json_safe() or {})
+    return request.form
+
+
+def get_request_field(data, key, default=None, coerce=None):
+    """Read a single field from a request-data object (proxy or form).
+
+    *data* can be a :class:`_JsonFormProxy`, ``request.form``, or ``None``
+    (falls back to ``request.form``).
+    """
+    src = data if data is not None else request.form
+    val = src.get(key, default)
+    if coerce is not None and val is not None:
+        try:
+            val = coerce(val)
+        except (ValueError, TypeError):
+            val = default
+    return val
+
+
+def get_request_list(data, key):
+    """Read a multi-value field from a request-data object."""
+    src = data if data is not None else request.form
+    if hasattr(src, 'getlist'):
+        return src.getlist(key)
+    val = src.get(key, [])
+    return val if isinstance(val, list) else [val]
+
+
 def is_json_request():
     """True if the current request expects a JSON response (API/AJAX)."""
     accept = request.headers.get("Accept", "")

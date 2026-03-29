@@ -4,7 +4,8 @@ from app.utils.datetime_helpers import utcnow
 Admin Module - Centralized registration of all admin blueprints
 """
 
-from flask import Blueprint, render_template, current_app, request
+from flask import Blueprint, render_template, current_app, request, url_for
+from werkzeug.routing.exceptions import BuildError
 from app.utils.api_responses import json_forbidden, json_not_found, json_ok, json_server_error
 from flask_login import current_user
 from app import db
@@ -122,12 +123,25 @@ def plugin_management():
 
     return render_template("admin/plugin_management.html")
 
+
+def _kobo_data_import_url_for_dashboard():
+    """URL for the KoBo data-import wizard, or None if the route is not registered."""
+    ep = "form_builder.kobo_data_import"
+    if ep not in current_app.view_functions:
+        return None
+    try:
+        return url_for(ep)
+    except BuildError:
+        return None
+
+
 # Main admin dashboard route
 @bp.route("/", methods=["GET"])
 @admin_required
 @system_manager_required
 def admin_dashboard():
     """Main admin dashboard with overview statistics"""
+    kobo_data_import_url = _kobo_data_import_url_for_dashboard()
     try:
         from app.services.authorization_service import AuthorizationService
 
@@ -306,10 +320,11 @@ def admin_dashboard():
                               role_stats=role_stats,
                               active_sessions=active_sessions,
                               unresolved_security_events=unresolved_security_events,
-                              overdue_assignments=overdue_assignments,
-                              pending_public_submissions_count=pending_public_submissions_count,
-                              security_audit_widget=security_audit_widget,
-                              translation_widget=translation_widget,
+                             overdue_assignments=overdue_assignments,
+                             pending_public_submissions_count=pending_public_submissions_count,
+                             security_audit_widget=security_audit_widget,
+                             translation_widget=translation_widget,
+                             kobo_data_import_url=kobo_data_import_url,
                              title="Admin Dashboard")
 
     except Exception as e:
@@ -324,16 +339,17 @@ def admin_dashboard():
                               recent_logins=0,
                               recent_submissions=0,
                               recent_activities=0,
-                              active_users=0,
-                              failed_logins_24h=0,
-                              today_logins=0,
-                              role_stats={'admin': 0, 'focal_point': 0},
-                              active_sessions=0,
-                              unresolved_security_events=0,
-                              overdue_assignments=0,
-                              pending_public_submissions_count=0,
-                              security_audit_widget={"high_risk_actions_30d": 0, "suspicious_logins_30d": 0, "failed_login_rate_30d": 0.0},
-                              translation_widget={"avg_name_pct": 0.0, "avg_def_pct": 0.0, "by_lang": {}},
+                             active_users=0,
+                             failed_logins_24h=0,
+                             today_logins=0,
+                             role_stats={'admin': 0, 'focal_point': 0},
+                             active_sessions=0,
+                             unresolved_security_events=0,
+                             overdue_assignments=0,
+                             pending_public_submissions_count=0,
+                             security_audit_widget={"high_risk_actions_30d": 0, "suspicious_logins_30d": 0, "failed_login_rate_30d": 0.0},
+                             translation_widget={"avg_name_pct": 0.0, "avg_def_pct": 0.0, "by_lang": {}},
+                             kobo_data_import_url=kobo_data_import_url,
                              title="Admin Dashboard",
                              dashboard_error="Error loading dashboard statistics")
 

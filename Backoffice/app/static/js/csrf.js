@@ -144,6 +144,43 @@ function getCsrfFetch() {
     return typeof fetch === 'function' ? fetch : null;
 }
 
+/**
+ * Convert an HTML form into a plain JS object suitable for JSON.stringify().
+ * Multi-value fields (e.g. getlist checkboxes) become arrays automatically.
+ */
+function formDataToJson(form) {
+    const fd = new FormData(form);
+    const result = {};
+    for (const [key, value] of fd.entries()) {
+        if (key in result) {
+            if (!Array.isArray(result[key])) result[key] = [result[key]];
+            result[key].push(value);
+        } else {
+            result[key] = value;
+        }
+    }
+    return result;
+}
+
+/**
+ * Convert a FormData entries snapshot (array of [key, value]) into a plain object.
+ * Used by form-submit-ui.js which snapshots FormData before the form is modified.
+ */
+function snapshotToJson(snapshot) {
+    const result = {};
+    for (const [key, value] of snapshot) {
+        if (key in result) {
+            if (!Array.isArray(result[key])) result[key] = [result[key]];
+            result[key].push(value);
+        } else {
+            result[key] = value;
+        }
+    }
+    return result;
+}
+
+window.formDataToJson = formDataToJson;
+window.snapshotToJson = snapshotToJson;
 window.getApiFetch = getApiFetch;
 window.getCsrfFetch = getCsrfFetch;
 window.getCsrfAwareFetch = getCsrfAwareFetch;

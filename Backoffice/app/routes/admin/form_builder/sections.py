@@ -9,7 +9,7 @@ from app import db
 from app.models import FormTemplate, FormSection, FormItem, FormPage, FormTemplateVersion
 from app.forms.form_builder import FormSectionForm
 from app.routes.admin.shared import permission_required
-from app.utils.request_utils import is_json_request
+from app.utils.request_utils import is_json_request, get_request_data
 from app.utils.user_analytics import log_admin_action
 from app.utils.transactions import request_transaction_rollback
 from app.utils.api_helpers import GENERIC_ERROR_MESSAGE
@@ -24,16 +24,15 @@ import json
 @bp.route("/templates/<int:template_id>/sections/new", methods=["POST"])
 @permission_required('admin.templates.edit')
 def new_template_section(template_id):
+    data = get_request_data()
     template = FormTemplate.query.get_or_404(template_id)
-    version_ref = request.form.get('version_id') or request.args.get('version_id')
+    version_ref = data.get('version_id') or request.args.get('version_id')
     access_redirect = _ensure_template_access_or_redirect(template_id, version_ref)
     if access_redirect:
         return access_redirect
-    # No auto-draft creation; drafts are created on demand
-    form = FormSectionForm(request.form, prefix="section")
+    form = FormSectionForm(data, prefix="section")
 
-    # Determine target version to add the section to
-    target_version_id = request.form.get('version_id') or request.args.get('version_id')
+    target_version_id = data.get('version_id') or request.args.get('version_id')
     version = None
     if target_version_id:
         try:
@@ -56,7 +55,8 @@ def new_template_section(template_id):
     if form.validate_on_submit():
         try:
             # Parent section is now explicit (no more decimal-based inference)
-            parent_section_id = request.form.get('parent_section_id', type=int)
+            parent_section_id_raw = data.get('parent_section_id')
+            parent_section_id = int(parent_section_id_raw) if parent_section_id_raw else None
             parent_section = None
             if parent_section_id:
                 parent_section = FormSection.query.filter_by(
@@ -103,11 +103,12 @@ def new_template_section(template_id):
             add_indicator_note = form.add_indicator_note.data
 
             # Get max_entries for repeat groups
-            max_entries = request.form.get('max_entries', type=int)
+            max_entries_raw = data.get('max_entries')
+            max_entries = int(max_entries_raw) if max_entries_raw else None
 
             current_app.logger.debug(f"Creating section with type: {section_type}, max_dynamic: {max_dynamic_indicators}, max_entries: {max_entries}")
             current_app.logger.debug(f"New section - form relevance_condition data: '{form.relevance_condition.data}'")
-            current_app.logger.debug(f"New section - form data keys: {list(request.form.keys())}")
+            current_app.logger.debug(f"New section - form data keys: {list(data.keys())}")
 
             # Page for paginated templates: subsections always inherit parent's page
             if parent_section_id and parent_section:
@@ -185,26 +186,27 @@ def new_template_section(template_id):
                 flash(f"Error in {field}: {error}", "danger")
 
     # Preserve version context after adding a section
-    version_id = version.id if version is not None else request.form.get('version_id')
+    version_id = version.id if version is not None else data.get('version_id')
     return redirect(url_for("form_builder.edit_template", template_id=template_id, version_id=version_id))
 
 @bp.route("/sections/edit/<int:section_id>", methods=["POST"])
 @permission_required('admin.templates.edit')
 def edit_template_section(section_id):
+    is_ajax = is_json_request()
+    data = get_request_data()
     section = FormSection.query.get_or_404(section_id)
     template_id = section.template_id
-    version_ctx = request.form.get('version_id') or section.version_id
+    version_ctx = data.get('version_id') or section.version_id
     access_redirect = _ensure_template_access_or_redirect(template_id, version_ctx)
     if access_redirect:
         return access_redirect
 
     try:
-        section.name = request.form.get("section-name", section.name)
+        section.name = data.get("section-name", section.name)
 
-        # Parent section (explicit; no decimals). Keep nesting to one level only.
-        parent_raw = request.form.get("parent_section_id")
+        parent_raw = data.get("parent_section_id")
         if parent_raw is not None:
-            parent_raw = parent_raw.strip()
+            parent_raw = str(parent_raw).strip()
             if parent_raw == '':
                 section.parent_section_id = None
             else:
@@ -232,7 +234,6 @@ def edit_template_section(section_id):
                             flash("Only top-level sections can be selected as a parent section.", "danger")
                             new_parent_id = None
                         else:
-                            # Prevent cycles: disallow selecting a direct child as parent
                             direct_child = FormSection.query.filter_by(parent_section_id=section.id, id=new_parent_id).first()
                             if direct_child:
                                 flash("Invalid parent selection (would create a cycle).", "danger")
@@ -240,27 +241,23 @@ def edit_template_section(section_id):
 
                 section.parent_section_id = new_parent_id
 
-        # Handle order
-        order_str = request.form.get("section-order")
+        order_str = data.get("section-order")
         if order_str:
             try:
-                # Whole-number ordering only
                 section.order = int(float(order_str))
             except ValueError:
                 flash(f"Invalid order value: {order_str}", "warning")
 
-        # Handle page_id for paginated templates: subsections always inherit parent's page
         version = section.version if section.version else (section.template.published_version if section.template.published_version else None)
         if version and version.is_paginated:
             if section.parent_section_id:
                 parent = FormSection.query.get(section.parent_section_id)
-                section.page_id = parent.page_id if parent else None  # subsection: always use parent's page
+                section.page_id = parent.page_id if parent else None
             else:
-                page_id = request.form.get("section-page_id")
+                page_id = data.get("section-page_id")
                 section.page_id = int(page_id) if page_id and page_id != 'None' else None
 
-        # Handle name translations - ISO codes only
-        name_translations_str = request.form.get("name_translations")
+        name_translations_str = data.get("name_translations")
         if name_translations_str:
             try:
                 name_translations = json.loads(name_translations_str)
@@ -277,27 +274,27 @@ def edit_template_section(section_id):
             except (json.JSONDecodeError, TypeError) as e:
                 current_app.logger.error(f"Error parsing section name translations: {e}")
 
-        # Handle section type and dynamic settings
-        section_type = request.form.get("section-section_type", "standard")
+        section_type = data.get("section-section_type", "standard")
         section.section_type = section_type.lower() if section_type else 'standard'
 
-        # Handle max_entries for repeat groups
         if section_type.lower() == 'repeat':
-            max_entries = request.form.get('max_entries', type=int)
+            max_entries = data.get('max_entries', type=int) if hasattr(data, 'get') else data.get('max_entries')
+            if max_entries is not None and not isinstance(max_entries, int):
+                try:
+                    max_entries = int(max_entries)
+                except (ValueError, TypeError):
+                    max_entries = None
             section.set_max_entries(max_entries)
         else:
-            # Clear max_entries if section type is not repeat
             if section.config:
                 section.config.pop('max_entries', None)
 
-        # Handle relevance condition for section skip logic
-        relevance_condition = request.form.get("relevance_condition")
-        current_app.logger.debug(f"Edit section - form data keys: {list(request.form.keys())}")
+        relevance_condition = data.get("relevance_condition")
+        current_app.logger.debug(f"Edit section - form data keys: {list(data.keys())}")
         current_app.logger.debug(f"Edit section - relevance_condition value: '{relevance_condition}'")
 
-        if relevance_condition and relevance_condition.strip():
+        if relevance_condition and str(relevance_condition).strip():
             try:
-                # Validate that it's valid JSON
                 json.loads(relevance_condition)
                 section.relevance_condition = relevance_condition
                 current_app.logger.debug(f"Edit section - set relevance_condition to: {relevance_condition}")
@@ -312,7 +309,6 @@ def edit_template_section(section_id):
         _update_version_timestamp(section.version_id)
         db.session.flush()
 
-        # Log admin action for audit trail
         try:
             log_admin_action(
                 action_type='form_section_update',
@@ -325,40 +321,42 @@ def edit_template_section(section_id):
         except Exception as log_error:
             current_app.logger.error(f"Error logging section update: {log_error}")
 
-        # Always set server-side flash message for consistency with other routes
         flash(f"Section '{section.name}' updated successfully.", "success")
 
-        # Always redirect to show flash message; preserve version context
-        target_version_id = request.form.get('version_id') or section.version_id
-        return redirect(url_for("form_builder.edit_template", template_id=section.template_id, version_id=target_version_id))
+        target_version_id = data.get('version_id') or section.version_id
+        redirect_url = url_for("form_builder.edit_template", template_id=section.template_id, version_id=target_version_id)
+        if is_ajax:
+            return json_ok(message=f"Section '{section.name}' updated successfully.", redirect_url=redirect_url)
+        return redirect(redirect_url)
 
     except Exception as e:
         request_transaction_rollback()
         flash("An error occurred. Please try again.", "danger")
         current_app.logger.error(f"Error updating section {section_id}: {e}", exc_info=True)
 
-
-
-    # Preserve version context after section edit failure
-    target_version_id = request.form.get('version_id') or section.version_id
-    return redirect(url_for("form_builder.edit_template", template_id=template_id, version_id=target_version_id))
+    target_version_id = data.get('version_id') or section.version_id
+    redirect_url = url_for("form_builder.edit_template", template_id=template_id, version_id=target_version_id)
+    if is_ajax:
+        return json_server_error("An error occurred. Please try again.")
+    return redirect(redirect_url)
 
 
 @bp.route("/sections/delete/<int:section_id>", methods=["POST"])
 @permission_required('admin.templates.edit')
 def delete_template_section(section_id):
+    data = get_request_data()
     from app.models.forms import FormData, RepeatGroupData, RepeatGroupInstance, DynamicIndicatorData
     from app.models.form_items import FormItem
 
     section = FormSection.query.get_or_404(section_id)
     template_id = section.template_id
-    version_ctx = request.form.get('version_id') or section.version_id
+    version_ctx = data.get('version_id') or section.version_id
     access_redirect = _ensure_template_access_or_redirect(template_id, version_ctx)
     if access_redirect:
         return access_redirect
 
     # Check if user wants to delete data, keep data and delete section, or cancel
-    delete_data_param = request.form.get('delete_data', 'true')
+    delete_data_param = data.get('delete_data', 'true')
     delete_data = delete_data_param.lower() == 'true'
     keep_data_delete_section = delete_data_param.lower() == 'false-keep-data'
 
@@ -393,7 +391,7 @@ def delete_template_section(section_id):
         # If user wants to keep data but not delete section (cancel), do nothing
         if data_count > 0 and not delete_data and not keep_data_delete_section:
             # This shouldn't happen as the frontend should handle cancel, but just in case
-            target_version_id = request.form.get('version_id') or section.version_id
+            target_version_id = data.get('version_id') or section.version_id
             return redirect(url_for("form_builder.edit_template", template_id=template_id, version_id=target_version_id))
 
         # If delete_data is true and data exists, delete it first
@@ -446,7 +444,7 @@ def delete_template_section(section_id):
                 request_transaction_rollback()
                 flash(f"Error deleting section '{section_label}'.", "danger")
                 current_app.logger.error(f"Error deleting section {section_id}: {fk_error}", exc_info=True)
-                target_version_id = request.form.get('version_id') or section.version_id
+                target_version_id = data.get('version_id') or section.version_id
                 return redirect(url_for("form_builder.edit_template", template_id=template_id, version_id=target_version_id))
 
             # Log admin action for audit trail
@@ -470,13 +468,14 @@ def delete_template_section(section_id):
         current_app.logger.error(f"Error deleting section {section_id}: {e}", exc_info=True)
 
     # Preserve version context after deletion
-    target_version_id = request.form.get('version_id') or section.version_id
+    target_version_id = data.get('version_id') or section.version_id
     return redirect(url_for("form_builder.edit_template", template_id=template_id, version_id=target_version_id))
 
 @bp.route("/sections/duplicate/<int:section_id>", methods=["POST"])
 @permission_required('admin.templates.edit')
 def duplicate_template_section(section_id):
     """Duplicate a form section including all its items and nested subsections."""
+    data = get_request_data()
     section = FormSection.query.get_or_404(section_id)
     template_id = section.template_id
     version_id = section.version_id
@@ -520,13 +519,14 @@ def duplicate_template_section(section_id):
         current_app.logger.error(f"Error duplicating section {section_id}: {e}", exc_info=True)
 
     # Preserve version context after duplication
-    target_version_id = request.form.get('version_id') or version_id
+    target_version_id = data.get('version_id') or version_id
     return redirect(url_for("form_builder.edit_template", template_id=template_id, version_id=target_version_id))
 
 @bp.route("/sections/unarchive/<int:section_id>", methods=["POST"])
 @permission_required('admin.templates.edit')
 def unarchive_section(section_id):
     """Unarchive a form section so it appears in the form again"""
+    data = get_request_data()
     section = FormSection.query.get_or_404(section_id)
     template_id = section.template_id
     version_id = section.version_id
@@ -537,7 +537,7 @@ def unarchive_section(section_id):
     try:
         if not section.archived:
             flash("Section is not archived.", "warning")
-            target_version_id = request.form.get('version_id') or version_id
+            target_version_id = data.get('version_id') or version_id
             return redirect(url_for("form_builder.edit_template", template_id=template_id, version_id=target_version_id))
 
         section_label = section.name
@@ -574,16 +574,17 @@ def unarchive_section(section_id):
         flash(flash_message, "danger")
         current_app.logger.error(f"Error unarchiving section {section_id}: {e}", exc_info=True)
 
-    target_version_id = request.form.get('version_id') or version_id
+    target_version_id = data.get('version_id') or version_id
     return redirect(url_for("form_builder.edit_template", template_id=template_id, version_id=target_version_id))
 
 @bp.route("/sections/configure-dynamic/<int:section_id>", methods=["POST"])
 @permission_required('admin.templates.edit')
 def configure_dynamic_section(section_id):
     """Configure settings for a dynamic indicators section."""
+    data = get_request_data()
     section = FormSection.query.get_or_404(section_id)
     template_id = section.template_id
-    version_ctx = request.form.get('version_id') or section.version_id
+    version_ctx = data.get('version_id') or section.version_id
     access_redirect = _ensure_template_access_or_redirect(template_id, version_ctx)
     if access_redirect:
         return access_redirect
@@ -591,17 +592,17 @@ def configure_dynamic_section(section_id):
     # Verify this is actually a dynamic indicators section
     if section.section_type != 'dynamic_indicators':
         flash('This section is not a dynamic indicators section.', 'warning')
-        target_version_id = request.form.get('version_id') or section.version_id
+        target_version_id = data.get('version_id') or section.version_id
         return redirect(url_for("form_builder.edit_template", template_id=template_id, version_id=target_version_id))
 
     is_ajax = is_json_request()
 
     current_app.logger.debug(f"Configuring dynamic section {section_id} (ajax={is_ajax})")
-    current_app.logger.debug(f"Form data: {request.form}")
+    current_app.logger.debug(f"Form data: {data}")
 
     try:
         # Update max_dynamic_indicators
-        max_dynamic_indicators = request.form.get('max_dynamic_indicators')
+        max_dynamic_indicators = data.get('max_dynamic_indicators')
         if max_dynamic_indicators and max_dynamic_indicators.strip():
             try:
                 section.max_dynamic_indicators = int(max_dynamic_indicators)
@@ -611,23 +612,23 @@ def configure_dynamic_section(section_id):
             section.max_dynamic_indicators = None
 
         # Update add_indicator_note
-        add_indicator_note = request.form.get('add_indicator_note')
+        add_indicator_note = data.get('add_indicator_note')
         if add_indicator_note and add_indicator_note.strip():
             section.add_indicator_note = add_indicator_note.strip()
         else:
             section.add_indicator_note = None
 
         # Update data availability options
-        section.allow_data_not_available = request.form.get('allow_data_not_available') == '1'
-        section.allow_not_applicable = request.form.get('allow_not_applicable') == '1'
+        section.allow_data_not_available = data.get('allow_data_not_available') == '1'
+        section.allow_not_applicable = data.get('allow_not_applicable') == '1'
 
         # Update allowed disaggregation options
-        allowed_disagg_options = request.form.getlist('allowed_disaggregation_options')
+        allowed_disagg_options = data.getlist('allowed_disaggregation_options')
         # Always save the selected options, even if empty
         section.set_allowed_disaggregation_options(allowed_disagg_options)
 
         # Update data entry display filters
-        data_entry_display_filters = request.form.getlist('data_entry_display_filters')
+        data_entry_display_filters = data.getlist('data_entry_display_filters')
         section.set_data_entry_display_filters(data_entry_display_filters)
 
         # Update indicator filters
@@ -635,13 +636,13 @@ def configure_dynamic_section(section_id):
         filters = []
 
         # Get all filter field names from the form
-        filter_fields = request.form.getlist(f'filter_field_{section_id}[]')
+        filter_fields = data.getlist(f'filter_field_{section_id}[]')
 
         for i, field in enumerate(filter_fields):
             if field:  # Only process if a field is selected
                 # Get the corresponding values for this filter
                 values_key = f'filter_values_{section_id}_{i}[]'
-                values = request.form.getlist(values_key)
+                values = data.getlist(values_key)
 
                 if values:  # Only add filter if it has values
                     filter_obj = {
@@ -652,7 +653,7 @@ def configure_dynamic_section(section_id):
                     # Check for "primary_only" flag for sector/subsector fields
                     if field in ['sector', 'subsector']:
                         primary_only_key = f'filter_primary_only_{section_id}_{i}'
-                        primary_only = request.form.get(primary_only_key) == '1'
+                        primary_only = data.get(primary_only_key) == '1'
                         if primary_only:
                             filter_obj['primary_only'] = True
 
@@ -662,7 +663,7 @@ def configure_dynamic_section(section_id):
         section.set_indicator_filters(filters if filters else None)
 
         # Keep backward compatibility - also handle allowed_sectors if provided
-        allowed_sectors_list = request.form.getlist('allowed_sectors')
+        allowed_sectors_list = data.getlist('allowed_sectors')
         if allowed_sectors_list:
             section.allowed_sectors = json.dumps(allowed_sectors_list)
         else:
@@ -691,7 +692,7 @@ def configure_dynamic_section(section_id):
             return json_ok(
                 section_id=section_id,
                 template_id=template_id,
-                version_id=request.form.get('version_id') or section.version_id,
+                version_id=data.get('version_id') or section.version_id,
                 message=f"Dynamic section '{section.name}' saved.",
             )
     except Exception as e:
@@ -702,7 +703,7 @@ def configure_dynamic_section(section_id):
         current_app.logger.error(f"Error configuring dynamic section {section_id}: {e}", exc_info=True)
 
     # Preserve version context after configuring dynamic section
-    target_version_id = request.form.get('version_id') or section.version_id
+    target_version_id = data.get('version_id') or section.version_id
     return redirect(url_for("form_builder.edit_template", template_id=template_id, version_id=target_version_id))
 
 
@@ -710,9 +711,10 @@ def configure_dynamic_section(section_id):
 @permission_required('admin.templates.edit')
 def configure_repeat_section(section_id):
     """Configure settings for a repeat group section."""
+    data = get_request_data()
     section = FormSection.query.get_or_404(section_id)
     template_id = section.template_id
-    version_ctx = request.form.get('version_id') or section.version_id
+    version_ctx = data.get('version_id') or section.version_id
     access_redirect = _ensure_template_access_or_redirect(template_id, version_ctx)
     if access_redirect:
         return access_redirect
@@ -720,15 +722,15 @@ def configure_repeat_section(section_id):
     # Verify this is actually a repeat group section
     if section.section_type != 'repeat':
         flash('This section is not a repeat group section.', 'warning')
-        target_version_id = request.form.get('version_id') or section.version_id
+        target_version_id = data.get('version_id') or section.version_id
         return redirect(url_for("form_builder.edit_template", template_id=template_id, version_id=target_version_id))
 
     current_app.logger.debug(f"Configuring repeat section {section_id}")
-    current_app.logger.debug(f"Form data: {request.form}")
+    current_app.logger.debug(f"Form data: {data}")
 
     try:
         # Update max_entries in config
-        max_entries = request.form.get('max_entries')
+        max_entries = data.get('max_entries')
         if max_entries and max_entries.strip():
             try:
                 section.set_max_entries(int(max_entries))
@@ -761,5 +763,5 @@ def configure_repeat_section(section_id):
         current_app.logger.error(f"Error configuring repeat section {section_id}: {e}", exc_info=True)
 
     # Preserve version context after configuring repeat section
-    target_version_id = request.form.get('version_id') or section.version_id
+    target_version_id = data.get('version_id') or section.version_id
     return redirect(url_for("form_builder.edit_template", template_id=template_id, version_id=target_version_id))

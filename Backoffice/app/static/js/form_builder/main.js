@@ -630,22 +630,52 @@ function populateSectionParentDropdown({ currentSectionId = null, selectedParent
 }
 
 function initializeSectionManagement() {
-    // Handle section form submission - now using normal form submission
     const sectionForm = document.getElementById('section-form');
     if (sectionForm) {
-        sectionForm.addEventListener('submit', function(e) {
-            // Allow normal form submission - no AJAX
+        sectionForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-            // Show loading state
             const submitButton = this.querySelector('button[type="submit"]');
             if (submitButton) {
                 submitButton.disabled = true;
-                const originalText = submitButton.textContent;
                 submitButton.replaceChildren();
                 {
                     const icon = document.createElement('i');
                     icon.className = 'fas fa-spinner fa-spin mr-2';
                     submitButton.append(icon, document.createTextNode('Processing...'));
+                }
+            }
+
+            try {
+                const payload = window.formDataToJson ? window.formDataToJson(sectionForm) : null;
+                const fetchFn = (window.getFetch && window.getFetch()) || fetch;
+                const action = sectionForm.getAttribute('action') || window.location.href;
+                const resp = await fetchFn(action, {
+                    method: 'POST',
+                    body: payload ? JSON.stringify(payload) : new FormData(sectionForm),
+                    credentials: 'same-origin',
+                    headers: payload
+                        ? { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
+                        : { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                if (resp.redirected) {
+                    window.location.href = resp.url;
+                    return;
+                }
+                const ct = (resp.headers.get('content-type') || '').toLowerCase();
+                if (ct.includes('application/json')) {
+                    const result = await resp.json();
+                    if (result.redirect_url) {
+                        window.location.href = result.redirect_url;
+                        return;
+                    }
+                }
+                window.location.reload();
+            } catch (err) {
+                console.error('Section save failed:', err);
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Save';
                 }
             }
         });

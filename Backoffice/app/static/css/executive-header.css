@@ -372,7 +372,7 @@
 
 .executive-page-header .title-section {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 1.25rem;
     /* Share first row with actions when wide; wrap actions below when not enough inline space */
     flex: 1 1 14rem;
@@ -405,6 +405,13 @@
     height: 100%;
     display: block;
     color: inherit;
+}
+
+/* Font Awesome icon inside the brand-icon box — ensure it's pixel-centered */
+.executive-page-header .brand-icon i {
+    font-size: 1.125rem;
+    line-height: 1;
+    display: block;
 }
 
 .executive-page-header .brand-icon span {

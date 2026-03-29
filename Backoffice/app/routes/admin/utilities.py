@@ -23,7 +23,7 @@ from app.models import (
 )
 from app.forms.content import TranslationForm
 from app.routes.admin.shared import admin_required, permission_required, permission_required_any
-from app.utils.request_utils import is_json_request
+from app.utils.request_utils import is_json_request, get_request_data
 from app.utils.auto_translator import translate_text as auto_translate_text
 from app.extensions import limiter
 from config.config import Config
@@ -1099,20 +1099,66 @@ def add_translation():
 @permission_required("admin.translations.manage")
 def edit_translation():
     """Edit translations for all languages"""
-    # Check if this is an AJAX request
     is_ajax = is_json_request()
 
+    # --- JSON POST path (WAF-safe: payload travels in JSON body) ---
+    if request.method == "POST" and request.is_json:
+        data = get_request_data()
+        msgid = (data.get('msgid') or '').strip()
+        if not msgid:
+            return json_bad_request(_("msgid is required"))
+
+        from config import Config
+        languages = current_app.config.get('SUPPORTED_LANGUAGES', Config.LANGUAGES)
+        updated_count = 0
+
+        try:
+            import polib  # type: ignore
+        except ImportError:
+            current_app.logger.warning("polib not available - translation file updates will be skipped")
+            polib = None
+
+        if polib is not None:
+            for lang in languages:
+                msgstr = data.get(f'msgstr_{lang}')
+                if msgstr is None:
+                    continue
+                po_file_path = os.path.join(current_app.root_path, 'translations', lang, 'LC_MESSAGES', 'messages.po')
+                if os.path.exists(po_file_path):
+                    try:
+                        po = polib.pofile(po_file_path)
+                        entry = po.find(msgid)
+                        if entry is None:
+                            if str(msgstr).strip():
+                                po.append(polib.POEntry(msgid=msgid, msgstr=msgstr))
+                                updated_count += 1
+                        else:
+                            entry.msgstr = msgstr
+                            updated_count += 1
+                        po.save(po_file_path)
+                    except Exception as _e:
+                        current_app.logger.error(f"Failed to update translation for {lang}: {_e}")
+
+        if updated_count > 0:
+            return json_ok(
+                message=_('Translation updated successfully for %(count)d language(s)', count=updated_count),
+                updated_count=updated_count,
+            )
+        return json_ok(
+            message=_('No translations were updated'),
+            updated_count=0,
+        )
+
+    # --- Legacy WTForms POST path (non-JSON form submissions) ---
     form = TranslationForm()
 
     if form.validate_on_submit():
         msgid = form.msgid.data
 
-        # Update translations for all languages
         from config import Config
         languages = current_app.config.get('SUPPORTED_LANGUAGES', Config.LANGUAGES)
         updated_count = 0
 
-        # Try to import polib for this function
         try:
             import polib  # type: ignore
         except ImportError:
@@ -1126,7 +1172,6 @@ def edit_translation():
                 continue
             po_file_path = os.path.join(current_app.root_path, 'translations', lang, 'LC_MESSAGES', 'messages.po')
 
-            # Check if polib is available
             if polib is None:
                 current_app.logger.warning(f"polib not available - skipping translation file update for {lang}")
                 continue
@@ -1136,19 +1181,16 @@ def edit_translation():
                     po = polib.pofile(po_file_path)
                     entry = po.find(msgid)
                     if entry is None:
-                        # If the entry doesn't exist yet and the user provided a msgstr, create it
                         if str(msgstr).strip():
                             po.append(polib.POEntry(msgid=msgid, msgstr=msgstr))
                             updated_count += 1
                     else:
-                        # Update to the provided value (can be empty string to clear)
                         entry.msgstr = msgstr
                         updated_count += 1
                     po.save(po_file_path)
                 except Exception as _e:
                     current_app.logger.error(f"Failed to update translation for {lang}: {_e}")
 
-        # Return JSON for AJAX requests, redirect for regular requests
         if is_ajax:
             if updated_count > 0:
                 return json_ok(
@@ -1167,10 +1209,17 @@ def edit_translation():
                 flash(_('No translations were updated'), 'warning')
             return redirect(url_for('utilities.manage_translations'))
 
-    # Pre-populate form if msgid is provided
-    msgid = request.args.get('msgid')
+    # --- GET path: support base64-encoded msgid to avoid WAF triggers ---
+    import base64 as _b64
+    msgid_b64 = request.args.get('msgid_b64')
+    if msgid_b64:
+        try:
+            msgid = _b64.b64decode(msgid_b64).decode('utf-8')
+        except Exception:
+            msgid = None
+    else:
+        msgid = request.args.get('msgid')
 
-    # Get current translations for all languages
     from config import Config
     languages = current_app.config.get('SUPPORTED_LANGUAGES', Config.LANGUAGES)
     translations = {}
@@ -1178,7 +1227,6 @@ def edit_translation():
     if msgid:
         form.msgid.data = msgid
 
-        # Try to import polib for pre-population
         try:
             import polib  # type: ignore
         except ImportError:
@@ -1200,7 +1248,6 @@ def edit_translation():
                     except Exception as _e:
                         current_app.logger.error(f"Failed to read translation for {lang}: {_e}")
 
-    # Return JSON for AJAX requests
     if is_ajax:
         try:
             from config import Config
@@ -1216,8 +1263,6 @@ def edit_translation():
             language_display_names=language_display_names,
         )
 
-    # For non-AJAX requests, redirect to manage translations page
-    # (Edit functionality is now handled via modal)
     return redirect(url_for('utilities.manage_translations'))
 
 @bp.route("/translations/compile", methods=["POST"])

@@ -3,6 +3,7 @@ import base64
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from app.utils.api_helpers import get_json_safe, GENERIC_ERROR_MESSAGE
+from app.utils.request_utils import get_request_data
 from app.utils.api_responses import json_bad_request, json_error, json_ok, json_server_error
 from flask_login import login_required, current_user
 from app.routes.admin.shared import admin_required, admin_permission_required
@@ -490,16 +491,17 @@ def manage_settings():
     notification_priorities = get_notification_priorities()
 
     if request.method == "POST":
+        data = get_request_data()
         try:
             from flask_login import current_user
             user_id = current_user.id if current_user.is_authenticated else None
             previous_supported = set(current_supported or [])
 
             # Languages
-            selected_list = request.form.getlist("languages") or []
+            selected_list = data.getlist("languages") or []
             selected_set = {str(c).lower() for c in (selected_list or []) if str(c).strip()}
             selected_set.add("en")  # English is always enabled
-            languages_order_raw = (request.form.get("languages_order") or "").strip()
+            languages_order_raw = (data.get("languages_order") or "").strip()
             if languages_order_raw:
                 ordered = [c.strip().lower() for c in languages_order_raw.split(",") if c and c.strip()]
                 # Filter to what is actually selected, preserve posted order
@@ -515,24 +517,24 @@ def manage_settings():
 
             # Show/hide flags in language selectors
             # Checkbox posts value only when checked; default to off when missing.
-            show_flags = request.form.get("show_language_flags") == "1"
+            show_flags = data.get("show_language_flags") == "1"
             flags_ok = set_show_language_flags(show_flags, user_id=user_id)
 
             # Document types (structured list of inputs)
-            doc_types_list = request.form.getlist("document_types[]")
+            doc_types_list = data.getlist("document_types[]")
             docs_ok = set_document_types(doc_types_list, user_id=user_id)
 
             # Age groups (ordered list)
-            age_groups_list = request.form.getlist("age_groups[]")
+            age_groups_list = data.getlist("age_groups[]")
             ages_ok = set_age_groups(age_groups_list, user_id=user_id)
 
             # Sex categories (ordered list)
-            sex_cats_list = request.form.getlist("sex_categories[]")
+            sex_cats_list = data.getlist("sex_categories[]")
             sex_ok = set_sex_categories(sex_cats_list, user_id=user_id)
 
             # Translations for list-type settings (JSON hidden inputs)
             for skey in ("document_types", "age_groups", "sex_categories"):
-                raw = request.form.get(f"{skey}_translations", "").strip()
+                raw = data.get(f"{skey}_translations", "").strip()
                 if raw:
                     try:
                         trans = json.loads(raw)
@@ -540,29 +542,29 @@ def manage_settings():
                     except (json.JSONDecodeError, ValueError):
                         pass
 
-            entity_type_choices = request.form.getlist("enabled_entity_types[]")
+            entity_type_choices = data.getlist("enabled_entity_types[]")
             entity_types_ok = set_enabled_entity_types(entity_type_choices or ['countries'], user_id=user_id)
 
             # Chatbot display name
             chatbot_name_ok = True
-            if "chatbot_name" in request.form:
+            if "chatbot_name" in data:
                 try:
-                    chatbot_name_ok = set_chatbot_name(request.form.get("chatbot_name", ""), user_id=user_id)
+                    chatbot_name_ok = set_chatbot_name(data.get("chatbot_name", ""), user_id=user_id)
                 except ValueError:
                     flash("Chatbot name is invalid.", "danger")
                     chatbot_name_ok = False
 
             # Organization branding (JSON object with localized support)
             branding_ok = True
-            if "organization_name_translations" in request.form or "organization_name_en" in request.form or "organization_name" in request.form:
+            if "organization_name_translations" in data or "organization_name_en" in data or "organization_name" in data:
                 # Try to get translations from JSON hidden input (new modal approach)
                 org_name_localized = {}
                 org_short_name_localized = {}
 
                 # Check for JSON translations from modals
-                if "organization_name_translations" in request.form:
+                if "organization_name_translations" in data:
                     try:
-                        translations_json = request.form.get("organization_name_translations", "").strip()
+                        translations_json = data.get("organization_name_translations", "").strip()
                         if translations_json:
                             org_name_localized = json.loads(translations_json)
                             # Filter out empty values
@@ -571,9 +573,9 @@ def manage_settings():
                         # Fall through to per-language collection
                         pass
 
-                if "organization_short_name_translations" in request.form:
+                if "organization_short_name_translations" in data:
                     try:
-                        translations_json = request.form.get("organization_short_name_translations", "").strip()
+                        translations_json = data.get("organization_short_name_translations", "").strip()
                         if translations_json:
                             org_short_name_localized = json.loads(translations_json)
                             # Filter out empty values
@@ -590,13 +592,13 @@ def manage_settings():
                     # Collect organization_name for each language
                     for lang in supported_langs:
                         name_key = f"organization_name_{lang}"
-                        if name_key in request.form:
-                            value = request.form.get(name_key, "").strip()
+                        if name_key in data:
+                            value = data.get(name_key, "").strip()
                             if value:
                                 org_name_localized[lang] = value
                         # Also check legacy single field
-                        elif lang == 'en' and "organization_name" in request.form:
-                            value = request.form.get("organization_name", "").strip()
+                        elif lang == 'en' and "organization_name" in data:
+                            value = data.get("organization_name", "").strip()
                             if value:
                                 org_name_localized[lang] = value
 
@@ -607,20 +609,20 @@ def manage_settings():
                     # Collect organization_short_name for each language
                     for lang in supported_langs:
                         short_name_key = f"organization_short_name_{lang}"
-                        if short_name_key in request.form:
-                            value = request.form.get(short_name_key, "").strip()
+                        if short_name_key in data:
+                            value = data.get(short_name_key, "").strip()
                             if value:
                                 org_short_name_localized[lang] = value
                         # Also check legacy single field
-                        elif lang == 'en' and "organization_short_name" in request.form:
-                            value = request.form.get("organization_short_name", "").strip()
+                        elif lang == 'en' and "organization_short_name" in data:
+                            value = data.get("organization_short_name", "").strip()
                             if value:
                                 org_short_name_localized[lang] = value
 
                 # Ensure at least English is provided for organization_name
                 if not org_name_localized or 'en' not in org_name_localized:
                     # Try legacy field
-                    legacy_name = request.form.get("organization_name", "").strip()
+                    legacy_name = data.get("organization_name", "").strip()
                     if legacy_name:
                         org_name_localized = {'en': legacy_name}
                     elif org_name_localized:
@@ -632,16 +634,16 @@ def manage_settings():
 
                 # Build branding data
                 branding_data = {
-                    "organization_name": org_name_localized if org_name_localized else request.form.get("organization_name", "").strip(),
-                    "organization_short_name": org_short_name_localized if org_short_name_localized else request.form.get("organization_short_name", "").strip(),
-                    "organization_domain": request.form.get("organization_domain", "").strip(),
-                    "organization_email_domain": request.form.get("organization_email_domain", "").strip(),
-                    "organization_logo_path": request.form.get("organization_logo_path", "").strip(),
-                    "organization_favicon_path": request.form.get("organization_favicon_path", "").strip(),
-                    "organization_copyright_year": request.form.get("organization_copyright_year", "").strip(),
+                    "organization_name": org_name_localized if org_name_localized else data.get("organization_name", "").strip(),
+                    "organization_short_name": org_short_name_localized if org_short_name_localized else data.get("organization_short_name", "").strip(),
+                    "organization_domain": data.get("organization_domain", "").strip(),
+                    "organization_email_domain": data.get("organization_email_domain", "").strip(),
+                    "organization_logo_path": data.get("organization_logo_path", "").strip(),
+                    "organization_favicon_path": data.get("organization_favicon_path", "").strip(),
+                    "organization_copyright_year": data.get("organization_copyright_year", "").strip(),
                     # Optional branding-managed external links
-                    "indicator_details_url_template": request.form.get("indicator_details_url_template", "").strip(),
-                    "propose_new_indicator_url": request.form.get("propose_new_indicator_url", "").strip(),
+                    "indicator_details_url_template": data.get("indicator_details_url_template", "").strip(),
+                    "propose_new_indicator_url": data.get("propose_new_indicator_url", "").strip(),
                 }
 
                 # Remove empty optional fields
@@ -669,12 +671,12 @@ def manage_settings():
 
             # Email templates (multilingual: each key → {lang: content})
             templates_ok = True
-            if request.form.get("email_templates_present") == "1":
+            if data.get("email_templates_present") == "1":
                 from app.utils.app_settings import EMAIL_TEMPLATE_KEYS
                 email_templates_data: dict = {}
                 for tpl_key in EMAIL_TEMPLATE_KEYS:
                     translations_field = f"{tpl_key}_translations"
-                    raw_json = request.form.get(translations_field, "").strip()
+                    raw_json = data.get(translations_field, "").strip()
                     if raw_json:
                         try:
                             lang_dict = json.loads(raw_json)
@@ -691,7 +693,7 @@ def manage_settings():
                     else:
                         email_templates_data[tpl_key] = {}
                 template_metadata = {}
-                metadata_raw = request.form.get("template_metadata_json", "").strip()
+                metadata_raw = data.get("template_metadata_json", "").strip()
                 if metadata_raw:
                     try:
                         template_metadata = json.loads(metadata_raw)
@@ -717,7 +719,7 @@ def manage_settings():
                 notif_priorities = {}
                 for nt in NotificationType:
                     key = nt.value
-                    val = request.form.get(f"notification_priority_{key}", "normal").strip().lower()
+                    val = data.get(f"notification_priority_{key}", "normal").strip().lower()
                     if val in ("normal", "high", "urgent", "low"):
                         notif_priorities[key] = val
                 notif_priorities_ok = set_notification_priorities(notif_priorities, user_id=user_id)
@@ -727,7 +729,7 @@ def manage_settings():
 
             # AI Settings
             ai_ok = True
-            if request.form.get("ai_settings_present") == "1":
+            if data.get("ai_settings_present") == "1":
                 from app.utils.app_settings import get_ai_settings, set_ai_settings, AI_SENSITIVE_KEYS
                 existing_ai = dict(get_ai_settings())
                 # Sensitive keys are env-only; do not save from form
@@ -744,16 +746,16 @@ def manage_settings():
                         form_key = f"ai_{key}"
 
                         if field['type'] == 'password':
-                            if request.form.get(f"{form_key}_clear") == "1":
+                            if data.get(f"{form_key}_clear") == "1":
                                 existing_ai.pop(key, None)
                             else:
-                                new_val = request.form.get(form_key, '').strip()
+                                new_val = data.get(form_key, '').strip()
                                 if new_val:
                                     existing_ai[key] = new_val
                         elif field['type'] == 'bool':
-                            existing_ai[key] = request.form.get(form_key) == '1'
+                            existing_ai[key] = data.get(form_key) == '1'
                         elif field['type'] == 'int':
-                            raw = request.form.get(form_key, '').strip()
+                            raw = data.get(form_key, '').strip()
                             if raw:
                                 try:
                                     existing_ai[key] = int(raw)
@@ -762,7 +764,7 @@ def manage_settings():
                             else:
                                 existing_ai.pop(key, None)
                         elif field['type'] == 'float':
-                            raw = request.form.get(form_key, '').strip()
+                            raw = data.get(form_key, '').strip()
                             if raw:
                                 try:
                                     existing_ai[key] = float(raw)
@@ -771,18 +773,18 @@ def manage_settings():
                             else:
                                 existing_ai.pop(key, None)
                         elif field['type'] == 'select':
-                            val = request.form.get(form_key, '').strip()
+                            val = data.get(form_key, '').strip()
                             if val:
                                 existing_ai[key] = val
                         else:
-                            raw = request.form.get(form_key, '').strip()
+                            raw = data.get(form_key, '').strip()
                             if raw:
                                 existing_ai[key] = raw
                             else:
                                 existing_ai.pop(key, None)
 
                 # Provider priority (serialized by drag-and-drop widget as JSON array)
-                provider_priority_raw = request.form.get('ai_provider_priority', '').strip()
+                provider_priority_raw = data.get('ai_provider_priority', '').strip()
                 if provider_priority_raw:
                     try:
                         plist = json.loads(provider_priority_raw)
@@ -809,8 +811,8 @@ def manage_settings():
             # AI beta access gate (selected users + admins/system managers)
             ai_beta_ok = True
             try:
-                beta_enabled = "1" in request.form.getlist("ai_beta_enabled")
-                beta_allowed_user_ids = request.form.getlist("ai_beta_allowed_user_ids[]")
+                beta_enabled = "1" in data.getlist("ai_beta_enabled")
+                beta_allowed_user_ids = data.getlist("ai_beta_allowed_user_ids[]")
                 ai_beta_ok = set_ai_beta_access_settings(
                     beta_enabled,
                     beta_allowed_user_ids,
@@ -850,7 +852,7 @@ def manage_settings():
                     current_app.jinja_env.globals['ENABLED_ENTITY_TYPES'] = current_app.config['ENABLED_ENTITY_TYPES']
                     current_app.jinja_env.globals['ORGANIZATION_BRANDING'] = current_app.config['ORGANIZATION_BRANDING']
                 # Apply saved AI settings to live config
-                if ai_ok and request.form.get("ai_settings_present") == "1":
+                if ai_ok and data.get("ai_settings_present") == "1":
                     with suppress(Exception):
                         from app.utils.app_settings import apply_ai_settings_to_config
                         apply_ai_settings_to_config(current_app)
@@ -880,7 +882,7 @@ def manage_settings():
                                 )
                 flash("Settings saved successfully.", "success")
                 # Optional: restart app if requested
-                if request.form.get('restart') == '1':
+                if data.get('restart') == '1':
                     try:
                         import os
                         import time

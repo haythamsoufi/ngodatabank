@@ -189,6 +189,58 @@
     visibility: visible;
 }
 
+/* ── Mobile: true full-screen immersive overlay (≤768px, non-immersive page) ── */
+@media (max-width: 768px) {
+    /* Explicit !important overrides both the base height/max-height and the open transform */
+    body:not(.chat-immersive) #aiChatWidget {
+        position: fixed !important;
+        top: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        z-index: 1070 !important;
+        box-sizing: border-box;
+        /* Respect notch / home-indicator on iOS */
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-right: env(safe-area-inset-right, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        padding-left: env(safe-area-inset-left, 0px);
+    }
+
+    body:not(.chat-immersive) #aiChatWidget .chat-floating-main,
+    body:not(.chat-immersive) #aiChatWidget .chat-header,
+    body:not(.chat-immersive) #aiChatWidget.chat-sidebar-open .chat-header,
+    body:not(.chat-immersive) #aiChatWidget.chat-sidebar-open .chat-floating-main {
+        border-radius: 0;
+    }
+
+    /* Slide-in animation for mobile: come up from the bottom instead of scaling */
+    body:not(.chat-immersive) #aiChatWidget:not(.chat-open) {
+        transform: translateY(100%) !important;
+    }
+    body:not(.chat-immersive) #aiChatWidget.chat-open {
+        transform: translateY(0) !important;
+    }
+}
+
+/*
+ * iOS-compatible scroll lock: position:fixed on body keeps the page still
+ * while the overlay is open. JS saves/restores scrollY around this.
+ */
+body.chat-floating-mobile-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    left: 0;
+    right: 0;
+}
+
 /* Floating chat sidebar – hidden on immersive page */
 body.chat-immersive #aiChatWidget .chat-floating-sidebar,
 body.chat-immersive #aiChatWidget .chat-sidebar-toggle {

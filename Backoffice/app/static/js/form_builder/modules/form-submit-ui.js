@@ -364,17 +364,18 @@ export const FormSubmitUI = {
         closeContainingModal();
         this.showSaving('Saving…');
         const fetchFn = (window.getFetch && window.getFetch()) || fetch;
+        const jsonBody = window.snapshotToJson ? JSON.stringify(window.snapshotToJson(snapshot)) : null;
         const resp = await fetchFn(action, {
           method,
-          body: (() => {
+          body: jsonBody || (() => {
             const f = new FormData();
             snapshot.forEach(([k, v]) => f.append(k, v));
             return f;
           })(),
           credentials: 'same-origin',
-          headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-          },
+          headers: jsonBody
+            ? { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
+            : { 'X-Requested-With': 'XMLHttpRequest' },
           signal: controller ? controller.signal : undefined
         });
 

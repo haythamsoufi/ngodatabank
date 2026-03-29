@@ -16,7 +16,7 @@ from app.models.core import Country
 from app.forms.form_builder import (FormTemplateForm, FormSectionForm, IndicatorForm, QuestionForm, DocumentFieldForm)
 from app.routes.admin.shared import (admin_required, admin_permission_required, permission_required,
     system_manager_required, check_template_access)
-from app.utils.request_utils import is_json_request
+from app.utils.request_utils import is_json_request, get_request_data
 from app.utils.api_authentication import get_user_allowed_template_ids
 from app.utils.user_analytics import log_admin_action
 from app.utils.template_excel_service import TemplateExcelService
@@ -692,10 +692,13 @@ def edit_template(template_id):
     # get overwritten before validation/save.
     form = FormTemplateForm()
 
+    # Unified request data: returns _JsonFormProxy for JSON requests, request.form for form-encoded.
+    data = get_request_data()
+
     # Determine which version to display: explicit version_id (GET or POST) > published by default
     requested_version_id = None
     try:
-        version_param = request.args.get('version_id') or (request.form.get('version_id') if request.method == 'POST' else None)
+        version_param = request.args.get('version_id') or (data.get('version_id') if request.method == 'POST' else None)
         requested_version_id = int(version_param) if version_param else None
     except Exception as e:
         current_app.logger.debug("version_id parse failed: %s", e)
@@ -722,7 +725,7 @@ def edit_template(template_id):
     # The submit field name is 'submit' and value is 'Save Template'
     is_template_details_submit = (
         request.method == 'POST' and
-        request.form.get('submit') == 'Save Template'
+        data.get('submit') == 'Save Template'
     )
 
     # Populate fields from version (all properties are now version-specific) only for initial render.
@@ -775,7 +778,7 @@ def edit_template(template_id):
         if _template_debug:
             current_app.logger.debug(
                 "TEMPLATE_UPDATE: form submission template_id=%s version_id=%s method=%s keys=%s",
-                template.id, selected_version.id, request.method, list(request.form.keys())
+                template.id, selected_version.id, request.method, list(data.keys())
             )
 
         # Validate form
@@ -787,7 +790,7 @@ def edit_template(template_id):
 
         # Form validation passed, proceed with update
         # Handle version name updates - use raw request form data as primary source
-        new_name = request.form.get('name', form.name.data)
+        new_name = data.get('name', form.name.data)
         if new_name:
             new_name = new_name.strip()
 
@@ -817,39 +820,24 @@ def edit_template(template_id):
         selected_version.name = new_name if new_name else None
         selected_version.description = form.description.data
 
-        # Boolean fields: Get from form data, with fallback to request.form for unchecked checkboxes
-        # WTForms BooleanField returns False when unchecked, but we'll also check raw form data
-
-        # Get is_paginated value - WTForms BooleanField doesn't recognize 'y' as True
-        # HTML checkboxes send 'y' when checked, but WTForms only recognizes 'true', 't', 'on', 'yes', '1', '1.0'
-        # So we need to check request.form directly for 'y'
-        if 'is_paginated' in request.form:
-            raw_value = request.form.get('is_paginated')
-            # Check for 'y' (HTML checkbox value) or standard True values
-            is_paginated_value = raw_value.lower() in ('y', 'yes', 'true', 't', 'on', '1', '1.0')
+        # Boolean fields: handle both HTML checkbox values ('y') and JSON booleans (true/false).
+        if 'is_paginated' in data:
+            raw_value = data.get('is_paginated')
+            if isinstance(raw_value, bool):
+                is_paginated_value = raw_value
+            else:
+                is_paginated_value = str(raw_value).lower() in ('y', 'yes', 'true', 't', 'on', '1', '1.0')
         else:
-            # Checkbox not in form means unchecked
             is_paginated_value = False
 
-        # Handle all boolean fields - check request.form for 'y' value (HTML checkbox sends 'y' when checked)
-        # When a checkbox is unchecked, it's NOT in request.form, so we need to explicitly check for its presence
         def get_boolean_from_form(field_name, default_when_missing=False):
-            """Get boolean value from form, handling 'y' from HTML checkboxes.
-
-            Args:
-                field_name: Name of the form field
-                default_when_missing: Value to use when field is NOT in request.form (unchecked checkbox)
-            """
-            if field_name in request.form:
-                # Field is in form (checkbox was checked)
-                raw_value = request.form.get(field_name)
-                return raw_value.lower() in ('y', 'yes', 'true', 't', 'on', '1', '1.0')
+            if field_name in data:
+                raw_value = data.get(field_name)
+                if isinstance(raw_value, bool):
+                    return raw_value
+                return str(raw_value).lower() in ('y', 'yes', 'true', 't', 'on', '1', '1.0')
             else:
-                # Field is NOT in form (checkbox was unchecked)
                 return default_when_missing
-
-        # For boolean fields, when checkbox is unchecked (not in request.form), it should be False
-        # The default_when_missing parameter controls what value to use when the field is NOT in the form
         selected_version.add_to_self_report = get_boolean_from_form('add_to_self_report', default_when_missing=False)
         selected_version.display_order_visible = get_boolean_from_form('display_order_visible', default_when_missing=False)
         selected_version.is_paginated = is_paginated_value
@@ -868,8 +856,7 @@ def edit_template(template_id):
         _handle_version_translations(selected_version, form)
         _handle_version_description_translations(selected_version, form)
 
-        # Handle template sharing - get values from form data since we're using checkboxes
-        shared_admin_ids = request.form.getlist(form.shared_with_admins.name)
+        shared_admin_ids = data.getlist(form.shared_with_admins.name)
         current_app.logger.debug(f"Template edit - shared_admin_ids from form: {shared_admin_ids}")
         if shared_admin_ids:
             # Convert string IDs to integers
@@ -888,7 +875,7 @@ def edit_template(template_id):
                     f"pages before={before_pages}"
                 )
                 # Update pages for the active version (draft or published)
-                _handle_template_pages(template, request.form, version_id=selected_version.id)
+                _handle_template_pages(template, data, version_id=selected_version.id)
                 _update_version_timestamp(selected_version.id, current_user.id)
                 after_pages = FormPage.query.filter_by(template_id=template.id, version_id=selected_version.id).count()
                 current_app.logger.debug(
@@ -929,8 +916,10 @@ def edit_template(template_id):
             success_msg = f"Form Template '{selected_version.name}' updated successfully."
 
             flash(success_msg, "success")
-            # Preserve the currently selected version after saving
-            return redirect(url_for("form_builder.edit_template", template_id=template.id, version_id=selected_version.id))
+            redirect_url = url_for("form_builder.edit_template", template_id=template.id, version_id=selected_version.id)
+            if is_json_request():
+                return json_ok(message=success_msg, redirect_url=redirect_url)
+            return redirect(redirect_url)
         except Exception as e:
             request_transaction_rollback()
             error_msg = "Error updating form template."

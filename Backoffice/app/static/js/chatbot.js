@@ -1028,6 +1028,34 @@ class NGODatabankChatbot {
         return document.body && document.body.classList.contains('chat-immersive');
     }
 
+    _isMobileFloatingLayout() {
+        if (this._isImmersive()) return false;
+        try {
+            return typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
+        } catch (_) {
+            return false;
+        }
+    }
+
+    _syncFloatingMobileBodyLock(isOpen) {
+        try {
+            if (this._isImmersive() || !document.body) return;
+            if (this._isMobileFloatingLayout() && isOpen) {
+                // Save current scroll position before locking (needed for iOS restore)
+                this._savedBodyScrollY = window.scrollY || window.pageYOffset || 0;
+                document.body.style.top = `-${this._savedBodyScrollY}px`;
+                document.body.classList.add('chat-floating-mobile-open');
+            } else {
+                const savedY = this._savedBodyScrollY || 0;
+                document.body.classList.remove('chat-floating-mobile-open');
+                document.body.style.top = '';
+                // Restore scroll so the page appears unchanged after chat closes
+                window.scrollTo(0, savedY);
+                this._savedBodyScrollY = 0;
+            }
+        } catch (_) { /* ignore */ }
+    }
+
     initializeElements() {
         this.elements = {
             fab: document.getElementById('aiChatbotFAB'),
@@ -1372,6 +1400,17 @@ class NGODatabankChatbot {
             this.elements.input.addEventListener('input', () => this._resizeChatInput());
         }
 
+        // Re-sync body scroll lock when crossing the mobile/desktop breakpoint with chat open
+        if (!isImmersive && typeof window.matchMedia === 'function') {
+            const mq = window.matchMedia('(max-width: 768px)');
+            const onViewportChange = () => this._syncFloatingMobileBodyLock(this.isOpen());
+            if (typeof mq.addEventListener === 'function') {
+                mq.addEventListener('change', onViewportChange);
+            } else if (typeof mq.addListener === 'function') {
+                mq.addListener(onViewportChange);
+            }
+        }
+
         // Close chat when clicking outside (floating only)
         if (!isImmersive && this.elements.fab) {
             document.addEventListener('click', (e) => {
@@ -1495,6 +1534,8 @@ class NGODatabankChatbot {
             }
             this.elements.input.focus();
         }
+
+        this._syncFloatingMobileBodyLock(isOpen);
     }
 
     isOpen() {

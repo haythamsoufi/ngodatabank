@@ -102,6 +102,7 @@ pnpm-debug.log*
 .gitattributes
 .claude/
 /CLAUDE.md
+# Playwright MCP: keep screenshots/traces under here (see .cursor/mcp.json --output-dir)
 .playwright-mcp/
 
 # GitHub metadata (ignore workflows/config)

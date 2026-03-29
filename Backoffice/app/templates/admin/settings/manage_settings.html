@@ -2121,15 +2121,22 @@
         }
       });
 
-      var resp = await fetch(form.action, { method: 'POST', body: new FormData(form) });
-      // Re-enable immediately for safety if user stays on page.
+      var fetchFn = (window.getFetch && window.getFetch()) || fetch;
+      var payload = window.formDataToJson ? window.formDataToJson(form) : null;
+      var resp = await fetchFn(form.action, {
+        method: 'POST',
+        body: payload ? JSON.stringify(payload) : new FormData(form),
+        credentials: 'same-origin',
+        headers: payload
+          ? { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
+          : { 'X-Requested-With': 'XMLHttpRequest' }
+      });
       disabled.forEach(function (inp) { inp.disabled = false; });
 
       if (!resp.ok) {
         throw new Error('Failed to save settings (' + resp.status + ')');
       }
 
-      // Follow any redirect and land on the resulting URL (so flash messages show).
       window.location.href = resp.url || form.action;
     } catch (err) {
       var m = (err && err.message) ? err.message : 'Failed to save settings';
