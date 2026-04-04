@@ -254,13 +254,25 @@ def create_app(config_name=None):
             app.logger.warning("CORS_ALLOWED_ORIGINS not set for %s. CORS disabled for security.", selected_config_name)
 
         if cors_origins:
+            # supports_credentials: browsers sending cookies / Authorization to /api/* (e.g. cross-origin Website)
+            _api_cors = {
+                "origins": cors_origins,
+                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+                "allow_headers": [
+                    "Content-Type",
+                    "Authorization",
+                    "X-API-Key",
+                    "Cookie",
+                    "Accept",
+                    "X-Requested-With",
+                    "X-CSRFToken",
+                    "X-CSRF-Token",
+                ],
+                "expose_headers": ["Content-Disposition", "Content-Length"],
+                "supports_credentials": True,
+            }
             CORS(app, resources={
-                r"/api/*": {
-                    "origins": cors_origins,
-                    "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-                    "allow_headers": ["Content-Type", "Authorization", "X-API-Key"],
-                    "expose_headers": ["Content-Disposition", "Content-Length"]
-                },
+                r"/api/*": _api_cors,
                 r"/publications/*": {
                     "origins": cors_origins,
                     "methods": ["GET"],

@@ -51,20 +51,23 @@ class UserProfileService {
         try {
           final jsonData = jsonDecode(response.body) as Map<String, dynamic>;
 
-          // Validate required fields
-          if (!jsonData.containsKey('email') || !jsonData.containsKey('role')) {
-            DebugLogger.logAuth('API response missing required fields');
+          final email = jsonData['email'];
+          if (email is! String || email.isEmpty) {
+            DebugLogger.logAuth('API response missing email');
             return null;
           }
+
+          // Backoffice returns rbac_roles, not always a top-level role string — derive coarse role.
+          final derivedRole = _deriveRoleFromJson(jsonData);
 
           // Map API response to User model
           // Handle different possible field names from backend
           final user = User(
-            id: jsonData['id'] as int? ?? 0,
-            email: jsonData['email'] as String,
+            id: _parseUserId(jsonData['id']),
+            email: email,
             name: jsonData['name'] as String?,
             title: jsonData['title'] as String?,
-            role: _normalizeRole(jsonData['role'] as String? ?? 'focal_point'),
+            role: derivedRole,
             chatbotEnabled: jsonData['chatbot_enabled'] as bool? ?? false,
             profileColor: jsonData['profile_color'] as String?,
             countryIds: _extractCountryIds(jsonData),
@@ -95,6 +98,48 @@ class UserProfileService {
       DebugLogger.logAuth('API fetch error (non-auth): $e');
       return null;
     }
+  }
+
+  int _parseUserId(dynamic raw) {
+    if (raw is int) return raw;
+    if (raw is num) return raw.toInt();
+    return int.tryParse('$raw') ?? 0;
+  }
+
+  /// Coarse role for navigation: [system_manager|admin|focal_point].
+  /// Prefer legacy `role` when present; else map from Backoffice `rbac_roles`.
+  String _deriveRoleFromJson(Map<String, dynamic> json) {
+    final direct = json['role'];
+    if (direct is String && direct.trim().isNotEmpty) {
+      return _normalizeRole(direct);
+    }
+    final rbac = json['rbac_roles'];
+    if (rbac is List) {
+      final codes = <String>[];
+      for (final item in rbac) {
+        if (item is Map<String, dynamic>) {
+          final c = item['code'];
+          if (c is String && c.isNotEmpty) {
+            codes.add(c.toLowerCase().trim());
+          }
+        } else if (item is Map) {
+          final c = item['code'];
+          if (c != null && '$c'.isNotEmpty) {
+            codes.add('$c'.toLowerCase().trim());
+          }
+        }
+      }
+      if (codes.any((c) => c == 'system_manager')) {
+        return 'system_manager';
+      }
+      if (codes.any((c) =>
+          c == 'admin_core' ||
+          c == 'admin_full' ||
+          c.startsWith('admin_'))) {
+        return 'admin';
+      }
+    }
+    return 'focal_point';
   }
 
   /// Normalize role string to standard format.
@@ -188,19 +233,21 @@ class UserProfileService {
         try {
           final jsonData = jsonDecode(response.body) as Map<String, dynamic>;
 
-          // Validate required fields
-          if (!jsonData.containsKey('email') || !jsonData.containsKey('role')) {
-            DebugLogger.logAuth('API response missing required fields');
+          final email = jsonData['email'];
+          if (email is! String || email.isEmpty) {
+            DebugLogger.logAuth('API response missing email');
             return null;
           }
 
+          final derivedRole = _deriveRoleFromJson(jsonData);
+
           // Map API response to User model
           final user = User(
-            id: jsonData['id'] as int? ?? 0,
-            email: jsonData['email'] as String,
+            id: _parseUserId(jsonData['id']),
+            email: email,
             name: jsonData['name'] as String?,
             title: jsonData['title'] as String?,
-            role: _normalizeRole(jsonData['role'] as String? ?? 'focal_point'),
+            role: derivedRole,
             chatbotEnabled: jsonData['chatbot_enabled'] as bool? ?? false,
             profileColor: jsonData['profile_color'] as String?,
             countryIds: _extractCountryIds(jsonData),

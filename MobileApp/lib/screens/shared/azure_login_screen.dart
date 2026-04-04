@@ -158,6 +158,7 @@ class _AzureLoginScreenState extends State<AzureLoginScreen> {
               _webViewController = controller;
             },
             onLoadStart: (controller, url) {
+              if (!mounted) return;
               setState(() {
                 _isLoading = true;
                 // Clear error when starting to load - page might load successfully
@@ -185,6 +186,7 @@ class _AzureLoginScreenState extends State<AzureLoginScreen> {
               }
             },
             onLoadStop: (controller, url) async {
+              if (!mounted) return;
               setState(() {
                 _isLoading = false;
                 // Clear error if page loaded successfully
@@ -209,6 +211,7 @@ class _AzureLoginScreenState extends State<AzureLoginScreen> {
               }
             },
             onProgressChanged: (controller, progress) {
+              if (!mounted) return;
               setState(() {
                 _progress = progress / 100;
               });

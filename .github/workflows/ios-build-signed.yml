@@ -8,14 +8,23 @@ on:
         required: false
         default: true
         type: boolean
+      backend_url:
+        description: 'Backoffice URL (overrides BACKEND_URL env var)'
+        required: true
+        type: choice
+        options:
+          - https://databank.ifrc.org
+          - https://backoffice-databank.fly.dev
+          - https://databank-stage.ifrc.org
+        default: 'https://databank.ifrc.org'
       organization_config:
         description: 'Organization configuration (determines branding and app name)'
         required: true
         type: choice
         options:
-          - ''
           - ifrc
-        default: ''
+          - ''
+        default: 'ifrc'
 
 jobs:
   build-ios-signed:
@@ -48,6 +57,16 @@ jobs:
             echo "Error: Could not find Flutter project"
             exit 1
           fi
+
+      - name: Create .env file with configuration
+        working-directory: ${{ steps.flutter_path.outputs.path }}
+        run: |
+          echo "BACKEND_URL=${{ inputs.backend_url }}" > .env
+          echo "FRONTEND_URL=https://website-databank.fly.dev" >> .env
+          if [ "${{ inputs.production }}" == "true" ]; then
+            echo "PRODUCTION=true" >> .env
+          fi
+          echo "Created .env: BACKEND_URL=${{ inputs.backend_url }}, FRONTEND_URL=https://website-databank.fly.dev"
 
       - name: Prepare Firebase iOS config (CI placeholder)
         working-directory: ${{ steps.flutter_path.outputs.path }}
@@ -83,7 +102,7 @@ jobs:
           flutter build ipa --release \
             --dart-define=PRODUCTION=${{ github.event.inputs.production }} \
             $ORG_CONFIG \
-            --dart-define=API_KEY="${{ secrets.API_KEY }}" \
+            --dart-define=MOBILE_APP_API_KEY="${{ secrets.MOBILE_APP_API_KEY }}" \
             --dart-define=MOBILE_NOTIFICATION_API_KEY="${{ secrets.MOBILE_NOTIFICATION_API_KEY }}" \
             --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}"
         env:

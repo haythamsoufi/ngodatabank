@@ -93,9 +93,9 @@ void main() async {
   // Load environment variables (e.g., MOBILE_NOTIFICATION_API_KEY)
   await dotenv.load(fileName: '.env', isOptional: true);
 
-  // Initialize organization configuration
-  // Check for ORGANIZATION_CONFIG environment variable or use default
-  const organizationConfig = String.fromEnvironment('ORGANIZATION_CONFIG', defaultValue: '');
+  // Initialize organization configuration (default: IFRC profile)
+  // Override with --dart-define=ORGANIZATION_CONFIG=otherorg; use empty define for generic NGO Databank config
+  const organizationConfig = String.fromEnvironment('ORGANIZATION_CONFIG', defaultValue: 'ifrc');
   await OrganizationConfigService().loadConfig(
     organization: organizationConfig.isNotEmpty ? organizationConfig : null,
   );

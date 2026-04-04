@@ -20,8 +20,8 @@ on:
           - http://localhost:5000
           - http://10.0.2.2:5000
           - https://backoffice-databank.fly.dev
-          - https://your-backoffice.example.org
-        default: 'https://backoffice-databank.fly.dev'
+          - https://databank.ifrc.org
+        default: 'https://databank.ifrc.org'
       frontend_url:
         description: 'Frontend/Website URL'
         required: true
@@ -36,9 +36,9 @@ on:
         required: true
         type: choice
         options:
-          - ''
           - ifrc
-        default: ''
+          - ''
+        default: 'ifrc'
 
 jobs:
   build-ios:
@@ -148,7 +148,7 @@ jobs:
           flutter build ios --release --no-codesign \
             --dart-define=$ENV_FLAG \
             $ORG_CONFIG \
-            --dart-define=API_KEY="${{ secrets.API_KEY }}" \
+            --dart-define=MOBILE_APP_API_KEY="${{ secrets.MOBILE_APP_API_KEY }}" \
             --dart-define=MOBILE_NOTIFICATION_API_KEY="${{ secrets.MOBILE_NOTIFICATION_API_KEY }}" \
             --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}"
 

@@ -274,8 +274,8 @@ class OrganizationConfigService {
   /// 1. Check for organization-specific config (e.g., organization_config.ifrc.json)
   /// 2. Fall back to default organization_config.json
   ///
-  /// To use IFRC config, set ORGANIZATION_CONFIG environment variable to "ifrc"
-  /// or pass organization parameter
+  /// Default organization profile is IFRC (`organization_config.ifrc.json`).
+  /// Override with ORGANIZATION_CONFIG / `organization` parameter; empty string uses generic `organization_config.json`.
   Future<void> loadConfig({String? organization}) async {
     if (_isInitialized) {
       DebugLogger.logInfo('CONFIG', 'Config already loaded, skipping');
@@ -290,13 +290,13 @@ class OrganizationConfigService {
         configPath = 'assets/config/organization_config.$organization.json';
         DebugLogger.logInfo('CONFIG', 'Loading organization-specific config: $configPath');
       } else {
-        // Try to get from environment variable
-        const envOrg = String.fromEnvironment('ORGANIZATION_CONFIG', defaultValue: '');
+        // Try to get from environment variable (default: ifrc)
+        const envOrg = String.fromEnvironment('ORGANIZATION_CONFIG', defaultValue: 'ifrc');
         if (envOrg.isNotEmpty) {
           configPath = 'assets/config/organization_config.$envOrg.json';
           DebugLogger.logInfo('CONFIG', 'Loading config from environment: $configPath');
         } else {
-          // Default to generic NGO Databank config
+          // Explicit empty ORGANIZATION_CONFIG → generic NGO Databank config
           configPath = 'assets/config/organization_config.json';
           DebugLogger.logInfo('CONFIG', 'Loading default config: $configPath');
         }

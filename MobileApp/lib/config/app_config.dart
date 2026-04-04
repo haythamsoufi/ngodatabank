@@ -246,17 +246,23 @@ class AppConfig {
   static const String sentryDsn =
       String.fromEnvironment('SENTRY_DSN', defaultValue: '');
 
-  // API Key for public endpoints
-  // Priority: .env/.env.mobile -> compile-time define -> empty string
+  // API Key for public endpoints (DB-managed key, sent as Authorization: Bearer)
+  // Priority: MOBILE_APP_API_KEY (new) -> API_KEY (legacy alias) -> compile-time define -> empty string
   static String get apiKey {
-    final envValue = dotenv.env['API_KEY'];
+    final envValue = dotenv.env['MOBILE_APP_API_KEY'] ?? dotenv.env['API_KEY'];
     if (envValue != null && envValue.isNotEmpty) {
       return envValue;
     }
 
-    const defineValue = String.fromEnvironment('API_KEY', defaultValue: '');
+    const defineValue = String.fromEnvironment('MOBILE_APP_API_KEY', defaultValue: '');
     if (defineValue.isNotEmpty) {
       return defineValue;
+    }
+
+    // Legacy compile-time alias
+    const legacyDefine = String.fromEnvironment('API_KEY', defaultValue: '');
+    if (legacyDefine.isNotEmpty) {
+      return legacyDefine;
     }
 
     return '';

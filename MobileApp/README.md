@@ -64,7 +64,7 @@ Generic Flutter mobile application for NGO Databank ecosystems. Point it at your
    - Create a `.env` file in the `MobileApp` directory (see `.env.example` if available)
    - Add the following variables:
      ```
-     API_KEY=your_api_key_here
+     MOBILE_APP_API_KEY=your_api_key_here
      MOBILE_NOTIFICATION_API_KEY=your_mobile_notification_api_key_here
      SENTRY_DSN=your_sentry_dsn_here  # Optional
      ```
@@ -74,7 +74,7 @@ Generic Flutter mobile application for NGO Databank ecosystems. Point it at your
    **Option B: Using `--dart-define` flags (for CI builds and production)**
    - Pass environment variables via command-line flags:
      ```bash
-     flutter run --dart-define=API_KEY=your_key --dart-define=MOBILE_NOTIFICATION_API_KEY=your_key
+     flutter run --dart-define=MOBILE_APP_API_KEY=your_key --dart-define=MOBILE_NOTIFICATION_API_KEY=your_key
      ```
    - For CI builds, these are passed automatically from GitHub secrets
    

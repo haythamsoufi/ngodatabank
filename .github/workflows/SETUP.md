@@ -486,7 +486,7 @@ The iOS and Android build workflows require API keys to be configured as GitHub 
 
 | Secret Name | Description | Required For |
 |-------------|-------------|--------------|
-| `API_KEY` | API key for public endpoints | All builds |
+| `MOBILE_APP_API_KEY` | API key for public endpoints (DB-managed, sent as Bearer) | All builds |
 | `MOBILE_NOTIFICATION_API_KEY` | Shared secret for push notifications | All builds |
 | `SENTRY_DSN` | Sentry error tracking DSN (optional) | Error tracking |
 
@@ -511,7 +511,7 @@ The mobile app workflows pass these secrets via `--dart-define` flags during the
 
 ```bash
 flutter build ios --release \
-  --dart-define=API_KEY="${{ secrets.API_KEY }}" \
+  --dart-define=MOBILE_APP_API_KEY="${{ secrets.MOBILE_APP_API_KEY }}" \
   --dart-define=MOBILE_NOTIFICATION_API_KEY="${{ secrets.MOBILE_NOTIFICATION_API_KEY }}" \
   --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}"
 ```
@@ -523,7 +523,7 @@ The app code reads these values using `String.fromEnvironment()` with fallback t
 For local development, you can create a `.env` file in the `MobileApp` directory:
 
 ```
-API_KEY=your_api_key_here
+MOBILE_APP_API_KEY=your_api_key_here
 MOBILE_NOTIFICATION_API_KEY=your_mobile_notification_api_key_here
 SENTRY_DSN=your_sentry_dsn_here
 ```
@@ -532,11 +532,11 @@ SENTRY_DSN=your_sentry_dsn_here
 
 ### Troubleshooting Mobile App Builds
 
-**❌ Build fails: "API_KEY not found"**
+**❌ Build fails: "MOBILE_APP_API_KEY not found"**
 
 - Verify the secret exists in GitHub: https://github.com/haythamsoufi/databank/settings/secrets/actions
-- Check that the secret name is exactly `API_KEY` (case-sensitive)
-- Ensure the workflow is using `${{ secrets.API_KEY }}` syntax
+- Check that the secret name is exactly `MOBILE_APP_API_KEY` (case-sensitive)
+- Ensure the workflow is using `${{ secrets.MOBILE_APP_API_KEY }}` syntax
 
 **❌ Build succeeds but app can't authenticate**
 

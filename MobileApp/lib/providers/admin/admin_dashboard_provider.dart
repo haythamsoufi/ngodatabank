@@ -70,8 +70,15 @@ class AdminDashboardProvider with ChangeNotifier {
     if (response.statusCode == 200) {
       try {
         final decoded = jsonDecode(response.body);
-        if (decoded['status'] == 'success' && decoded['data'] != null) {
-          _stats = Map<String, dynamic>.from(decoded['data']);
+        // Backoffice returns stats flat at the top level (no nested 'data' key).
+        // Accept: {"status":"success","user_count":27,...}
+        //   or:  {"status":"success","data":{"user_count":27,...}}
+        final bool isSuccess =
+            decoded['status'] == 'success' || decoded['success'] == true;
+        if (isSuccess) {
+          final nested = decoded['data'];
+          _stats = Map<String, dynamic>.from(
+              nested is Map ? nested : decoded);
           _error = null;
         } else {
           final error = _errorHandler.parseError(

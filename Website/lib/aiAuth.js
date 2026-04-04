@@ -33,9 +33,16 @@ export async function fetchAiToken(maxRetries = 2) {
 
   let lastError = null;
 
-  const isBrowser = typeof window !== 'undefined';
-  // In browser, use same-origin proxy to avoid CORS
-  const url = isBrowser ? '/api/ai-token' : `${resolveBackofficeBaseUrl()}/api/ai/v2/token`;
+  // In any browser context (including WebView), always use the Next.js same-origin proxy.
+  // Never call Backoffice directly from the client — that triggers CORS when NEXT_PUBLIC_API_URL
+  // points at another host (e.g. databank.ifrc.org) than the Website (e.g. website-databank.fly.dev).
+  const isBrowser =
+    typeof window !== 'undefined' &&
+    typeof window.location !== 'undefined' &&
+    typeof window.location.href === 'string';
+  const url = isBrowser
+    ? `${window.location.origin}/api/ai-token`
+    : `${resolveBackofficeBaseUrl()}/api/ai/v2/token`;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
