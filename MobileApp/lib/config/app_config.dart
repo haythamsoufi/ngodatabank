@@ -313,12 +313,19 @@ class AppConfig {
   }
 
   // Shared secret used by native clients to authenticate notification API calls
-  static String get mobileNotificationApiKey =>
-      dotenv.env['MOBILE_NOTIFICATION_API_KEY'] ??
-      const String.fromEnvironment(
-        'MOBILE_NOTIFICATION_API_KEY',
-        defaultValue: '',
-      );
+  static String get mobileNotificationApiKey {
+    final fromDotenv = dotenv.env['MOBILE_NOTIFICATION_API_KEY'];
+    if (fromDotenv != null) {
+      final trimmed = fromDotenv.trim();
+      if (trimmed.isNotEmpty) {
+        return trimmed;
+      }
+    }
+    return const String.fromEnvironment(
+      'MOBILE_NOTIFICATION_API_KEY',
+      defaultValue: '',
+    ).trim();
+  }
 
   // Security Note: Authentication bypass removed for security.
   // If needed for development, use environment variables with kDebugMode checks

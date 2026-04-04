@@ -7,6 +7,7 @@ import '../../services/error_handler.dart';
 import '../../utils/debug_logger.dart';
 import '../../widgets/admin_drawer.dart';
 import '../../widgets/app_bar.dart';
+import '../../widgets/app_fade_in_up.dart';
 import '../../models/shared/notification.dart' as model;
 import '../../utils/constants.dart';
 import '../../utils/theme_extensions.dart';
@@ -337,11 +338,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     itemCount: provider.notifications.length,
                     itemBuilder: (context, index) {
                       final notification = provider.notifications[index];
-                      return _RestrictedSwipeDismissible(
-                        key: Key('notification_${notification.id}'),
-                        notification: notification,
-                        localizations: localizations,
-                        provider: provider,
+                      return AppFadeInUp(
+                        staggerIndex: index,
+                        child: _RestrictedSwipeDismissible(
+                          key: Key('notification_${notification.id}'),
+                          notification: notification,
+                          localizations: localizations,
+                          provider: provider,
+                        ),
                       );
                     },
                   ),

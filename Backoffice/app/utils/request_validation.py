@@ -60,13 +60,15 @@ def enforce_api_or_csrf_protection(
     # Allow mobile/native requests that send the shared secret header.
     # Read directly from environment since these may not be in Flask config
     config_key_name = config_key or "MOBILE_NOTIFICATION_API_KEY"
-    expected_secret = (
+    _raw_secret = (
         os.environ.get(config_key_name)
         or os.environ.get("MOBILE_API_KEY")
         or current_app.config.get(config_key_name)
         or current_app.config.get("MOBILE_API_KEY")
     )
-    incoming_token = request.headers.get(header_name or "X-Mobile-Auth")
+    # Strip env/config values so trailing newlines/spaces in .env cannot break compare_digest.
+    expected_secret = (str(_raw_secret).strip() if _raw_secret is not None else "") or None
+    incoming_token = (request.headers.get(header_name or "X-Mobile-Auth") or "").strip() or None
 
     if incoming_token:
         if expected_secret and hmac.compare_digest(str(incoming_token), str(expected_secret)):

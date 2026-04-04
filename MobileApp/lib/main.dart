@@ -71,6 +71,7 @@ import 'services/connectivity_service.dart';
 import 'services/performance_service.dart';
 import 'services/api_service.dart';
 import 'services/organization_config_service.dart';
+import 'utils/constants.dart';
 import 'utils/theme.dart';
 import 'utils/responsive_typography.dart';
 import 'widgets/admin_drawer.dart';
@@ -839,8 +840,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
             if (mounted && _pageController.hasClients) {
               _pageController.animateToPage(
                 validIndex,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
+                duration: AppConstants.animationMedium,
+                curve: Curves.easeOutCubic,
               );
               setState(() {
                 _currentIndex = validIndex;
@@ -894,8 +895,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
                 if (_pageController.hasClients) {
                   _pageController.animateToPage(
                     index,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
+                    duration: AppConstants.animationMedium,
+                    curve: Curves.easeOutCubic,
                   );
                 }
                 // Update index immediately for bottom nav bar

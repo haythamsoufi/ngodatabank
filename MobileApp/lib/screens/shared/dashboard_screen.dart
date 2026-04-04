@@ -18,6 +18,7 @@ import '../../models/shared/entity.dart';
 import '../../l10n/app_localizations.dart';
 import '../../widgets/loading_indicator.dart';
 import '../../widgets/error_state.dart';
+import '../../widgets/app_fade_in_up.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -661,38 +662,41 @@ class _DashboardScreenState extends State<DashboardScreen>
   ) {
     final isExpanded = _expandedCardIds.contains(assignment.id);
 
-    return Column(
-      children: [
-        AssignmentCard(
-          assignment: assignment,
-          isExpanded: isExpanded,
-          onToggleExpand: () {
-            HapticFeedback.selectionClick();
-            setState(() {
-              if (isExpanded) {
-                _expandedCardIds.remove(assignment.id);
-              } else {
-                _expandedCardIds.add(assignment.id);
-              }
-            });
-          },
-          onTap: () {
-            HapticFeedback.lightImpact();
-            Navigator.of(context).pushNamed(
-              AppRoutes.webview,
-              arguments: AppRoutes.formEntry(assignment.id),
-            );
-          },
-        ),
-        if (!isLast)
-          Divider(
-            height: 1,
-            thickness: 0.5,
-            indent: IOSSpacing.md,
-            endIndent: IOSSpacing.md,
-            color: Theme.of(context).dividerColor.withOpacity(0.5),
+    return AppFadeInUp(
+      staggerIndex: index,
+      child: Column(
+        children: [
+          AssignmentCard(
+            assignment: assignment,
+            isExpanded: isExpanded,
+            onToggleExpand: () {
+              HapticFeedback.selectionClick();
+              setState(() {
+                if (isExpanded) {
+                  _expandedCardIds.remove(assignment.id);
+                } else {
+                  _expandedCardIds.add(assignment.id);
+                }
+              });
+            },
+            onTap: () {
+              HapticFeedback.lightImpact();
+              Navigator.of(context).pushNamed(
+                AppRoutes.webview,
+                arguments: AppRoutes.formEntry(assignment.id),
+              );
+            },
           ),
-      ],
+          if (!isLast)
+            Divider(
+              height: 1,
+              thickness: 0.5,
+              indent: IOSSpacing.md,
+              endIndent: IOSSpacing.md,
+              color: Theme.of(context).dividerColor.withOpacity(0.5),
+            ),
+        ],
+      ),
     );
   }
 
@@ -975,58 +979,61 @@ class _DashboardScreenState extends State<DashboardScreen>
                                         provider.currentAssignments.length -
                                             1;
 
-                                    return Column(
-                                      children: [
-                                        AssignmentCard(
-                                          assignment: assignment,
-                                          isExpanded: isExpanded,
-                                          onToggleExpand: () {
-                                            HapticFeedback.selectionClick();
-                                            setState(() {
-                                              if (isExpanded) {
-                                                _expandedCardIds
-                                                    .remove(assignment.id);
-                                              } else {
-                                                _expandedCardIds
-                                                    .add(assignment.id);
-                                              }
-                                            });
-                                          },
-                                          onTap: () {
-                                            HapticFeedback.lightImpact();
-                                            Navigator.of(context).pushNamed(
-                                              AppRoutes.webview,
-                                              arguments: AppRoutes.formEntry(
-                                                  assignment.id),
-                                            );
-                                          },
-                                          showEnterDataButton:
-                                              _shouldShowEnterDataButton(
-                                            authProvider.user?.role,
-                                            assignment,
+                                    return AppFadeInUp(
+                                      staggerIndex: index,
+                                      child: Column(
+                                        children: [
+                                          AssignmentCard(
+                                            assignment: assignment,
+                                            isExpanded: isExpanded,
+                                            onToggleExpand: () {
+                                              HapticFeedback.selectionClick();
+                                              setState(() {
+                                                if (isExpanded) {
+                                                  _expandedCardIds
+                                                      .remove(assignment.id);
+                                                } else {
+                                                  _expandedCardIds
+                                                      .add(assignment.id);
+                                                }
+                                              });
+                                            },
+                                            onTap: () {
+                                              HapticFeedback.lightImpact();
+                                              Navigator.of(context).pushNamed(
+                                                AppRoutes.webview,
+                                                arguments: AppRoutes.formEntry(
+                                                    assignment.id),
+                                              );
+                                            },
+                                            showEnterDataButton:
+                                                _shouldShowEnterDataButton(
+                                              authProvider.user?.role,
+                                              assignment,
+                                            ),
+                                            enterDataButtonText:
+                                                localizations.enterData,
+                                            onEnterData: () {
+                                              HapticFeedback.mediumImpact();
+                                              Navigator.of(context).pushNamed(
+                                                AppRoutes.webview,
+                                                arguments: AppRoutes.formEntry(
+                                                    assignment.id),
+                                              );
+                                            },
                                           ),
-                                          enterDataButtonText:
-                                              localizations.enterData,
-                                          onEnterData: () {
-                                            HapticFeedback.mediumImpact();
-                                            Navigator.of(context).pushNamed(
-                                              AppRoutes.webview,
-                                              arguments: AppRoutes.formEntry(
-                                                  assignment.id),
-                                            );
-                                          },
-                                        ),
-                                        if (!isLast)
-                                          Divider(
-                                            height: 0.5,
-                                            thickness: 0.5,
-                                            indent: IOSSpacing.lg,
-                                            endIndent: IOSSpacing.lg,
-                                            color: Theme.of(context)
-                                                .dividerColor
-                                                .withOpacity(0.5),
-                                          ),
-                                      ],
+                                          if (!isLast)
+                                            Divider(
+                                              height: 0.5,
+                                              thickness: 0.5,
+                                              indent: IOSSpacing.lg,
+                                              endIndent: IOSSpacing.lg,
+                                              color: Theme.of(context)
+                                                  .dividerColor
+                                                  .withOpacity(0.5),
+                                            ),
+                                        ],
+                                      ),
                                     );
                                   }).toList(),
                                 ),
@@ -1381,7 +1388,10 @@ class _EntitySelectorBottomSheetState
 
                       // If this is a section header
                       if (item.isHeader && item.entityType != null) {
-                        return _buildSectionHeader(item.entityType!);
+                        return AppFadeInUp(
+                          staggerIndex: index,
+                          child: _buildSectionHeader(item.entityType!),
+                        );
                       }
 
                       // If this is an entity item
@@ -1393,64 +1403,71 @@ class _EntitySelectorBottomSheetState
                                 widget.provider.selectedEntity?.entityId ==
                                     entity.entityId;
 
-                        return Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              // Add haptic feedback
-                              HapticFeedback.selectionClick();
+                        return AppFadeInUp(
+                          staggerIndex: index,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                // Add haptic feedback
+                                HapticFeedback.selectionClick();
 
-                              // Get the entity before closing to avoid accessing after dispose
-                              final entityToSelect = entity;
-                              final providerToUse = widget.provider;
+                                // Get the entity before closing to avoid accessing after dispose
+                                final entityToSelect = entity;
+                                final providerToUse = widget.provider;
 
-                              // Close bottom sheet first
-                              Navigator.of(context).pop();
+                                // Close bottom sheet first
+                                Navigator.of(context).pop();
 
-                              // Select entity after navigation completes
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                providerToUse.selectEntity(entityToSelect);
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: IOSSpacing.sm + 6, horizontal: IOSSpacing.lg),
-                              decoration: BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(
-                                    color: widget.theme.dividerColor
-                                        .withOpacity(0.5),
-                                    width: 0.5,
+                                // Select entity after navigation completes
+                                WidgetsBinding.instance
+                                    .addPostFrameCallback((_) {
+                                  providerToUse.selectEntity(entityToSelect);
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: IOSSpacing.sm + 6,
+                                    horizontal: IOSSpacing.lg),
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    bottom: BorderSide(
+                                      color: widget.theme.dividerColor
+                                          .withOpacity(0.5),
+                                      width: 0.5,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      entity.displayLabel,
-                                      style: IOSTextStyle.callout(context).copyWith(
-                                        fontWeight: isSelected
-                                            ? FontWeight.w600
-                                            : FontWeight.w400,
-                                        color: isSelected
-                                            ? (widget.theme.isDarkTheme
-                                                ? widget.theme.colorScheme
-                                                    .tertiary
-                                                : context.navyTextColor)
-                                            : widget.theme.colorScheme.onSurface,
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        entity.displayLabel,
+                                        style: IOSTextStyle.callout(context)
+                                            .copyWith(
+                                          fontWeight: isSelected
+                                              ? FontWeight.w600
+                                              : FontWeight.w400,
+                                          color: isSelected
+                                              ? (widget.theme.isDarkTheme
+                                                  ? widget.theme.colorScheme
+                                                      .tertiary
+                                                  : context.navyTextColor)
+                                              : widget.theme.colorScheme
+                                                  .onSurface,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  if (isSelected)
-                                    Icon(
-                                      Icons.check_rounded,
-                                      color: widget.theme.isDarkTheme
-                                          ? widget.theme.colorScheme.tertiary
-                                          : context.navyIconColor,
-                                      size: 22,
-                                    ),
-                                ],
+                                    if (isSelected)
+                                      Icon(
+                                        Icons.check_rounded,
+                                        color: widget.theme.isDarkTheme
+                                            ? widget.theme.colorScheme.tertiary
+                                            : context.navyIconColor,
+                                        size: 22,
+                                      ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),

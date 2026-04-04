@@ -74,12 +74,12 @@ class AppBottomNavigationBar extends StatelessWidget {
           ),
         ),
       ),
-      child: SafeArea(
+        child: SafeArea(
         top: false,
         child: Container(
-          height: 50,
+          height: 58,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -280,72 +280,97 @@ class AppBottomNavigationBar extends StatelessWidget {
   }) {
     final isSelected = safeIndex == index;
     final isNotifications = label == 'Notifications';
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+    final iconFg = isSelected
+        ? primary
+        : context.iconColor.withOpacity(context.isDarkTheme ? 0.72 : 0.55);
 
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox.expand(
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+    Widget iconChild;
+    if (isNotifications) {
+      iconChild = Consumer<NotificationProvider>(
+        builder: (context, provider, child) {
+          return Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: [
+              Icon(
+                isSelected ? activeIcon : icon,
+                size: 24,
+                color: iconFg,
+              ),
+              if (provider.unreadCount > 0)
+                Positioned(
+                  right: -6,
+                  top: -6,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Color(AppConstants.ifrcRed),
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Center(
+                      child: Text(
+                        provider.unreadCount > 9
+                            ? '9+'
+                            : '${provider.unreadCount}',
+                        style: TextStyle(
+                          color: theme.colorScheme.onPrimary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
+      );
+    } else {
+      iconChild = Icon(
+        isSelected ? activeIcon : icon,
+        size: 24,
+        color: iconFg,
+      );
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+        splashColor: primary.withOpacity(0.12),
+        highlightColor: primary.withOpacity(0.06),
+        child: SizedBox.expand(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (isNotifications)
-                // Notifications with badge
-                Consumer<NotificationProvider>(
-                  builder: (context, provider, child) {
-                    return Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Icon(
-                          isSelected ? activeIcon : icon,
-                          size: 24,
-                          color: context.iconColor,
-                        ),
-                        if (provider.unreadCount > 0)
-                          Positioned(
-                            right: -6,
-                            top: -6,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 4, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: Color(AppConstants.ifrcRed),
-                                shape: BoxShape.circle,
-                              ),
-                              constraints: const BoxConstraints(
-                                minWidth: 16,
-                                minHeight: 16,
-                              ),
-                              child: Center(
-                                child: Text(
-                                  provider.unreadCount > 9
-                                      ? '9+'
-                                      : '${provider.unreadCount}',
-                                  style: TextStyle(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onPrimary,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    );
-                  },
-                )
-              else
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  child: Icon(
-                    isSelected ? activeIcon : icon,
-                    size: 24,
-                    color: context.iconColor,
+              AnimatedScale(
+                scale: isSelected ? 1.0 : 0.94,
+                duration: AppConstants.animationFast,
+                curve: Curves.easeOutCubic,
+                child: AnimatedContainer(
+                  duration: AppConstants.animationFast,
+                  curve: Curves.easeOutCubic,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? primary.withOpacity(context.isDarkTheme ? 0.22 : 0.12)
+                        : Colors.transparent,
+                    borderRadius:
+                        BorderRadius.circular(AppConstants.radiusLarge),
                   ),
+                  child: iconChild,
                 ),
+              ),
             ],
           ),
         ),

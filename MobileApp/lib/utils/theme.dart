@@ -55,10 +55,24 @@ class AppTheme {
     final bodyMediumColor =
         isDark ? Colors.white.withOpacity(0.9) : textPrimary;
 
+    final inputRadius = BorderRadius.circular(AppConstants.radiusMedium);
+
     return ThemeData(
       useMaterial3: true,
       visualDensity: VisualDensity.adaptivePlatformDensity,
       materialTapTargetSize: MaterialTapTargetSize.padded,
+      // Subtle page motion (keeps iOS cupertino-style push; others get a soft fade-up).
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: <TargetPlatform, PageTransitionsBuilder>{
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+          TargetPlatform.fuchsia: FadeUpwardsPageTransitionsBuilder(),
+          TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
+          TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
+        },
+      ),
+      splashFactory: InkSparkle.splashFactory,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: isDark
           ? const Color(AppConstants.themeScaffoldDark)
@@ -79,6 +93,7 @@ class AppTheme {
         ),
         iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black),
         shadowColor: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
+        scrolledUnderElevation: 1,
       ),
       textTheme: TextTheme(
         displayLarge: getTextStyle(
@@ -217,7 +232,7 @@ class AppTheme {
             ? const Color(AppConstants.themeElevatedSurfaceDark)
             : const Color(AppConstants.themeInputFillLight),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: inputRadius,
           borderSide: BorderSide(
             color: isDark
                 ? Colors.white.withOpacity(0.12)
@@ -226,7 +241,7 @@ class AppTheme {
           ),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: inputRadius,
           borderSide: BorderSide(
             color: isDark
                 ? Colors.white.withOpacity(0.12)
@@ -235,26 +250,26 @@ class AppTheme {
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: inputRadius,
           borderSide: BorderSide(
             color: isDark
                 ? Colors.white.withOpacity(0.7)
                 : const Color(AppConstants.themeInputBorderFocusedLight),
-            width: isDark ? 1.5 : 1,
+            width: isDark ? 1.5 : 2,
           ),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: inputRadius,
           borderSide: const BorderSide(
             color: Color(AppConstants.errorColor),
             width: 1,
           ),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: inputRadius,
           borderSide: const BorderSide(
             color: Color(AppConstants.errorColor),
-            width: 1,
+            width: 1.5,
           ),
         ),
         contentPadding: const EdgeInsets.symmetric(
@@ -270,18 +285,18 @@ class AppTheme {
         ),
       ),
       cardTheme: CardThemeData(
-        elevation: 0,
+        elevation: isDark ? 0 : 1,
+        shadowColor: isDark
+            ? Colors.black.withOpacity(0.35)
+            : Colors.black.withOpacity(0.06),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
         ),
         margin: EdgeInsets.zero,
         color: isDark
             ? const Color(AppConstants.themeSurfaceDark)
             : Colors.white,
         surfaceTintColor: Colors.transparent,
-        shadowColor: isDark
-            ? Colors.black.withOpacity(0.3)
-            : Colors.transparent,
       ),
       dividerTheme: DividerThemeData(
         color: isDark
@@ -323,6 +338,53 @@ class AppTheme {
         elevation: 4,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+        ),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+        ),
+        backgroundColor: isDark
+            ? const Color(AppConstants.themeElevatedSurfaceDark)
+            : const Color(0xFF1F2937),
+        contentTextStyle: getTextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: Colors.white,
+        ),
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        showDragHandle: true,
+        dragHandleColor: isDark
+            ? Colors.white.withOpacity(0.35)
+            : Colors.black.withOpacity(0.25),
+        backgroundColor: isDark
+            ? const Color(AppConstants.themeSurfaceDark)
+            : Colors.white,
+        surfaceTintColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppConstants.radiusXLarge),
+          ),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        elevation: 3,
+        backgroundColor: isDark
+            ? const Color(AppConstants.themeSurfaceDark)
+            : Colors.white,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConstants.radiusXLarge),
+        ),
+      ),
+      popupMenuTheme: PopupMenuThemeData(
+        elevation: 3,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
         ),
       ),
     );

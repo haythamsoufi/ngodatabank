@@ -43,9 +43,12 @@ class NotificationService {
         DebugLogger.logNotifications('Including language parameter: $currentLanguage');
       }
 
+      // Never cache: stale payloads would undo read/unread state after refresh or
+      // after loadNotifications() following mark-as-read (ApiService default TTL is 1h).
       final response = await _api.get(
         AppConfig.notificationsEndpoint,
         queryParams: queryParams,
+        useCache: false,
       );
 
       DebugLogger.logNotifications('Response status: ${response.statusCode}');
@@ -96,6 +99,7 @@ class NotificationService {
       final response = await _api.get(
         AppConfig.notificationsCountEndpoint,
         timeout: const Duration(seconds: 20),
+        useCache: false,
       );
 
       if (response.statusCode == 200) {

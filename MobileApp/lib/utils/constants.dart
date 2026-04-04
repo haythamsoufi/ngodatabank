@@ -99,6 +99,8 @@ class AppConstants {
   static const double radiusSmall = 4.0;
   static const double radiusMedium = 8.0;
   static const double radiusLarge = 12.0;
+  /// Dialogs, bottom sheets, floating snack bars
+  static const double radiusXLarge = 20.0;
 
   // Animation Durations
   static const Duration animationFast = Duration(milliseconds: 200);
