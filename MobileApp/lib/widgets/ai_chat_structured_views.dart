@@ -10,7 +10,8 @@ import '../utils/accessibility_helper.dart';
 import '../utils/theme_extensions.dart';
 
 String _cssHex(Color color) {
-  final int rgb = color.toARGB32() & 0xFFFFFF;
+  final int rgb =
+      (color.red << 16) | (color.green << 8) | color.blue;
   return '#${rgb.toRadixString(16).padLeft(6, '0')}';
 }
 
