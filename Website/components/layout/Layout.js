@@ -118,7 +118,8 @@ export default function Layout({ children }) {
         dangerouslySetInnerHTML={{ __html: i18nJson }}
         suppressHydrationWarning={true}
       />
-      <Script src="/clear-cache.js" strategy="beforeInteractive" />
+      {/* afterInteractive: avoids racing Next bootstrap; still unregisters SW early */}
+      <Script src="/clear-cache.js" strategy="afterInteractive" />
       <ScopeProvider>
         <div className={`flex flex-col min-h-screen ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
           {!isMobileApp && <Navbar />}

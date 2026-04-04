@@ -319,6 +319,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
                             });
                           },
                           onReceivedHttpError: (controller, request, response) {
+                            if (request.isForMainFrame != true) return;
                             final statusCode = response.statusCode;
                             if (statusCode != null && statusCode >= 400) {
                               setState(() {

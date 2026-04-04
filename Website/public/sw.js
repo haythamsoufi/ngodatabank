@@ -1,20 +1,18 @@
 // Minimal service worker for Next.js app
 // This prevents 404 errors for service worker requests
 // Modified to prevent local network access prompts
+//
+// Use globalThis (not self) so a mis-served file still parses as normal page JS in strict WebViews.
 
-self.addEventListener('install', (event) => {
-  // Skip waiting to activate immediately
-  self.skipWaiting();
+globalThis.addEventListener('install', (event) => {
+  globalThis.skipWaiting();
 });
 
-self.addEventListener('activate', (event) => {
-  // Take control of all clients immediately
-  event.waitUntil(self.clients.claim());
+globalThis.addEventListener('activate', (event) => {
+  event.waitUntil(globalThis.clients.claim());
 });
 
-// Handle fetch events (minimal implementation)
-// Explicitly avoid intercepting requests that might trigger local network access
-self.addEventListener('fetch', (event) => {
+globalThis.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
   // Only handle same-origin requests to prevent local network access prompts

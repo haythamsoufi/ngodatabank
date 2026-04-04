@@ -577,8 +577,9 @@ def get_dashboard():
             selected_entity_type = selected_entity['entity_type']
             selected_entity_id = selected_entity['entity_id']
 
-            # Query AssignmentEntityStatus for the selected entity
+            # Query AssignmentEntityStatus for the selected entity (parity with main.dashboard)
             AF = aliased(AssignedForm)
+            # Active assignments only, plus closed ones (inactive non-closed forms are hidden on web)
             assigned_forms_statuses = (
                 AssignmentEntityStatus.query
                 .join(AF, AF.id == AssignmentEntityStatus.assigned_form_id)
@@ -587,7 +588,8 @@ def get_dashboard():
                 )
                 .filter(
                     AssignmentEntityStatus.entity_type == selected_entity_type,
-                    AssignmentEntityStatus.entity_id == selected_entity_id
+                    AssignmentEntityStatus.entity_id == selected_entity_id,
+                    or_(AF.is_active == True, AF.is_closed == True),
                 )
                 .order_by(
                     AssignmentEntityStatus.due_date.asc().nulls_last(),

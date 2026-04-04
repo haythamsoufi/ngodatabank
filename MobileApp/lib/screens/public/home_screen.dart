@@ -343,6 +343,8 @@ class _HomeScreenState extends State<HomeScreen>
                             },
                             onReceivedHttpError:
                                 (controller, request, response) {
+                              // Subresources (API, fonts, analytics) can 401/403 without the page failing.
+                              if (request.isForMainFrame != true) return;
                               final statusCode = response.statusCode;
                               if (statusCode != null && statusCode >= 400) {
                                 setState(() {

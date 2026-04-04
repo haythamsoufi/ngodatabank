@@ -51,4 +51,19 @@ class AccessibilityHelper {
 
     return whiteContrast > blackContrast ? Colors.white : Colors.black;
   }
+
+  /// Foreground for text and icons on saturated brand-color hero strips (e.g. admin profile banner).
+  /// Uses light ink on deep or saturated mid-tone brand colors; soft dark on very light pastels so
+  /// badges and rings stay readable without a heavy black ring on orange/red gradients.
+  static Color bannerHeroForeground(Color brand) {
+    final hsv = HSVColor.fromColor(brand);
+    final lum = brand.computeLuminance();
+    if (lum < 0.38) {
+      return const Color(0xFFF5F5F5);
+    }
+    if (hsv.saturation > 0.22 && hsv.value > 0.48 && lum < 0.82) {
+      return const Color(0xFFF5F5F5);
+    }
+    return const Color(0xE6161616);
+  }
 }

@@ -283,6 +283,7 @@ class _ResourcesScreenState extends State<ResourcesScreen>
                             },
                             onReceivedHttpError:
                                 (controller, request, response) {
+                              if (request.isForMainFrame != true) return;
                               final statusCode = response.statusCode;
                               if (statusCode != null && statusCode >= 400) {
                                 setState(() {

@@ -11,6 +11,7 @@ import '../../widgets/bottom_navigation_bar.dart';
 import '../../widgets/app_bar.dart';
 import '../../widgets/loading_indicator.dart';
 import '../../widgets/error_state.dart';
+import '../../widgets/admin_user_banner.dart';
 import '../../l10n/app_localizations.dart';
 
 // Typed models for type safety
@@ -205,6 +206,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         SizedBox(height: IOSSpacing.sm),
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: IOSSpacing.lg,
+                          ),
+                          child: AdminUserBanner(user: user),
+                        ),
                         // Key Metrics - Horizontal Scroll
                         _buildKeyMetrics(provider),
 
