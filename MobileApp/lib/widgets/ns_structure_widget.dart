@@ -446,7 +446,7 @@ class _NSStructureWidgetState extends State<NSStructureWidget> {
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                       color: isSelected
-                          ? Colors.white
+                          ? theme.colorScheme.onSecondary
                           : theme.colorScheme.onSurface,
                     ),
                   ),
@@ -457,7 +457,7 @@ class _NSStructureWidgetState extends State<NSStructureWidget> {
                     style: TextStyle(
                       fontSize: 12,
                       color: isSelected
-                          ? Colors.white.withOpacity(0.9)
+                          ? theme.colorScheme.onSecondary.withOpacity(0.9)
                           : theme.colorScheme.onSurface.withOpacity(0.6),
                     ),
                   ),

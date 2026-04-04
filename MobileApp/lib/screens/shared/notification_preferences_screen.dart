@@ -190,8 +190,8 @@ class _NotificationPreferencesScreenState
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(localizations.preferencesSavedSuccessfully),
-              backgroundColor: theme.brightness == Brightness.dark
-                  ? const Color(0xFF4A90E2)
+              backgroundColor: theme.isDarkTheme
+                  ? const Color(AppConstants.themeSwitchCheckboxActiveDark)
                   : theme.colorScheme.primary,
               duration: const Duration(seconds: 2),
             ),
@@ -249,8 +249,9 @@ class _NotificationPreferencesScreenState
                 children: [
                   CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      theme.brightness == Brightness.dark
-                          ? const Color(0xFF4A90E2)
+                      theme.isDarkTheme
+                          ? const Color(
+                              AppConstants.themeSwitchCheckboxActiveDark)
                           : theme.colorScheme.primary,
                     ),
                   ),
@@ -307,8 +308,9 @@ class _NotificationPreferencesScreenState
                       icon: const Icon(Icons.refresh, size: 18),
                       label: Text(localizations.retry),
                       style: FilledButton.styleFrom(
-                        backgroundColor: theme.brightness == Brightness.dark
-                            ? const Color(0xFF4A90E2)
+                        backgroundColor: theme.isDarkTheme
+                            ? const Color(
+                                AppConstants.themeSwitchCheckboxActiveDark)
                             : theme.colorScheme.primary,
                         foregroundColor: theme.colorScheme.onPrimary,
                         padding: const EdgeInsets.symmetric(
@@ -487,9 +489,9 @@ class _NotificationPreferencesScreenState
                                           return Theme(
                                             data: Theme.of(context).copyWith(
                                               colorScheme: ColorScheme.fromSeed(
-                                                seedColor: theme.brightness ==
-                                                        Brightness.dark
-                                                    ? const Color(0xFF4A90E2)
+                                                seedColor: theme.isDarkTheme
+                                                    ? const Color(AppConstants
+                                                        .themeSwitchCheckboxActiveDark)
                                                     : theme.colorScheme.primary,
                                                 brightness: theme.brightness,
                                               ),
@@ -608,9 +610,9 @@ class _NotificationPreferencesScreenState
                                         return Theme(
                                           data: Theme.of(context).copyWith(
                                             colorScheme: ColorScheme.fromSeed(
-                                              seedColor: theme.brightness ==
-                                                      Brightness.dark
-                                                  ? const Color(0xFF4A90E2)
+                                              seedColor: theme.isDarkTheme
+                                                  ? const Color(AppConstants
+                                                      .themeSwitchCheckboxActiveDark)
                                                   : theme.colorScheme.primary,
                                               brightness: theme.brightness,
                                             ),
@@ -818,12 +820,10 @@ class _NotificationPreferencesScreenState
                                                       }
                                                     });
                                                   },
-                                                  activeColor: theme
-                                                              .brightness ==
-                                                          Brightness.dark
-                                                      ? const Color(0xFF4A90E2)
-                                                      : theme
-                                                          .colorScheme.primary,
+                                                  activeColor: theme.isDarkTheme
+                                                      ? const Color(AppConstants
+                                                          .themeSwitchCheckboxActiveDark)
+                                                      : theme.colorScheme.primary,
                                                   materialTapTargetSize:
                                                       MaterialTapTargetSize
                                                           .shrinkWrap,
@@ -891,12 +891,10 @@ class _NotificationPreferencesScreenState
                                                       }
                                                     });
                                                   },
-                                                  activeColor: theme
-                                                              .brightness ==
-                                                          Brightness.dark
-                                                      ? const Color(0xFF4A90E2)
-                                                      : theme
-                                                          .colorScheme.primary,
+                                                  activeColor: theme.isDarkTheme
+                                                      ? const Color(AppConstants
+                                                          .themeSwitchCheckboxActiveDark)
+                                                      : theme.colorScheme.primary,
                                                   materialTapTargetSize:
                                                       MaterialTapTargetSize
                                                           .shrinkWrap,
@@ -990,9 +988,9 @@ class _NotificationPreferencesScreenState
                                                   }
                                                 });
                                               },
-                                              activeColor: theme.brightness ==
-                                                      Brightness.dark
-                                                  ? const Color(0xFF4A90E2)
+                                              activeColor: theme.isDarkTheme
+                                                  ? const Color(AppConstants
+                                                      .themeSwitchCheckboxActiveDark)
                                                   : theme.colorScheme.primary,
                                               materialTapTargetSize:
                                                   MaterialTapTargetSize
@@ -1018,9 +1016,9 @@ class _NotificationPreferencesScreenState
                                                   }
                                                 });
                                               },
-                                              activeColor: theme.brightness ==
-                                                      Brightness.dark
-                                                  ? const Color(0xFF4A90E2)
+                                              activeColor: theme.isDarkTheme
+                                                  ? const Color(AppConstants
+                                                      .themeSwitchCheckboxActiveDark)
                                                   : theme.colorScheme.primary,
                                               materialTapTargetSize:
                                                   MaterialTapTargetSize
@@ -1049,8 +1047,9 @@ class _NotificationPreferencesScreenState
                   child: FilledButton(
                     onPressed: _isSaving ? null : _savePreferences,
                     style: FilledButton.styleFrom(
-                      backgroundColor: theme.brightness == Brightness.dark
-                          ? const Color(0xFF4A90E2)
+                      backgroundColor: theme.isDarkTheme
+                          ? const Color(
+                              AppConstants.themeSwitchCheckboxActiveDark)
                           : theme.colorScheme.primary,
                       foregroundColor: theme.colorScheme.onPrimary,
                       padding:

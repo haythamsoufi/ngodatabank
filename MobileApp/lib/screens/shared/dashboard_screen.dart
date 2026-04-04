@@ -147,7 +147,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     required Color backgroundColor,
   }) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = theme.isDarkTheme;
 
     return Expanded(
       child: Container(
@@ -927,9 +927,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                                   _buildStatsCard(
                                     title: localizations.active,
                                     value: '${provider.currentAssignments.length}',
-                                    color: Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? Colors.blue.shade400
+                                    color: context.isDarkTheme
+                                        ? Theme.of(context)
+                                            .colorScheme.tertiary
                                         : context.navyTextColor,
                                     backgroundColor: Colors.transparent,
                                   ),
@@ -950,9 +950,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                             _buildSectionHeader(
                               title: localizations.currentAssignments,
                               icon: Icons.assignment_rounded,
-                              color: Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? Colors.blue.shade300
+                              color: context.isDarkTheme
+                                  ? Theme.of(context)
+                                      .colorScheme.tertiary
                                   : context.navyIconColor,
                               count: provider.currentAssignments.isEmpty
                                   ? null
@@ -1434,9 +1434,9 @@ class _EntitySelectorBottomSheetState
                                             ? FontWeight.w600
                                             : FontWeight.w400,
                                         color: isSelected
-                                            ? (widget.theme.brightness ==
-                                                    Brightness.dark
-                                                ? Colors.blue.shade300
+                                            ? (widget.theme.isDarkTheme
+                                                ? widget.theme.colorScheme
+                                                    .tertiary
                                                 : context.navyTextColor)
                                             : widget.theme.colorScheme.onSurface,
                                       ),
@@ -1445,10 +1445,9 @@ class _EntitySelectorBottomSheetState
                                   if (isSelected)
                                     Icon(
                                       Icons.check_rounded,
-                                      color:
-                                          widget.theme.brightness == Brightness.dark
-                                              ? Colors.blue.shade300
-                                              : context.navyIconColor,
+                                      color: widget.theme.isDarkTheme
+                                          ? widget.theme.colorScheme.tertiary
+                                          : context.navyIconColor,
                                       size: 22,
                                     ),
                                 ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/shared/offline_provider.dart';
+import '../utils/theme_extensions.dart';
 
 /// Widget to display offline status indicator
 class OfflineIndicator extends StatelessWidget {
@@ -20,17 +21,18 @@ class OfflineIndicator extends StatelessWidget {
           if (offlineProvider.queuedRequestsCount > 0) {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              color: Colors.orange.shade100,
+              color: context.offlineQueuedBackground,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.sync, size: 16, color: Colors.orange.shade900),
+                  Icon(Icons.sync,
+                      size: 16, color: context.offlineQueuedForeground),
                   const SizedBox(width: 8),
                   Text(
                     '${offlineProvider.queuedRequestsCount} pending',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.orange.shade900,
+                      color: context.offlineQueuedForeground,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -42,7 +44,7 @@ class OfflineIndicator extends StatelessWidget {
                         'Sync',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.orange.shade900,
+                          color: context.offlineQueuedForeground,
                           fontWeight: FontWeight.bold,
                           decoration: TextDecoration.underline,
                         ),
@@ -57,7 +59,7 @@ class OfflineIndicator extends StatelessWidget {
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          Colors.orange.shade900,
+                          context.offlineQueuedForeground,
                         ),
                       ),
                     ),
@@ -71,18 +73,18 @@ class OfflineIndicator extends StatelessWidget {
           if (offlineProvider.lastSyncedFormatted != null) {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              color: Colors.green.shade50,
+              color: context.offlineSyncedBackground,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.check_circle,
-                      size: 16, color: Colors.green.shade700),
+                      size: 16, color: context.offlineSyncedForeground),
                   const SizedBox(width: 8),
                   Text(
                     'Synced ${offlineProvider.lastSyncedFormatted}',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.green.shade700,
+                      color: context.offlineSyncedForeground,
                     ),
                   ),
                 ],
@@ -95,17 +97,18 @@ class OfflineIndicator extends StatelessWidget {
           // Show offline status
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            color: Colors.red.shade100,
+            color: context.offlineDisconnectedInlineBackground,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.offline_bolt, size: 16, color: Colors.red.shade900),
+                Icon(Icons.offline_bolt,
+                    size: 16, color: context.offlineDisconnectedInlineForeground),
                 const SizedBox(width: 8),
                 Text(
                   'Offline',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.red.shade900,
+                    color: context.offlineDisconnectedInlineForeground,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -115,7 +118,7 @@ class OfflineIndicator extends StatelessWidget {
                     '(${offlineProvider.queuedRequestsCount} queued)',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.red.shade900,
+                      color: context.offlineDisconnectedInlineForeground,
                     ),
                   ),
                 ],
@@ -134,6 +137,7 @@ class OfflineBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Consumer<OfflineProvider>(
       builder: (context, offlineProvider, child) {
         if (offlineProvider.isOnline) {
@@ -143,20 +147,20 @@ class OfflineBanner extends StatelessWidget {
         return Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          color: Colors.red.shade600,
+          color: scheme.error,
           child: Row(
             children: [
-              const Icon(Icons.wifi_off, color: Colors.white, size: 20),
+              Icon(Icons.wifi_off, color: scheme.onError, size: 20),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
+                    Text(
                       'No Internet Connection',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: scheme.onError,
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
@@ -165,8 +169,8 @@ class OfflineBanner extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         '${offlineProvider.queuedRequestsCount} request(s) will be synced when online',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: scheme.onError.withOpacity(0.92),
                           fontSize: 12,
                         ),
                       ),

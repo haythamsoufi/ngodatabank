@@ -310,8 +310,8 @@ class AppBottomNavigationBar extends StatelessWidget {
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 4, vertical: 2),
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFED4956),
+                              decoration: BoxDecoration(
+                                color: Color(AppConstants.ifrcRed),
                                 shape: BoxShape.circle,
                               ),
                               constraints: const BoxConstraints(
@@ -323,8 +323,10 @@ class AppBottomNavigationBar extends StatelessWidget {
                                   provider.unreadCount > 9
                                       ? '9+'
                                       : '${provider.unreadCount}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
+                                  style: TextStyle(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onPrimary,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),

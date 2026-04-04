@@ -9,13 +9,14 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../providers/shared/ai_chat_provider.dart';
 import '../../providers/shared/auth_provider.dart';
 import '../../models/shared/ai_chat.dart';
-import '../../utils/ios_constants.dart';
 import '../../widgets/bottom_navigation_bar.dart';
 import '../../widgets/ai_chat_agent_progress_panel.dart';
 import '../../widgets/ai_chat_structured_views.dart';
 import '../../services/organization_config_service.dart';
 import '../../config/app_config.dart';
 import '../../config/routes.dart';
+import '../../utils/theme_extensions.dart';
+import '../../utils/accessibility_helper.dart';
 
 class AiChatScreen extends StatefulWidget {
   const AiChatScreen({super.key});
@@ -39,18 +40,20 @@ class _AiChatScreenState extends State<AiChatScreen> {
   int _lastLastMessageLen = 0;
   String? _lastShownStreamHint;
 
-  /// ChatGPT iOS–inspired surfaces (neutral canvas, soft user pills, green send).
-  static const Color _gptCanvasLight = Color(0xFFFFFFFF);
-  static const Color _gptCanvasDark = Color(0xFF212121);
-  static const Color _gptUserBubbleLight = Color(0xFFF4F4F4);
-  static const Color _gptUserBubbleDark = Color(0xFF2F2F2F);
-  static const Color _gptComposerLight = Color(0xFFF4F4F4);
-  static const Color _gptComposerDark = Color(0xFF303030);
+  /// Send button accent (ChatGPT-style green); icon uses [AccessibilityHelper] for contrast.
   static const Color _gptSendGreen = Color(0xFF10A37F);
-  static const Color _gptSendDisabledLight = Color(0xFFE5E5E5);
-  static const Color _gptSendDisabledDark = Color(0xFF3E3E3E);
-  static const Color _gptAssistantTextLight = Color(0xFF0D0D0D);
-  static const Color _gptAssistantTextDark = Color(0xFFECECEC);
+
+  Color _chatSurface(ThemeData t) => t.colorScheme.surface;
+  Color _chatBubble(ThemeData t) => t.colorScheme.surfaceContainerHigh;
+  Color _chatComposer(ThemeData t) => t.colorScheme.surfaceContainerHighest;
+  Color _chatBody(ThemeData t) => t.colorScheme.onSurface;
+  Color _chatSendDisabled(ThemeData t) => t.isDarkTheme
+      ? t.colorScheme.surfaceContainerHigh
+      : t.colorScheme.surfaceContainerHighest;
+
+  Color _chatOutline(ThemeData t) => t.colorScheme.outline;
+
+  Color _chatMuted(ThemeData t) => t.colorScheme.onSurfaceVariant;
 
   /// Same example prompts as `chat_immersive.html` (English source strings).
   static const List<String> _quickPrompts = [
@@ -165,13 +168,14 @@ class _AiChatScreenState extends State<AiChatScreen> {
     return '$name ${pct.toStringAsFixed(0)}%';
   }
 
-  void _showAiPolicyModal(BuildContext context, bool isDark) {
+  void _showAiPolicyModal(BuildContext context) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: isDark ? Colors.grey[900] : Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (ctx) {
+        final cs = Theme.of(ctx).colorScheme;
         return DraggableScrollableSheet(
           expand: false,
           initialChildSize: 0.85,
@@ -193,7 +197,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: isDark ? Colors.grey[100] : Colors.grey[900],
+                      color: cs.onSurface,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -206,7 +210,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 15,
-                            color: isDark ? Colors.amber[200] : Colors.amber[900],
+                            color: Theme.of(ctx).colorScheme.tertiary,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -215,24 +219,24 @@ class _AiChatScreenState extends State<AiChatScreen> {
                           style: TextStyle(
                             fontSize: 14,
                             height: 1.4,
-                            color: isDark ? Colors.grey[300] : Colors.grey[800],
+                            color: cs.onSurfaceVariant,
                           ),
                         ),
                         const SizedBox(height: 20),
                         _policySection(
-                          isDark,
+                          ctx,
                           'Purpose',
                           'The AI assistant helps you explore data and documents on this platform. It can answer questions about indicators, countries, assignments, and search through uploaded documents.',
                         ),
                         _policySection(
-                          isDark,
+                          ctx,
                           'Acceptable use',
                           '• Ask about platform data, indicators, and documents.\n'
                           '• Do NOT share passwords, credentials, or highly confidential operational details.\n'
                           '• Do NOT paste personal or financial data.',
                         ),
                         _policySection(
-                          isDark,
+                          ctx,
                           'Accuracy',
                           'AI can make mistakes or misinterpret data. Always verify important information against source data or documents.',
                         ),
@@ -256,7 +260,8 @@ class _AiChatScreenState extends State<AiChatScreen> {
     );
   }
 
-  Widget _policySection(bool isDark, String title, String body) {
+  Widget _policySection(BuildContext context, String title, String body) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
@@ -267,7 +272,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
-              color: isDark ? Colors.grey[200] : Colors.grey[900],
+              color: cs.onSurface,
             ),
           ),
           const SizedBox(height: 6),
@@ -276,7 +281,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
             style: TextStyle(
               fontSize: 14,
               height: 1.4,
-              color: isDark ? Colors.grey[400] : Colors.grey[700],
+              color: cs.onSurfaceVariant,
             ),
           ),
         ],
@@ -284,16 +289,17 @@ class _AiChatScreenState extends State<AiChatScreen> {
     );
   }
 
-  void _showSourcesSheet(BuildContext context, AiChatProvider ai, bool isDark) {
+  void _showSourcesSheet(BuildContext context, AiChatProvider ai) {
     bool historical = ai.selectedSources.contains('historical');
     bool system = ai.selectedSources.contains('system_documents');
     bool upr = ai.selectedSources.contains('upr_documents');
 
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: isDark ? Colors.grey[900] : Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (ctx) {
+        final cs = Theme.of(ctx).colorScheme;
         return StatefulBuilder(
           builder: (ctx, setModal) {
             Future<void> toggle(String key, bool value) async {
@@ -316,32 +322,44 @@ class _AiChatScreenState extends State<AiChatScreen> {
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
-                      color: isDark ? Colors.grey[200] : Colors.grey[900],
+                      color: cs.onSurface,
                     ),
                   ),
                   const SizedBox(height: 12),
                   CheckboxListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: Text('Databank', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[800])),
+                    title: Text(
+                      'Databank',
+                      style: TextStyle(color: cs.onSurface),
+                    ),
                     value: historical,
                     onChanged: (v) => toggle('historical', v ?? false),
                   ),
                   CheckboxListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: Text('System documents', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[800])),
+                    title: Text(
+                      'System documents',
+                      style: TextStyle(color: cs.onSurface),
+                    ),
                     value: system,
                     onChanged: (v) => toggle('system_documents', v ?? false),
                   ),
                   CheckboxListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: Text('UPR documents', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[800])),
+                    title: Text(
+                      'UPR documents',
+                      style: TextStyle(color: cs.onSurface),
+                    ),
                     value: upr,
                     onChanged: (v) => toggle('upr_documents', v ?? false),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'At least one source stays enabled (same as the web assistant).',
-                    style: TextStyle(fontSize: 12, color: isDark ? Colors.grey[500] : Colors.grey[600]),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: cs.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
@@ -487,7 +505,6 @@ class _AiChatScreenState extends State<AiChatScreen> {
     final ai = context.watch<AiChatProvider>();
     final isAuthed = auth.isAuthenticated;
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     _maybeScrollToBottom(ai);
 
@@ -497,9 +514,9 @@ class _AiChatScreenState extends State<AiChatScreen> {
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: isDark ? _gptCanvasDark : _gptCanvasLight,
+      backgroundColor: _chatSurface(theme),
       appBar: AppBar(
-        backgroundColor: isDark ? _gptCanvasDark : _gptCanvasLight,
+        backgroundColor: _chatSurface(theme),
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -510,17 +527,17 @@ class _AiChatScreenState extends State<AiChatScreen> {
             fontSize: 17,
             fontWeight: FontWeight.w600,
             letterSpacing: -0.3,
-            color: isDark ? _gptAssistantTextDark : _gptAssistantTextLight,
+            color: _chatBody(theme),
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
         iconTheme: IconThemeData(
-          color: isDark ? _gptAssistantTextDark : _gptAssistantTextLight,
+          color: _chatBody(theme),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.edit_outlined, color: isDark ? _gptAssistantTextDark : _gptAssistantTextLight),
+            icon: Icon(Icons.edit_outlined, color: _chatBody(theme)),
             tooltip: 'New chat',
             onPressed: () => context.read<AiChatProvider>().startNewConversation(),
           ),
@@ -542,12 +559,12 @@ class _AiChatScreenState extends State<AiChatScreen> {
               children: [
                 if (auth.user?.aiBetaTester == true)
                   Material(
-                    color: isDark ? _gptComposerDark : _gptUserBubbleLight,
+                    color: _chatBubble(theme),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       child: Row(
                         children: [
-                          Icon(Icons.science_outlined, size: 18, color: isDark ? Colors.amber.shade300 : Colors.amber.shade800),
+                          Icon(Icons.science_outlined, size: 18, color: theme.colorScheme.tertiary),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -555,7 +572,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                               style: TextStyle(
                                 fontSize: 12,
                                 height: 1.25,
-                                color: isDark ? Colors.grey[300] : Colors.grey[800],
+                                color: theme.colorScheme.onSurface,
                               ),
                             ),
                           ),
@@ -566,7 +583,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                 if (showInflightBar)
                   Padding(
                     padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-                    child: AiChatAgentProgressPanel(steps: ai.agentSteps, isDark: isDark),
+                    child: AiChatAgentProgressPanel(steps: ai.agentSteps),
                   ),
                 Flexible(
                   child: GestureDetector(
@@ -587,7 +604,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                     Icon(
                                       Icons.auto_awesome_outlined,
                                       size: 48,
-                                      color: isDark ? Colors.grey[500] : Colors.grey[400],
+                                      color: _chatMuted(theme),
                                     ),
                                     const SizedBox(height: 20),
                                     Text(
@@ -597,7 +614,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                         fontWeight: FontWeight.w600,
                                         letterSpacing: -0.5,
                                         height: 1.2,
-                                        color: isDark ? _gptAssistantTextDark : _gptAssistantTextLight,
+                                        color: _chatBody(theme),
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
@@ -608,7 +625,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                         fontSize: 17,
                                         fontWeight: FontWeight.w400,
                                         letterSpacing: -0.2,
-                                        color: isDark ? Colors.grey[500] : Colors.grey[600],
+                                        color: _chatMuted(theme),
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
@@ -617,10 +634,10 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                       Container(
                                         padding: const EdgeInsets.all(16),
                                         decoration: BoxDecoration(
-                                          color: isDark ? _gptComposerDark : _gptComposerLight,
+                                          color: _chatComposer(theme),
                                           borderRadius: BorderRadius.circular(16),
                                           border: Border.all(
-                                            color: isDark ? Colors.grey[700]! : Colors.grey[200]!,
+                                            color: _chatOutline(theme),
                                           ),
                                         ),
                                         child: Column(
@@ -631,7 +648,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                               style: TextStyle(
                                                 fontSize: 13,
                                                 height: 1.35,
-                                                color: isDark ? Colors.grey[300] : Colors.grey[800],
+                                                color: theme.colorScheme.onSurface,
                                               ),
                                             ),
                                             const SizedBox(height: 8),
@@ -639,7 +656,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                               'AI can make mistakes. Check important information.',
                                               style: TextStyle(
                                                 fontSize: 12,
-                                                color: isDark ? Colors.grey[500] : Colors.grey[600],
+                                                color: _chatMuted(theme),
                                               ),
                                             ),
                                             const SizedBox(height: 12),
@@ -649,7 +666,8 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                               crossAxisAlignment: WrapCrossAlignment.center,
                                               children: [
                                                 TextButton(
-                                                  onPressed: () => _showAiPolicyModal(context, isDark),
+                                                  onPressed: () =>
+                                                      _showAiPolicyModal(context),
                                                   child: const Text('View AI policy'),
                                                 ),
                                                 FilledButton(
@@ -671,7 +689,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                       style: TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w500,
-                                        color: isDark ? Colors.grey[500] : Colors.grey[500],
+                                        color: _chatMuted(theme),
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
@@ -682,8 +700,8 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                       alignment: WrapAlignment.center,
                                       children: _quickPrompts.map((prompt) {
                                         return _buildPromptChip(
+                                          theme: theme,
                                           prompt: prompt,
-                                          isDark: isDark,
                                           onTap: () {
                                             _controller.text = prompt;
                                             _send(context, isAuthed);
@@ -710,7 +728,6 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                   m.content,
                                   m.errorType,
                                   m.retryDelay,
-                                  isDark,
                                   isAuthed,
                                 );
                               }
@@ -744,11 +761,11 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                         ),
                                         decoration: isUser
                                             ? BoxDecoration(
-                                                color: isDark ? _gptUserBubbleDark : _gptUserBubbleLight,
+                                                color: _chatBubble(theme),
                                                 borderRadius: BorderRadius.circular(22),
                                                 border: isEditing
                                                     ? Border.all(
-                                                        color: IOSColors.getSystemBlue(context),
+                                                        color: theme.colorScheme.primary,
                                                         width: 2,
                                                       )
                                                     : null,
@@ -757,7 +774,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                                 color: Colors.transparent,
                                                 border: isEditing
                                                     ? Border.all(
-                                                        color: IOSColors.getSystemBlue(context),
+                                                        color: theme.colorScheme.primary,
                                                         width: 2,
                                                       )
                                                     : null,
@@ -767,7 +784,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                             ? Text(
                                                 m.content,
                                                 style: TextStyle(
-                                                  color: isDark ? _gptAssistantTextDark : _gptAssistantTextLight,
+                                                  color: _chatBody(theme),
                                                   fontSize: 16,
                                                   height: 1.35,
                                                   letterSpacing: -0.2,
@@ -779,24 +796,19 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                                 ? (ai.agentSteps.isNotEmpty
                                                     ? AiChatAgentProgressPanel(
                                                         steps: ai.agentSteps,
-                                                        isDark: isDark,
                                                       )
-                                                    : _TypingIndicator(isDark: isDark))
+                                                    : const _TypingIndicator())
                                                 : Html(
                                                     data: _processHtmlForMobile(m.content),
                                                     style: {
                                                       "a": Style(
-                                                        color: isDark
-                                                            ? IOSColors.systemBlueDark
-                                                            : IOSColors.systemBlue,
+                                                        color: theme.colorScheme.primary,
                                                         textDecoration: TextDecoration.underline,
                                                       ),
                                                       "body": Style(
                                                         margin: Margins.zero,
                                                         padding: HtmlPaddings.zero,
-                                                        color: isDark
-                                                            ? _gptAssistantTextDark
-                                                            : _gptAssistantTextLight,
+                                                        color: _chatBody(theme),
                                                         fontSize: FontSize(16),
                                                         lineHeight: const LineHeight(1.45),
                                                       ),
@@ -805,13 +817,9 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                                         display: Display.inlineBlock,
                                                         padding: HtmlPaddings.symmetric(horizontal: 12, vertical: 8),
                                                         margin: Margins.only(top: 8),
-                                                        backgroundColor: isDark
-                                                            ? _gptUserBubbleDark
-                                                            : _gptUserBubbleLight,
+                                                        backgroundColor: _chatBubble(theme),
                                                         border: Border.all(
-                                                          color: isDark
-                                                              ? Colors.grey[600]!
-                                                              : Colors.grey[300]!,
+                                                          color: theme.colorScheme.outline,
                                                         ),
                                                       ),
                                                       // Source chips: neutral pills (ChatGPT iOS–like)
@@ -819,18 +827,12 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                                         display: Display.inlineBlock,
                                                         padding: HtmlPaddings.symmetric(horizontal: 10, vertical: 6),
                                                         margin: Margins.only(top: 6, right: 6),
-                                                        backgroundColor: isDark
-                                                            ? _gptUserBubbleDark
-                                                            : _gptUserBubbleLight,
+                                                        backgroundColor: _chatBubble(theme),
                                                         border: Border.all(
-                                                          color: isDark
-                                                              ? Colors.grey[600]!
-                                                              : Colors.grey[300]!,
+                                                          color: theme.colorScheme.outline,
                                                           width: 1,
                                                         ),
-                                                        color: isDark
-                                                            ? IOSColors.systemBlueDark
-                                                            : IOSColors.systemBlue,
+                                                        color: theme.colorScheme.primary,
                                                         textDecoration: TextDecoration.none,
                                                         fontSize: FontSize(12.5),
                                                       ),
@@ -880,7 +882,6 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                                 ),
                                               AiChatStructuredPayloadsColumn(
                                                 payloads: m.structuredPayloads,
-                                                isDark: isDark,
                                               ),
                                             ],
                                           ),
@@ -896,7 +897,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                                 _buildActionIcon(
                                                   icon: Icons.copy,
                                                   size: 16,
-                                                  color: isDark ? (Colors.grey[400] ?? Colors.grey) : (Colors.grey[700] ?? Colors.grey),
+                                                  color: _chatMuted(theme),
                                                   onTap: () => _copyToClipboard(context, m.content, i),
                                                   tooltip: 'Copy',
                                                 ),
@@ -910,7 +911,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                                         'Copied!',
                                                         style: TextStyle(
                                                           fontSize: 12,
-                                                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                                          color: _chatMuted(theme),
                                                         ),
                                                       ),
                                                     ),
@@ -919,15 +920,15 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                                 _buildActionIcon(
                                                   icon: Icons.edit,
                                                   size: 16,
-                                                  color: isDark ? (Colors.grey[400] ?? Colors.grey) : (Colors.grey[700] ?? Colors.grey),
-                                                  onTap: () => _showEditMessageDialog(context, i, m.content, isDark),
+                                                  color: _chatMuted(theme),
+                                                  onTap: () => _showEditMessageDialog(context, i, m.content),
                                                   tooltip: 'Edit',
                                                 ),
                                               ] else ...[
                                                 _buildActionIcon(
                                                   icon: Icons.copy,
                                                   size: 16,
-                                                  color: isDark ? (Colors.grey[400] ?? Colors.grey) : (Colors.grey[600] ?? Colors.grey),
+                                                  color: _chatMuted(theme),
                                                   onTap: () => _copyToClipboard(context, m.content, i),
                                                   tooltip: 'Copy',
                                                 ),
@@ -941,7 +942,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                                         'Copied!',
                                                         style: TextStyle(
                                                           fontSize: 12,
-                                                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                                          color: _chatMuted(theme),
                                                         ),
                                                       ),
                                                     ),
@@ -952,8 +953,8 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                                     icon: m.userRating == 'like' ? Icons.thumb_up : Icons.thumb_up_outlined,
                                                     size: 16,
                                                     color: m.userRating == 'like'
-                                                        ? IOSColors.getSystemBlue(context)
-                                                        : (isDark ? (Colors.grey[400] ?? Colors.grey) : (Colors.grey[600] ?? Colors.grey)),
+                                                        ? theme.colorScheme.primary
+                                                        : _chatMuted(theme),
                                                     onTap: () => context.read<AiChatProvider>().submitMessageFeedback(i, 'like'),
                                                     tooltip: 'Helpful',
                                                   ),
@@ -962,8 +963,8 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                                     icon: m.userRating == 'dislike' ? Icons.thumb_down : Icons.thumb_down_outlined,
                                                     size: 16,
                                                     color: m.userRating == 'dislike'
-                                                        ? IOSColors.getSystemBlue(context)
-                                                        : (isDark ? (Colors.grey[400] ?? Colors.grey) : (Colors.grey[600] ?? Colors.grey)),
+                                                        ? theme.colorScheme.primary
+                                                        : _chatMuted(theme),
                                                     onTap: () => context.read<AiChatProvider>().submitMessageFeedback(i, 'dislike'),
                                                     tooltip: 'Not helpful',
                                                   ),
@@ -989,10 +990,10 @@ class _AiChatScreenState extends State<AiChatScreen> {
                       child: Container(
                         padding: const EdgeInsets.fromLTRB(4, 4, 6, 4),
                         decoration: BoxDecoration(
-                          color: isDark ? _gptComposerDark : _gptComposerLight,
+                          color: _chatComposer(theme),
                           borderRadius: BorderRadius.circular(26),
                           border: Border.all(
-                            color: isDark ? Colors.grey[700]! : Colors.grey[200]!,
+                            color: _chatOutline(theme),
                             width: 1,
                           ),
                         ),
@@ -1004,10 +1005,12 @@ class _AiChatScreenState extends State<AiChatScreen> {
                               icon: Icon(
                                 Icons.tune_rounded,
                                 size: 22,
-                                color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                color: _chatMuted(theme),
                               ),
                               tooltip: 'Configure data sources',
-                              onPressed: ai.isStreaming ? null : () => _showSourcesSheet(context, ai, isDark),
+                              onPressed: ai.isStreaming
+                                  ? null
+                                  : () => _showSourcesSheet(context, ai),
                             ),
                             Expanded(
                               child: TextField(
@@ -1022,7 +1025,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                 style: TextStyle(
                                   fontSize: 16,
                                   height: 1.35,
-                                  color: isDark ? _gptAssistantTextDark : _gptAssistantTextLight,
+                                  color: _chatBody(theme),
                                 ),
                                 cursorColor: _gptSendGreen,
                                 inputFormatters: [
@@ -1033,7 +1036,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                 decoration: InputDecoration(
                                   hintText: _editingMessageIndex != null ? 'Edit message…' : 'Message',
                                   hintStyle: TextStyle(
-                                    color: isDark ? Colors.grey[500] : Colors.grey[500],
+                                    color: _chatMuted(theme),
                                     fontSize: 16,
                                   ),
                                   border: InputBorder.none,
@@ -1044,7 +1047,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                           icon: Icon(
                                             Icons.close_rounded,
                                             size: 20,
-                                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                            color: _chatMuted(theme),
                                           ),
                                           onPressed: () {
                                             setState(() {
@@ -1065,7 +1068,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                 child: Tooltip(
                                   message: 'Stop',
                                   child: Material(
-                                    color: isDark ? _gptSendDisabledDark : _gptSendDisabledLight,
+                                    color: _chatSendDisabled(theme),
                                     shape: const CircleBorder(),
                                     child: InkWell(
                                       customBorder: const CircleBorder(),
@@ -1075,7 +1078,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                         child: Icon(
                                           Icons.stop_rounded,
                                           size: 20,
-                                          color: isDark ? Colors.grey[300] : Colors.grey[700],
+                                          color: theme.colorScheme.onSurface,
                                         ),
                                       ),
                                     ),
@@ -1091,9 +1094,14 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                   child: InkWell(
                                     customBorder: const CircleBorder(),
                                     onTap: () => _retry(context, isAuthed),
-                                    child: const Padding(
-                                      padding: EdgeInsets.all(10),
-                                      child: Icon(Icons.refresh_rounded, size: 20, color: Colors.white),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(10),
+                                      child: Icon(
+                                        Icons.refresh_rounded,
+                                        size: 20,
+                                        color: AccessibilityHelper
+                                            .getAccessibleTextColor(_gptSendGreen),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -1108,7 +1116,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                     child: Material(
                                       color: hasText
                                           ? _gptSendGreen
-                                          : (isDark ? _gptSendDisabledDark : _gptSendDisabledLight),
+                                          : (_chatSendDisabled(theme)),
                                       shape: const CircleBorder(),
                                       child: InkWell(
                                         customBorder: const CircleBorder(),
@@ -1119,8 +1127,10 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                             Icons.arrow_upward_rounded,
                                             size: 20,
                                             color: hasText
-                                                ? Colors.white
-                                                : (isDark ? Colors.grey[600] : Colors.grey[400]),
+                                                ? AccessibilityHelper
+                                                    .getAccessibleTextColor(
+                                                        _gptSendGreen)
+                                                : _chatMuted(theme),
                                           ),
                                         ),
                                       ),
@@ -1143,7 +1153,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                     style: TextStyle(
                       fontSize: 11,
                       height: 1.25,
-                      color: isDark ? Colors.grey[600] : Colors.grey[500],
+                      color: _chatMuted(theme),
                     ),
                   ),
                 ),
@@ -1204,7 +1214,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
     });
   }
 
-  void _showEditMessageDialog(BuildContext context, int messageIndex, String messageContent, bool isDark) {
+  void _showEditMessageDialog(BuildContext context, int messageIndex, String messageContent) {
     // Get the message content for editing (messages won't be cleared until send)
     final provider = context.read<AiChatProvider>();
     final editedContent = provider.editMessageAt(messageIndex);
@@ -1233,7 +1243,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
 
   Widget _buildDrawer(BuildContext context, AuthProvider auth, AiChatProvider ai, bool isAuthed) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
 
     // Filter conversations based on search query
     final filteredConversations = _searchQuery.isEmpty
@@ -1244,7 +1254,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
           }).toList();
 
     return Drawer(
-      backgroundColor: isDark ? _gptCanvasDark : _gptCanvasLight,
+      backgroundColor: _chatSurface(theme),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.zero,
       ),
@@ -1254,27 +1264,27 @@ class _AiChatScreenState extends State<AiChatScreen> {
             // Title
             Container(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
-                  width: 1,
-                ),
-              ),
-            ),
-            child: Row(
-              children: [
-                Text(
-                  'Conversations',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.grey[200] : Colors.grey[900],
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: cs.outline,
+                    width: 1,
                   ),
                 ),
-              ],
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    'Conversations',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: cs.onSurface,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
           // Search Bar with New Chat Icon
           if (ai.conversations.isNotEmpty)
             Container(
@@ -1282,7 +1292,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
-                    color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+                    color: cs.outline,
                     width: 1,
                   ),
                 ),
@@ -1309,14 +1319,14 @@ class _AiChatScreenState extends State<AiChatScreen> {
                         prefixIcon: Icon(
                           Icons.search,
                           size: 18,
-                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                          color: cs.onSurfaceVariant,
                         ),
                         suffixIcon: _searchQuery.isNotEmpty
                             ? IconButton(
                                 icon: Icon(
                                   Icons.clear,
                                   size: 18,
-                                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                  color: cs.onSurfaceVariant,
                                 ),
                                 onPressed: () {
                                   _searchController.clear();
@@ -1329,30 +1339,30 @@ class _AiChatScreenState extends State<AiChatScreen> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(
-                            color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+                            color: cs.outline,
                           ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(
-                            color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+                            color: cs.outline,
                           ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(
-                            color: IOSColors.getSystemBlue(context),
+                            color: Theme.of(context).colorScheme.primary,
                             width: 2,
                           ),
                         ),
                         filled: true,
-                        fillColor: isDark ? Colors.grey[850] : Colors.grey[100],
+                        fillColor: cs.surfaceContainerHighest,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         isDense: true,
                       ),
                       style: TextStyle(
                         fontSize: 13,
-                        color: isDark ? Colors.grey[200] : Colors.grey[900],
+                        color: cs.onSurface,
                       ),
                     ),
                   ),
@@ -1370,7 +1380,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                         child: Icon(
                           Icons.chat_bubble_outline,
                           size: 20,
-                          color: IOSColors.getSystemBlue(context),
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                     ),
@@ -1392,7 +1402,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                 Icon(
                                   Icons.chat_bubble_outline,
                                   size: 48,
-                                  color: isDark ? Colors.grey[600] : Colors.grey[400],
+                                  color: cs.onSurfaceVariant,
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
@@ -1400,7 +1410,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                       ? 'No conversations yet.\nStart a new chat!'
                                       : 'No conversations yet.\nStart a new chat (offline).',
                                   style: TextStyle(
-                                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                    color: cs.onSurfaceVariant,
                                     fontSize: 14,
                                   ),
                                   textAlign: TextAlign.center,
@@ -1419,13 +1429,13 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                     Icon(
                                       Icons.search_off,
                                       size: 48,
-                                      color: isDark ? Colors.grey[600] : Colors.grey[400],
+                                      color: cs.onSurfaceVariant,
                                     ),
                                     const SizedBox(height: 16),
                                     Text(
                                       'No conversations found',
                                       style: TextStyle(
-                                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                        color: cs.onSurfaceVariant,
                                         fontSize: 14,
                                       ),
                                       textAlign: TextAlign.center,
@@ -1445,7 +1455,6 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                   c,
                                   isSelected,
                                   isAuthed,
-                                  isDark,
                                 );
                               },
                             ),
@@ -1457,7 +1466,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
               decoration: BoxDecoration(
                 border: Border(
                   top: BorderSide(
-                    color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+                    color: cs.outline,
                     width: 1,
                   ),
                 ),
@@ -1470,39 +1479,42 @@ class _AiChatScreenState extends State<AiChatScreen> {
                       onTap: () async {
                         final shouldClear = await showDialog<bool>(
                           context: context,
-                          builder: (context) => AlertDialog(
+                          builder: (dialogContext) {
+                            final dcs = Theme.of(dialogContext).colorScheme;
+                            return AlertDialog(
                             title: Text(
                               'Clear all conversations',
                               style: TextStyle(
-                                color: isDark ? Colors.grey[200] : Colors.grey[900],
+                                color: dcs.onSurface,
                               ),
                             ),
                             content: Text(
                               'Are you sure you want to delete all conversations? This action cannot be undone.',
                               style: TextStyle(
-                                color: isDark ? Colors.grey[300] : Colors.grey[700],
+                                color: dcs.onSurfaceVariant,
                               ),
                             ),
-                            backgroundColor: isDark ? Colors.grey[850] : Colors.white,
+                            backgroundColor: dcs.surface,
                             actions: [
                               TextButton(
-                                onPressed: () => Navigator.pop(context, false),
+                                onPressed: () => Navigator.pop(dialogContext, false),
                                 child: Text(
                                   'Cancel',
                                   style: TextStyle(
-                                    color: isDark ? Colors.grey[300] : Colors.grey[700],
+                                    color: dcs.onSurfaceVariant,
                                   ),
                                 ),
                               ),
                               TextButton(
-                                onPressed: () => Navigator.pop(context, true),
+                                onPressed: () => Navigator.pop(dialogContext, true),
                                 style: TextButton.styleFrom(
-                                  foregroundColor: isDark ? Colors.red.shade400 : Colors.red,
+                                  foregroundColor: dcs.error,
                                 ),
                                 child: const Text('Clear All'),
                               ),
                             ],
-                          ),
+                          );
+                          },
                         );
                         if (shouldClear == true && context.mounted) {
                           Navigator.pop(context);
@@ -1523,14 +1535,14 @@ class _AiChatScreenState extends State<AiChatScreen> {
                             Icon(
                               Icons.delete_sweep_outlined,
                               size: 20,
-                              color: isDark ? Colors.red.shade400 : Colors.red,
+                              color: cs.error,
                             ),
                             const SizedBox(width: 12),
                             Text(
                               'Clear all conversations',
                               style: TextStyle(
                                 fontSize: 16,
-                                color: isDark ? Colors.red.shade400 : Colors.red,
+                                color: cs.error,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -1548,7 +1560,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
             decoration: BoxDecoration(
               border: Border(
                 top: BorderSide(
-                  color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+                  color: cs.outline,
                   width: 1,
                 ),
               ),
@@ -1558,7 +1570,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
               child: InkWell(
                 onTap: () {
                   Navigator.pop(context);
-                  _showHelpDialog(context, isDark);
+                  _showHelpDialog(context);
                 },
                 borderRadius: BorderRadius.circular(10),
                 child: Container(
@@ -1569,14 +1581,14 @@ class _AiChatScreenState extends State<AiChatScreen> {
                       Icon(
                         Icons.help_outline,
                         size: 20,
-                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        color: cs.onSurfaceVariant,
                       ),
                       const SizedBox(width: 12),
                       Text(
                         'Help & About',
                         style: TextStyle(
                           fontSize: 16,
-                          color: isDark ? Colors.grey[300] : Colors.grey[700],
+                          color: cs.onSurface,
                         ),
                       ),
                     ],
@@ -1596,10 +1608,10 @@ class _AiChatScreenState extends State<AiChatScreen> {
     AiConversationSummary conversation,
     bool isSelected,
     bool isAuthed,
-    bool isDark,
   ) {
     final title = conversation.title ?? 'New Chat';
     final truncatedTitle = title.length > 50 ? '${title.substring(0, 50)}...' : title;
+    final cs = Theme.of(context).colorScheme;
 
     return InkWell(
       onTap: () async {
@@ -1614,7 +1626,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected
-              ? (isDark ? _gptUserBubbleDark : _gptUserBubbleLight)
+              ? _chatBubble(Theme.of(context))
               : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
         ),
@@ -1626,7 +1638,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                   Icon(
                     Icons.chat_bubble_outline,
                     size: 16,
-                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    color: cs.onSurfaceVariant,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -1634,7 +1646,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                       truncatedTitle,
                       style: TextStyle(
                         fontSize: 13,
-                        color: isDark ? Colors.grey[200] : Colors.grey[900],
+                        color: cs.onSurface,
                         fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
                       ),
                       maxLines: 1,
@@ -1648,45 +1660,48 @@ class _AiChatScreenState extends State<AiChatScreen> {
               icon: Icon(
                 Icons.delete_outline,
                 size: 18,
-                color: isDark ? Colors.grey[400] : Colors.grey[600],
+                color: cs.onSurfaceVariant,
               ),
               onPressed: () async {
                 // Copy aligned with chat-immersive.js / showDangerConfirmation
                 final shouldDelete = await showDialog<bool>(
                   context: context,
-                  builder: (context) => AlertDialog(
+                  builder: (dialogContext) {
+                    final dcs = Theme.of(dialogContext).colorScheme;
+                    return AlertDialog(
                     title: Text(
                       'Delete conversation?',
                       style: TextStyle(
-                        color: isDark ? Colors.grey[200] : Colors.grey[900],
+                        color: dcs.onSurface,
                       ),
                     ),
                     content: Text(
                       'Delete this conversation? This cannot be undone.',
                       style: TextStyle(
-                        color: isDark ? Colors.grey[300] : Colors.grey[700],
+                        color: dcs.onSurfaceVariant,
                       ),
                     ),
-                    backgroundColor: isDark ? Colors.grey[850] : Colors.white,
+                    backgroundColor: dcs.surface,
                     actions: [
                       TextButton(
-                        onPressed: () => Navigator.pop(context, false),
+                        onPressed: () => Navigator.pop(dialogContext, false),
                         child: Text(
                           'Cancel',
                           style: TextStyle(
-                            color: isDark ? Colors.grey[300] : Colors.grey[700],
+                            color: dcs.onSurfaceVariant,
                           ),
                         ),
                       ),
                       TextButton(
-                        onPressed: () => Navigator.pop(context, true),
+                        onPressed: () => Navigator.pop(dialogContext, true),
                         style: TextButton.styleFrom(
-                          foregroundColor: isDark ? Colors.red.shade400 : Colors.red,
+                          foregroundColor: dcs.error,
                         ),
                         child: const Text('Delete'),
                       ),
                     ],
-                  ),
+                  );
+                  },
                 );
                 if (shouldDelete == true && context.mounted) {
                   await context.read<AiChatProvider>().deleteConversation(
@@ -1705,14 +1720,16 @@ class _AiChatScreenState extends State<AiChatScreen> {
     );
   }
 
-  void _showHelpDialog(BuildContext context, bool isDark) {
+  void _showHelpDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) {
+        final cs = Theme.of(dialogContext).colorScheme;
+        return AlertDialog(
         title: Text(
           'AI Assistant Help',
           style: TextStyle(
-            color: isDark ? Colors.grey[200] : Colors.grey[900],
+            color: cs.onSurface,
           ),
         ),
         content: SingleChildScrollView(
@@ -1725,7 +1742,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.grey[200] : Colors.grey[900],
+                  color: cs.onSurface,
                 ),
               ),
               const SizedBox(height: 8),
@@ -1733,7 +1750,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                 'The AI Assistant helps you find information and answer questions about the IFRC Network Databank.',
                 style: TextStyle(
                   fontSize: 14,
-                  color: isDark ? Colors.grey[300] : Colors.grey[700],
+                  color: cs.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 16),
@@ -1742,24 +1759,24 @@ class _AiChatScreenState extends State<AiChatScreen> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.grey[200] : Colors.grey[900],
+                  color: cs.onSurface,
                 ),
               ),
               const SizedBox(height: 8),
               _buildHelpItem(
-                isDark,
+                dialogContext,
                 '• Ask questions about assignments, resources, and more',
               ),
               _buildHelpItem(
-                isDark,
+                dialogContext,
                 '• Get help navigating the app',
               ),
               _buildHelpItem(
-                isDark,
+                dialogContext,
                 '• Search through your conversation history',
               ),
               _buildHelpItem(
-                isDark,
+                dialogContext,
                 '• All conversations are saved when you\'re logged in',
               ),
               const SizedBox(height: 16),
@@ -1768,49 +1785,51 @@ class _AiChatScreenState extends State<AiChatScreen> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.grey[200] : Colors.grey[900],
+                  color: cs.onSurface,
                 ),
               ),
               const SizedBox(height: 8),
               _buildHelpItem(
-                isDark,
+                dialogContext,
                 '• Be specific in your questions for better results',
               ),
               _buildHelpItem(
-                isDark,
+                dialogContext,
                 '• Tap on links in responses to navigate to relevant pages',
               ),
               _buildHelpItem(
-                isDark,
+                dialogContext,
                 '• Use the search bar to quickly find past conversations',
               ),
             ],
           ),
         ),
-        backgroundColor: isDark ? Colors.grey[850] : Colors.white,
+        backgroundColor: cs.surface,
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Got it',
               style: TextStyle(
-                color: IOSColors.getSystemBlue(context),
+                color: Theme.of(dialogContext).colorScheme.primary,
               ),
             ),
           ),
         ],
-      ),
+      );
+      },
     );
   }
 
-  Widget _buildHelpItem(bool isDark, String text) {
+  Widget _buildHelpItem(BuildContext context, String text) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
       child: Text(
         text,
         style: TextStyle(
           fontSize: 14,
-          color: isDark ? Colors.grey[300] : Colors.grey[700],
+          color: cs.onSurfaceVariant,
         ),
       ),
     );
@@ -1866,10 +1885,10 @@ class _AiChatScreenState extends State<AiChatScreen> {
     String errorMessage,
     String? errorType,
     double? retryDelay,
-    bool isDark,
     bool isAuthed,
   ) {
     final ai = context.read<AiChatProvider>();
+    final cs = Theme.of(context).colorScheme;
     return Align(
       alignment: Alignment.centerLeft,
       child: ConstrainedBox(
@@ -1884,12 +1903,10 @@ class _AiChatScreenState extends State<AiChatScreen> {
               margin: const EdgeInsets.symmetric(vertical: 6),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.red.shade900.withOpacity(0.3)
-                    : Colors.red.shade50,
+                color: cs.errorContainer,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: isDark ? Colors.red.shade700 : Colors.red.shade300,
+                  color: cs.error.withValues(alpha: 0.45),
                   width: 1,
                 ),
               ),
@@ -1898,14 +1915,14 @@ class _AiChatScreenState extends State<AiChatScreen> {
                   Icon(
                     Icons.error_outline,
                     size: 18,
-                    color: isDark ? Colors.red.shade400 : Colors.red.shade700,
+                    color: cs.error,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       errorMessage,
                       style: TextStyle(
-                        color: isDark ? Colors.red.shade300 : Colors.red.shade900,
+                        color: cs.onErrorContainer,
                         fontSize: 14,
                       ),
                     ),
@@ -1921,7 +1938,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                   _buildActionIcon(
                     icon: Icons.refresh,
                     size: 16,
-                    color: isDark ? (Colors.grey[400] ?? Colors.grey) : (Colors.grey[600] ?? Colors.grey),
+                    color: cs.onSurfaceVariant,
                     onTap: () {
                       final provider = context.read<AiChatProvider>();
                       // For quota errors, use retryFailedMessage which handles the stored failed message
@@ -1944,8 +1961,8 @@ class _AiChatScreenState extends State<AiChatScreen> {
   }
 
   Widget _buildPromptChip({
+    required ThemeData theme,
     required String prompt,
-    required bool isDark,
     required VoidCallback onTap,
   }) {
     return Material(
@@ -1956,17 +1973,19 @@ class _AiChatScreenState extends State<AiChatScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: isDark ? _gptUserBubbleDark : _gptCanvasLight,
+            color: theme.isDarkTheme
+                ? _chatBubble(theme)
+                : _chatSurface(theme),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isDark ? Colors.grey[700]! : Colors.grey[200]!,
+              color: theme.colorScheme.outline,
               width: 1,
             ),
-            boxShadow: isDark
+            boxShadow: theme.isDarkTheme
                 ? null
                 : [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
+                      color: theme.ambientShadow(lightOpacity: 0.04),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -1977,7 +1996,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
             style: TextStyle(
               fontSize: 13,
               height: 1.3,
-              color: isDark ? _gptAssistantTextDark : _gptAssistantTextLight,
+              color: _chatBody(theme),
             ),
           ),
         ),
@@ -1987,9 +2006,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
 }
 
 class _TypingIndicator extends StatefulWidget {
-  final bool isDark;
-
-  const _TypingIndicator({required this.isDark});
+  const _TypingIndicator();
 
   @override
   State<_TypingIndicator> createState() => _TypingIndicatorState();
@@ -2036,6 +2053,7 @@ class _TypingIndicatorState extends State<_TypingIndicator> with TickerProviderS
 
   @override
   Widget build(BuildContext context) {
+    final dotColor = Theme.of(context).colorScheme.onSurfaceVariant;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -2051,7 +2069,7 @@ class _TypingIndicatorState extends State<_TypingIndicator> with TickerProviderS
                   width: 7,
                   height: 7,
                   decoration: BoxDecoration(
-                    color: widget.isDark ? Colors.grey[500] : Colors.grey[500],
+                    color: dotColor,
                     shape: BoxShape.circle,
                   ),
                 ),

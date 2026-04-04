@@ -40,8 +40,8 @@ class AppCheckboxListTile extends StatelessWidget {
 
     // Determine active color: use provided, or theme-aware default
     final Color effectiveActiveColor = activeColor ??
-        (theme.brightness == Brightness.dark
-            ? const Color(0xFF4A90E2)
+        (theme.isDarkTheme
+            ? const Color(AppConstants.themeSwitchCheckboxActiveDark)
             : Color(AppConstants.ifrcRed));
 
     return CheckboxListTile(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart' as cupertino;
 import 'package:flutter/services.dart';
 import '../utils/ios_constants.dart';
+import '../utils/constants.dart';
 import '../utils/theme_extensions.dart';
 import '../l10n/app_localizations.dart';
 
@@ -28,13 +29,13 @@ class AppErrorState extends StatelessWidget {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = theme.isDarkTheme;
 
     final errorIcon = icon ?? Icons.error_outline_rounded;
     final errorIconColor = iconColor ??
         (isDark
             ? IOSColors.systemRed
-            : const Color(0xFFDC2626));
+            : const Color(AppConstants.errorColor));
 
     final errorTitle = title ?? localizations.oopsSomethingWentWrong;
     final errorMessage = message ?? localizations.somethingWentWrong;
@@ -102,15 +103,15 @@ class AppErrorState extends StatelessWidget {
                       Icon(
                         Icons.refresh_rounded,
                         size: 18,
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onPrimary,
                       ),
                       const SizedBox(width: 6),
                       Text(
                         retryLabel ?? localizations.retry,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onPrimary,
                           letterSpacing: -0.2,
                         ),
                       ),

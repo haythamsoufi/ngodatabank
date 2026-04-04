@@ -106,11 +106,12 @@ class _SessionExpirationWarningState extends State<SessionExpirationWarning> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
+        final cs = Theme.of(dialogContext).colorScheme;
         return AlertDialog(
           title: Row(
             children: [
-              const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+              Icon(Icons.warning_amber_rounded, color: cs.tertiary),
               const SizedBox(width: 8),
               const Text('Session Expiring Soon'),
             ],
@@ -125,9 +126,9 @@ class _SessionExpirationWarningState extends State<SessionExpirationWarning> {
               if (timeUntilExpiration.inMinutes < 5)
                 LinearProgressIndicator(
                   value: timeUntilExpiration.inSeconds / (5 * 60),
-                  backgroundColor: Colors.grey[300],
+                  backgroundColor: cs.surfaceContainerHighest,
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    timeUntilExpiration.inMinutes < 2 ? Colors.red : Colors.orange,
+                    timeUntilExpiration.inMinutes < 2 ? cs.error : cs.tertiary,
                   ),
                 ),
             ],
@@ -135,14 +136,14 @@ class _SessionExpirationWarningState extends State<SessionExpirationWarning> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop();
                 _isDialogShowing = false;
               },
               child: const Text('Continue'),
             ),
             FilledButton(
               onPressed: () async {
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop();
                 _isDialogShowing = false;
                 await _extendSession();
               },

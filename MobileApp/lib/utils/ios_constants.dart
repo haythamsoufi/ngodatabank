@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'theme_extensions.dart';
+
 /// iOS System Colors
 class IOSColors {
   // System Blue
@@ -38,14 +40,12 @@ class IOSColors {
 
   /// Get theme-aware system blue
   static Color getSystemBlue(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark
-        ? systemBlueDark
-        : systemBlue;
+    return context.isDarkTheme ? systemBlueDark : systemBlue;
   }
 
   /// Get theme-aware grouped background
   static Color getGroupedBackground(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark
+    return context.isDarkTheme
         ? groupedTableViewBackgroundDark
         : groupedTableViewBackground;
   }

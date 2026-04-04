@@ -178,9 +178,9 @@ class _HomeScreenState extends State<HomeScreen>
                       width: 56,
                       height: 56,
                       alignment: Alignment.center,
-                      child: const Icon(
+                      child: Icon(
                         Icons.smart_toy_outlined,
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSecondary,
                         size: 24,
                       ),
                     ),
@@ -412,7 +412,7 @@ class _HomeScreenState extends State<HomeScreen>
     final isAdmin = user != null && (user.role == 'admin' || user.role == 'system_manager');
     final isAuthenticated = authProvider.isAuthenticated;
     final isFocalPoint = user != null && user.role == 'focal_point';
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = theme.isDarkTheme;
 
     return Drawer(
       backgroundColor: isDark
@@ -656,7 +656,7 @@ class _HomeScreenState extends State<HomeScreen>
     required VoidCallback onTap,
     bool showDivider = true,
   }) {
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = theme.isDarkTheme;
 
     return Column(
       children: [

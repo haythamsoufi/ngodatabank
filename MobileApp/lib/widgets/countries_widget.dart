@@ -256,7 +256,7 @@ class _CountriesWidgetState extends State<CountriesWidget> {
                             Color(AppConstants.ifrcRed),
                         labelStyle: TextStyle(
                           color: isSelected
-                              ? Colors.white
+                              ? theme.colorScheme.onSecondary
                               : theme.colorScheme.onSurface,
                           fontSize: 12,
                         ),
@@ -347,7 +347,7 @@ class _CountriesWidgetState extends State<CountriesWidget> {
                                       fontWeight: FontWeight.w600,
                                       fontSize: 14,
                                       color: isSelected
-                                          ? Colors.white
+                                          ? theme.colorScheme.onSecondary
                                           : theme
                                               .colorScheme.onSurface,
                                     ),
@@ -358,7 +358,7 @@ class _CountriesWidgetState extends State<CountriesWidget> {
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: isSelected
-                                          ? Colors.white
+                                          ? theme.colorScheme.onSecondary
                                               .withOpacity(0.9)
                                           : theme.colorScheme.onSurface
                                               .withOpacity(0.6),

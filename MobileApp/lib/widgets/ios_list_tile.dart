@@ -29,16 +29,12 @@ class IOSListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = theme.isDarkTheme;
 
     final bgColor = backgroundColor ??
         (isDark
             ? IOSColors.secondarySystemBackgroundDark
             : IOSColors.secondarySystemBackground);
-
-    final separatorColor = isDark
-        ? Colors.white.withOpacity(0.1)
-        : Colors.black.withOpacity(0.1);
 
     Widget content = Container(
       color: bgColor,
@@ -106,15 +102,13 @@ class IOSGroupedList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = theme.isDarkTheme;
 
     final bgColor = isDark
         ? IOSColors.secondarySystemBackgroundDark
         : IOSColors.secondarySystemBackground;
 
-    final separatorColor = isDark
-        ? Colors.white.withOpacity(0.1)
-        : Colors.black.withOpacity(0.1);
+    final separatorColor = theme.dividerColor;
 
     // Build items with separators (except last one)
     // iOS uses subtle separators between items

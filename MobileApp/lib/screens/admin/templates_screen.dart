@@ -246,10 +246,13 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
                                             vertical: 4,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: theme.brightness ==
-                                                    Brightness.dark
-                                                ? Colors.green.withOpacity(0.2)
-                                                : Colors.green.withOpacity(0.1),
+                                            color: theme.isDarkTheme
+                                                ? const Color(AppConstants
+                                                        .successColor)
+                                                    .withOpacity(0.22)
+                                                : const Color(AppConstants
+                                                        .successColor)
+                                                    .withOpacity(0.10),
                                             borderRadius:
                                                 BorderRadius.circular(8),
                                           ),
@@ -259,20 +262,22 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
                                               Icon(
                                                 Icons.check_circle,
                                                 size: 14,
-                                                color: theme.brightness ==
-                                                        Brightness.dark
-                                                    ? Colors.green.shade300
-                                                    : Colors.green.shade700,
+                                                color: theme.isDarkTheme
+                                                    ? const Color(AppConstants
+                                                        .semanticSuccessOnDarkSoft)
+                                                    : const Color(AppConstants
+                                                        .semanticSuccessOnLightStrong),
                                               ),
                                               const SizedBox(width: 4),
                                               Text(
                                                 'Self-Report',
                                                 style: TextStyle(
                                                   fontSize: 12,
-                                                  color: theme.brightness ==
-                                                          Brightness.dark
-                                                      ? Colors.green.shade300
-                                                      : Colors.green.shade700,
+                                                  color: theme.isDarkTheme
+                                                      ? const Color(AppConstants
+                                                          .semanticSuccessOnDarkSoft)
+                                                      : const Color(AppConstants
+                                                          .semanticSuccessOnLightStrong),
                                                   fontWeight: FontWeight.w500,
                                                 ),
                                               ),

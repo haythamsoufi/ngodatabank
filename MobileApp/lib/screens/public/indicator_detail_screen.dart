@@ -626,10 +626,8 @@ class _IndicatorDetailScreenState extends State<IndicatorDetailScreen> {
                                       borderRadius: BorderRadius.circular(
                                           AppConstants.radiusLarge),
                                     ),
-                                    shadowColor: Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? Colors.black.withOpacity(0.3)
-                                        : Colors.black.withOpacity(0.05),
+                                    shadowColor: Theme.of(context).ambientShadow(
+                                        lightOpacity: 0.05, darkOpacity: 0.3),
                                     child: Padding(
                                       padding: const EdgeInsets.all(20),
                                       child: Column(
@@ -689,10 +687,8 @@ class _IndicatorDetailScreenState extends State<IndicatorDetailScreen> {
                                     borderRadius: BorderRadius.circular(
                                         AppConstants.radiusLarge),
                                   ),
-                                  shadowColor: Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.black.withOpacity(0.3)
-                                      : Colors.black.withOpacity(0.05),
+                                  shadowColor: Theme.of(context).ambientShadow(
+                                      lightOpacity: 0.05, darkOpacity: 0.3),
                                   child: Column(
                                     children: [
                                       Container(

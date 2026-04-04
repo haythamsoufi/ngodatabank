@@ -178,17 +178,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       height: 80,
                       width: 80,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFAFAFA),
+                        color: context.lightSurfaceColor,
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: const Color(0xFFDBDBDB),
+                          color: context.borderColor,
                           width: 1,
                         ),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.account_circle,
                         size: 50,
-                        color: Color(0xFF8E8E8E),
+                        color: context.textSecondaryColor,
                       ),
                     );
                   },
@@ -258,7 +258,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             Icon(
                               Icons.science,
                               size: 14,
-                              color: const Color(0xFF8E8E8E),
+                              color: context.textSecondaryColor,
                             ),
                             const SizedBox(width: 6),
                             Flexible(
@@ -268,7 +268,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     .textTheme
                                     .bodySmall
                                     ?.copyWith(
-                                      color: const Color(0xFF8E8E8E),
+                                      color: context.textSecondaryColor,
                                       fontWeight: FontWeight.w400,
                                     ),
                                 textAlign: TextAlign.center,
@@ -287,8 +287,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                     'test123',
                                   ),
                           style: FilledButton.styleFrom(
-                            backgroundColor: const Color(0xFF0095F6),
-                            foregroundColor: Colors.white,
+                            backgroundColor: const Color(
+                                AppConstants.themeFilledButtonBlue),
+                            foregroundColor:
+                                Theme.of(context).colorScheme.onPrimary,
                             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                             minimumSize: const Size(double.infinity, 50),
                             shape: RoundedRectangleBorder(
@@ -300,10 +302,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             localizations.testAsAdmin,
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.onPrimary,
                               letterSpacing: -0.41,
                             ),
                           ),
@@ -317,8 +319,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                     'test123',
                                   ),
                           style: FilledButton.styleFrom(
-                            backgroundColor: const Color(0xFF0095F6),
-                            foregroundColor: Colors.white,
+                            backgroundColor: const Color(
+                                AppConstants.themeFilledButtonBlue),
+                            foregroundColor:
+                                Theme.of(context).colorScheme.onPrimary,
                             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                             minimumSize: const Size(double.infinity, 50),
                             shape: RoundedRectangleBorder(
@@ -330,10 +334,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             localizations.testAsFocalPoint,
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.onPrimary,
                               letterSpacing: -0.41,
                             ),
                           ),
@@ -365,10 +369,14 @@ class _LoginScreenState extends State<LoginScreen> {
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.blue.shade50,
+            color: context.isDarkTheme
+                ? Colors.blue.shade900.withOpacity(0.45)
+                : Colors.blue.shade50,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: Colors.blue.shade200,
+              color: context.isDarkTheme
+                  ? Colors.blue.shade600.withOpacity(0.85)
+                  : Colors.blue.shade200,
               width: 1.5,
             ),
           ),
@@ -377,14 +385,18 @@ class _LoginScreenState extends State<LoginScreen> {
               Icon(
                 Icons.lock_clock_rounded,
                 size: 48,
-                color: Colors.blue.shade700,
+                color: context.isDarkTheme
+                    ? Colors.blue.shade200
+                    : Colors.blue.shade700,
               ),
               const SizedBox(height: 16),
               Text(
                 localizations.publicLoginDisabled,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: Colors.blue.shade900,
+                      color: context.isDarkTheme
+                          ? Colors.blue.shade100
+                          : Colors.blue.shade900,
                     ),
                 textAlign: TextAlign.center,
                 overflow: TextOverflow.visible,
@@ -394,7 +406,9 @@ class _LoginScreenState extends State<LoginScreen> {
               Text(
                 localizations.testerAccountsInfo,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.blue.shade700,
+                      color: context.isDarkTheme
+                          ? Colors.blue.shade200
+                          : Colors.blue.shade700,
                     ),
                 textAlign: TextAlign.center,
                 overflow: TextOverflow.visible,
@@ -414,7 +428,7 @@ class _LoginScreenState extends State<LoginScreen> {
           onPressed: _isLoading ? null : _handleAzureLogin,
           style: FilledButton.styleFrom(
             backgroundColor: Color(AppConstants.ifrcRed),
-            foregroundColor: Colors.white,
+            foregroundColor: Theme.of(context).colorScheme.onSecondary,
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
             minimumSize: const Size(double.infinity, 50),
             shape: RoundedRectangleBorder(
@@ -430,10 +444,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: 20,
                 width: 20,
                 errorBuilder: (context, error, stackTrace) {
-                  return const Icon(
+                  return Icon(
                     Icons.account_circle,
                     size: 20,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onSecondary,
                   );
                 },
               ),
@@ -443,10 +457,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   localizations.yourAccountOrCreateAccount,
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onSecondary,
                     letterSpacing: -0.41,
                   ),
                 ),
@@ -468,7 +482,7 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: _isLoading ? null : _handleAzureLogin,
               style: FilledButton.styleFrom(
                 backgroundColor: Color(AppConstants.ifrcRed),
-                foregroundColor: Colors.white,
+                foregroundColor: Theme.of(context).colorScheme.onSecondary,
                 padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                 minimumSize: const Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
@@ -484,10 +498,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 20,
                     width: 20,
                     errorBuilder: (context, error, stackTrace) {
-                      return const Icon(
+                      return Icon(
                         Icons.account_circle,
                         size: 20,
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSecondary,
                       );
                     },
                   ),
@@ -497,10 +511,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       localizations.yourAccountOrCreateAccount,
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSecondary,
                         letterSpacing: -0.41,
                       ),
                     ),
@@ -633,10 +647,14 @@ class _LoginScreenState extends State<LoginScreen> {
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: () {
+                  final t = Theme.of(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(localizations.forgotPasswordComingSoon),
-                      backgroundColor: const Color(0xFF262626),
+                      content: Text(
+                        localizations.forgotPasswordComingSoon,
+                        style: TextStyle(color: t.colorScheme.onInverseSurface),
+                      ),
+                      backgroundColor: t.colorScheme.inverseSurface,
                     ),
                   );
                 },
@@ -650,7 +668,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
-                    color: Color(0xFF0095F6),
+                    color: const Color(AppConstants.themeFilledButtonBlue),
                   ),
                 ),
               ),
@@ -664,8 +682,10 @@ class _LoginScreenState extends State<LoginScreen> {
               child: FilledButton(
                 onPressed: _isLoading ? null : _handleLogin,
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF0095F6),
-                  foregroundColor: Colors.white,
+                  backgroundColor:
+                      const Color(AppConstants.themeFilledButtonBlue),
+                  foregroundColor:
+                      Theme.of(context).colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                   minimumSize: const Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
@@ -686,10 +706,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     )
                   : Text(
                       localizations.logIn,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onPrimary,
                         letterSpacing: -0.41,
                       ),
                     ),
@@ -702,7 +722,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Expanded(
                   child: Container(
                     height: 0.5,
-                    color: const Color(0xFFDBDBDB),
+                    color: context.borderColor,
                   ),
                 ),
                 Padding(
@@ -710,7 +730,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Text(
                     localizations.or,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: const Color(0xFF8E8E8E),
+                          color: context.textSecondaryColor,
                           fontWeight: FontWeight.w600,
                         ),
                   ),
@@ -718,7 +738,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Expanded(
                   child: Container(
                     height: 0.5,
-                    color: const Color(0xFFDBDBDB),
+                    color: context.borderColor,
                   ),
                 ),
               ],
@@ -732,16 +752,20 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(
                   localizations.dontHaveAccount,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: const Color(0xFF8E8E8E),
+                        color: context.textSecondaryColor,
                       ),
                 ),
                 const SizedBox(width: 4),
                 TextButton(
                   onPressed: () {
+                    final t = Theme.of(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(localizations.registrationComingSoon),
-                        backgroundColor: const Color(0xFF262626),
+                        content: Text(
+                          localizations.registrationComingSoon,
+                          style: TextStyle(color: t.colorScheme.onInverseSurface),
+                        ),
+                        backgroundColor: t.colorScheme.inverseSurface,
                       ),
                     );
                   },
@@ -755,7 +779,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF0095F6),
+                      color: Color(AppConstants.themeFilledButtonBlue),
                     ),
                   ),
                 ),

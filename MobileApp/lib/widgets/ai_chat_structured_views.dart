@@ -6,16 +6,33 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 import '../config/app_config.dart';
+import '../utils/accessibility_helper.dart';
+import '../utils/theme_extensions.dart';
+
+String _cssHex(Color color) {
+  final int rgb = color.toARGB32() & 0xFFFFFF;
+  return '#${rgb.toRadixString(16).padLeft(6, '0')}';
+}
+
+/// Distinct slice/series colors derived from the active [ColorScheme].
+List<Color> _chartSliceColors(ColorScheme cs) {
+  return [
+    cs.primary,
+    cs.secondary,
+    cs.tertiary,
+    cs.error,
+    Color.alphaBlend(cs.primary.withValues(alpha: 0.72), cs.surface),
+    Color.alphaBlend(cs.secondary.withValues(alpha: 0.72), cs.surface),
+  ];
+}
 
 /// Renders coerced structured payloads (Backoffice chat-immersive parity).
 class AiChatStructuredPayloadsColumn extends StatelessWidget {
   final List<Map<String, dynamic>> payloads;
-  final bool isDark;
 
   const AiChatStructuredPayloadsColumn({
     super.key,
     required this.payloads,
-    required this.isDark,
   });
 
   @override
@@ -27,7 +44,7 @@ class AiChatStructuredPayloadsColumn extends StatelessWidget {
         for (final p in payloads)
           Padding(
             padding: const EdgeInsets.only(top: 10),
-            child: _StructuredCard(payload: p, isDark: isDark),
+            child: _StructuredCard(payload: p),
           ),
       ],
     );
@@ -36,43 +53,45 @@ class AiChatStructuredPayloadsColumn extends StatelessWidget {
 
 class _StructuredCard extends StatelessWidget {
   final Map<String, dynamic> payload;
-  final bool isDark;
 
-  const _StructuredCard({required this.payload, required this.isDark});
+  const _StructuredCard({required this.payload});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     final type = (payload['type'] ?? '').toString().toLowerCase();
-    final border = isDark ? Colors.grey[700]! : Colors.grey[300]!;
-    final bg = isDark ? const Color(0xFF171717) : Colors.grey[50];
+    final border = cs.outline;
+    final bg =
+        theme.isDarkTheme ? cs.surfaceContainerHighest : cs.surfaceContainerLow;
 
     Widget child;
     switch (type) {
       case 'data_table':
-        child = _DataTableView(payload: payload, isDark: isDark);
+        child = _DataTableView(payload: payload);
         break;
       case 'line':
       case 'linechart':
       case 'timeseries':
-        child = _LineChartView(payload: payload, isDark: isDark);
+        child = _LineChartView(payload: payload);
         break;
       case 'bar':
       case 'barchart':
-        child = _BarChartView(payload: payload, isDark: isDark);
+        child = _BarChartView(payload: payload);
         break;
       case 'pie':
       case 'donut':
-        child = _PieChartView(payload: payload, isDark: isDark);
+        child = _PieChartView(payload: payload);
         break;
       case 'worldmap':
       case 'world_map':
       case 'choropleth':
-        child = _WorldMapWebView(spec: payload, isDark: isDark);
+        child = _WorldMapWebView(spec: payload);
         break;
       default:
         child = Text(
           payload['title']?.toString() ?? 'Visualization',
-          style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[700]),
+          style: TextStyle(color: cs.onSurfaceVariant),
         );
     }
 
@@ -91,7 +110,7 @@ class _StructuredCard extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 8),
               child: Row(
                 children: [
-                  Icon(Icons.insert_chart_outlined, size: 18, color: isDark ? Colors.teal[300] : Colors.teal[700]),
+                  Icon(Icons.insert_chart_outlined, size: 18, color: cs.primary),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
@@ -99,7 +118,7 @@ class _StructuredCard extends StatelessWidget {
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
-                        color: isDark ? Colors.grey[200] : Colors.grey[900],
+                        color: cs.onSurface,
                       ),
                     ),
                   ),
@@ -115,9 +134,8 @@ class _StructuredCard extends StatelessWidget {
 
 class _DataTableView extends StatelessWidget {
   final Map<String, dynamic> payload;
-  final bool isDark;
 
-  const _DataTableView({required this.payload, required this.isDark});
+  const _DataTableView({required this.payload});
 
   @override
   Widget build(BuildContext context) {
@@ -125,8 +143,10 @@ class _DataTableView extends StatelessWidget {
     if (rows is! List || rows.isEmpty) {
       return const Text('No table rows');
     }
-    final headerColor = isDark ? Colors.grey[800] : Colors.grey[200];
-    final textStyle = TextStyle(fontSize: 11, color: isDark ? Colors.grey[300] : Colors.grey[800]);
+    final cs = Theme.of(context).colorScheme;
+    final headerColor = cs.surfaceContainerHigh;
+    final textStyle =
+        TextStyle(fontSize: 11, color: cs.onSurfaceVariant);
 
     final first = rows.first;
     List<String> columns;
@@ -139,7 +159,7 @@ class _DataTableView extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Table(
-        border: TableBorder.all(color: isDark ? Colors.grey[700]! : Colors.grey[400]!, width: 0.5),
+        border: TableBorder.all(color: cs.outline, width: 0.5),
         defaultVerticalAlignment: TableCellVerticalAlignment.middle,
         children: [
           TableRow(
@@ -184,9 +204,8 @@ class _DataTableView extends StatelessWidget {
 
 class _LineChartView extends StatelessWidget {
   final Map<String, dynamic> payload;
-  final bool isDark;
 
-  const _LineChartView({required this.payload, required this.isDark});
+  const _LineChartView({required this.payload});
 
   @override
   Widget build(BuildContext context) {
@@ -209,7 +228,7 @@ class _LineChartView extends StatelessWidget {
     final maxY = spots.map((s) => s.y).reduce(math.max);
     final padY = (maxY - minY).abs() < 1e-6 ? 1.0 : (maxY - minY) * 0.1;
 
-    final lineColor = isDark ? Colors.tealAccent : Colors.teal;
+    final lineColor = Theme.of(context).colorScheme.primary;
 
     return SizedBox(
       height: 200,
@@ -244,9 +263,8 @@ class _LineChartView extends StatelessWidget {
 
 class _BarChartView extends StatelessWidget {
   final Map<String, dynamic> payload;
-  final bool isDark;
 
-  const _BarChartView({required this.payload, required this.isDark});
+  const _BarChartView({required this.payload});
 
   @override
   Widget build(BuildContext context) {
@@ -263,7 +281,8 @@ class _BarChartView extends StatelessWidget {
     if (vals.isEmpty) return const SizedBox.shrink();
 
     final maxY = vals.reduce(math.max);
-    final barColor = isDark ? Colors.lightBlueAccent : Colors.blue;
+    final cs = Theme.of(context).colorScheme;
+    final barColor = cs.primary;
 
     return SizedBox(
       height: math.min(280.0, 40.0 + cats.length * 28.0),
@@ -284,7 +303,7 @@ class _BarChartView extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 6),
                     child: Text(
                       labels[i].length > 10 ? '${labels[i].substring(0, 8)}…' : labels[i],
-                      style: TextStyle(fontSize: 9, color: isDark ? Colors.grey[400] : Colors.grey[700]),
+                      style: TextStyle(fontSize: 9, color: cs.onSurfaceVariant),
                     ),
                   );
                 },
@@ -310,9 +329,8 @@ class _BarChartView extends StatelessWidget {
 
 class _PieChartView extends StatelessWidget {
   final Map<String, dynamic> payload;
-  final bool isDark;
 
-  const _PieChartView({required this.payload, required this.isDark});
+  const _PieChartView({required this.payload});
 
   @override
   Widget build(BuildContext context) {
@@ -321,9 +339,7 @@ class _PieChartView extends StatelessWidget {
 
     double total = 0;
     final items = <({String label, double value, Color color})>[];
-    final palette = isDark
-        ? [Colors.tealAccent, Colors.lightBlueAccent, Colors.orangeAccent, Colors.pinkAccent, Colors.limeAccent]
-        : [Colors.teal, Colors.blue, Colors.orange, Colors.purple, Colors.green];
+    final palette = _chartSliceColors(Theme.of(context).colorScheme);
 
     var i = 0;
     for (final s in slices) {
@@ -354,7 +370,11 @@ class _PieChartView extends StatelessWidget {
                       value: it.value,
                       title: '${(it.value / total * 100).toStringAsFixed(0)}%',
                       radius: 52,
-                      titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white),
+                      titleStyle: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AccessibilityHelper.getAccessibleTextColor(it.color),
+                      ),
                     ),
                 ],
               ),
@@ -374,7 +394,10 @@ class _PieChartView extends StatelessWidget {
                         Expanded(
                           child: Text(
                             '${it.label} (${it.value.toStringAsFixed(1)})',
-                            style: TextStyle(fontSize: 11, color: isDark ? Colors.grey[300] : Colors.grey[800]),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -393,17 +416,19 @@ class _PieChartView extends StatelessWidget {
 
 class _WorldMapWebView extends StatefulWidget {
   final Map<String, dynamic> spec;
-  final bool isDark;
 
-  const _WorldMapWebView({required this.spec, required this.isDark});
+  const _WorldMapWebView({required this.spec});
 
   @override
   State<_WorldMapWebView> createState() => _WorldMapWebViewState();
 }
 
 class _WorldMapWebViewState extends State<_WorldMapWebView> {
-  String _html() {
+  String _html(ColorScheme cs) {
     final specJson = jsonEncode(widget.spec);
+    final bg = _cssHex(cs.surface);
+    final fg = _cssHex(cs.onSurfaceVariant);
+    final stroke = _cssHex(cs.outline);
     return '''
 <!DOCTYPE html>
 <html><head>
@@ -412,9 +437,9 @@ class _WorldMapWebViewState extends State<_WorldMapWebView> {
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-html,body{margin:0;padding:0;height:100%;background:${widget.isDark ? '#111' : '#f8fafc'};}
+html,body{margin:0;padding:0;height:100%;background:$bg;}
 #map{height:220px;width:100%;}
-.info{font:12px/1.35 system-ui;padding:6px 8px;color:${widget.isDark ? '#cbd5e1' : '#334155'};}
+.info{font:12px/1.35 system-ui;padding:6px 8px;color:$fg;}
 </style>
 </head><body>
 <div class="info" id="t"></div>
@@ -453,7 +478,7 @@ fetch('https://cdn.jsdelivr.net/gh/datasets/geo-countries@master/data/countries.
         return {
           fillColor: colorFor(v),
           weight: 0.5,
-          color: '#334155',
+          color: '$stroke',
           fillOpacity: 0.75
         };
       }
@@ -471,11 +496,12 @@ fetch('https://cdn.jsdelivr.net/gh/datasets/geo-countries@master/data/countries.
   @override
   Widget build(BuildContext context) {
     final baseUri = WebUri(AppConfig.baseApiUrl);
+    final cs = Theme.of(context).colorScheme;
     return SizedBox(
       height: 248,
       child: InAppWebView(
         initialData: InAppWebViewInitialData(
-          data: _html(),
+          data: _html(cs),
           baseUrl: baseUri,
         ),
       ),

@@ -147,7 +147,7 @@ class _CountriesScreenState extends State<CountriesScreen> {
       appBar: AppBar(
         title: Text(localizations.countries),
         backgroundColor: Color(AppConstants.ifrcNavy),
-        foregroundColor: Colors.white,
+        foregroundColor: theme.colorScheme.onPrimary,
         elevation: 0,
       ),
       body: _isLoading
@@ -264,7 +264,7 @@ class _CountriesScreenState extends State<CountriesScreen> {
                                         Color(AppConstants.ifrcRed),
                                     labelStyle: TextStyle(
                                       color: isSelected
-                                          ? Colors.white
+                                          ? theme.colorScheme.onSecondary
                                           : theme.colorScheme.onSurface,
                                       fontSize: 12,
                                     ),
@@ -355,7 +355,8 @@ class _CountriesScreenState extends State<CountriesScreen> {
                                                   fontWeight: FontWeight.w600,
                                                   fontSize: 14,
                                                   color: isSelected
-                                                      ? Colors.white
+                                                      ? theme.colorScheme
+                                                          .onSecondary
                                                       : theme
                                                           .colorScheme.onSurface,
                                                 ),
@@ -366,7 +367,7 @@ class _CountriesScreenState extends State<CountriesScreen> {
                                                 style: TextStyle(
                                                   fontSize: 12,
                                                   color: isSelected
-                                                      ? Colors.white
+                                                      ? theme.colorScheme.onSecondary
                                                           .withOpacity(0.9)
                                                       : theme.colorScheme.onSurface
                                                           .withOpacity(0.6),

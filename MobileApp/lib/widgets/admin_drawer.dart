@@ -37,10 +37,10 @@ class AdminDrawer extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    const Text(
+                    Text(
                       'Admin Panel',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSecondary,
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
@@ -49,8 +49,10 @@ class AdminDrawer extends StatelessWidget {
                       const SizedBox(height: 8),
                       Text(
                         user.displayName,
-                        style: const TextStyle(
-                          color: Colors.white70,
+                        style: TextStyle(
+                          color: Theme.of(context)
+                              .colorScheme.onSecondary
+                              .withOpacity(0.7),
                           fontSize: 14,
                         ),
                       ),

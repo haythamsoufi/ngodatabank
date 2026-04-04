@@ -177,7 +177,7 @@ class _NSStructureScreenState extends State<NSStructureScreen> {
       appBar: AppBar(
         title: Text(localizations.nsStructure),
         backgroundColor: Color(AppConstants.ifrcNavy),
-        foregroundColor: Colors.white,
+        foregroundColor: theme.colorScheme.onPrimary,
         elevation: 0,
       ),
       body: _isLoading
@@ -459,7 +459,7 @@ class _NSStructureScreenState extends State<NSStructureScreen> {
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                       color: isSelected
-                          ? Colors.white
+                          ? theme.colorScheme.onSecondary
                           : theme.colorScheme.onSurface,
                     ),
                   ),
@@ -470,7 +470,7 @@ class _NSStructureScreenState extends State<NSStructureScreen> {
                     style: TextStyle(
                       fontSize: 12,
                       color: isSelected
-                          ? Colors.white.withOpacity(0.9)
+                          ? theme.colorScheme.onSecondary.withOpacity(0.9)
                           : theme.colorScheme.onSurface.withOpacity(0.6),
                     ),
                   ),

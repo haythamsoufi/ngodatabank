@@ -76,7 +76,7 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
               Icon(
                 Icons.error_outline,
                 size: 64,
-                color: Colors.red.shade300,
+                color: Theme.of(context).colorScheme.error,
               ),
               const SizedBox(height: 16),
               Text(
@@ -99,7 +99,7 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
                           Icon(
                             Icons.check_circle_outline,
                             size: 16,
-                            color: Colors.grey.shade600,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                           const SizedBox(width: 8),
                           Expanded(

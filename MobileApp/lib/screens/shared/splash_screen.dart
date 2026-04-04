@@ -253,7 +253,7 @@ class _SplashScreenState extends State<SplashScreen>
                         child: Text(
                           localizations.welcomeToIfrcNetworkDatabank,
                           style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                                color: Colors.white,
+                                color: Theme.of(context).colorScheme.onPrimary,
                                 fontWeight: FontWeight.bold,
                               ),
                           textAlign: TextAlign.center,
@@ -277,7 +277,9 @@ class _SplashScreenState extends State<SplashScreen>
                         child: Text(
                           localizations.splashDescription,
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Colors.white70,
+                                color: Theme.of(context)
+                                    .colorScheme.onPrimary
+                                    .withOpacity(0.7),
                               ),
                           textAlign: TextAlign.center,
                         ),
@@ -287,8 +289,10 @@ class _SplashScreenState extends State<SplashScreen>
                     // Loading indicator with fade animation
                     FadeTransition(
                       opacity: _loaderFadeAnimation,
-                      child: const CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Theme.of(context).colorScheme.onPrimary,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -297,9 +301,11 @@ class _SplashScreenState extends State<SplashScreen>
                       opacity: _attributionFadeAnimation,
                       child: Text(
                         localizations.builtByHaytham,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: Colors.white70,
+                          color: Theme.of(context)
+                              .colorScheme.onPrimary
+                              .withOpacity(0.7),
                         ),
                         textAlign: TextAlign.center,
                       ),

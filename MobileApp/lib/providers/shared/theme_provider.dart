@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../services/storage_service.dart';
 
@@ -14,7 +13,21 @@ class ThemeProvider with ChangeNotifier {
 
   String get currentThemeMode => _currentThemeMode;
   bool get isLoading => _isLoading;
-  bool get isDarkMode => _currentThemeMode == 'dark';
+
+  /// User chose **Dark** in settings (not whether the UI is dark — use
+  /// `Theme.of(context).brightness` or `context.isDarkTheme` for that).
+  bool get isExplicitDarkMode => _currentThemeMode == 'dark';
+
+  /// User chose **Light** in settings.
+  bool get isExplicitLightMode => _currentThemeMode == 'light';
+
+  /// User chose **System** default.
+  bool get followsSystemTheme => _currentThemeMode == 'system';
+
+  /// Deprecated: use [isExplicitDarkMode]. Same meaning as before (saved
+  /// preference is dark, not whether the UI is currently dark).
+  @Deprecated('Use isExplicitDarkMode')
+  bool get isDarkMode => isExplicitDarkMode;
 
   ThemeProvider() {
     _loadThemeMode();
@@ -63,9 +76,15 @@ class ThemeProvider with ChangeNotifier {
     }
   }
 
+  /// Cycles **Light → Dark → System → Light** so system preference is not ignored.
   Future<void> toggleThemeMode() async {
-    final newMode = _currentThemeMode == 'light' ? 'dark' : 'light';
-    await setThemeMode(newMode);
+    final next = switch (_currentThemeMode) {
+      'light' => 'dark',
+      'dark' => 'system',
+      'system' => 'light',
+      _ => 'light',
+    };
+    await setThemeMode(next);
   }
 
   // Helper to get ThemeMode enum value for MaterialApp

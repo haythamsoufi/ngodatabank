@@ -16,15 +16,12 @@ subprojects {
     project.evaluationDependsOn(':app')
 }
 
-// Configure all Android subprojects to use compileSdkVersion 36
-// Use beforeProject to register afterEvaluate hooks before projects are evaluated
+// Android SDK + Kotlin jvmTarget (register before evaluation finishes; see below for javac).
 gradle.beforeProject { project ->
     if (project != rootProject) {
-        project.afterEvaluate {
-            if (it.hasProperty('android')) {
-                it.android {
-                    // Force compileSdk 36 for all Android projects (newer syntax)
-                    // Also set compileSdkVersion for older plugin compatibility
+        project.afterEvaluate { p ->
+            if (p.hasProperty('android')) {
+                p.android {
                     compileSdk 36
                     compileSdkVersion 36
                     compileOptions {
@@ -33,30 +30,29 @@ gradle.beforeProject { project ->
                     }
                 }
             }
+            p.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+                kotlinOptions {
+                    jvmTarget = '17'
+                }
+            }
         }
     }
 }
 
-// Configure Kotlin and Java tasks after all projects are evaluated
-gradle.projectsEvaluated {
-    subprojects { subProject ->
-        // Configure Kotlin JVM target for all subprojects that use Kotlin
-        subProject.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-            kotlinOptions {
-                jvmTarget = '17'
+// Quiet javac for Flutter plugins (deprecated/unchecked API noise). Apply in afterProject so tasks
+// exist; beforeProject/afterEvaluate on subprojects can run before AGP registers JavaCompile.
+gradle.afterProject { project ->
+    if (project == rootProject) {
+        return
+    }
+    project.tasks.withType(JavaCompile).configureEach { task ->
+        task.sourceCompatibility = JavaVersion.VERSION_17
+        task.targetCompatibility = JavaVersion.VERSION_17
+        def quiet = ['-Xlint:-options', '-Xlint:-deprecation', '-Xlint:-unchecked', '-nowarn']
+        quiet.each { arg ->
+            if (!task.options.compilerArgs.contains(arg)) {
+                task.options.compilerArgs.add(arg)
             }
-        }
-
-        // Set Java version for all Java compilation tasks and suppress warnings from dependencies
-        subProject.tasks.withType(JavaCompile).configureEach {
-            sourceCompatibility = JavaVersion.VERSION_17
-            targetCompatibility = JavaVersion.VERSION_17
-            // Suppress various warnings from dependencies (these are informational only)
-            options.compilerArgs.addAll([
-                '-Xlint:-options',      // Suppress obsolete Java version warnings
-                '-Xlint:-deprecation',  // Suppress deprecation warnings from dependencies
-                '-Xlint:-unchecked'     // Suppress unchecked/unsafe operation warnings from dependencies
-            ])
         }
     }
 }

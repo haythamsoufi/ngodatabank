@@ -8,6 +8,7 @@ import '../../widgets/app_bar.dart';
 import '../../widgets/app_switch_list_tile.dart';
 import '../../config/routes.dart';
 import '../../utils/constants.dart';
+import '../../utils/accessibility_helper.dart';
 import '../../utils/theme_extensions.dart';
 import '../../utils/ios_constants.dart';
 import '../../widgets/ios_card.dart';
@@ -97,7 +98,7 @@ class SettingsScreen extends StatelessWidget {
     }
 
     final profileColor =
-        parseProfileColor(user.profileColor) ?? const Color(0xFF3B82F6);
+        parseProfileColor(user.profileColor) ?? const Color(AppConstants.semanticDefaultProfileAccent);
 
     final theme = Theme.of(context);
     return _buildSettingsCard(
@@ -120,7 +121,7 @@ class SettingsScreen extends StatelessWidget {
               child: Text(
                 initial,
                 style: IOSTextStyle.title1(context).copyWith(
-                  color: Colors.white,
+                  color: AccessibilityHelper.getAccessibleTextColor(profileColor),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -256,7 +257,7 @@ class SettingsScreen extends StatelessWidget {
     }
 
     final profileColor =
-        parseProfileColor(user.profileColor) ?? const Color(0xFF3B82F6);
+        parseProfileColor(user.profileColor) ?? const Color(AppConstants.semanticDefaultProfileAccent);
 
     return _buildSettingsCard(
       context: context,
@@ -598,7 +599,7 @@ class SettingsScreen extends StatelessWidget {
     }
 
     final currentColor = user.profileColor ?? '#3B82F6';
-    final currentColorObj = parseColor(currentColor) ?? const Color(0xFF3B82F6);
+    final currentColorObj = parseColor(currentColor) ?? const Color(AppConstants.semanticDefaultProfileAccent);
 
     final selectedColor = await showDialog<String>(
       context: context,
@@ -642,7 +643,7 @@ class SettingsScreen extends StatelessWidget {
                     final colorHex = colorData['color']!;
                     final colorName = colorData['name']!;
                     final colorObj =
-                        parseColor(colorHex) ?? const Color(0xFF3B82F6);
+                        parseColor(colorHex) ?? const Color(AppConstants.semanticDefaultProfileAccent);
                     final isSelected = colorHex == currentColor;
 
                     return GestureDetector(

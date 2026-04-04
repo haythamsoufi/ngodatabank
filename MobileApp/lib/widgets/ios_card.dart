@@ -24,7 +24,7 @@ class IOSCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = theme.isDarkTheme;
 
     // iOS grouped table view style - no background, just container
     if (useGroupedStyle) {

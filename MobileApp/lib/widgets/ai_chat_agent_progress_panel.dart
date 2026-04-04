@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../models/shared/ai_chat.dart';
+import '../utils/constants.dart';
 
 /// Mirrors Backoffice `chat-progress-panel` / `chat-progress-steps` (chatbot.css).
 class AiChatAgentProgressPanel extends StatefulWidget {
   final List<AiChatAgentStep> steps;
-  final bool isDark;
 
   const AiChatAgentProgressPanel({
     super.key,
     required this.steps,
-    required this.isDark,
   });
 
   @override
@@ -24,9 +23,10 @@ class _AiChatAgentProgressPanelState extends State<AiChatAgentProgressPanel> {
   Widget build(BuildContext context) {
     if (widget.steps.isEmpty) return const SizedBox.shrink();
 
-    final muted = widget.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
-    final subtle = widget.isDark ? const Color(0xFF737373) : const Color(0xFF94A3B8);
-    const doneGreen = Color(0xFF22C55E);
+    final cs = Theme.of(context).colorScheme;
+    final muted = cs.onSurfaceVariant;
+    final subtle = cs.outline;
+    final doneGreen = const Color(AppConstants.successColor);
 
     return Align(
       alignment: Alignment.centerLeft,

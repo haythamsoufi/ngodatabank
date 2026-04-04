@@ -42,13 +42,13 @@ class AssignmentCard extends StatelessWidget {
       return const Color(AppConstants.successColor);
     } else if (completionRate >= 80) {
       // 80-99% - Light green/teal
-      return const Color(0xFF10B981); // emerald-500
+      return const Color(AppConstants.successColor);
     } else if (completionRate >= 50) {
       // 50-79% - Yellow/Orange (warning)
       return const Color(AppConstants.warningColor);
     } else if (completionRate >= 25) {
       // 25-49% - Orange/Red
-      return const Color(0xFFF97316); // orange-500
+      return const Color(AppConstants.warningColor);
     } else {
       // < 25% - Red (error)
       return const Color(AppConstants.errorColor);
@@ -58,7 +58,7 @@ class AssignmentCard extends StatelessWidget {
   Widget _buildCompactView(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = theme.isDarkTheme;
     // Get current locale for date formatting
     final locale = Localizations.localeOf(context);
     // Format date with localized month names but keep Western numerals
@@ -350,7 +350,7 @@ class AssignmentCard extends StatelessWidget {
                               enterDataButtonText ?? localizations.enterData,
                               style: IOSTextStyle.subheadline(context).copyWith(
                                 fontWeight: FontWeight.w600,
-                                color: Colors.white,
+                                color: Theme.of(context).colorScheme.onPrimary,
                               ),
                             ),
                           ),

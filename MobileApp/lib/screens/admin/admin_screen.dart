@@ -5,12 +5,11 @@ import '../../providers/shared/auth_provider.dart';
 import '../../models/shared/user.dart';
 import '../../config/routes.dart';
 import '../../utils/constants.dart';
+import '../../utils/accessibility_helper.dart';
 import '../../utils/theme_extensions.dart';
 import '../../utils/ios_constants.dart';
 import '../../widgets/bottom_navigation_bar.dart';
 import '../../widgets/app_bar.dart';
-import '../../widgets/ios_card.dart';
-import '../../widgets/ios_button.dart';
 import '../../widgets/ios_list_tile.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -72,28 +71,28 @@ class AdminScreen extends StatelessWidget {
                     context: context,
                     title: localizations.general,
                     icon: Icons.dashboard_rounded,
-                    color: const Color(0xFF3B82F6),
+                    color: const Color(AppConstants.semanticAdminHubBlue),
                     children: [
                       _buildMenuItem(
                         context: context,
                         icon: Icons.people_rounded,
                         title: localizations.manageUsers,
                         route: AppRoutes.users,
-                        iconColor: const Color(0xFF3B82F6),
+                        iconColor: const Color(AppConstants.semanticAdminHubBlue),
                       ),
                       _buildMenuItem(
                         context: context,
                         icon: Icons.description_rounded,
                         title: localizations.documentManagement,
                         route: AppRoutes.documentManagement,
-                        iconColor: const Color(0xFF3B82F6),
+                        iconColor: const Color(AppConstants.semanticAdminHubBlue),
                       ),
                       _buildMenuItem(
                         context: context,
                         icon: Icons.translate_rounded,
                         title: localizations.translationManagement,
                         route: AppRoutes.translationManagement,
-                        iconColor: const Color(0xFF3B82F6),
+                        iconColor: const Color(AppConstants.semanticAdminHubBlue),
                       ),
                     ],
                   ),
@@ -105,21 +104,21 @@ class AdminScreen extends StatelessWidget {
                     context: context,
                     title: localizations.formDataManagement,
                     icon: Icons.article_rounded,
-                    color: const Color(0xFF8B5CF6),
+                    color: const Color(AppConstants.semanticAdminHubPurple),
                     children: [
                       _buildMenuItem(
                         context: context,
                         icon: Icons.article_rounded,
                         title: localizations.manageTemplates,
                         route: AppRoutes.templates,
-                        iconColor: const Color(0xFF8B5CF6),
+                        iconColor: const Color(AppConstants.semanticAdminHubPurple),
                       ),
                       _buildMenuItem(
                         context: context,
                         icon: Icons.assignment_rounded,
                         title: localizations.manageAssignments,
                         route: AppRoutes.assignments,
-                        iconColor: const Color(0xFF8B5CF6),
+                        iconColor: const Color(AppConstants.semanticAdminHubPurple),
                       ),
                     ],
                   ),
@@ -131,14 +130,14 @@ class AdminScreen extends StatelessWidget {
                     context: context,
                     title: localizations.frontendManagement,
                     icon: Icons.folder_open_rounded,
-                    color: const Color(0xFFF59E0B),
+                    color: const Color(AppConstants.semanticAdminHubAmber),
                     children: [
                       _buildMenuItem(
                         context: context,
                         icon: Icons.folder_open_rounded,
                         title: localizations.manageResources,
                         route: AppRoutes.resourcesManagement,
-                        iconColor: const Color(0xFFF59E0B),
+                        iconColor: const Color(AppConstants.semanticAdminHubAmber),
                       ),
                     ],
                   ),
@@ -150,21 +149,21 @@ class AdminScreen extends StatelessWidget {
                     context: context,
                     title: localizations.referenceData,
                     icon: Icons.account_tree_rounded,
-                    color: const Color(0xFFEF4444),
+                    color: const Color(AppConstants.semanticAdminHubRed),
                     children: [
                       _buildMenuItem(
                         context: context,
                         icon: Icons.account_tree_rounded,
                         title: localizations.organizationalStructure,
                         route: AppRoutes.organizationalStructure,
-                        iconColor: const Color(0xFFEF4444),
+                        iconColor: const Color(AppConstants.semanticAdminHubRed),
                       ),
                       _buildMenuItem(
                         context: context,
                         icon: Icons.storage_rounded,
                         title: localizations.indicatorBank,
                         route: AppRoutes.indicatorBankAdmin,
-                        iconColor: const Color(0xFFEF4444),
+                        iconColor: const Color(AppConstants.semanticAdminHubRed),
                       ),
                     ],
                   ),
@@ -176,21 +175,21 @@ class AdminScreen extends StatelessWidget {
                     context: context,
                     title: localizations.analyticsMonitoring,
                     icon: Icons.bar_chart_rounded,
-                    color: const Color(0xFF06B6D4),
+                    color: const Color(AppConstants.semanticAdminHubCyan),
                     children: [
                       _buildMenuItem(
                         context: context,
                         icon: Icons.bar_chart_rounded,
                         title: localizations.userAnalytics,
                         route: AppRoutes.userAnalytics,
-                        iconColor: const Color(0xFF06B6D4),
+                        iconColor: const Color(AppConstants.semanticAdminHubCyan),
                       ),
                       _buildMenuItem(
                         context: context,
                         icon: Icons.history_rounded,
                         title: localizations.auditTrail,
                         route: AppRoutes.auditTrail,
-                        iconColor: const Color(0xFF06B6D4),
+                        iconColor: const Color(AppConstants.semanticAdminHubCyan),
                       ),
                     ],
                   ),
@@ -220,14 +219,13 @@ class AdminScreen extends StatelessWidget {
     final role = user?.role ?? '';
 
     // Parse profile color with error handling
-    Color profileColor = const Color(0xFF011E41); // Default IFRC Navy
+    Color profileColor = Color(AppConstants.ifrcNavy);
     if (user?.profileColor != null && user!.profileColor!.isNotEmpty) {
       try {
         final cleanColor = user.profileColor!.replaceFirst('#', '0xFF');
         profileColor = Color(int.parse(cleanColor));
       } catch (e) {
-        // If parsing fails, use default color
-        profileColor = const Color(0xFF011E41);
+        profileColor = Color(AppConstants.ifrcNavy);
       }
     }
 
@@ -235,6 +233,7 @@ class AdminScreen extends StatelessWidget {
     final primaryColor = profileColor;
     final secondaryColor = profileColor.withOpacity(0.7);
     final accentColor = profileColor.withOpacity(0.3);
+    final onCard = AccessibilityHelper.getAccessibleTextColor(primaryColor);
 
     // Get initial for avatar
     final initial = displayName.isNotEmpty
@@ -283,9 +282,8 @@ class AdminScreen extends StatelessWidget {
             offset: const Offset(0, 8),
           ),
           BoxShadow(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.black.withOpacity(0.4)
-                : Colors.black.withOpacity(0.1),
+            color: Theme.of(context).ambientShadow(
+                lightOpacity: 0.1, darkOpacity: 0.4),
             blurRadius: 10,
             spreadRadius: 0,
             offset: const Offset(0, 4),
@@ -298,8 +296,8 @@ class AdminScreen extends StatelessWidget {
           onTap: () {
             Navigator.of(context).pushNamed(AppRoutes.settings);
           },
-          splashColor: Colors.white.withOpacity(0.2),
-          highlightColor: Colors.white.withOpacity(0.1),
+          splashColor: onCard.withOpacity(0.2),
+          highlightColor: onCard.withOpacity(0.1),
           child: Stack(
             children: [
               // Decorative background pattern
@@ -311,7 +309,7 @@ class AdminScreen extends StatelessWidget {
                   height: 120,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.1),
+                    color: onCard.withOpacity(0.1),
                   ),
                 ),
               ),
@@ -323,7 +321,7 @@ class AdminScreen extends StatelessWidget {
                   height: 100,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.08),
+                    color: onCard.withOpacity(0.08),
                   ),
                 ),
               ),
@@ -338,13 +336,11 @@ class AdminScreen extends StatelessWidget {
                       height: 60,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white,
+                        color: onCard,
                         boxShadow: [
                           BoxShadow(
-                            color:
-                                Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.black.withOpacity(0.5)
-                                    : Colors.black.withOpacity(0.2),
+                            color: Theme.of(context).ambientShadow(
+                                lightOpacity: 0.2, darkOpacity: 0.5),
                             blurRadius: 12,
                             spreadRadius: 2,
                             offset: const Offset(0, 4),
@@ -368,7 +364,7 @@ class AdminScreen extends StatelessWidget {
                           child: Text(
                             initial,
                             style: IOSTextStyle.title1(context).copyWith(
-                              color: Colors.white,
+                              color: onCard,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.5,
                             ),
@@ -387,13 +383,11 @@ class AdminScreen extends StatelessWidget {
                             displayName.isNotEmpty ? displayName : email,
                             style: IOSTextStyle.title3(context).copyWith(
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: onCard,
                               shadows: [
                                 Shadow(
-                                  color: Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.black.withOpacity(0.6)
-                                      : Colors.black26,
+                                  color: Theme.of(context).ambientShadow(
+                                      lightOpacity: 0.26, darkOpacity: 0.6),
                                   blurRadius: 4,
                                 ),
                               ],
@@ -409,10 +403,10 @@ class AdminScreen extends StatelessWidget {
                                 vertical: IOSSpacing.xs,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.25),
+                                color: onCard.withOpacity(0.25),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: Colors.white.withOpacity(0.3),
+                                  color: onCard.withOpacity(0.3),
                                   width: 1,
                                 ),
                               ),
@@ -422,7 +416,7 @@ class AdminScreen extends StatelessWidget {
                                   Icon(
                                     Icons.work_outline,
                                     size: 14,
-                                    color: Colors.white.withOpacity(0.9),
+                                    color: onCard.withOpacity(0.9),
                                   ),
                                   SizedBox(width: IOSSpacing.xs + 2),
                                   Flexible(
@@ -430,7 +424,7 @@ class AdminScreen extends StatelessWidget {
                                       title,
                                       style: IOSTextStyle.caption1(context).copyWith(
                                         fontWeight: FontWeight.w600,
-                                        color: Colors.white.withOpacity(0.95),
+                                        color: onCard.withOpacity(0.95),
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -448,10 +442,10 @@ class AdminScreen extends StatelessWidget {
                               vertical: IOSSpacing.xs + 1,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.25),
+                              color: onCard.withOpacity(0.25),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: Colors.white.withOpacity(0.3),
+                                color: onCard.withOpacity(0.3),
                                 width: 1,
                               ),
                             ),
@@ -461,14 +455,14 @@ class AdminScreen extends StatelessWidget {
                                 Icon(
                                   Icons.verified_user_outlined,
                                   size: 14,
-                                  color: Colors.white.withOpacity(0.9),
+                                  color: onCard.withOpacity(0.9),
                                 ),
                                 SizedBox(width: IOSSpacing.xs + 2),
                                 Text(
                                   getRoleDisplayName(role),
                                   style: IOSTextStyle.caption2(context).copyWith(
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.white.withOpacity(0.95),
+                                    color: onCard.withOpacity(0.95),
                                   ),
                                 ),
                               ],
@@ -488,16 +482,16 @@ class AdminScreen extends StatelessWidget {
                         child: Container(
                           padding: EdgeInsets.all(IOSSpacing.sm),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: onCard.withOpacity(0.2),
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.3),
+                              color: onCard.withOpacity(0.3),
                               width: 1,
                             ),
                           ),
                           child: Icon(
                             Icons.settings_outlined,
-                            color: Colors.white,
+                            color: onCard,
                             size: 20,
                           ),
                         ),

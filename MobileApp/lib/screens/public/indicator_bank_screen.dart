@@ -112,7 +112,7 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
     final isAdmin = user != null && (user.role == 'admin' || user.role == 'system_manager');
     final isAuthenticated = authProvider.isAuthenticated;
     final isFocalPoint = user != null && user.role == 'focal_point';
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = theme.isDarkTheme;
 
     return Drawer(
       backgroundColor: isDark
@@ -359,8 +359,6 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
     required VoidCallback onTap,
     bool showDivider = true,
   }) {
-    final isDark = theme.brightness == Brightness.dark;
-
     return Column(
       children: [
         InkWell(
@@ -685,6 +683,7 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
 
   Widget _buildSearchAndControls(IndicatorBankProvider provider) {
     final localizations = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
 
     return Column(
       children: [
@@ -729,9 +728,8 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
             // View mode toggle - iOS style segmented control
             Container(
               decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.grey[850]?.withOpacity(0.5)
-                    : Colors.grey[200]?.withOpacity(0.6),
+                color: theme.colorScheme.surfaceContainerHighest
+                    .withOpacity(context.isDarkTheme ? 0.55 : 0.75),
                 borderRadius: BorderRadius.circular(10),
               ),
               padding: const EdgeInsets.all(3),
@@ -769,21 +767,17 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
                     padding: const EdgeInsets.symmetric(
                         vertical: 10, horizontal: 14),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.grey[800]?.withOpacity(0.6)
-                          : Colors.white,
+                      color: theme.colorScheme.surfaceContainerHigh,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.grey[700]!.withOpacity(0.5)
-                            : Colors.grey[300]!,
+                        color: theme.colorScheme.outline.withOpacity(
+                            context.isDarkTheme ? 0.4 : 0.28),
                         width: 0.5,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? Colors.black.withOpacity(0.3)
-                              : Colors.black.withOpacity(0.05),
+                          color: theme.ambientShadow(
+                              lightOpacity: 0.06, darkOpacity: 0.35),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         ),
@@ -797,9 +791,7 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
                               ? Icons.filter_list_off
                               : Icons.filter_list,
                           size: 18,
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white
-                              : Colors.black87,
+                          color: theme.colorScheme.onSurface,
                         ),
                         const SizedBox(width: 6),
                         Text(
@@ -811,10 +803,7 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color:
-                                Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.white
-                                    : Colors.black87,
+                            color: theme.colorScheme.onSurface,
                           ),
                         ),
                       ],
@@ -837,7 +826,7 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
   ) {
     final isSelected = provider.viewMode == mode;
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = theme.isDarkTheme;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -845,13 +834,16 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
         color: isSelected
-            ? (isDark ? Colors.white.withOpacity(0.15) : Colors.white)
+            ? (isDark
+                ? theme.colorScheme.onSurface.withOpacity(0.12)
+                : theme.colorScheme.surfaceContainerHighest)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
         boxShadow: isSelected && !isDark
             ? [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
+                  color: theme.ambientShadow(
+                      lightOpacity: 0.08, darkOpacity: 0.2),
                   blurRadius: 4,
                   offset: const Offset(0, 1),
                 ),
@@ -868,8 +860,11 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
           child: Icon(
             icon,
             color: isSelected
-                ? (isDark ? Colors.white : Color(AppConstants.ifrcRed))
-                : (isDark ? Colors.grey[400] : Colors.grey[600]),
+                ? (isDark
+                    ? theme.colorScheme.onSurface
+                    : Color(AppConstants.ifrcRed))
+                : theme.colorScheme.onSurface.withOpacity(
+                    isDark ? 0.55 : 0.62),
             size: 20,
           ),
         ),
@@ -1298,10 +1293,8 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
                                 borderRadius: BorderRadius.circular(
                                     AppConstants.radiusLarge),
                               ),
-                              shadowColor: Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? Colors.black.withOpacity(0.3)
-                                  : Colors.black.withOpacity(0.05),
+                              shadowColor: Theme.of(context).ambientShadow(
+                                  lightOpacity: 0.05, darkOpacity: 0.3),
                               child: InkWell(
                                 onTap: () {
                                   provider.setSelectedSector(sector.name);

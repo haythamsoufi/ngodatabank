@@ -204,7 +204,8 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: theme.ambientShadow(
+                            lightOpacity: 0.14, darkOpacity: 0.4),
                         blurRadius: 8,
                       ),
                     ],
@@ -303,11 +304,14 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: theme.isDarkTheme
+                        ? theme.colorScheme.surfaceContainerHighest
+                        : theme.colorScheme.surface,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
+                        color: theme.ambientShadow(
+                            lightOpacity: 0.18, darkOpacity: 0.45),
                         blurRadius: 20,
                         spreadRadius: 3,
                       ),
@@ -323,11 +327,12 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                 Text(
                   localizations.quizGameTitle,
                   style: theme.textTheme.headlineLarge?.copyWith(
-                    color: Colors.white,
+                    color: theme.colorScheme.onPrimary,
                     fontWeight: FontWeight.bold,
                     shadows: [
                       Shadow(
-                        color: Colors.black.withOpacity(0.3),
+                        color: theme.ambientShadow(
+                            lightOpacity: 0.28, darkOpacity: 0.35),
                         blurRadius: 10,
                         offset: const Offset(0, 2),
                       ),
@@ -338,10 +343,11 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                 Text(
                   localizations.quizGameTestYourKnowledge,
                   style: theme.textTheme.titleMedium?.copyWith(
-                    color: Colors.white.withOpacity(0.9),
+                    color: theme.colorScheme.onPrimary.withOpacity(0.9),
                     shadows: [
                       Shadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: theme.ambientShadow(
+                            lightOpacity: 0.18, darkOpacity: 0.28),
                         blurRadius: 8,
                       ),
                     ],
@@ -370,17 +376,19 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                           horizontal: 20,
                           vertical: 14,
                         ),
-                        backgroundColor: Colors.white.withOpacity(0.2),
-                        foregroundColor: Colors.white,
-                        side: const BorderSide(
-                          color: Colors.white,
+                        backgroundColor:
+                            theme.colorScheme.onPrimary.withOpacity(0.2),
+                        foregroundColor: theme.colorScheme.onPrimary,
+                        side: BorderSide(
+                          color: theme.colorScheme.onPrimary,
                           width: 1.5,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                         elevation: 4,
-                        shadowColor: Colors.black.withOpacity(0.3),
+                        shadowColor: theme.ambientShadow(
+                            lightOpacity: 0.2, darkOpacity: 0.4),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -400,13 +408,16 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                           horizontal: 24,
                           vertical: 16,
                         ),
-                        backgroundColor: Colors.white,
+                        backgroundColor: theme.isDarkTheme
+                            ? theme.colorScheme.surfaceContainerHighest
+                            : theme.colorScheme.surface,
                         foregroundColor: theme.colorScheme.primary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                         elevation: 6,
-                        shadowColor: Colors.black.withOpacity(0.4),
+                        shadowColor: theme.ambientShadow(
+                            lightOpacity: 0.22, darkOpacity: 0.45),
                       ),
                     ),
                   ],
@@ -585,7 +596,8 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.03),
+                              color: theme.ambientShadow(
+                                  lightOpacity: 0.04, darkOpacity: 0.3),
                               blurRadius: 4,
                               offset: const Offset(0, 1),
                             ),
@@ -615,7 +627,7 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                       children: [
                         Icon(
                           Icons.star,
-                          color: Colors.amber.shade600,
+                          color: Color(AppConstants.warningColor),
                           size: 16,
                         ),
                         const SizedBox(width: 4),
@@ -684,7 +696,7 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                             borderRadius: BorderRadius.circular(8),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
+                                color: theme.ambientShadow(),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -881,7 +893,7 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                         scale: _feedbackScaleAnimation,
                         child: Icon(
                           Icons.check_circle,
-                          color: Colors.green.shade600,
+                          color: const Color(AppConstants.successColor),
                           size: 22,
                         ),
                       ),
@@ -890,7 +902,7 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                         scale: _feedbackScaleAnimation,
                         child: Icon(
                           Icons.cancel,
-                          color: Colors.red.shade600,
+                          color: const Color(AppConstants.errorColor),
                           size: 22,
                         ),
                       ),
@@ -914,9 +926,9 @@ class _QuizGameScreenState extends State<QuizGameScreen>
   ) {
     if (showResult) {
       if (isCorrect) {
-        return Colors.green.shade50;
+        return theme.quizOptionResultCorrectFill();
       } else if (isWrong) {
-        return Colors.red.shade50;
+        return theme.quizOptionResultWrongFill();
       } else {
         return context.cardColor.withOpacity(0.5);
       }
@@ -936,9 +948,9 @@ class _QuizGameScreenState extends State<QuizGameScreen>
   ) {
     if (showResult) {
       if (isCorrect) {
-        return Colors.green.shade600;
+        return theme.quizOptionResultCorrectBorder();
       } else if (isWrong) {
-        return Colors.red.shade600;
+        return theme.quizOptionResultWrongBorder();
       } else {
         return Colors.transparent;
       }
@@ -958,14 +970,14 @@ class _QuizGameScreenState extends State<QuizGameScreen>
   ) {
     if (showResult) {
       if (isCorrect) {
-        return Colors.green.withOpacity(0.3);
+        return theme.quizOptionResultShadow(true, false);
       } else if (isWrong) {
-        return Colors.red.withOpacity(0.3);
+        return theme.quizOptionResultShadow(false, true);
       }
     } else if (isSelected) {
       return theme.colorScheme.primary.withOpacity(0.4);
     }
-    return Colors.black.withOpacity(0.1);
+    return theme.ambientShadow(lightOpacity: 0.1, darkOpacity: 0.35);
   }
 
   Color _getOptionIconBackgroundColor(
@@ -977,9 +989,9 @@ class _QuizGameScreenState extends State<QuizGameScreen>
   ) {
     if (showResult) {
       if (isCorrect) {
-        return Colors.green.shade100;
+        return theme.quizOptionResultCorrectIconBg();
       } else if (isWrong) {
-        return Colors.red.shade100;
+        return theme.quizOptionResultWrongIconBg();
       }
     }
     return theme.colorScheme.surfaceContainerHighest;
@@ -1010,9 +1022,9 @@ class _QuizGameScreenState extends State<QuizGameScreen>
   ) {
     if (showResult) {
       if (isCorrect) {
-        return Colors.green.shade700;
+        return theme.quizOptionResultCorrectIconFg();
       } else if (isWrong) {
-        return Colors.red.shade700;
+        return theme.quizOptionResultWrongIconFg();
       }
     }
     return theme.colorScheme.primary;
@@ -1028,9 +1040,9 @@ class _QuizGameScreenState extends State<QuizGameScreen>
   ) {
     if (showResult) {
       if (isCorrect) {
-        return Colors.green.shade900;
+        return theme.quizOptionResultCorrectText();
       } else if (isWrong) {
-        return Colors.red.shade900;
+        return theme.quizOptionResultWrongText();
       } else {
         return context.textColor.withOpacity(0.5);
       }
@@ -1050,7 +1062,7 @@ class _QuizGameScreenState extends State<QuizGameScreen>
         color: context.cardColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: theme.ambientShadow(),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),
@@ -1070,13 +1082,21 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: quizProvider.isCorrect
-                      ? Colors.green.shade50
-                      : Colors.red.shade50,
+                      ? (theme.isDarkTheme
+                          ? Colors.green.shade900.withOpacity(0.45)
+                          : Colors.green.shade50)
+                      : (theme.isDarkTheme
+                          ? Colors.red.shade900.withOpacity(0.45)
+                          : Colors.red.shade50),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: quizProvider.isCorrect
-                        ? Colors.green.shade300
-                        : Colors.red.shade300,
+                        ? (theme.isDarkTheme
+                            ? Colors.green.shade600
+                            : Colors.green.shade300)
+                        : (theme.isDarkTheme
+                            ? Colors.red.shade600
+                            : Colors.red.shade300),
                     width: 1.5,
                   ),
                 ),
@@ -1088,15 +1108,15 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         color: quizProvider.isCorrect
-                            ? Colors.green.shade600
-                            : Colors.red.shade600,
+                            ? const Color(AppConstants.successColor)
+                            : const Color(AppConstants.errorColor),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         quizProvider.isCorrect
                             ? Icons.check_rounded
                             : Icons.close_rounded,
-                        color: Colors.white,
+                        color: theme.colorScheme.onPrimary,
                         size: 14,
                       ),
                     ),
@@ -1105,8 +1125,8 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                       quizProvider.isCorrect ? localizations.quizGameCorrect : localizations.quizGameIncorrect,
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color: quizProvider.isCorrect
-                            ? Colors.green.shade900
-                            : Colors.red.shade900,
+                            ? theme.quizOptionResultCorrectText()
+                            : theme.quizOptionResultWrongText(),
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.5,
                       ),
@@ -1177,17 +1197,17 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                           children: [
                             Text(
                               localizations.quizGameViewResults,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: theme.colorScheme.onPrimary,
                               ),
                             ),
                             const SizedBox(width: 6),
-                            const Icon(
+                            Icon(
                               Icons.arrow_forward_rounded,
                               size: 18,
-                              color: Colors.white,
+                              color: theme.colorScheme.onPrimary,
                             ),
                           ],
                         ),
@@ -1285,7 +1305,7 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                     child: Icon(
                       icon,
                       size: 60,
-                      color: Colors.white,
+                      color: theme.colorScheme.onPrimary,
                     ),
                   ),
                 ),
@@ -1389,19 +1409,29 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                    gradient: LinearGradient(
                      begin: Alignment.topLeft,
                      end: Alignment.bottomRight,
-                     colors: [
-                       Colors.white.withOpacity(0.95),
-                       Colors.white.withOpacity(0.85),
-                     ],
+                     colors: theme.isDarkTheme
+                         ? [
+                             theme.colorScheme.surfaceContainerHigh
+                                 .withOpacity(0.98),
+                             theme.colorScheme.surfaceContainer
+                                 .withOpacity(0.92),
+                           ]
+                         : [
+                             theme.colorScheme.surface.withOpacity(0.98),
+                             theme.colorScheme.surface.withOpacity(0.88),
+                           ],
                    ),
                    borderRadius: BorderRadius.circular(12),
                    border: Border.all(
-                     color: Colors.white.withOpacity(0.5),
+                     color: theme.isDarkTheme
+                         ? theme.colorScheme.outline.withOpacity(0.35)
+                         : theme.colorScheme.outline.withOpacity(0.22),
                      width: 1,
                    ),
                    boxShadow: [
                      BoxShadow(
-                       color: Colors.black.withOpacity(0.05),
+                       color: theme.ambientShadow(
+                           lightOpacity: 0.06, darkOpacity: 0.38),
                        blurRadius: 8,
                        spreadRadius: 0,
                        offset: const Offset(0, 2),

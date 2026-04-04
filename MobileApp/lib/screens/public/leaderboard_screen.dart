@@ -4,7 +4,6 @@ import '../../providers/public/leaderboard_provider.dart';
 import '../../providers/shared/auth_provider.dart';
 import '../../widgets/app_bar.dart';
 import '../../utils/theme_extensions.dart';
-import '../../utils/constants.dart';
 import '../../l10n/app_localizations.dart';
 
 class LeaderboardScreen extends StatefulWidget {
@@ -150,13 +149,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                         Icon(
                           Icons.emoji_events,
                           size: 48,
-                          color: Colors.white,
+                          color: theme.colorScheme.onPrimary,
                         ),
                         const SizedBox(height: 8),
                         Text(
                           localizations.quizGameTopPlayers,
                           style: theme.textTheme.titleLarge?.copyWith(
-                            color: Colors.white,
+                            color: theme.colorScheme.onPrimary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -207,7 +206,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       medalColor = Colors.amber;
     } else if (rank == 2) {
       medalIcon = Icons.emoji_events;
-      medalColor = Colors.grey.shade400;
+      medalColor = theme.colorScheme.outline;
     } else if (rank == 3) {
       medalIcon = Icons.emoji_events;
       medalColor = Colors.brown.shade400;
@@ -229,7 +228,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: theme.ambientShadow(
+                lightOpacity: 0.05, darkOpacity: 0.35),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -297,7 +297,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                         child: Text(
                           localizations.quizGameYou,
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.white,
+                            color: theme.colorScheme.onPrimary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),

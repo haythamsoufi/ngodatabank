@@ -74,8 +74,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                  Theme.of(context).brightness == Brightness.dark
-                                      ? const Color(0xFF4A90E2)
+                                  context.isDarkTheme
+                                      ? const Color(AppConstants
+                                          .themeSwitchCheckboxActiveDark)
                                       : Theme.of(context).colorScheme.primary,
                                 ),
                               ),
@@ -83,8 +84,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           : Icon(
                               Icons.done_all,
                               color:
-                                  Theme.of(context).brightness == Brightness.dark
-                                      ? const Color(0xFF4A90E2)
+                                  context.isDarkTheme
+                                      ? const Color(AppConstants
+                                          .themeSwitchCheckboxActiveDark)
                                       : Theme.of(context).colorScheme.primary,
                             ),
                       onPressed: _isMarkingAllAsRead
@@ -680,18 +682,19 @@ class _NotificationTile extends StatelessWidget {
 
     // Theme-aware background colors
     Color getBackgroundColor() {
-      if (theme.brightness == Brightness.dark) {
+      if (theme.isDarkTheme) {
         if (isUnread) {
           return isHighPriority
-              ? const Color(0xFFFF6B35).withOpacity(0.15)
-              : const Color(0xFF4A90E2).withOpacity(0.25);
+              ? const Color(AppConstants.semanticNotificationOrange).withOpacity(0.15)
+              : const Color(AppConstants.themeSwitchCheckboxActiveDark)
+                  .withOpacity(0.25);
         }
         return theme.cardTheme.color ?? theme.colorScheme.surface;
       } else {
         if (isUnread) {
           return isHighPriority
-              ? const Color(0xFFFFF5F5)
-              : const Color(0xFFF0F8FF);
+              ? const Color(AppConstants.semanticNotificationUnreadRoseWash)
+              : const Color(AppConstants.semanticNotificationUnreadBlueWash);
         }
         return theme.cardTheme.color ?? theme.colorScheme.surface;
       }
@@ -704,7 +707,7 @@ class _NotificationTile extends StatelessWidget {
           left: isHighPriority
               ? (isUnread
                   ? BorderSide(
-                      color: const Color(0xFFFF6B35),
+                      color: const Color(AppConstants.semanticNotificationOrange),
                       width: 4,
                     )
                   : BorderSide.none)
@@ -734,13 +737,13 @@ class _NotificationTile extends StatelessWidget {
                   height: 44,
                   decoration: BoxDecoration(
                     color: isHighPriority
-                        ? const Color(0xFFFF6B35)
+                        ? const Color(AppConstants.semanticNotificationOrange)
                             .withOpacity(isUnread ? 0.1 : 0.05)
                         : theme.cardTheme.color,
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: isHighPriority
-                          ? const Color(0xFFFF6B35)
+                          ? const Color(AppConstants.semanticNotificationOrange)
                               .withOpacity(isUnread ? 1.0 : 0.5)
                           : theme.dividerColor,
                       width: isHighPriority ? (isUnread ? 1.5 : 1.0) : 0.5,
@@ -753,7 +756,7 @@ class _NotificationTile extends StatelessWidget {
                           : Icons.notifications_outlined,
                       size: 20,
                       color: isHighPriority
-                          ? const Color(0xFFFF6B35)
+                          ? const Color(AppConstants.semanticNotificationOrange)
                               .withOpacity(isUnread ? 1.0 : 0.7)
                           : theme.textTheme.bodyLarge?.color,
                     ),
@@ -783,8 +786,20 @@ class _NotificationTile extends StatelessWidget {
                                                   : FontWeight.w400),
                                           color: isHighPriority
                                               ? (isUnread
-                                                  ? const Color(0xFFC2410C)
-                                                  : const Color(0xFFEA580C))
+                                                  ? (theme.isDarkTheme
+                                                      ? const Color(
+                                                          AppConstants
+                                                              .semanticNotificationOrangeDarkUnread)
+                                                      : const Color(
+                                                          AppConstants
+                                                              .semanticNotificationOrangeTextStrongLight))
+                                                  : (theme.isDarkTheme
+                                                      ? const Color(
+                                                          AppConstants
+                                                              .semanticNotificationOrangeDarkRead)
+                                                      : const Color(
+                                                          AppConstants
+                                                              .semanticNotificationOrangeTextMutedLight)))
                                               : theme
                                                   .textTheme.bodyLarge?.color,
                                         ),
@@ -798,9 +813,11 @@ class _NotificationTile extends StatelessWidget {
                                       vertical: 2,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: theme.brightness == Brightness.dark
-                                          ? const Color(0xFF4A90E2)
-                                              .withOpacity(isUnread ? 1.0 : 0.7)
+                                      color: theme.isDarkTheme
+                                          ? const Color(AppConstants
+                                                  .themeSwitchCheckboxActiveDark)
+                                              .withOpacity(
+                                                  isUnread ? 1.0 : 0.7)
                                           : theme.colorScheme.primary
                                               .withOpacity(
                                                   isUnread ? 1.0 : 0.7),
@@ -810,7 +827,7 @@ class _NotificationTile extends StatelessWidget {
                                       'ADMIN',
                                       style: theme.textTheme.labelSmall?.copyWith(
                                         fontWeight: FontWeight.w700,
-                                        color: Colors.white,
+                                        color: theme.colorScheme.onPrimary,
                                         letterSpacing: 0.5,
                                       ),
                                     ),
@@ -821,9 +838,11 @@ class _NotificationTile extends StatelessWidget {
                                     child: Icon(
                                       Icons.open_in_new,
                                       size: 14,
-                                      color: theme.brightness == Brightness.dark
-                                          ? const Color(0xFF4A90E2)
-                                              .withOpacity(isUnread ? 1.0 : 0.7)
+                                      color: theme.isDarkTheme
+                                          ? const Color(AppConstants
+                                                  .themeSwitchCheckboxActiveDark)
+                                              .withOpacity(
+                                                  isUnread ? 1.0 : 0.7)
                                           : theme.colorScheme.primary
                                               .withOpacity(
                                                   isUnread ? 1.0 : 0.7),
@@ -837,8 +856,8 @@ class _NotificationTile extends StatelessWidget {
                               width: 8,
                               height: 8,
                               decoration: BoxDecoration(
-                                color: theme.brightness == Brightness.dark
-                                    ? Colors.white
+                                color: theme.isDarkTheme
+                                    ? theme.colorScheme.inversePrimary
                                     : theme.colorScheme.primary,
                                 shape: BoxShape.circle,
                               ),
@@ -848,9 +867,10 @@ class _NotificationTile extends StatelessWidget {
                               width: 8,
                               height: 8,
                               decoration: BoxDecoration(
-                                color: theme.brightness == Brightness.dark
-                                    ? Colors.white
-                                    : const Color(0xFFFF6B35),
+                                color: theme.isDarkTheme
+                                    ? theme.colorScheme.inversePrimary
+                                    : const Color(
+                                        AppConstants.semanticNotificationOrange),
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -877,14 +897,21 @@ class _NotificationTile extends StatelessWidget {
                                   vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: theme.brightness == Brightness.dark
-                                      ? const Color(0xFF0369A1).withOpacity(0.2)
-                                      : const Color(0xFFF0F9FF),
+                                  color: theme.isDarkTheme
+                                      ? const Color(AppConstants
+                                              .semanticNotificationSky)
+                                          .withOpacity(0.2)
+                                      : const Color(AppConstants
+                                          .semanticEntityChipLightWash),
                                   borderRadius: BorderRadius.circular(4),
                                   border: Border.all(
-                                    color: theme.brightness == Brightness.dark
-                                        ? const Color(0xFF0369A1).withOpacity(0.5)
-                                        : const Color(0xFF0369A1).withOpacity(0.3),
+                                    color: theme.isDarkTheme
+                                        ? const Color(AppConstants
+                                                .semanticNotificationSky)
+                                            .withOpacity(0.5)
+                                        : const Color(AppConstants
+                                                .semanticNotificationSky)
+                                            .withOpacity(0.3),
                                     width: 0.5,
                                   ),
                                 ),
@@ -894,9 +921,11 @@ class _NotificationTile extends StatelessWidget {
                                     Icon(
                                       Icons.location_on,
                                       size: 12,
-                                      color: theme.brightness == Brightness.dark
-                                          ? const Color(0xFF7DD3FC)
-                                          : const Color(0xFF0369A1),
+                                      color: theme.isDarkTheme
+                                          ? const Color(AppConstants
+                                              .semanticNotificationSkyLight)
+                                          : const Color(AppConstants
+                                              .semanticNotificationSky),
                                     ),
                                     const SizedBox(width: 4),
                                     Flexible(
@@ -906,9 +935,11 @@ class _NotificationTile extends StatelessWidget {
                                             theme.textTheme.labelSmall?.copyWith(
                                           fontWeight: FontWeight.w500,
                                           color:
-                                              theme.brightness == Brightness.dark
-                                                  ? const Color(0xFF7DD3FC)
-                                                  : const Color(0xFF0369A1),
+                                              theme.isDarkTheme
+                                                  ? const Color(AppConstants
+                                                      .semanticNotificationSkyLight)
+                                                  : const Color(AppConstants
+                                                      .semanticNotificationSky),
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                         maxLines: 1,
