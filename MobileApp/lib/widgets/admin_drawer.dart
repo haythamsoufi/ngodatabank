@@ -4,6 +4,8 @@ import '../providers/shared/auth_provider.dart';
 import '../models/shared/user.dart';
 import '../config/routes.dart';
 import '../utils/constants.dart';
+import '../utils/theme_extensions.dart';
+import 'modern_navigation_drawer.dart';
 
 class AdminDrawer extends StatelessWidget {
   const AdminDrawer({super.key});
@@ -13,208 +15,289 @@ class AdminDrawer extends StatelessWidget {
     return user.role == 'admin' || user.role == 'system_manager';
   }
 
+  static final Color _brandRed = Color(AppConstants.ifrcRed);
+
   @override
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
         final user = authProvider.user;
 
-        // Only show drawer for admins
         if (!_isAdmin(user)) {
           return const SizedBox.shrink();
         }
 
+        final theme = Theme.of(context);
+        final iconBg = _brandRed.withValues(alpha: theme.isDarkTheme ? 0.22 : 0.12);
+
         return Drawer(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              // Header
-              DrawerHeader(
-                decoration: BoxDecoration(
-                  color: Color(AppConstants.ifrcRed),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      'Admin Panel',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSecondary,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+          backgroundColor: theme.colorScheme.surface,
+          elevation: 1,
+          shadowColor: Colors.black.withValues(alpha: 0.1),
+          surfaceTintColor: Colors.transparent,
+          shape: modernDrawerShape(context),
+          child: SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _AdminDrawerHeader(user: user),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.only(top: 8, bottom: 16),
+                    children: [
+                      ModernDrawerSectionTitle(label: 'General'),
+                      ModernDrawerTile(
+                        icon: Icons.home_rounded,
+                        title: 'Dashboard',
+                        iconColor: _brandRed,
+                        iconBackgroundColor: iconBg,
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.of(context).pushNamed(AppRoutes.dashboard);
+                        },
                       ),
-                    ),
-                    if (user != null) ...[
+                      ModernDrawerTile(
+                        icon: Icons.dashboard_rounded,
+                        title: 'Admin Dashboard',
+                        iconColor: _brandRed,
+                        iconBackgroundColor: iconBg,
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.of(context).pushNamed(
+                            AppRoutes.webview,
+                            arguments: '/admin/dashboard',
+                          );
+                        },
+                      ),
+                      ModernDrawerTile(
+                        icon: Icons.description_rounded,
+                        title: 'Document Management',
+                        iconColor: _brandRed,
+                        iconBackgroundColor: iconBg,
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.of(context).pushNamed(
+                            AppRoutes.webview,
+                            arguments: '/admin/documents',
+                          );
+                        },
+                      ),
+                      ModernDrawerTile(
+                        icon: Icons.translate_rounded,
+                        title: 'Translation Management',
+                        iconColor: _brandRed,
+                        iconBackgroundColor: iconBg,
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.of(context).pushNamed(
+                            AppRoutes.webview,
+                            arguments: '/admin/translations',
+                          );
+                        },
+                      ),
+                      if (user?.role == 'system_manager')
+                        ModernDrawerTile(
+                          icon: Icons.settings_rounded,
+                          title: 'System Configuration',
+                          iconColor: _brandRed,
+                          iconBackgroundColor: iconBg,
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.of(context).pushNamed(
+                              AppRoutes.webview,
+                              arguments: '/admin/settings',
+                            );
+                          },
+                        ),
                       const SizedBox(height: 8),
-                      Text(
-                        user.displayName,
-                        style: TextStyle(
-                          color: Theme.of(context)
-                              .colorScheme.onSecondary
-                              .withOpacity(0.7),
-                          fontSize: 14,
+                      ModernDrawerSectionTitle(label: 'Form & data'),
+                      ModernDrawerTile(
+                        icon: Icons.article_rounded,
+                        title: 'Manage Templates',
+                        iconColor: _brandRed,
+                        iconBackgroundColor: iconBg,
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.of(context).pushNamed(AppRoutes.templates);
+                        },
+                      ),
+                      ModernDrawerTile(
+                        icon: Icons.assignment_rounded,
+                        title: 'Manage Assignments',
+                        iconColor: _brandRed,
+                        iconBackgroundColor: iconBg,
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.of(context).pushNamed(AppRoutes.assignments);
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      ModernDrawerSectionTitle(label: 'Website'),
+                      ModernDrawerTile(
+                        icon: Icons.folder_open_rounded,
+                        title: 'Manage Resources',
+                        iconColor: _brandRed,
+                        iconBackgroundColor: iconBg,
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.of(context).pushNamed(
+                            AppRoutes.webview,
+                            arguments: '/admin/resources',
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      ModernDrawerSectionTitle(label: 'Reference data'),
+                      ModernDrawerTile(
+                        icon: Icons.account_tree_rounded,
+                        title: 'Organizational Structure',
+                        iconColor: _brandRed,
+                        iconBackgroundColor: iconBg,
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.of(context).pushNamed(
+                            AppRoutes.webview,
+                            arguments: '/admin/organization',
+                          );
+                        },
+                      ),
+                      ModernDrawerTile(
+                        icon: Icons.storage_rounded,
+                        title: 'Indicator Bank',
+                        iconColor: _brandRed,
+                        iconBackgroundColor: iconBg,
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.of(context).pushNamed(
+                            AppRoutes.webview,
+                            arguments: '/admin/indicator-bank',
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      ModernDrawerSectionTitle(label: 'Analytics'),
+                      ModernDrawerTile(
+                        icon: Icons.bar_chart_rounded,
+                        title: 'User Analytics',
+                        iconColor: _brandRed,
+                        iconBackgroundColor: iconBg,
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.of(context).pushNamed(
+                            AppRoutes.webview,
+                            arguments: '/admin/analytics',
+                          );
+                        },
+                      ),
+                      ModernDrawerTile(
+                        icon: Icons.history_rounded,
+                        title: 'Audit Trail',
+                        iconColor: _brandRed,
+                        iconBackgroundColor: iconBg,
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.of(context).pushNamed(
+                            AppRoutes.webview,
+                            arguments: '/admin/audit-trail',
+                          );
+                        },
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+                        child: Text(
+                          'Built by Haytham Alsoufi,\nvolunteer of Syrian Arab Red Crescent',
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                            height: 1.35,
+                          ),
                         ),
                       ),
                     ],
-                  ],
-                ),
-              ),
-
-              // General Section
-              _buildSectionHeader('General'),
-              _buildDrawerItem(
-                context: context,
-                icon: Icons.home,
-                title: 'Dashboard',
-                route: AppRoutes.dashboard,
-              ),
-              _buildDrawerItem(
-                context: context,
-                icon: Icons.dashboard,
-                title: 'Admin Dashboard',
-                webviewRoute: '/admin/dashboard',
-              ),
-              _buildDrawerItem(
-                context: context,
-                icon: Icons.description,
-                title: 'Document Management',
-                webviewRoute: '/admin/documents',
-              ),
-              _buildDrawerItem(
-                context: context,
-                icon: Icons.translate,
-                title: 'Translation Management',
-                webviewRoute: '/admin/translations',
-              ),
-              if (user?.role == 'system_manager')
-                _buildDrawerItem(
-                  context: context,
-                  icon: Icons.settings,
-                  title: 'System Configuration',
-                  webviewRoute: '/admin/settings',
-                ),
-
-              const Divider(),
-
-              // Form & Data Management Section
-              _buildSectionHeader('Form & Data Management'),
-              _buildDrawerItem(
-                context: context,
-                icon: Icons.article,
-                title: 'Manage Templates',
-                route: AppRoutes.templates,
-              ),
-              _buildDrawerItem(
-                context: context,
-                icon: Icons.assignment,
-                title: 'Manage Assignments',
-                route: AppRoutes.assignments,
-              ),
-
-              const Divider(),
-
-              // Website Management Section
-              _buildSectionHeader('Website Management'),
-              _buildDrawerItem(
-                context: context,
-                icon: Icons.folder_open,
-                title: 'Manage Resources',
-                webviewRoute: '/admin/resources',
-              ),
-
-              const Divider(),
-
-              // Reference Data Section
-              _buildSectionHeader('Reference Data'),
-              _buildDrawerItem(
-                context: context,
-                icon: Icons.account_tree,
-                title: 'Organizational Structure',
-                webviewRoute: '/admin/organization',
-              ),
-              _buildDrawerItem(
-                context: context,
-                icon: Icons.storage,
-                title: 'Indicator Bank',
-                webviewRoute: '/admin/indicator-bank',
-              ),
-
-              const Divider(),
-
-              // Analytics & Monitoring Section
-              _buildSectionHeader('Analytics & Monitoring'),
-              _buildDrawerItem(
-                context: context,
-                icon: Icons.bar_chart,
-                title: 'User Analytics',
-                webviewRoute: '/admin/analytics',
-              ),
-              _buildDrawerItem(
-                context: context,
-                icon: Icons.history,
-                title: 'Audit Trail',
-                webviewRoute: '/admin/audit-trail',
-              ),
-
-              const Divider(),
-
-              // Footer
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  'Built by Haytham Alsoufi,\nvolunteer of Syrian Arab Red Crescent',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Color(AppConstants.textSecondary),
                   ),
-                  textAlign: TextAlign.center,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
     );
   }
+}
 
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: Color(AppConstants.textSecondary),
-          letterSpacing: 0.5,
+class _AdminDrawerHeader extends StatelessWidget {
+  const _AdminDrawerHeader({required this.user});
+
+  final User? user;
+
+  @override
+  Widget build(BuildContext context) {
+    final red = Color(AppConstants.ifrcRed);
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              red,
+              red.withValues(alpha: 0.88),
+            ],
+          ),
+          borderRadius: const BorderRadius.only(
+            bottomLeft: Radius.circular(20),
+            bottomRight: Radius.circular(20),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.22),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.admin_panel_settings_rounded,
+                    color: Colors.white,
+                    size: 26,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                const Expanded(
+                  child: Text(
+                    'Admin Panel',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (user != null) ...[
+              const SizedBox(height: 14),
+              Text(
+                user!.displayName,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.92),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ],
         ),
       ),
-    );
-  }
-
-  Widget _buildDrawerItem({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    String? route,
-    String? webviewRoute,
-  }) {
-    return ListTile(
-      leading: Icon(icon, color: Color(AppConstants.ifrcRed)),
-      title: Text(title),
-      onTap: () {
-        Navigator.pop(context); // Close drawer
-
-        if (route != null) {
-          Navigator.of(context).pushNamed(route);
-        } else if (webviewRoute != null) {
-          Navigator.of(context).pushNamed(
-            AppRoutes.webview,
-            arguments: webviewRoute,
-          );
-        }
-      },
     );
   }
 }

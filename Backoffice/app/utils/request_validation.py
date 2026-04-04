@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import hmac
-import os
-from typing import Optional, Iterable
+from typing import Iterable, Optional
 
 from flask import current_app, request
 
@@ -47,58 +45,27 @@ def enforce_csrf_json(*, methods: Optional[Iterable[str]] = None):
         )
 
 
-def enforce_api_or_csrf_protection(
-    *,
-    header_name: Optional[str] = None,
-    config_key: Optional[str] = None
-) -> None:
+def enforce_api_or_csrf_protection() -> None:
     """
-    Require a valid CSRF token for browser requests while still allowing
-    trusted native clients (e.g., the Flutter mobile app) to authenticate via
-    a shared secret header.
+    Require CSRF for browser session requests, or accept ``X-Mobile-Auth`` when it
+    matches an **active database-managed API key** (same plaintext as
+    ``Authorization: Bearer`` for /api/v1).
     """
-    # Allow mobile/native requests that send the shared secret header.
-    # Read directly from environment since these may not be in Flask config
-    config_key_name = config_key or "MOBILE_NOTIFICATION_API_KEY"
-    _raw_secret = (
-        os.environ.get(config_key_name)
-        or os.environ.get("MOBILE_API_KEY")
-        or current_app.config.get(config_key_name)
-        or current_app.config.get("MOBILE_API_KEY")
-    )
-    # Strip env/config values so trailing newlines/spaces in .env cannot break compare_digest.
-    expected_secret = (str(_raw_secret).strip() if _raw_secret is not None else "") or None
-    incoming_token = (request.headers.get(header_name or "X-Mobile-Auth") or "").strip() or None
+    from app.utils.api_authentication import validate_plaintext_db_api_key_for_mobile_auth
+
+    incoming_token = (request.headers.get("X-Mobile-Auth") or "").strip() or None
 
     if incoming_token:
-        if expected_secret and hmac.compare_digest(str(incoming_token), str(expected_secret)):
+        if validate_plaintext_db_api_key_for_mobile_auth(incoming_token):
             return
-        # Log more detailed warning to help diagnose the issue
-        if not expected_secret:
-            current_app.logger.warning(
-                "Rejected mobile notification request: X-Mobile-Auth header present but "
-                "MOBILE_NOTIFICATION_API_KEY not configured on server (from %s)",
-                request.remote_addr,
-            )
-        else:
-            # Debug: Log lengths and first/last chars to help diagnose without exposing secrets
-            incoming_len = len(str(incoming_token))
-            expected_len = len(str(expected_secret))
-            incoming_preview = f"{str(incoming_token)[:2]}...{str(incoming_token)[-2:]}" if incoming_len > 4 else "***"
-            expected_preview = f"{str(expected_secret)[:2]}...{str(expected_secret)[-2:]}" if expected_len > 4 else "***"
-            current_app.logger.warning(
-                "Rejected mobile notification request with invalid auth header from %s "
-                "(header present but value does not match configured secret). "
-                "Incoming length: %d, Expected length: %d, Incoming preview: %s, Expected preview: %s",
-                request.remote_addr,
-                incoming_len,
-                expected_len,
-                incoming_preview,
-                expected_preview,
-            )
+
+        current_app.logger.warning(
+            "Rejected X-Mobile-Auth from %s for %s: not a valid DB API key",
+            request.remote_addr,
+            request.path,
+        )
         raise Forbidden("Invalid mobile authentication token.")
 
-    # Fallback to the standard CSRF protection for browser-based requests.
     try:
         csrf.protect()
     except CSRFError as exc:

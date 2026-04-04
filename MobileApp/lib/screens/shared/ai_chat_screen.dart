@@ -17,6 +17,7 @@ import '../../config/app_config.dart';
 import '../../config/routes.dart';
 import '../../utils/theme_extensions.dart';
 import '../../utils/accessibility_helper.dart';
+import '../../widgets/modern_navigation_drawer.dart';
 
 class AiChatScreen extends StatefulWidget {
   const AiChatScreen({super.key});
@@ -1255,9 +1256,10 @@ class _AiChatScreenState extends State<AiChatScreen> {
 
     return Drawer(
       backgroundColor: _chatSurface(theme),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.zero,
-      ),
+      elevation: 1,
+      shadowColor: Colors.black.withValues(alpha: 0.08),
+      surfaceTintColor: Colors.transparent,
+      shape: modernDrawerShape(context),
       child: SafeArea(
         child: Column(
           children: [

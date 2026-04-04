@@ -93,7 +93,7 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load environment variables (e.g., MOBILE_NOTIFICATION_API_KEY)
+  // Load environment variables (e.g., MOBILE_APP_API_KEY, BACKEND_URL)
   await dotenv.load(fileName: '.env', isOptional: true);
 
   // Initialize organization configuration (default: IFRC profile)

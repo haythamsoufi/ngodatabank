@@ -59,20 +59,25 @@ class TestNotificationsRoutes:
             assert data["success"] is True
             assert data["unread_count"] == 3
 
-    def test_mark_read_validation_400_when_missing_ids(self, logged_in_client, monkeypatch):
-        monkeypatch.setenv("MOBILE_NOTIFICATION_API_KEY", "test-key")
-        resp = logged_in_client.post(
-            "/notifications/mark-read",
-            json={},
-            headers={"X-Mobile-Auth": "test-key"},
-        )
+    def test_mark_read_validation_400_when_missing_ids(self, logged_in_client):
+        with patch(
+            "app.utils.api_authentication.validate_plaintext_db_api_key_for_mobile_auth",
+            return_value=True,
+        ):
+            resp = logged_in_client.post(
+                "/notifications/mark-read",
+                json={},
+                headers={"X-Mobile-Auth": "db-api-key-plaintext"},
+            )
         assert resp.status_code == 400
         data = resp.get_json()
         assert data["success"] is False
 
-    def test_mark_read_happy_path_updates_counts(self, logged_in_client, monkeypatch):
-        monkeypatch.setenv("MOBILE_NOTIFICATION_API_KEY", "test-key")
-        with patch("app.routes.notifications.NotificationService.mark_as_read", return_value=True), patch(
+    def test_mark_read_happy_path_updates_counts(self, logged_in_client):
+        with patch(
+            "app.utils.api_authentication.validate_plaintext_db_api_key_for_mobile_auth",
+            return_value=True,
+        ), patch("app.routes.notifications.NotificationService.mark_as_read", return_value=True), patch(
             "app.routes.notifications.NotificationService.get_unread_count", return_value=0
         ), patch("app.routes.notifications.NotificationService.get_archived_count", return_value=0), patch(
             "app.routes.notifications.NotificationService.get_all_count", return_value=2
@@ -80,7 +85,7 @@ class TestNotificationsRoutes:
             resp = logged_in_client.post(
                 "/notifications/mark-read",
                 json={"notification_ids": [1, 2]},
-                headers={"X-Mobile-Auth": "test-key"},
+                headers={"X-Mobile-Auth": "db-api-key-plaintext"},
             )
             assert resp.status_code == 200
             data = resp.get_json()
@@ -106,13 +111,15 @@ class TestNotificationsRoutes:
             assert resp2.status_code == 200
             assert resp2.get_json()["success"] is True
 
-    def test_preferences_get_and_update_contract(self, logged_in_client, monkeypatch):
-        monkeypatch.setenv("MOBILE_NOTIFICATION_API_KEY", "test-key")
+    def test_preferences_get_and_update_contract(self, logged_in_client):
         prefs = _Prefs()
         updated = _Prefs(email_notifications=False, sound_enabled=False)
 
         with patch("app.routes.notifications.NotificationService.get_notification_preferences", return_value=prefs), patch(
             "app.routes.notifications.NotificationService.update_notification_preferences", return_value=updated
+        ), patch(
+            "app.utils.api_authentication.validate_plaintext_db_api_key_for_mobile_auth",
+            return_value=True,
         ):
             resp = logged_in_client.get("/notifications/api/preferences")
             assert resp.status_code == 200
@@ -125,7 +132,7 @@ class TestNotificationsRoutes:
             resp2 = logged_in_client.post(
                 "/notifications/api/preferences",
                 json={"email_notifications": False, "sound_enabled": False},
-                headers={"X-Mobile-Auth": "test-key"},
+                headers={"X-Mobile-Auth": "db-api-key-plaintext"},
             )
             assert resp2.status_code == 200
             data2 = resp2.get_json()

@@ -122,7 +122,6 @@ jobs:
             --dart-define=$ENV_FLAG \
             $ORG_CONFIG \
             --dart-define=MOBILE_APP_API_KEY="${{ secrets.MOBILE_APP_API_KEY }}" \
-            --dart-define=MOBILE_NOTIFICATION_API_KEY="${{ secrets.MOBILE_NOTIFICATION_API_KEY }}" \
             --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}"
 
       - name: Upload IPA

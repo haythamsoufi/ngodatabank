@@ -196,9 +196,9 @@ class ApiService {
       // Silently ignore - device token is optional
     }
 
-    // Supply shared mobile auth header if configured (needed for CSRF-exempt endpoints).
-    if (AppConfig.mobileNotificationApiKey.isNotEmpty) {
-      headers['X-Mobile-Auth'] = AppConfig.mobileNotificationApiKey;
+    // Same DB-managed key as Bearer /api/v1 — notification POSTs skip CSRF via X-Mobile-Auth.
+    if (AppConfig.apiKey.isNotEmpty) {
+      headers['X-Mobile-Auth'] = AppConfig.apiKey;
     }
 
     // Attach DB-managed public API key for /api/v1 endpoints (public reads).

@@ -18,6 +18,7 @@ import '../../widgets/webview_pull_to_refresh.dart';
 import '../../widgets/error_state.dart';
 import '../../widgets/ios_button.dart';
 import '../../widgets/loading_indicator.dart';
+import '../../widgets/modern_navigation_drawer.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -409,70 +410,47 @@ class _HomeScreenState extends State<HomeScreen>
     final language = languageProvider.currentLanguage;
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final user = authProvider.user;
-    final isAdmin = user != null && (user.role == 'admin' || user.role == 'system_manager');
     final isAuthenticated = authProvider.isAuthenticated;
     final isFocalPoint = user != null && user.role == 'focal_point';
-    final isDark = theme.isDarkTheme;
 
     return Drawer(
-      backgroundColor: isDark
-          ? IOSColors.secondarySystemBackgroundDark
-          : IOSColors.systemBackground,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.zero,
-      ),
+      backgroundColor: theme.colorScheme.surface,
+      elevation: 1,
+      shadowColor: Colors.black.withValues(alpha: 0.1),
+      surfaceTintColor: Colors.transparent,
+      shape: modernDrawerShape(context),
       child: SafeArea(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Title
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                IOSSpacing.xl,
-                IOSSpacing.lg,
-                IOSSpacing.xl,
-                IOSSpacing.md,
-              ),
-              child: Text(
-                localizations.navigation,
-                style: IOSTextStyle.title2(context),
-              ),
+            ModernDrawerHeader(
+              title: localizations.navigation,
+              user: isAuthenticated ? user : null,
             ),
-            // Scrollable menu items
             Expanded(
               child: ListView(
-                padding: EdgeInsets.zero,
+                padding: const EdgeInsets.only(bottom: IOSSpacing.lg),
                 children: [
-                  // Menu items
-                  _buildMenuTile(
-                    context: context,
-                    theme: theme,
-                    icon: Icons.home,
+                  ModernDrawerTile(
+                    icon: Icons.home_rounded,
                     title: localizations.home ?? 'Global Overview',
                     onTap: () {
                       Navigator.pop(context);
-                      // Already on home, reload if needed
                       reload();
                     },
                   ),
-                  // Indicator Bank - navigate to native Indicator Bank screen
-                  _buildMenuTile(
-                    context: context,
-                    theme: theme,
-                    icon: Icons.library_books,
+                  ModernDrawerTile(
+                    icon: Icons.library_books_rounded,
                     title: localizations.indicatorBank,
                     onTap: () {
                       Navigator.pop(context);
-                      // Navigate to native Indicator Bank screen
                       Navigator.of(context).pushNamed(
                         AppRoutes.indicatorBank,
                       );
                     },
                   ),
-                  // Quiz Game - navigate to quiz game screen
-                  _buildMenuTile(
-                    context: context,
-                    theme: theme,
-                    icon: Icons.quiz,
+                  ModernDrawerTile(
+                    icon: Icons.quiz_rounded,
                     title: localizations.quizGame,
                     onTap: () {
                       Navigator.pop(context);
@@ -481,10 +459,7 @@ class _HomeScreenState extends State<HomeScreen>
                       );
                     },
                   ),
-                  // AI Assistant (ChatGPT-like native chat)
-                  _buildMenuTile(
-                    context: context,
-                    theme: theme,
+                  ModernDrawerTile(
                     icon: Icons.smart_toy_outlined,
                     title: 'AI Assistant',
                     onTap: () {
@@ -492,12 +467,9 @@ class _HomeScreenState extends State<HomeScreen>
                       Navigator.of(context).pushNamed(AppRoutes.aiChat);
                     },
                   ),
-                  // Resources/Notifications - navigate to native screen
                   if (isFocalPoint)
-                    _buildMenuTile(
-                      context: context,
-                      theme: theme,
-                      icon: Icons.notifications,
+                    ModernDrawerTile(
+                      icon: Icons.notifications_rounded,
                       title: localizations.notifications ?? 'Notifications',
                       onTap: () {
                         Navigator.pop(context);
@@ -505,61 +477,36 @@ class _HomeScreenState extends State<HomeScreen>
                       },
                     )
                   else
-                    _buildMenuTile(
-                      context: context,
-                      theme: theme,
-                      icon: Icons.folder,
+                    ModernDrawerTile(
+                      icon: Icons.folder_rounded,
                       title: localizations.resources ?? 'Resources',
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.of(context).pushNamed(AppRoutes.resources);
                       },
                     ),
-                  // Countries - show in bottom sheet
-                  _buildMenuTile(
-                    context: context,
-                    theme: theme,
-                    icon: Icons.public,
+                  ModernDrawerTile(
+                    icon: Icons.public_rounded,
                     title: localizations.countries,
                     onTap: () {
                       Navigator.pop(context);
                       _showCountriesSheet(context, theme);
                     },
                   ),
-                  // Analysis section header
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      IOSSpacing.xl,
-                      IOSSpacing.lg,
-                      IOSSpacing.xl,
-                      IOSSpacing.sm,
-                    ),
-                    child: Text(
-                      localizations.analysis.toUpperCase(),
-                      style: IOSTextStyle.footnote(context).copyWith(
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
+                  ModernDrawerSectionTitle(
+                    label: localizations.analysis.toUpperCase(),
                   ),
-                  // Disaggregation Analysis - navigate to native screen
-                  _buildMenuTile(
-                    context: context,
-                    theme: theme,
-                    icon: Icons.analytics,
+                  ModernDrawerTile(
+                    icon: Icons.analytics_rounded,
                     title: localizations.disaggregationAnalysis,
                     onTap: () {
                       Navigator.pop(context);
                       Navigator.of(context).pushNamed(AppRoutes.disaggregationAnalysis);
                     },
                   ),
-                  // Data Visualization - use webview (no native screen)
-                  _buildMenuTile(
-                    context: context,
-                    theme: theme,
-                    icon: Icons.bar_chart,
+                  ModernDrawerTile(
+                    icon: Icons.bar_chart_rounded,
                     title: localizations.dataVisualization,
-                    showDivider: false,
                     onTap: () {
                       Navigator.pop(context);
                       final fullUrl = UrlHelper.buildFrontendUrlWithLanguage('/dataviz', language);
@@ -648,60 +595,4 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget _buildMenuTile({
-    required BuildContext context,
-    required ThemeData theme,
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-    bool showDivider = true,
-  }) {
-    final isDark = theme.isDarkTheme;
-
-    return Column(
-      children: [
-        InkWell(
-          onTap: onTap,
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: IOSSpacing.xl,
-              vertical: IOSSpacing.md,
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    color: IOSColors.getSystemBlue(context).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: IOSColors.getSystemBlue(context),
-                    size: 18,
-                  ),
-                ),
-                const SizedBox(width: IOSSpacing.md),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: IOSTextStyle.body(context),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        if (showDivider)
-          Divider(
-            height: 1,
-            thickness: 0.5,
-            indent: IOSSpacing.xl,
-            endIndent: 0,
-            color: theme.dividerColor.withOpacity(0.3),
-          ),
-      ],
-    );
-  }
 }

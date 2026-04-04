@@ -295,36 +295,21 @@ class AppConfig {
   static String get apiKey {
     final envValue = dotenv.env['MOBILE_APP_API_KEY'] ?? dotenv.env['API_KEY'];
     if (envValue != null && envValue.isNotEmpty) {
-      return envValue;
+      return envValue.trim();
     }
 
     const defineValue = String.fromEnvironment('MOBILE_APP_API_KEY', defaultValue: '');
     if (defineValue.isNotEmpty) {
-      return defineValue;
+      return defineValue.trim();
     }
 
     // Legacy compile-time alias
     const legacyDefine = String.fromEnvironment('API_KEY', defaultValue: '');
     if (legacyDefine.isNotEmpty) {
-      return legacyDefine;
+      return legacyDefine.trim();
     }
 
     return '';
-  }
-
-  // Shared secret used by native clients to authenticate notification API calls
-  static String get mobileNotificationApiKey {
-    final fromDotenv = dotenv.env['MOBILE_NOTIFICATION_API_KEY'];
-    if (fromDotenv != null) {
-      final trimmed = fromDotenv.trim();
-      if (trimmed.isNotEmpty) {
-        return trimmed;
-      }
-    }
-    return const String.fromEnvironment(
-      'MOBILE_NOTIFICATION_API_KEY',
-      defaultValue: '',
-    ).trim();
   }
 
   // Security Note: Authentication bypass removed for security.

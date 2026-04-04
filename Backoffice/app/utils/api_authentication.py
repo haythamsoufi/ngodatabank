@@ -111,6 +111,64 @@ def authenticate_db_api_key_only():
         return api_error("API authentication error", 500)
 
 
+def validate_plaintext_db_api_key_for_mobile_auth(provided_key: str) -> bool:
+    """
+    Return True if ``provided_key`` matches an active database-managed API key.
+
+    Same rules as ``Authorization: Bearer`` for /api/v1 (hash lookup, validity,
+    per-key rate limit, ``last_used_at``). Used for ``X-Mobile-Auth`` on
+    session-backed notification routes; the app sends the same plaintext as
+    ``MOBILE_APP_API_KEY`` / Bearer for /api/v1.
+    """
+    from collections import deque
+
+    from app.models.api_key_management import APIKey
+
+    key = (provided_key or "").strip()
+    if not key:
+        return False
+
+    try:
+        key_hash = APIKey.hash_key(key)
+        db_api_key = APIKey.query.filter_by(key_hash=key_hash).first()
+        if not db_api_key or not db_api_key.is_valid():
+            return False
+
+        now = time.time()
+        rate_limit_key = f"api_key_{db_api_key.id}"
+        if rate_limit_key not in _api_key_rate_limit_storage:
+            _api_key_rate_limit_storage[rate_limit_key] = deque()
+
+        storage = _api_key_rate_limit_storage[rate_limit_key]
+        while storage and storage[0] < now - 60:
+            storage.popleft()
+        if len(storage) >= db_api_key.rate_limit_per_minute:
+            current_app.logger.warning(
+                "[X-Mobile-Auth] rate limit exceeded for api_keys.id=%s path=%s",
+                db_api_key.id,
+                request.path,
+            )
+            return False
+        storage.append(now)
+
+        try:
+            db_api_key.update_last_used()
+        except Exception as e:
+            current_app.logger.warning("Failed to update API key last_used_at: %s", e)
+
+        if current_app.config.get("LOG_API_KEY_USAGE", False):
+            current_app.logger.info(
+                "X-Mobile-Auth DB API key ok: %s (prefix: %s...)",
+                db_api_key.client_name,
+                db_api_key.key_prefix,
+            )
+
+        return True
+    except Exception as e:
+        current_app.logger.error("Error validating X-Mobile-Auth API key: %s", e, exc_info=True)
+        return False
+
+
 def authenticate_api_request():
     """
     Authenticate API request and determine access level.

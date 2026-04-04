@@ -486,8 +486,7 @@ The iOS and Android build workflows require API keys to be configured as GitHub 
 
 | Secret Name | Description | Required For |
 |-------------|-------------|--------------|
-| `MOBILE_APP_API_KEY` | API key for public endpoints (DB-managed, sent as Bearer) | All builds |
-| `MOBILE_NOTIFICATION_API_KEY` | Shared secret for push notifications | All builds |
+| `MOBILE_APP_API_KEY` | DB-managed API key: Bearer `/api/v1` and `X-Mobile-Auth` on notification routes | All builds |
 | `SENTRY_DSN` | Sentry error tracking DSN (optional) | Error tracking |
 
 ### Setting Up Mobile App Secrets
@@ -503,7 +502,7 @@ The iOS and Android build workflows require API keys to be configured as GitHub 
    - Click **"Add secret"**
 
 3. **Verify secrets are set:**
-   - You should see all three secrets listed with green checkmarks
+   - You should see the required secrets listed with green checkmarks
 
 ### How API Keys Are Used
 
@@ -512,7 +511,6 @@ The mobile app workflows pass these secrets via `--dart-define` flags during the
 ```bash
 flutter build ios --release \
   --dart-define=MOBILE_APP_API_KEY="${{ secrets.MOBILE_APP_API_KEY }}" \
-  --dart-define=MOBILE_NOTIFICATION_API_KEY="${{ secrets.MOBILE_NOTIFICATION_API_KEY }}" \
   --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}"
 ```
 
@@ -524,7 +522,6 @@ For local development, you can create a `.env` file in the `MobileApp` directory
 
 ```
 MOBILE_APP_API_KEY=your_api_key_here
-MOBILE_NOTIFICATION_API_KEY=your_mobile_notification_api_key_here
 SENTRY_DSN=your_sentry_dsn_here
 ```
 
