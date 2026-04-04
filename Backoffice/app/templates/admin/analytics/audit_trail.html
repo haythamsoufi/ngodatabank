@@ -511,7 +511,7 @@ $(document).ready(function() {
             // ── Session ────────────────────────────────────────────────────
             'page_view':   { icon: 'fa-eye',          bg: 'bg-blue-100',   text: 'text-blue-800',   label: '{{ _("Page View") }}' },
             // Generic POST / non-submit HTTP actions (APIs, AJAX, dashboard widgets)
-            'request':     { icon: 'fa-bolt',         bg: 'bg-slate-100',  text: 'text-slate-800',  label: '{{ _("Action") }}' },
+            'request':     { icon: 'fa-bolt',         bg: 'bg-slate-100',  text: 'text-slate-800',  label: '{{ _("Request") }}' },
             'login':       { icon: 'fa-sign-in-alt',  bg: 'bg-green-100',  text: 'text-green-800',  label: '{{ _("Logged In") }}' },
             'logout':      { icon: 'fa-sign-out-alt', bg: 'bg-orange-100', text: 'text-orange-800', label: '{{ _("Logged Out") }}' },
             'profile_update': { icon: 'fa-user-edit', bg: 'bg-teal-100',   text: 'text-teal-800',   label: '{{ _("Profile Updated") }}' },
@@ -603,6 +603,13 @@ $(document).ready(function() {
             'rbac_role_delete':  { icon: 'fa-user-shield', bg: 'bg-red-100',    text: 'text-red-800',    label: '{{ _("Role Deleted") }}' },
             'rbac_grant_create': { icon: 'fa-lock-open',   bg: 'bg-violet-100', text: 'text-violet-800', label: '{{ _("Permission Granted") }}' },
             'rbac_grant_delete': { icon: 'fa-lock',        bg: 'bg-red-100',    text: 'text-red-800',    label: '{{ _("Permission Removed") }}' },
+
+            // ── Endpoint-specific app / admin POSTs ───────────────────────
+            'device_registered':   { icon: 'fa-mobile-alt', bg: 'bg-cyan-100',   text: 'text-cyan-800',   label: '{{ _("Device registration") }}' },
+            'device_unregistered': { icon: 'fa-mobile-alt', bg: 'bg-gray-100',   text: 'text-gray-700',   label: '{{ _("Device unregistered") }}' },
+            'settings_updated':    { icon: 'fa-cog',        bg: 'bg-slate-100',  text: 'text-slate-800',  label: '{{ _("System settings") }}' },
+            'country_access_requested': { icon: 'fa-globe', bg: 'bg-blue-50',   text: 'text-blue-800',   label: '{{ _("Country access") }}' },
+            'country_selected':    { icon: 'fa-flag',       bg: 'bg-blue-50',    text: 'text-blue-800',   label: '{{ _("Country selection") }}' },
         };
 
         const activity = activityMap[activityType] || {

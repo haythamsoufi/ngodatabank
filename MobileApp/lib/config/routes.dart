@@ -43,7 +43,8 @@ class AppRoutes {
   static const String aiConversations = '/ai-conversations';
 
   // WebView Routes (for other admin pages)
-  static const String formBuilder = '/admin/form-builder';
+  /// Backoffice form templates (list / builder lives under `/admin/templates/...`).
+  static const String formBuilder = '/admin/templates';
   static const String userManagement = '/admin/users';
   static const String analytics = '/admin/analytics';
 

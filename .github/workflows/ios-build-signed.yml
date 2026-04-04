@@ -3,13 +3,8 @@ name: Build iOS (Signed IPA)
 on:
   workflow_dispatch:  # Manual trigger only for security
     inputs:
-      production:
-        description: 'Build for production (true/false)'
-        required: false
-        default: true
-        type: boolean
       backend_url:
-        description: 'Backoffice URL (overrides BACKEND_URL env var)'
+        description: 'Backoffice URL (sets build profile: databank.ifrc.org → production, fly.dev / IFRC staging → staging)'
         required: true
         type: choice
         options:
@@ -58,15 +53,35 @@ jobs:
             exit 1
           fi
 
+      - name: Resolve build profile from backend URL
+        id: resolve_env
+        run: |
+          BACKEND="${{ inputs.backend_url }}"
+          if [[ "$BACKEND" == *"localhost"* ]] || [[ "$BACKEND" == *"127.0.0.1"* ]] || [[ "$BACKEND" == *"10.0.2.2"* ]]; then
+            PROFILE=development
+          elif [[ "$BACKEND" == *"fly.dev"* ]] || [[ "$BACKEND" == *"-stage.ifrc.org"* ]]; then
+            PROFILE=staging
+          elif [[ "$BACKEND" == *"databank.ifrc.org"* ]]; then
+            PROFILE=production
+          else
+            echo "Unknown BACKEND_URL, defaulting profile to production: $BACKEND" >&2
+            PROFILE=production
+          fi
+          echo "profile=$PROFILE" >> "$GITHUB_OUTPUT"
+          echo "Resolved build profile: $PROFILE"
+
       - name: Create .env file with configuration
         working-directory: ${{ steps.flutter_path.outputs.path }}
         run: |
           echo "BACKEND_URL=${{ inputs.backend_url }}" > .env
           echo "FRONTEND_URL=https://website-databank.fly.dev" >> .env
-          if [ "${{ inputs.production }}" == "true" ]; then
-            echo "PRODUCTION=true" >> .env
-          fi
-          echo "Created .env: BACKEND_URL=${{ inputs.backend_url }}, FRONTEND_URL=https://website-databank.fly.dev"
+          case "${{ steps.resolve_env.outputs.profile }}" in
+            production) echo "PRODUCTION=true" >> .env ;;
+            staging)    echo "STAGING=true" >> .env ;;
+            *)          echo "DEVELOPMENT=true" >> .env ;;
+          esac
+          echo "Created .env (profile=${{ steps.resolve_env.outputs.profile }}):"
+          cat .env
 
       - name: Prepare Firebase iOS config (CI placeholder)
         working-directory: ${{ steps.flutter_path.outputs.path }}
@@ -92,21 +107,23 @@ jobs:
       - name: Build IPA
         working-directory: ${{ steps.flutter_path.outputs.path }}
         run: |
-          # Build with organization config if specified
+          case "${{ steps.resolve_env.outputs.profile }}" in
+            production) ENV_FLAG="PRODUCTION=true" ;;
+            staging)    ENV_FLAG="STAGING=true" ;;
+            *)          ENV_FLAG="DEVELOPMENT=true" ;;
+          esac
+
           ORG_CONFIG=""
           if [ -n "${{ inputs.organization_config }}" ]; then
             ORG_CONFIG="--dart-define=ORGANIZATION_CONFIG=${{ inputs.organization_config }}"
           fi
 
-          # Build with API keys passed via --dart-define flags from GitHub secrets
           flutter build ipa --release \
-            --dart-define=PRODUCTION=${{ github.event.inputs.production }} \
+            --dart-define=$ENV_FLAG \
             $ORG_CONFIG \
             --dart-define=MOBILE_APP_API_KEY="${{ secrets.MOBILE_APP_API_KEY }}" \
             --dart-define=MOBILE_NOTIFICATION_API_KEY="${{ secrets.MOBILE_NOTIFICATION_API_KEY }}" \
             --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}"
-        env:
-          PRODUCTION: ${{ github.event.inputs.production }}
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4

@@ -103,9 +103,9 @@ class TemplatesProvider with ChangeNotifier {
       // Best-effort: detect self-report icon anywhere in the row
       final addToSelfReport = rowHtml.contains('fa-check-circle');
 
-      // Extract template ID from edit link
+      // Extract template ID from edit link (Backoffice: /admin/templates/edit/<id>)
       final editLinkMatch = RegExp(
-        r'/admin/form-builder/edit-template/(\d+)',
+        r'/admin/templates/edit/(\d+)',
         caseSensitive: false,
       ).firstMatch(rowHtml);
 
@@ -132,7 +132,7 @@ class TemplatesProvider with ChangeNotifier {
   Future<bool> deleteTemplate(int templateId, {int? dataCount}) async {
     try {
       final response = await _api.post(
-        '/admin/form-builder/delete-template/$templateId',
+        '/admin/templates/delete/$templateId',
         body: {},
       );
 
@@ -146,7 +146,7 @@ class TemplatesProvider with ChangeNotifier {
   Future<bool> duplicateTemplate(int templateId) async {
     try {
       final response = await _api.post(
-        '/admin/form-builder/duplicate-template/$templateId',
+        '/admin/templates/duplicate/$templateId',
         body: {},
       );
 

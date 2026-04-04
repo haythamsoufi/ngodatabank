@@ -403,6 +403,7 @@ class PushNotificationService:
 
             if existing_device:
                 # Update existing device and clear logged_out_at if it was logged out
+                was_logged_out = existing_device.logged_out_at is not None
                 existing_device.user_id = user_id
                 existing_device.platform = platform
                 if app_version:
@@ -418,13 +419,16 @@ class PushNotificationService:
                 if timezone:
                     existing_device.timezone = timezone
                 existing_device.last_active_at = utcnow()
-                # Clear logged_out_at to reactivate the device
                 existing_device.logged_out_at = None
                 db.session.commit()
 
                 return {
                     'success': True,
-                    'message': 'Device updated and reactivated' if existing_device.logged_out_at is None else 'Device updated',
+                    'message': (
+                        'Device updated and reactivated'
+                        if was_logged_out
+                        else 'Device updated'
+                    ),
                     'device_id': existing_device.id
                 }
             else:

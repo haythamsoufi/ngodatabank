@@ -10,6 +10,12 @@ from flask import request, g, session, current_app
 from flask_login import current_user
 from app.utils.request_utils import is_static_asset_request
 from app.utils.user_analytics import log_user_activity, log_admin_action
+from app.utils.activity_endpoint_overrides import (
+    resolve_post_activity_type,
+    description_for_activity_type,
+    endpoint_last_segment,
+    strip_endpoint_verb_prefix,
+)
 import time
 
 
@@ -53,6 +59,8 @@ _SKIP_ENDPOINTS = frozenset([
     'main.load_more_activities',
     'forms_api.api_render_pending_dynamic_indicator',
     'ai_v2.chat_stream',
+    # High-frequency mobile push heartbeat — noise for audit trail
+    'notifications.device_heartbeat',
 ])
 
 # Endpoint *prefixes* that produce only background noise
@@ -152,6 +160,11 @@ def _determine_activity_type(method, endpoint, form_data=None):
         if action == 'validate':
             return 'form_validated'
 
+        # Known POST endpoints (settings, devices, access, …) — before generic ``request``
+        specific = resolve_post_activity_type(endpoint)
+        if specific:
+            return specific
+
         # Generic POST (JSON APIs, AJAX, CSRF-only forms, etc.) — not assignment submit
         return 'request'
 
@@ -173,11 +186,14 @@ def _build_activity_description(method, endpoint, activity_type):
         return f"Viewed {readable}" if readable else "Viewed page"
 
     if activity_type == 'request':
-        import re
-        segment = endpoint.split('.')[-1] if '.' in endpoint else endpoint
-        segment = re.sub(r'^(api_|get_|post_|put_|delete_|fetch_)', '', segment)
+        segment = strip_endpoint_verb_prefix(endpoint_last_segment(endpoint))
         readable = segment.replace('_', ' ').strip().title()
-        return f"Performed {readable}" if readable else "Performed action"
+        # Avoid robotic "Performed …" phrasing; keep a neutral past-tense line
+        return f"Submitted {readable}" if readable else "Submitted a request"
+
+    preset = description_for_activity_type(activity_type)
+    if preset:
+        return preset
 
     descriptions = {
         'form_saved':      "Saved form data as draft",

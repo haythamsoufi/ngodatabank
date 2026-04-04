@@ -313,7 +313,7 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         {% for device in registered_devices %}
-                        <tr class="hover:bg-gray-50 transition-colors duration-150 {% if device.logged_out_at %}opacity-60{% endif %}" data-device-id="{{ device.id }}">
+                        <tr class="transition-colors duration-150 {% if device.logged_out_at %}bg-gray-50 hover:bg-gray-100{% else %}hover:bg-gray-50{% endif %}" data-device-id="{{ device.id }}">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
                                     {% if device.platform == 'ios' %}
@@ -932,8 +932,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
 
-                    // Add opacity to row to indicate logged out state
-                    row.classList.add('opacity-60');
+                    row.classList.remove('hover:bg-gray-50');
+                    row.classList.add('bg-gray-50', 'hover:bg-gray-100');
 
                     // Show success message
                     const successMsg = document.createElement('div');

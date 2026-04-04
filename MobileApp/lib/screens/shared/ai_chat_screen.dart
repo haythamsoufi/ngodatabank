@@ -1,14 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:cross_file/cross_file.dart';
 
 import '../../providers/shared/ai_chat_provider.dart';
 import '../../providers/shared/auth_provider.dart';
@@ -17,7 +13,6 @@ import '../../utils/ios_constants.dart';
 import '../../widgets/bottom_navigation_bar.dart';
 import '../../widgets/ai_chat_agent_progress_panel.dart';
 import '../../widgets/ai_chat_structured_views.dart';
-import '../../services/ai_chat_service.dart';
 import '../../services/organization_config_service.dart';
 import '../../config/app_config.dart';
 import '../../config/routes.dart';
@@ -344,29 +339,6 @@ class _AiChatScreenState extends State<AiChatScreen> {
     );
   }
 
-  Future<void> _exportCurrentConversation(BuildContext context, AiChatProvider ai) async {
-    final cid = ai.conversationId;
-    if (cid == null || cid.isEmpty) return;
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Preparing export…')));
-    final bytes = await AiChatService().exportConversationJsonBytes(cid);
-    if (!context.mounted) return;
-    if (bytes == null || bytes.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Export failed')));
-      return;
-    }
-    try {
-      final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/ai-conversation-$cid.json');
-      await file.writeAsBytes(bytes);
-      await Share.shareXFiles([XFile(file.path)], subject: 'AI conversation export');
-    } catch (_) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not share export')));
-      }
-    }
-  }
-
   /// Map web routes to mobile app routes.
   /// Handles differences between Backoffice web paths and mobile app paths.
   String _mapWebRouteToMobile(String route) {
@@ -605,57 +577,59 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
-                                    const SizedBox(height: 20),
-                                    Container(
-                                      padding: const EdgeInsets.all(14),
-                                      decoration: BoxDecoration(
-                                        color: isDark ? const Color(0xFF171717) : Colors.grey[50],
-                                        border: Border.all(
-                                          color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+                                    if (!ai.policyAcknowledged) ...[
+                                      const SizedBox(height: 20),
+                                      Container(
+                                        padding: const EdgeInsets.all(14),
+                                        decoration: BoxDecoration(
+                                          color: isDark ? const Color(0xFF171717) : Colors.grey[50],
+                                          border: Border.all(
+                                            color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+                                          ),
                                         ),
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "Don't share sensitive information. We use system traces/telemetry to improve the assistant.",
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              height: 1.35,
-                                              color: isDark ? Colors.grey[300] : Colors.grey[800],
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            'AI can make mistakes. Check important information.',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: isDark ? Colors.grey[500] : Colors.grey[600],
-                                            ),
-                                          ),
-                                          const SizedBox(height: 12),
-                                          Wrap(
-                                            spacing: 8,
-                                            runSpacing: 8,
-                                            crossAxisAlignment: WrapCrossAlignment.center,
-                                            children: [
-                                              TextButton(
-                                                onPressed: () => _showAiPolicyModal(context, isDark),
-                                                child: const Text('View AI policy'),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              "Don't share sensitive information. We use system traces/telemetry to improve the assistant.",
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                height: 1.35,
+                                                color: isDark ? Colors.grey[300] : Colors.grey[800],
                                               ),
-                                              if (!ai.policyAcknowledged)
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              'AI can make mistakes. Check important information.',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: isDark ? Colors.grey[500] : Colors.grey[600],
+                                              ),
+                                            ),
+                                            const SizedBox(height: 12),
+                                            Wrap(
+                                              spacing: 8,
+                                              runSpacing: 8,
+                                              crossAxisAlignment: WrapCrossAlignment.center,
+                                              children: [
+                                                TextButton(
+                                                  onPressed: () => _showAiPolicyModal(context, isDark),
+                                                  child: const Text('View AI policy'),
+                                                ),
                                                 FilledButton(
                                                   onPressed: () async {
                                                     await context.read<AiChatProvider>().acknowledgeAiPolicy();
                                                   },
                                                   child: const Text('I understand'),
                                                 ),
-                                            ],
-                                          ),
-                                        ],
+                                              ],
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 24),
+                                      const SizedBox(height: 24),
+                                    ] else
+                                      const SizedBox(height: 8),
                                     Text(
                                       'Try asking',
                                       style: TextStyle(
@@ -1345,39 +1319,6 @@ class _AiChatScreenState extends State<AiChatScreen> {
               ),
               child: Column(
                 children: [
-                  if (isAuthed && ai.conversationId != null && ai.conversationId!.isNotEmpty)
-                    Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () async {
-                          Navigator.pop(context);
-                          await _exportCurrentConversation(context, ai);
-                        },
-                        borderRadius: BorderRadius.circular(10),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.file_download_outlined,
-                                size: 20,
-                                color: IOSColors.getSystemBlue(context),
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                'Export conversation (JSON)',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: isDark ? Colors.grey[200] : Colors.grey[900],
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
                   Material(
                     color: Colors.transparent,
                     child: InkWell(

@@ -13,6 +13,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../config/app_config.dart';
 import '../config/routes.dart';
 import 'api_service.dart';
+import 'storage_service.dart';
 import '../utils/debug_logger.dart';
 
 /// Top-level function to handle background messages
@@ -453,15 +454,30 @@ class PushNotificationService {
   /// Register iOS device with backend (for tracking purposes, no push notifications)
   Future<void> _registerIOSDevice() async {
     try {
-      // Generate or retrieve a persistent unique device identifier for iOS
-      // Since iOS doesn't allow unique device IDs, we generate a UUID and store it
-      final prefs = await SharedPreferences.getInstance();
-      String? deviceId = prefs.getString('ios_device_token');
+      // Install-scoped UUID (not an Apple device ID). Must survive logout:
+      // AuthService.logout() calls StorageService.clear() which wipes all
+      // SharedPreferences, so we persist this in secure storage instead.
+      final storage = StorageService();
+      String? deviceId =
+          await storage.getSecure(AppConfig.persistentDeviceInstallIdKey);
 
-      if (deviceId == null) {
-        // Generate a new UUID for this device
+      if (deviceId == null || deviceId.isEmpty) {
+        final prefs = await SharedPreferences.getInstance();
+        final legacy = prefs.getString('ios_device_token');
+        if (legacy != null && legacy.isNotEmpty) {
+          deviceId = legacy;
+          await storage.setSecure(
+              AppConfig.persistentDeviceInstallIdKey, deviceId);
+          await prefs.remove('ios_device_token');
+          DebugLogger.logNotifications(
+              'Migrated iOS device id from SharedPreferences to secure storage');
+        }
+      }
+
+      if (deviceId == null || deviceId.isEmpty) {
         deviceId = _generateUUID();
-        await prefs.setString('ios_device_token', deviceId);
+        await storage.setSecure(
+            AppConfig.persistentDeviceInstallIdKey, deviceId);
         DebugLogger.logNotifications(
             'Generated new iOS device identifier: ${deviceId.substring(0, 20)}...');
       } else {

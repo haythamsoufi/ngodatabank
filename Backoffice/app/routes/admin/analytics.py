@@ -27,6 +27,11 @@ from app.utils.api_helpers import GENERIC_ERROR_MESSAGE
 from app.utils.api_pagination import validate_pagination_params
 from app.utils.api_responses import json_ok
 from app.utils.activity_types import normalize_activity_type
+from app.utils.activity_endpoint_overrides import (
+    infer_activity_type_from_legacy_description,
+    resolve_post_activity_type,
+    description_for_activity_type,
+)
 from sqlalchemy import func, desc, and_, or_, cast, String
 from datetime import datetime, timedelta
 import json
@@ -751,9 +756,21 @@ def audit_trail():
 
             # Generic POST / API (canonical type `request` from activity middleware)
             if t == 'request':
+                inferred = infer_activity_type_from_legacy_description(original_description)
+                if not inferred and endpoint:
+                    inferred = resolve_post_activity_type(endpoint)
+                if inferred:
+                    msg = description_for_activity_type(inferred)
+                    if msg:
+                        return msg
                 if original_description and original_description.startswith('Performed '):
-                    return original_description
-                return original_description or "Performed an action"
+                    tail = original_description[len('Performed ') :].strip()
+                    return f"Submitted {tail}" if tail else "Submitted a request"
+                return original_description or "Submitted a request"
+
+            preset = description_for_activity_type(t)
+            if preset:
+                return preset
 
             # Form saved (new type) or legacy form_save
             if t in ('form_saved', 'form_save'):
@@ -1027,6 +1044,13 @@ def audit_trail():
 
             # Consolidate and create consistent data immediately
             consolidated_type = consolidate_activity_type(log.activity_type)
+            # Upgrade generic ``request`` rows using legacy text or endpoint (no DB migration)
+            if consolidated_type == 'request':
+                refined = infer_activity_type_from_legacy_description(log.activity_description)
+                if not refined and log.endpoint:
+                    refined = resolve_post_activity_type(log.endpoint)
+                if refined:
+                    consolidated_type = refined
 
             # Enhance context_data with url_path if available
             enhanced_context = log.context_data.copy() if log.context_data else {}

@@ -235,8 +235,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ),
                 ),
-                // Quick Login Section - Development builds only
-                if (AppConfig.isDevelopment) ...[
+                // Quick login: debug + local backoffice only (not release/remote CI)
+                if (AppConfig.isQuickLoginEnabled) ...[
                   const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.all(20),
@@ -406,8 +406,9 @@ class _LoginScreenState extends State<LoginScreen> {
       ];
     }
 
-    // In staging, only show Azure login button
-    if (AppConfig.isStaging) {
+    // IFRC-hosted backoffice or unknown remote: SSO only (no email/password form)
+    if (AppConfig.isIfrcBackendHost ||
+        !AppConfig.isManualCredentialLoginEnabled) {
       return [
         FilledButton(
           onPressed: _isLoading ? null : _handleAzureLogin,

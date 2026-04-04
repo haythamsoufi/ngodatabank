@@ -47,6 +47,98 @@ class _TranslationManagementScreenState
     );
   }
 
+  /// API JSON (`utilities.manage_translations`) uses `msgid`; HTML fallback uses `key`.
+  String _translationMsgid(Map<String, dynamic> t) {
+    final raw = t['msgid'] ?? t['key'];
+    if (raw != null && raw.toString().trim().isNotEmpty) {
+      return raw.toString();
+    }
+    return 'Unknown Key';
+  }
+
+  String? _translationSourceLine(Map<String, dynamic> t) {
+    final s = t['source']?.toString();
+    if (s == null || s.isEmpty || s == 'unknown') return null;
+    return 'Source: $s';
+  }
+
+  List<Widget> _perLanguageTranslationBlocks(
+    BuildContext context,
+    Map<String, dynamic> t,
+  ) {
+    final nested = t['translations'];
+    if (nested is Map) {
+      final out = <Widget>[];
+      final codes = nested.keys.map((k) => k.toString()).toList()..sort();
+      for (final code in codes) {
+        final langEntry = nested[code];
+        if (langEntry is! Map) continue;
+        final text = langEntry['text']?.toString() ?? '';
+        final name =
+            langEntry['language_name']?.toString() ?? code.toUpperCase();
+        out.add(const SizedBox(height: 8));
+        out.add(Text(
+          name,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ));
+        out.add(const SizedBox(height: 4));
+        out.add(Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: context.subtleSurfaceColor,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            text.isEmpty ? '—' : text,
+            style: TextStyle(
+              fontSize: 14,
+              color: context.textColor,
+            ),
+          ),
+        ));
+      }
+      return out;
+    }
+
+    final legacy = t['value']?.toString();
+    if (legacy != null && legacy.isNotEmpty) {
+      return [
+        if (t['language'] != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            'Language: ${t['language']}',
+            style: TextStyle(
+              fontSize: 14,
+              color: context.textSecondaryColor,
+            ),
+          ),
+        ],
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: context.subtleSurfaceColor,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            legacy,
+            style: TextStyle(
+              fontSize: 14,
+              color: context.textColor,
+            ),
+          ),
+        ),
+      ];
+    }
+    return [];
+  }
+
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
@@ -356,44 +448,28 @@ class _TranslationManagementScreenState
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  translation['key']?.toString() ??
-                                      'Unknown Key',
+                                  _translationMsgid(translation),
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                     color: context.textColor,
                                   ),
                                 ),
-                                if (translation['language'] != null) ...[
-                                  const SizedBox(height: 8),
+                                if (_translationSourceLine(translation) !=
+                                    null) ...[
+                                  const SizedBox(height: 6),
                                   Text(
-                                    'Language: ${translation['language']}',
+                                    _translationSourceLine(translation)!,
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 12,
                                       color: context.textSecondaryColor,
                                     ),
                                   ),
                                 ],
-                                if (translation['value'] != null &&
-                                    translation['value']
-                                        .toString()
-                                        .isNotEmpty) ...[
-                                  const SizedBox(height: 8),
-                                  Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: context.subtleSurfaceColor,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      translation['value'].toString(),
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: context.textColor,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                ..._perLanguageTranslationBlocks(
+                                  context,
+                                  translation,
+                                ),
                               ],
                             ),
                           ),

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -433,38 +432,6 @@ class AiChatService {
       return resp.statusCode == 200;
     } catch (_) {
       return false;
-    }
-  }
-
-  /// Raw JSON export (`GET /api/ai/v2/conversations/:id/export`).
-  Future<Uint8List?> exportConversationJsonBytes(String conversationId) async {
-    try {
-      String? token = await getCachedToken();
-      Future<dynamic> _get(String? t) async {
-        final h = <String, String>{};
-        if (t != null && t.isNotEmpty) h['Authorization'] = 'Bearer $t';
-        return _api.get(
-          '/api/ai/v2/conversations/$conversationId/export',
-          includeAuth: true,
-          useCache: false,
-          additionalHeaders: h.isEmpty ? null : h,
-        );
-      }
-
-      var resp = await _get(token);
-      if (resp.statusCode == 401 || resp.statusCode == 403) {
-        await clearToken();
-        token = await fetchAndCacheToken();
-        if (token != null && token.isNotEmpty) {
-          resp = await _get(token);
-        }
-      }
-      if (resp.statusCode == 200 && resp.bodyBytes.isNotEmpty) {
-        return resp.bodyBytes;
-      }
-      return null;
-    } catch (_) {
-      return null;
     }
   }
 

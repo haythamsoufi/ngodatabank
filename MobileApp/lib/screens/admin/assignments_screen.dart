@@ -103,8 +103,8 @@ class _AssignmentsScreenState extends State<AssignmentsScreen> {
                   const SizedBox(height: 16),
                   Text(
                     AppLocalizations.of(context)!.loadingAssignments,
-                    style: const TextStyle(
-                      color: Color(AppConstants.textSecondary),
+                    style: TextStyle(
+                      color: context.textSecondaryColor,
                       fontSize: 14,
                     ),
                   ),
@@ -120,25 +120,24 @@ class _AssignmentsScreenState extends State<AssignmentsScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.error_outline,
                       size: 48,
-                      color: Color(AppConstants.errorColor),
+                      color: theme.colorScheme.error,
                     ),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'Something went wrong',
-                      style: TextStyle(
-                        fontSize: 18,
+                      style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: Color(AppConstants.textColor),
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       provider.error!,
-                      style: const TextStyle(
-                        color: Color(AppConstants.textSecondary),
+                      style: TextStyle(
+                        color: context.textSecondaryColor,
                         fontSize: 14,
                       ),
                       textAlign: TextAlign.center,
@@ -166,26 +165,25 @@ class _AssignmentsScreenState extends State<AssignmentsScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.assignment_outlined,
                     size: 56,
-                    color: Color(AppConstants.textSecondary),
+                    color: context.textSecondaryColor,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     localizations.noAssignmentsFound,
-                    style: TextStyle(
-                      fontSize: 18,
+                    style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: Color(AppConstants.textColor),
+                      color: theme.colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
+                  Text(
                     'Create a new assignment to get started',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Color(AppConstants.textSecondary),
+                      color: context.textSecondaryColor,
                     ),
                   ),
                 ],
@@ -224,19 +222,17 @@ class _AssignmentsScreenState extends State<AssignmentsScreen> {
                                 children: [
                                   Text(
                                     assignment.periodName,
-                                    style: const TextStyle(
-                                      fontSize: 16,
+                                    style: theme.textTheme.titleMedium?.copyWith(
                                       fontWeight: FontWeight.w600,
-                                      color: Color(AppConstants.textColor),
+                                      color: theme.colorScheme.onSurface,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     assignment.templateName ??
                                         'Template Missing',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      color: Color(AppConstants.textSecondary),
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: theme.colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                 ],

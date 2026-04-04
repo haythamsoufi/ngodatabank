@@ -3,23 +3,15 @@ name: Build iOS
 on:
   workflow_dispatch:  # Manual trigger only - auto-run disabled
     inputs:
-      environment:
-        description: 'Build environment (controls app behavior, e.g., test login buttons)'
-        required: true
-        type: choice
-        options:
-          - production
-          - staging
-          - development
-        default: 'production'
       backend_url:
-        description: 'Backend URL'
+        description: 'Backend URL (also sets build profile: databank.ifrc.org → production, fly.dev / IFRC staging → staging, localhost / emulator → development)'
         required: true
         type: choice
         options:
           - http://localhost:5000
           - http://10.0.2.2:5000
           - https://backoffice-databank.fly.dev
+          - https://databank-stage.ifrc.org
           - https://databank.ifrc.org
         default: 'https://databank.ifrc.org'
       frontend_url:
@@ -67,30 +59,40 @@ jobs:
             exit 1
           fi
 
+      - name: Resolve build profile from backend URL
+        id: resolve_env
+        run: |
+          BACKEND="${{ inputs.backend_url }}"
+          # Local / emulator → development (quick login, WebView localhost rules)
+          if [[ "$BACKEND" == *"localhost"* ]] || [[ "$BACKEND" == *"127.0.0.1"* ]] || [[ "$BACKEND" == *"10.0.2.2"* ]]; then
+            PROFILE=development
+          # Fly preview or IFRC staging host → staging
+          elif [[ "$BACKEND" == *"fly.dev"* ]] || [[ "$BACKEND" == *"-stage.ifrc.org"* ]]; then
+            PROFILE=staging
+          # Production IFRC backoffice
+          elif [[ "$BACKEND" == *"databank.ifrc.org"* ]]; then
+            PROFILE=production
+          else
+            echo "Unknown BACKEND_URL, defaulting profile to production: $BACKEND" >&2
+            PROFILE=production
+          fi
+          echo "profile=$PROFILE" >> "$GITHUB_OUTPUT"
+          echo "Resolved build profile: $PROFILE"
+
       - name: Create .env file with configuration
         working-directory: ${{ steps.flutter_path.outputs.path }}
         run: |
-          # Create .env file with backend and frontend URLs, and environment flag
           echo "BACKEND_URL=${{ inputs.backend_url }}" > .env
           echo "FRONTEND_URL=${{ inputs.frontend_url }}" >> .env
-          # Add environment flag to .env file so it's available at runtime
-          if [ "${{ inputs.environment }}" == "production" ]; then
-            echo "PRODUCTION=true" >> .env
-          elif [ "${{ inputs.environment }}" == "staging" ]; then
-            echo "STAGING=true" >> .env
-          else
-            echo "DEVELOPMENT=true" >> .env
-          fi
-          echo "Created .env file with:"
+          case "${{ steps.resolve_env.outputs.profile }}" in
+            production) echo "PRODUCTION=true" >> .env ;;
+            staging)    echo "STAGING=true" >> .env ;;
+            *)          echo "DEVELOPMENT=true" >> .env ;;
+          esac
+          echo "Created .env (profile=${{ steps.resolve_env.outputs.profile }}):"
           echo "  BACKEND_URL=${{ inputs.backend_url }}"
           echo "  FRONTEND_URL=${{ inputs.frontend_url }}"
-          if [ "${{ inputs.environment }}" == "production" ]; then
-            echo "  PRODUCTION=true"
-          elif [ "${{ inputs.environment }}" == "staging" ]; then
-            echo "  STAGING=true"
-          else
-            echo "  DEVELOPMENT=true"
-          fi
+          cat .env
 
       - name: Prepare Firebase iOS config (CI placeholder)
         working-directory: ${{ steps.flutter_path.outputs.path }}
@@ -117,7 +119,7 @@ jobs:
 
           # Change app display name based on environment
           # This allows users to identify which version is which on their device
-          ENV_DISPLAY_NAME="NGO Databank (CI - ${{ inputs.environment }})"
+          ENV_DISPLAY_NAME="NGO Databank (CI - ${{ steps.resolve_env.outputs.profile }})"
           /usr/libexec/PlistBuddy -c "Print :CFBundleDisplayName" ios/Runner/Info.plist > /dev/null 2>&1 && \
             /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName '$ENV_DISPLAY_NAME'" ios/Runner/Info.plist || \
             /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string '$ENV_DISPLAY_NAME'" ios/Runner/Info.plist
@@ -128,16 +130,12 @@ jobs:
       - name: Build iOS (no codesign)
         working-directory: ${{ steps.flutter_path.outputs.path }}
         run: |
-          # Build with environment flag and API keys passed via --dart-define flags from GitHub secrets
-          # Backend and frontend URLs are configured via .env file (created in previous step)
-          # Environment flag controls app behavior (e.g., test login buttons)
-          if [ "${{ inputs.environment }}" == "production" ]; then
-            ENV_FLAG="PRODUCTION=true"
-          elif [ "${{ inputs.environment }}" == "staging" ]; then
-            ENV_FLAG="STAGING=true"
-          else
-            ENV_FLAG="DEVELOPMENT=true"
-          fi
+          # Compile-time flag must match .env (derived from BACKEND_URL in resolve_env step)
+          case "${{ steps.resolve_env.outputs.profile }}" in
+            production) ENV_FLAG="PRODUCTION=true" ;;
+            staging)    ENV_FLAG="STAGING=true" ;;
+            *)          ENV_FLAG="DEVELOPMENT=true" ;;
+          esac
 
           # Build with organization config if specified
           ORG_CONFIG=""
@@ -189,14 +187,9 @@ jobs:
       # - name: Build IPA
       #   working-directory: MobileApp
       #   run: |
-      #     # Build with appropriate dart-define flag based on selected environment
-      #     if [ "${{ inputs.environment }}" == "production" ]; then
-      #       flutter build ipa --release --dart-define=PRODUCTION=true
-      #     elif [ "${{ inputs.environment }}" == "staging" ]; then
-      #       flutter build ipa --release --dart-define=STAGING=true
-      #     else
-      #       flutter build ipa --release
-      #     fi
+      #     # Use same profile as BACKEND_URL (see Resolve build profile from backend URL step)
+      #     flutter build ipa --release --dart-define=PRODUCTION=true
+      #     # or STAGING=true / DEVELOPMENT=true
       #
       # - name: Upload IPA
       #   uses: actions/upload-artifact@v4

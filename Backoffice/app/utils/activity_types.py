@@ -33,6 +33,12 @@ CANONICAL_ACTIVITY_TYPES = {
     "file_uploaded",
     "data_export",
     "account_created",
+    # Endpoint-specific POST actions (see activity_endpoint_overrides)
+    "device_registered",
+    "device_unregistered",
+    "settings_updated",
+    "country_access_requested",
+    "country_selected",
 }
 
 

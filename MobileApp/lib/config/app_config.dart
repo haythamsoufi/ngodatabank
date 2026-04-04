@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart'
-    show kIsWeb, defaultTargetPlatform, TargetPlatform;
+    show kIsWeb, kDebugMode, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../services/organization_config_service.dart';
 
@@ -22,6 +22,47 @@ class AppConfig {
       _envFlag('STAGING', defaultValue: false);
   static final bool isDevelopment =
       _envFlag('DEVELOPMENT', defaultValue: false);
+
+  /// True when the resolved backoffice URL is loopback or the Android emulator host.
+  static bool get isLocalBackendHost {
+    try {
+      final uri = Uri.parse(backendUrl);
+      final host = uri.host.toLowerCase();
+      return host == 'localhost' ||
+          host == '127.0.0.1' ||
+          host == '10.0.2.2' ||
+          host == '[::1]' ||
+          host == '::1';
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Test quick-login buttons: debug builds only, with a local backoffice (excludes release/CI).
+  static bool get isQuickLoginEnabled => kDebugMode && isLocalBackendHost;
+
+  /// IFRC-hosted backoffice (e.g. databank.ifrc.org, databank-stage.ifrc.org).
+  static bool get isIfrcBackendHost {
+    try {
+      final host = Uri.parse(backendUrl).host.toLowerCase();
+      return host == 'ifrc.org' || host.endsWith('.ifrc.org');
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Fly.io app host (*.fly.dev).
+  static bool get isFlyDevBackend {
+    try {
+      return Uri.parse(backendUrl).host.toLowerCase().contains('fly.dev');
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Email/password login in the app: Fly preview or local backoffice only (not IFRC-hosted).
+  static bool get isManualCredentialLoginEnabled =>
+      isFlyDevBackend || isLocalBackendHost;
 
   // Production URLs (fly.dev)
   static const String productionBackendUrl = 'https://backoffice-databank.fly.dev';
@@ -217,6 +258,9 @@ class AppConfig {
   static const String rememberMeKey = 'remember_me';
   static const String selectedEntityTypeKey = 'selected_entity_type';
   static const String selectedEntityIdKey = 'selected_entity_id';
+  /// Survives logout (`StorageService.clear()` wipes SharedPreferences only).
+  static const String persistentDeviceInstallIdKey =
+      'persistent_device_install_id';
 
   // Cache Keys
   static const String cachedDashboardKey = 'cached_dashboard';

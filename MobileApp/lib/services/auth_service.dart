@@ -81,6 +81,14 @@ class AuthService {
     required String password,
     bool rememberMe = false,
   }) async {
+    if (!AppConfig.isManualCredentialLoginEnabled) {
+      DebugLogger.logWarn(
+          'AUTH', 'Email/password login blocked for this backoffice host');
+      return AuthResult.failure(
+        'Email and password sign-in is only available when the app uses a Fly.io preview or local backoffice URL.',
+      );
+    }
+
     DebugLogger.logAuth(
         'Starting login for email: ${email.trim().toLowerCase()}');
 
@@ -242,13 +250,12 @@ class AuthService {
   }
 
   /// Quick login for testing purposes
-  /// Security: Available only when DEVELOPMENT flag is enabled
+  /// Security: debug builds against a local backoffice only
   Future<AuthResult> quickLogin(String email, String password) async {
-    // Security check: Allow quick login only for explicit development builds
-    if (!AppConfig.isDevelopment) {
-      DebugLogger.logWarn('AUTH', 'Quick login blocked outside development environment');
+    if (!AppConfig.isQuickLoginEnabled) {
+      DebugLogger.logWarn('AUTH', 'Quick login blocked (requires debug + local backoffice)');
       return AuthResult.failure(
-        'Quick login is only available in development builds',
+        'Quick login is only available in debug mode with a local backoffice URL',
       );
     }
 

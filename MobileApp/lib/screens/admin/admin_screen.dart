@@ -76,6 +76,13 @@ class AdminScreen extends StatelessWidget {
                     children: [
                       _buildMenuItem(
                         context: context,
+                        icon: Icons.people_rounded,
+                        title: localizations.manageUsers,
+                        route: AppRoutes.users,
+                        iconColor: const Color(0xFF3B82F6),
+                      ),
+                      _buildMenuItem(
+                        context: context,
                         icon: Icons.description_rounded,
                         title: localizations.documentManagement,
                         route: AppRoutes.documentManagement,

@@ -1682,7 +1682,8 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             {% for device in registered_devices %}
-                            <tr class="hover:bg-gray-50 transition-colors duration-150 {% if device.logged_out_at %}opacity-60{% endif %}">
+                            {# Row opacity would dim action buttons (opacity stacks); use background tint for logged-out rows instead #}
+                            <tr class="transition-colors duration-150 {% if device.logged_out_at %}bg-gray-50 hover:bg-gray-100{% else %}hover:bg-gray-50{% endif %}">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         {% if device.platform == 'ios' %}
@@ -2020,7 +2021,9 @@
 })();
 </script>
 
-{# Add JavaScript to handle the "Select All" by Region and Global "Select All" functionality #}
+{# extra_js must not be nested inside block content: Jinja2 renders nested blocks twice (body + parent block), duplicating scripts and handlers. #}
+{% endblock %}
+
 {% block extra_js %}
 {{ super() }}
 <style>
@@ -2962,8 +2965,9 @@
                             }
                         }
 
-                        // Add opacity to row to indicate logged out state
-                        row.classList.add('opacity-60');
+                        // Muted row background for logged-out state (avoid opacity-60 on tr — it greys out action buttons)
+                        row.classList.remove('hover:bg-gray-50');
+                        row.classList.add('bg-gray-50', 'hover:bg-gray-100');
 
                         // Show success message
                         const successMsg = document.createElement('div');
@@ -3094,6 +3098,4 @@
     });
 </script>
 <script src="{{ static_url('js/hierarchical_entity_selector.js') }}"></script>
-{% endblock %}
-
 {% endblock %}

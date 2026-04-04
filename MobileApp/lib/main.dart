@@ -24,6 +24,7 @@ import 'providers/admin/organizational_structure_provider.dart';
 import 'providers/admin/indicator_bank_admin_provider.dart';
 import 'providers/admin/user_analytics_provider.dart';
 import 'providers/admin/audit_trail_provider.dart';
+import 'providers/admin/manage_users_provider.dart';
 import 'providers/public/indicator_bank_provider.dart';
 import 'providers/public/quiz_game_provider.dart';
 import 'providers/public/leaderboard_provider.dart';
@@ -62,6 +63,7 @@ import 'screens/admin/edit_indicator_screen.dart';
 import 'screens/admin/edit_entity_screen.dart';
 import 'screens/admin/user_analytics_screen.dart';
 import 'screens/admin/audit_trail_screen.dart';
+import 'screens/admin/manage_users_screen.dart';
 import 'services/storage_service.dart';
 import 'services/push_notification_service.dart';
 import 'services/auth_error_handler.dart';
@@ -350,6 +352,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         ChangeNotifierProvider(create: (_) => IndicatorBankAdminProvider()),
         ChangeNotifierProvider(create: (_) => UserAnalyticsProvider()),
         ChangeNotifierProvider(create: (_) => AuditTrailProvider()),
+        ChangeNotifierProvider(create: (_) => ManageUsersProvider()),
       ],
       child: Consumer2<LanguageProvider, ThemeProvider>(
         builder: (context, languageProvider, themeProvider, child) {
@@ -425,6 +428,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                   const AdminDashboardScreen(showBottomNav: true),
               AppRoutes.templates: (context) => const TemplatesScreen(),
               AppRoutes.assignments: (context) => const AssignmentsScreen(),
+              AppRoutes.users: (context) => const ManageUsersScreen(),
               AppRoutes.documentManagement: (context) =>
                   const DocumentManagementScreen(),
               AppRoutes.translationManagement: (context) =>

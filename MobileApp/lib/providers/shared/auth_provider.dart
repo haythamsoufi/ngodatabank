@@ -199,14 +199,12 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  /// Quick login for testing purposes
-  /// Security: Disabled in staging environment
-  /// Note: This will be disabled in production in the near future
+  /// Quick login for testing purposes (debug + local backoffice only)
   Future<bool> quickLogin(String email, String password) async {
-    // Security: Allow quick login only for explicit development builds
-    if (!AppConfig.isDevelopment) {
-      _error = 'Quick login is only available in development builds';
-      DebugLogger.logWarn('AUTH', 'Quick login attempted outside development - blocked');
+    if (!AppConfig.isQuickLoginEnabled) {
+      _error =
+          'Quick login is only available in debug mode with a local backoffice URL';
+      DebugLogger.logWarn('AUTH', 'Quick login blocked (requires debug + local backoffice)');
       return false;
     }
 

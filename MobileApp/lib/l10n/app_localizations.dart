@@ -40,6 +40,8 @@ class AppLocalizations {
       'system_configuration': 'System Configuration',
       'user_management': 'User Management',
       'manage_users': 'Manage Users',
+      'users_directory_read_only':
+          'This directory is read-only. Create or change accounts in the web backoffice.',
       'form_data_management': 'Form & Data Management',
       'manage_templates': 'Manage Templates',
       'manage_assignments': 'Manage Assignments',
@@ -655,6 +657,8 @@ class AppLocalizations {
       'system_configuration': 'Configuración del Sistema',
       'user_management': 'Gestión de Usuarios',
       'manage_users': 'Gestionar Usuarios',
+      'users_directory_read_only':
+          'Este listado es solo lectura. Cree o modifique cuentas en el backoffice web.',
       'form_data_management': 'Gestión de Formularios y Datos',
       'manage_templates': 'Gestionar Plantillas',
       'manage_assignments': 'Gestionar Asignaciones',
@@ -1245,6 +1249,8 @@ class AppLocalizations {
       'system_configuration': 'Configuration du Système',
       'user_management': 'Gestion des Utilisateurs',
       'manage_users': 'Gérer les Utilisateurs',
+      'users_directory_read_only':
+          'Annuaire en lecture seule. Créez ou modifiez les comptes sur le backoffice web.',
       'form_data_management': 'Gestion des Formulaires et Données',
       'manage_templates': 'Gérer les Modèles',
       'manage_assignments': 'Gérer les Affectations',
@@ -1836,6 +1842,8 @@ class AppLocalizations {
       'system_configuration': 'إعدادات النظام',
       'user_management': 'إدارة المستخدمين',
       'manage_users': 'إدارة المستخدمين',
+      'users_directory_read_only':
+          'هذا الدليل للقراءة فقط. أنشئ الحسابات أو عدّلها من لوحة الويب.',
       'form_data_management': 'إدارة النماذج والبيانات',
       'manage_templates': 'إدارة القوالب',
       'manage_assignments': 'إدارة المهام',
@@ -2411,6 +2419,8 @@ class AppLocalizations {
       'system_configuration': 'सिस्टम कॉन्फ़िगरेशन',
       'user_management': 'उपयोगकर्ता प्रबंधन',
       'manage_users': 'उपयोगकर्ता प्रबंधित करें',
+      'users_directory_read_only':
+          'यह सूची केवल पढ़ने योग्य है। वेब बैकऑफ़िस में खाते बनाएं या बदलें।',
       'form_data_management': 'फ़ॉर्म और डेटा प्रबंधन',
       'manage_templates': 'टेम्प्लेट प्रबंधित करें',
       'manage_assignments': 'असाइनमेंट प्रबंधित करें',
@@ -2991,6 +3001,8 @@ class AppLocalizations {
       'system_configuration': 'Конфигурация Системы',
       'user_management': 'Управление Пользователями',
       'manage_users': 'Управлять Пользователями',
+      'users_directory_read_only':
+          'Список только для чтения. Создавайте и меняйте учётные записи в веб-бэкофисе.',
       'form_data_management': 'Управление Формами и Данными',
       'manage_templates': 'Управлять Шаблонами',
       'manage_assignments': 'Управлять Назначениями',
@@ -3577,6 +3589,7 @@ class AppLocalizations {
       'system_configuration': '系统配置',
       'user_management': '用户管理',
       'manage_users': '管理用户',
+      'users_directory_read_only': '此列表为只读。请在网页管理后台创建或修改账户。',
       'form_data_management': '表单和数据管理',
       'manage_templates': '管理模板',
       'manage_assignments': '管理任务',
@@ -4141,6 +4154,7 @@ class AppLocalizations {
   String get systemConfiguration => translate('system_configuration');
   String get userManagement => translate('user_management');
   String get manageUsers => translate('manage_users');
+  String get usersDirectoryReadOnly => translate('users_directory_read_only');
   String get formDataManagement => translate('form_data_management');
   String get manageTemplates => translate('manage_templates');
   String get manageAssignments => translate('manage_assignments');

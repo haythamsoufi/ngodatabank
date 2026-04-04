@@ -36,10 +36,21 @@ class UserAnalyticsProvider with ChangeNotifier {
       );
 
       if (response.statusCode == 200) {
-        final decoded = jsonDecode(response.body);
-        if (decoded['status'] == 'success' && decoded['data'] != null) {
-          final data = decoded['data'] as Map<String, dynamic>;
-          // Map backend field names to expected field names
+        final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+        // Match AdminDashboardProvider: Flask json_ok(status=..., data={...}) merges
+        // stats at the top level — there is often no nested `data` key.
+        final isSuccess = decoded['status'] == 'success' ||
+            decoded['success'] == true;
+        if (isSuccess) {
+          final nested = decoded['data'];
+          final Map<String, dynamic> data = Map<String, dynamic>.from(
+            nested is Map ? nested as Map<String, dynamic> : decoded,
+          );
+          if (nested is! Map) {
+            data.remove('success');
+            data.remove('status');
+            data.remove('message');
+          }
           _analyticsData = {
             ...data,
             'total_users': data['user_count'],
@@ -47,7 +58,7 @@ class UserAnalyticsProvider with ChangeNotifier {
           };
           _error = null;
         } else {
-          _error = decoded['message'] ?? 'Failed to load analytics';
+          _error = decoded['message']?.toString() ?? 'Failed to load analytics';
           _analyticsData = null;
         }
       } else {
@@ -77,12 +88,23 @@ class UserAnalyticsProvider with ChangeNotifier {
       );
 
       if (response.statusCode == 200) {
-        final decoded = jsonDecode(response.body);
-        if (decoded['status'] == 'success' && decoded['data'] != null) {
+        final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+        final isSuccess = decoded['status'] == 'success' ||
+            decoded['success'] == true;
+        if (isSuccess) {
+          final nested = decoded['data'];
+          final Map<String, dynamic> activityPayload = Map<String, dynamic>.from(
+            nested is Map ? nested as Map<String, dynamic> : decoded,
+          );
+          if (nested is! Map) {
+            activityPayload.remove('success');
+            activityPayload.remove('status');
+            activityPayload.remove('message');
+          }
           if (_analyticsData == null) {
             _analyticsData = {};
           }
-          _analyticsData!['activity'] = decoded['data'];
+          _analyticsData!['activity'] = activityPayload;
           notifyListeners();
         }
       }

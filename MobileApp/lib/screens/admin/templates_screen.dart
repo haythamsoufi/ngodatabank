@@ -133,8 +133,8 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
                   const SizedBox(height: 16),
                   Text(
                     AppLocalizations.of(context)!.loadingTemplates,
-                    style: const TextStyle(
-                      color: Color(AppConstants.textSecondary),
+                    style: TextStyle(
+                      color: context.textSecondaryColor,
                       fontSize: 14,
                     ),
                   ),
@@ -148,16 +148,16 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.error_outline,
                     size: 64,
-                    color: Color(AppConstants.textSecondary),
+                    color: context.textSecondaryColor,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     provider.error!,
-                    style: const TextStyle(
-                      color: Color(AppConstants.textSecondary),
+                    style: TextStyle(
+                      color: context.textSecondaryColor,
                       fontSize: 14,
                     ),
                     textAlign: TextAlign.center,
@@ -181,16 +181,16 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.description_outlined,
                     size: 64,
-                    color: Color(AppConstants.textSecondary),
+                    color: context.textSecondaryColor,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     localizations.noTemplatesFound,
-                    style: const TextStyle(
-                      color: Color(AppConstants.textSecondary),
+                    style: TextStyle(
+                      color: context.textSecondaryColor,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
@@ -231,10 +231,9 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
                                 children: [
                                   Text(
                                     template.displayName,
-                                    style: const TextStyle(
-                                      fontSize: 16,
+                                    style: theme.textTheme.titleMedium?.copyWith(
                                       fontWeight: FontWeight.w600,
-                                      color: Color(AppConstants.textColor),
+                                      color: theme.colorScheme.onSurface,
                                     ),
                                   ),
                                   const SizedBox(height: 8),
@@ -247,8 +246,10 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
                                             vertical: 4,
                                           ),
                                           decoration: BoxDecoration(
-                                            color:
-                                                Colors.green.withOpacity(0.1),
+                                            color: theme.brightness ==
+                                                    Brightness.dark
+                                                ? Colors.green.withOpacity(0.2)
+                                                : Colors.green.withOpacity(0.1),
                                             borderRadius:
                                                 BorderRadius.circular(8),
                                           ),
@@ -258,14 +259,20 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
                                               Icon(
                                                 Icons.check_circle,
                                                 size: 14,
-                                                color: Colors.green.shade700,
+                                                color: theme.brightness ==
+                                                        Brightness.dark
+                                                    ? Colors.green.shade300
+                                                    : Colors.green.shade700,
                                               ),
                                               const SizedBox(width: 4),
                                               Text(
                                                 'Self-Report',
                                                 style: TextStyle(
                                                   fontSize: 12,
-                                                  color: Colors.green.shade700,
+                                                  color: theme.brightness ==
+                                                          Brightness.dark
+                                                      ? Colors.green.shade300
+                                                      : Colors.green.shade700,
                                                   fontWeight: FontWeight.w500,
                                                 ),
                                               ),
@@ -285,7 +292,7 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
                                     Navigator.of(context).pushNamed(
                                       AppRoutes.webview,
                                       arguments:
-                                          '/admin/form-builder/edit-template/${template.id}',
+                                          '/admin/templates/edit/${template.id}',
                                     );
                                     break;
                                   case 'duplicate':
@@ -366,9 +373,9 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
                             const SizedBox(width: 4),
                             Text(
                               'Created: ${_formatDate(template.createdAt)}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
-                                color: Color(AppConstants.textSecondary),
+                                color: context.textSecondaryColor,
                               ),
                             ),
                             if (template.dataCount != null) ...[
@@ -381,9 +388,9 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
                               const SizedBox(width: 4),
                               Text(
                                 '${template.dataCount} entries',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
-                                  color: Color(AppConstants.textSecondary),
+                                  color: context.textSecondaryColor,
                                 ),
                               ),
                             ],
@@ -403,7 +410,7 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
         onPressed: () {
           Navigator.of(context).pushNamed(
             AppRoutes.webview,
-            arguments: '/admin/form-builder/new-template',
+            arguments: '/admin/templates/new',
           );
         },
         backgroundColor: Color(AppConstants.ifrcRed),
