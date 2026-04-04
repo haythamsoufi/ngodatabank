@@ -3005,11 +3005,14 @@ const InteractiveWorldMap = ({
         scrollToTopBtn.title = t('globalOverview.map.scrollToTop');
 
         scrollToTopBtn.addEventListener('click', () => {
-          scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+          if (scrollContainer && scrollContainer.isConnected) {
+            scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+          }
         });
 
         // Show/hide scroll to top button based on scroll position
         scrollContainer.addEventListener('scroll', () => {
+          if (!scrollContainer || !scrollContainer.isConnected) return;
           if (scrollContainer.scrollTop > 100) {
             scrollToTopBtn.style.opacity = '1';
           } else {

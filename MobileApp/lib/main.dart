@@ -610,16 +610,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
       _cachedScreens = null;
     }
 
-    // Return cached screens if user type hasn't changed and cache is valid
+    // Return cached screens if user type hasn't changed and cache is valid.
+    // Do not schedule cache clears from here: with a fixed 5-tab bar,
+    // length >= _maxCachedScreens - 1 was always true and caused a rebuild loop.
     if (_cachedScreens != null && !userTypeChanged && !hasTooManyScreens) {
-      // Periodically clear distant screens if we're getting close to limit
-      if (_cachedScreens!.length >= _maxCachedScreens - 1) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            _clearDistantScreens();
-          }
-        });
-      }
       return _cachedScreens!;
     }
 
@@ -861,21 +855,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
                 child: HorizontalSwipePageView(
                   controller: _pageController,
                   onPageChanged: (index) {
-                    // Update current index when user swipes
                     setState(() {
                       _currentIndex = index;
                     });
-
-                    // Periodically clear distant screens when user navigates
-                    // This prevents memory buildup from old screens
-                    if (_cachedScreens != null &&
-                        _cachedScreens!.length > _maxCachedScreens) {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (mounted) {
-                          _clearDistantScreens();
-                        }
-                      });
-                    }
                   },
                   children: screens,
                 ),

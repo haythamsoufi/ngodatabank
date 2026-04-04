@@ -62,14 +62,20 @@ class _WebViewPullToRefreshState extends State<WebViewPullToRefresh> {
       // Use JavaScript to check scroll position
       final result = await widget.webViewController!.evaluateJavascript(source: '''
         (function() {
-          // Check window scroll position
-          var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-          // Also check if document body is scrollable
-          var bodyScrollTop = document.body.scrollTop || 0;
-          var documentElementScrollTop = document.documentElement.scrollTop || 0;
-
-          // Return true if we're at the top (with small threshold for floating point precision)
-          return (scrollTop <= 10 && bodyScrollTop <= 10 && documentElementScrollTop <= 10);
+          try {
+            var de = document.documentElement;
+            var b = document.body;
+            // pageYOffset can be 0 at top; do not use || chain that dereferences null (WebView early load).
+            var py = (typeof window.pageYOffset === 'number') ? window.pageYOffset : 0;
+            var scrollTop = py;
+            if (!scrollTop && de) scrollTop = de.scrollTop;
+            if (!scrollTop && b) scrollTop = b.scrollTop;
+            var bodyScrollTop = b ? b.scrollTop : 0;
+            var documentElementScrollTop = de ? de.scrollTop : 0;
+            return (scrollTop <= 10 && bodyScrollTop <= 10 && documentElementScrollTop <= 10);
+          } catch (e) {
+            return true;
+          }
         })();
       ''');
 
