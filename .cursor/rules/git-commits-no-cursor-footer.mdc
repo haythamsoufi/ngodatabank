@@ -1,0 +1,10 @@
+---
+description: Never add Cursor marketing or co-author footers to git commits
+alwaysApply: true
+---
+
+# Git commit messages
+
+- Do **not** append `Made-with: Cursor`, `Co-authored-by: Cursor`, or any similar Cursor branding or attribution lines to commit messages.
+- Use only the subject (and optional body) the user asked for—no tool footers, no AI attribution trailers.
+- When running `git commit`, pass a single `-m "subject"` or use a here-doc/body that excludes those lines entirely.
