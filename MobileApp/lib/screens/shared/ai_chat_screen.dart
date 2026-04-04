@@ -39,6 +39,19 @@ class _AiChatScreenState extends State<AiChatScreen> {
   int _lastLastMessageLen = 0;
   String? _lastShownStreamHint;
 
+  /// ChatGPT iOS–inspired surfaces (neutral canvas, soft user pills, green send).
+  static const Color _gptCanvasLight = Color(0xFFFFFFFF);
+  static const Color _gptCanvasDark = Color(0xFF212121);
+  static const Color _gptUserBubbleLight = Color(0xFFF4F4F4);
+  static const Color _gptUserBubbleDark = Color(0xFF2F2F2F);
+  static const Color _gptComposerLight = Color(0xFFF4F4F4);
+  static const Color _gptComposerDark = Color(0xFF303030);
+  static const Color _gptSendGreen = Color(0xFF10A37F);
+  static const Color _gptSendDisabledLight = Color(0xFFE5E5E5);
+  static const Color _gptSendDisabledDark = Color(0xFF3E3E3E);
+  static const Color _gptAssistantTextLight = Color(0xFF0D0D0D);
+  static const Color _gptAssistantTextDark = Color(0xFFECECEC);
+
   /// Same example prompts as `chat_immersive.html` (English source strings).
   static const List<String> _quickPrompts = [
     'How many volunteers in Bangladesh?',
@@ -484,11 +497,30 @@ class _AiChatScreenState extends State<AiChatScreen> {
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
+      backgroundColor: isDark ? _gptCanvasDark : _gptCanvasLight,
       appBar: AppBar(
-        title: Text(appBarTitle),
+        backgroundColor: isDark ? _gptCanvasDark : _gptCanvasLight,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: true,
+        title: Text(
+          appBarTitle,
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.3,
+            color: isDark ? _gptAssistantTextDark : _gptAssistantTextLight,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        iconTheme: IconThemeData(
+          color: isDark ? _gptAssistantTextDark : _gptAssistantTextLight,
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add_comment_outlined),
+            icon: Icon(Icons.edit_outlined, color: isDark ? _gptAssistantTextDark : _gptAssistantTextLight),
             tooltip: 'New chat',
             onPressed: () => context.read<AiChatProvider>().startNewConversation(),
           ),
@@ -510,12 +542,12 @@ class _AiChatScreenState extends State<AiChatScreen> {
               children: [
                 if (auth.user?.aiBetaTester == true)
                   Material(
-                    color: isDark ? const Color(0xFF422006) : Colors.amber.shade100,
+                    color: isDark ? _gptComposerDark : _gptUserBubbleLight,
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       child: Row(
                         children: [
-                          Icon(Icons.science_outlined, size: 18, color: isDark ? Colors.amber.shade200 : Colors.amber.shade900),
+                          Icon(Icons.science_outlined, size: 18, color: isDark ? Colors.amber.shade300 : Colors.amber.shade800),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -523,7 +555,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                               style: TextStyle(
                                 fontSize: 12,
                                 height: 1.25,
-                                color: isDark ? Colors.amber.shade100 : Colors.amber.shade900,
+                                color: isDark ? Colors.grey[300] : Colors.grey[800],
                               ),
                             ),
                           ),
@@ -547,44 +579,48 @@ class _AiChatScreenState extends State<AiChatScreen> {
                         ? Center(
                             child: SingleChildScrollView(
                               child: Padding(
-                                padding: const EdgeInsets.all(32.0),
+                                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.stretch,
                                   children: [
                                     Icon(
-                                      Icons.forum_outlined,
-                                      size: 56,
-                                      color: isDark ? Colors.grey[600] : Colors.grey[400],
+                                      Icons.auto_awesome_outlined,
+                                      size: 48,
+                                      color: isDark ? Colors.grey[500] : Colors.grey[400],
                                     ),
-                                    const SizedBox(height: 12),
+                                    const SizedBox(height: 20),
                                     Text(
                                       _welcomeAssistantName(),
                                       style: TextStyle(
-                                        fontSize: 22,
+                                        fontSize: 28,
                                         fontWeight: FontWeight.w600,
-                                        color: isDark ? Colors.grey[200] : Colors.grey[800],
+                                        letterSpacing: -0.5,
+                                        height: 1.2,
+                                        color: isDark ? _gptAssistantTextDark : _gptAssistantTextLight,
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
-                                    const SizedBox(height: 8),
+                                    const SizedBox(height: 10),
                                     Text(
                                       'How can I help you today?',
                                       style: TextStyle(
                                         fontSize: 17,
-                                        fontWeight: FontWeight.w500,
-                                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                        fontWeight: FontWeight.w400,
+                                        letterSpacing: -0.2,
+                                        color: isDark ? Colors.grey[500] : Colors.grey[600],
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
                                     if (!ai.policyAcknowledged) ...[
                                       const SizedBox(height: 20),
                                       Container(
-                                        padding: const EdgeInsets.all(14),
+                                        padding: const EdgeInsets.all(16),
                                         decoration: BoxDecoration(
-                                          color: isDark ? const Color(0xFF171717) : Colors.grey[50],
+                                          color: isDark ? _gptComposerDark : _gptComposerLight,
+                                          borderRadius: BorderRadius.circular(16),
                                           border: Border.all(
-                                            color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+                                            color: isDark ? Colors.grey[700]! : Colors.grey[200]!,
                                           ),
                                         ),
                                         child: Column(
@@ -633,13 +669,13 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                     Text(
                                       'Try asking',
                                       style: TextStyle(
-                                        fontSize: 14,
+                                        fontSize: 13,
                                         fontWeight: FontWeight.w500,
-                                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                        color: isDark ? Colors.grey[500] : Colors.grey[500],
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
-                                    const SizedBox(height: 12),
+                                    const SizedBox(height: 14),
                                     Wrap(
                                       spacing: 8,
                                       runSpacing: 8,
@@ -662,7 +698,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                           )
                         : ListView.builder(
                             controller: _scrollController,
-                            padding: const EdgeInsets.all(12),
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                             itemCount: ai.messages.length,
                             itemBuilder: (context, i) {
                               final m = ai.messages[i];
@@ -686,36 +722,56 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                   m.content.isEmpty;
 
                               final isEditing = _editingMessageIndex == i;
+                              final assistantMaxWidth = MediaQuery.of(context).size.width - 32;
+                              final userMaxWidth = MediaQuery.of(context).size.width * 0.78;
+
                               return Align(
                                 alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
                                 child: ConstrainedBox(
                                   constraints: BoxConstraints(
-                                    maxWidth: MediaQuery.of(context).size.width * 0.85,
+                                    maxWidth: isUser ? userMaxWidth : assistantMaxWidth,
                                   ),
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                                     children: [
-                                      // Message bubble
+                                      // Message bubble (ChatGPT-style: soft pill for user, flat for assistant)
                                       Container(
-                                        margin: const EdgeInsets.symmetric(vertical: 6),
-                                        padding: const EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          color: isUser
-                                              ? IOSColors.systemBlue
-                                              : (isDark ? IOSColors.secondarySystemBackgroundDark : IOSColors.secondarySystemBackground),
-                                          borderRadius: BorderRadius.circular(14),
-                                          border: isEditing
-                                              ? Border.all(
-                                                  color: IOSColors.getSystemBlue(context),
-                                                  width: 2,
-                                                )
-                                              : null,
+                                        margin: EdgeInsets.symmetric(vertical: isUser ? 5 : 8),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: isUser ? 14 : 2,
+                                          vertical: isUser ? 10 : 4,
                                         ),
+                                        decoration: isUser
+                                            ? BoxDecoration(
+                                                color: isDark ? _gptUserBubbleDark : _gptUserBubbleLight,
+                                                borderRadius: BorderRadius.circular(22),
+                                                border: isEditing
+                                                    ? Border.all(
+                                                        color: IOSColors.getSystemBlue(context),
+                                                        width: 2,
+                                                      )
+                                                    : null,
+                                              )
+                                            : BoxDecoration(
+                                                color: Colors.transparent,
+                                                border: isEditing
+                                                    ? Border.all(
+                                                        color: IOSColors.getSystemBlue(context),
+                                                        width: 2,
+                                                      )
+                                                    : null,
+                                                borderRadius: isEditing ? BorderRadius.circular(12) : null,
+                                              ),
                                         child: isUser
                                             ? Text(
                                                 m.content,
-                                                style: const TextStyle(color: Colors.white),
+                                                style: TextStyle(
+                                                  color: isDark ? _gptAssistantTextDark : _gptAssistantTextLight,
+                                                  fontSize: 16,
+                                                  height: 1.35,
+                                                  letterSpacing: -0.2,
+                                                ),
                                                 softWrap: true,
                                                 overflow: TextOverflow.visible,
                                               )
@@ -739,42 +795,44 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                                         margin: Margins.zero,
                                                         padding: HtmlPaddings.zero,
                                                         color: isDark
-                                                            ? Colors.grey[200]
-                                                            : Colors.grey[900],
+                                                            ? _gptAssistantTextDark
+                                                            : _gptAssistantTextLight,
+                                                        fontSize: FontSize(16),
+                                                        lineHeight: const LineHeight(1.45),
                                                       ),
-                                                      // Style tour trigger links with a button-like appearance
+                                                      // Style tour trigger links with a soft pill (ChatGPT-like)
                                                       ".chatbot-tour-trigger": Style(
                                                         display: Display.inlineBlock,
                                                         padding: HtmlPaddings.symmetric(horizontal: 12, vertical: 8),
                                                         margin: Margins.only(top: 8),
                                                         backgroundColor: isDark
-                                                            ? Color(0xFF1E3A5F)
-                                                            : Color(0xFFE3F2FD),
+                                                            ? _gptUserBubbleDark
+                                                            : _gptUserBubbleLight,
                                                         border: Border.all(
                                                           color: isDark
-                                                              ? IOSColors.systemBlueDark
-                                                              : IOSColors.systemBlue,
+                                                              ? Colors.grey[600]!
+                                                              : Colors.grey[300]!,
                                                         ),
                                                       ),
-                                                      // ChatGPT-style source document links: chip/pill appearance
+                                                      // Source chips: neutral pills (ChatGPT iOS–like)
                                                       ".source-doc-link": Style(
                                                         display: Display.inlineBlock,
                                                         padding: HtmlPaddings.symmetric(horizontal: 10, vertical: 6),
                                                         margin: Margins.only(top: 6, right: 6),
                                                         backgroundColor: isDark
-                                                            ? Color(0xFF1A2E4A)
-                                                            : Color(0xFFE8F4FD),
+                                                            ? _gptUserBubbleDark
+                                                            : _gptUserBubbleLight,
                                                         border: Border.all(
                                                           color: isDark
-                                                              ? IOSColors.systemBlueDark
-                                                              : IOSColors.systemBlue,
+                                                              ? Colors.grey[600]!
+                                                              : Colors.grey[300]!,
                                                           width: 1,
                                                         ),
                                                         color: isDark
                                                             ? IOSColors.systemBlueDark
                                                             : IOSColors.systemBlue,
                                                         textDecoration: TextDecoration.none,
-                                                        fontSize: FontSize.small,
+                                                        fontSize: FontSize(12.5),
                                                       ),
                                                     },
                                                     onLinkTap: (url, attributes, element) {
@@ -926,80 +984,166 @@ class _AiChatScreenState extends State<AiChatScreen> {
                   padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
                   child: SafeArea(
                     top: false,
-                    child: Container(
-                      padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.tune),
-                            tooltip: 'Configure data sources',
-                            onPressed: ai.isStreaming ? null : () => _showSourcesSheet(context, ai, isDark),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 6, 12, 10),
+                      child: Container(
+                        padding: const EdgeInsets.fromLTRB(4, 4, 6, 4),
+                        decoration: BoxDecoration(
+                          color: isDark ? _gptComposerDark : _gptComposerLight,
+                          borderRadius: BorderRadius.circular(26),
+                          border: Border.all(
+                            color: isDark ? Colors.grey[700]! : Colors.grey[200]!,
+                            width: 1,
                           ),
-                          Expanded(
-                            child: TextField(
-                              controller: _controller,
-                              focusNode: _inputFocusNode,
-                              minLines: 1,
-                              maxLines: 6,
-                              maxLength: 4000,
-                              buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
-                              textInputAction: TextInputAction.send,
-                              onSubmitted: (_) => _send(context, isAuthed),
-                              inputFormatters: [
-                                _EnterToSendFormatter(
-                                  onEnterPressed: () => _send(context, isAuthed),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            IconButton(
+                              visualDensity: VisualDensity.compact,
+                              icon: Icon(
+                                Icons.tune_rounded,
+                                size: 22,
+                                color: isDark ? Colors.grey[400] : Colors.grey[600],
+                              ),
+                              tooltip: 'Configure data sources',
+                              onPressed: ai.isStreaming ? null : () => _showSourcesSheet(context, ai, isDark),
+                            ),
+                            Expanded(
+                              child: TextField(
+                                controller: _controller,
+                                focusNode: _inputFocusNode,
+                                minLines: 1,
+                                maxLines: 6,
+                                maxLength: 4000,
+                                buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
+                                textInputAction: TextInputAction.send,
+                                onSubmitted: (_) => _send(context, isAuthed),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  height: 1.35,
+                                  color: isDark ? _gptAssistantTextDark : _gptAssistantTextLight,
                                 ),
-                              ],
-                              decoration: InputDecoration(
-                                hintText: _editingMessageIndex != null ? 'Edit message...' : 'Ask anything',
-                                border: const OutlineInputBorder(),
-                                suffixIcon: _editingMessageIndex != null
-                                    ? IconButton(
-                                        icon: const Icon(Icons.close, size: 20),
-                                        onPressed: () {
-                                          setState(() {
-                                            _editingMessageIndex = null;
-                                            _controller.clear();
-                                          });
-                                        },
-                                        tooltip: 'Cancel edit',
-                                      )
-                                    : null,
+                                cursorColor: _gptSendGreen,
+                                inputFormatters: [
+                                  _EnterToSendFormatter(
+                                    onEnterPressed: () => _send(context, isAuthed),
+                                  ),
+                                ],
+                                decoration: InputDecoration(
+                                  hintText: _editingMessageIndex != null ? 'Edit message…' : 'Message',
+                                  hintStyle: TextStyle(
+                                    color: isDark ? Colors.grey[500] : Colors.grey[500],
+                                    fontSize: 16,
+                                  ),
+                                  border: InputBorder.none,
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.fromLTRB(4, 10, 4, 10),
+                                  suffixIcon: _editingMessageIndex != null
+                                      ? IconButton(
+                                          icon: Icon(
+                                            Icons.close_rounded,
+                                            size: 20,
+                                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              _editingMessageIndex = null;
+                                              _controller.clear();
+                                            });
+                                          },
+                                          tooltip: 'Cancel edit',
+                                        )
+                                      : null,
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 4),
-                          if (ai.isStreaming || ai.inflightRestoreActive)
-                            IconButton(
-                              icon: const Icon(Icons.stop),
-                              tooltip: 'Stop',
-                              onPressed: () => context.read<AiChatProvider>().stopStreaming(isAuthenticated: isAuthed),
-                            )
-                          else if (ai.errorType == 'quota_exceeded' && ai.failedMessage != null)
-                            IconButton(
-                              icon: const Icon(Icons.refresh),
-                              tooltip: 'Retry',
-                              onPressed: () => _retry(context, isAuthed),
-                            )
-                          else
-                            IconButton(
-                              icon: const Icon(Icons.send),
-                              onPressed: () => _send(context, isAuthed),
-                            ),
-                        ],
+                            const SizedBox(width: 2),
+                            if (ai.isStreaming || ai.inflightRestoreActive)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 2, right: 2),
+                                child: Tooltip(
+                                  message: 'Stop',
+                                  child: Material(
+                                    color: isDark ? _gptSendDisabledDark : _gptSendDisabledLight,
+                                    shape: const CircleBorder(),
+                                    child: InkWell(
+                                      customBorder: const CircleBorder(),
+                                      onTap: () => context.read<AiChatProvider>().stopStreaming(isAuthenticated: isAuthed),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(10),
+                                        child: Icon(
+                                          Icons.stop_rounded,
+                                          size: 20,
+                                          color: isDark ? Colors.grey[300] : Colors.grey[700],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            else if (ai.errorType == 'quota_exceeded' && ai.failedMessage != null)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 2, right: 2),
+                                child: Material(
+                                  color: _gptSendGreen,
+                                  shape: const CircleBorder(),
+                                  child: InkWell(
+                                    customBorder: const CircleBorder(),
+                                    onTap: () => _retry(context, isAuthed),
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(10),
+                                      child: Icon(Icons.refresh_rounded, size: 20, color: Colors.white),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            else
+                              ValueListenableBuilder<TextEditingValue>(
+                                valueListenable: _controller,
+                                builder: (context, value, _) {
+                                  final hasText = value.text.trim().isNotEmpty;
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 2, right: 2),
+                                    child: Material(
+                                      color: hasText
+                                          ? _gptSendGreen
+                                          : (isDark ? _gptSendDisabledDark : _gptSendDisabledLight),
+                                      shape: const CircleBorder(),
+                                      child: InkWell(
+                                        customBorder: const CircleBorder(),
+                                        onTap: hasText ? () => _send(context, isAuthed) : null,
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(10),
+                                          child: Icon(
+                                            Icons.arrow_upward_rounded,
+                                            size: 20,
+                                            color: hasText
+                                                ? Colors.white
+                                                : (isDark ? Colors.grey[600] : Colors.grey[400]),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
                 // Disclaimer aligned with chat_immersive.html
                 Padding(
-                  padding: const EdgeInsets.only(top: 4, left: 12, right: 12),
+                  padding: const EdgeInsets.only(bottom: 6, left: 20, right: 20),
                   child: Text(
                     'AI can make mistakes. Check important information.',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 11,
-                      color: isDark ? Colors.grey[500] : Colors.grey[600],
+                      height: 1.25,
+                      color: isDark ? Colors.grey[600] : Colors.grey[500],
                     ),
                   ),
                 ),
@@ -1100,6 +1244,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
           }).toList();
 
     return Drawer(
+      backgroundColor: isDark ? _gptCanvasDark : _gptCanvasLight,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.zero,
       ),
@@ -1469,8 +1614,9 @@ class _AiChatScreenState extends State<AiChatScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected
-              ? (isDark ? Colors.grey[800] : Colors.grey[200])
+              ? (isDark ? _gptUserBubbleDark : _gptUserBubbleLight)
               : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
           children: [
@@ -1806,26 +1952,32 @@ class _AiChatScreenState extends State<AiChatScreen> {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: isDark
-                ? Colors.grey[800]?.withOpacity(0.5)
-                : Colors.grey[200]?.withOpacity(0.7),
-            borderRadius: BorderRadius.circular(16),
+            color: isDark ? _gptUserBubbleDark : _gptCanvasLight,
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isDark
-                  ? (Colors.grey[700] ?? Colors.grey)
-                  : (Colors.grey[300] ?? Colors.grey),
+              color: isDark ? Colors.grey[700]! : Colors.grey[200]!,
               width: 1,
             ),
+            boxShadow: isDark
+                ? null
+                : [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
           ),
           child: Text(
             prompt,
             style: TextStyle(
-              fontSize: 12,
-              color: isDark ? Colors.grey[200] : Colors.grey[800],
+              fontSize: 13,
+              height: 1.3,
+              color: isDark ? _gptAssistantTextDark : _gptAssistantTextLight,
             ),
           ),
         ),
@@ -1884,27 +2036,30 @@ class _TypingIndicatorState extends State<_TypingIndicator> with TickerProviderS
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(3, (index) {
-        return AnimatedBuilder(
-          animation: _animations[index],
-          builder: (context, child) {
-            return Opacity(
-              opacity: 0.3 + (_animations[index].value * 0.7),
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: widget.isDark ? Colors.grey[400] : Colors.grey[600],
-                  shape: BoxShape.circle,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(3, (index) {
+          return AnimatedBuilder(
+            animation: _animations[index],
+            builder: (context, child) {
+              return Opacity(
+                opacity: 0.25 + (_animations[index].value * 0.65),
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: 7,
+                  height: 7,
+                  decoration: BoxDecoration(
+                    color: widget.isDark ? Colors.grey[500] : Colors.grey[500],
+                    shape: BoxShape.circle,
+                  ),
                 ),
-              ),
-            );
-          },
-        );
-      }),
+              );
+            },
+          );
+        }),
+      ),
     );
   }
 }

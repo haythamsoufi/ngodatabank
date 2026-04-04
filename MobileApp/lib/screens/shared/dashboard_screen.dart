@@ -102,15 +102,19 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
-  bool _shouldShowEnterDataButton(String? userRole, String assignmentStatus) {
+  bool _shouldShowEnterDataButton(String? userRole, Assignment assignment) {
+    // Align with dashboard.html: no Enter Data when assignment form is effectively closed
+    if (assignment.isEffectivelyClosed) {
+      return false;
+    }
     // For admins and system managers: always show
     if (userRole == 'admin' || userRole == 'system_manager') {
       return true;
     }
 
-    // For focal points: show only when status is NOT "Submitted", "Approved", or "Requires Revision"
+    // For focal points (assignment_editor_submitter): same statuses as Backoffice template
     if (userRole == 'focal_point') {
-      final statusLower = assignmentStatus.toLowerCase();
+      final statusLower = assignment.status.toLowerCase();
       return statusLower != 'submitted' &&
           statusLower != 'approved' &&
           statusLower != 'requires revision';
@@ -118,6 +122,22 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     // For other roles: don't show
     return false;
+  }
+
+  /// Past list order matches main.dashboard: due date ascending, nulls last (then id).
+  List<Assignment> _sortedPastAssignments(List<Assignment> items) {
+    final copy = List<Assignment>.from(items);
+    copy.sort((a, b) {
+      if (a.dueDate == null && b.dueDate == null) {
+        return a.id.compareTo(b.id);
+      }
+      if (a.dueDate == null) return 1;
+      if (b.dueDate == null) return -1;
+      final byDue = a.dueDate!.compareTo(b.dueDate!);
+      if (byDue != 0) return byDue;
+      return a.id.compareTo(b.id);
+    });
+    return copy;
   }
 
   Widget _buildStatsCard({
@@ -171,7 +191,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  // Build past assignments section with grouping and filters (like HTML)
+  // Past section: filters + single list (same structure as dashboard.html table, not status sub-groups)
   Widget _buildPastAssignmentsSection(DashboardProvider provider) {
     final localizations = AppLocalizations.of(context)!;
     // Get unique values for filters
@@ -211,19 +231,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       return true;
     }).toList();
 
-    // Group by status (like HTML: Approved and Requires Revision)
-    // Use case-insensitive comparison for status matching
-    final approvedAssignments = filteredAssignments
-        .where((a) => a.status.toLowerCase() == 'approved')
-        .toList();
-    final revisionAssignments = filteredAssignments
-        .where((a) => a.status.toLowerCase() == 'requires revision')
-        .toList();
-    final otherAssignments = filteredAssignments
-        .where((a) =>
-            a.status.toLowerCase() != 'approved' &&
-            a.status.toLowerCase() != 'requires revision')
-        .toList();
+    final sortedPast = _sortedPastAssignments(filteredAssignments);
 
     final theme = Theme.of(context);
     return Container(
@@ -333,130 +341,30 @@ class _DashboardScreenState extends State<DashboardScreen>
                 },
               ),
 
-            // Grouped Assignments
+            // Single list (dashboard.html: one table for all past rows)
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 0, 0, IOSSpacing.lg),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Approved Assignments Group
-                  if (approvedAssignments.isNotEmpty) ...[
-                    _buildStatusGroupHeader(
-                      localizations.approved,
-                      approvedAssignments.length,
-                      const Color(AppConstants.successColor),
-                      Icons.check_circle_rounded,
-                    ),
+                  if (sortedPast.isNotEmpty)
                     Container(
                       color: Theme.of(context).cardTheme.color ??
                           Theme.of(context).colorScheme.surface,
                       child: Column(
-                        children: approvedAssignments.asMap().entries.map(
-                          (entry) {
-                            final index = entry.key;
-                            final isLast =
-                                index == approvedAssignments.length - 1;
-                            return _buildPastAssignmentCard(
-                              entry.value,
-                              index,
-                              Theme.of(context).cardTheme.color ??
-                                  Theme.of(context).colorScheme.surface,
-                              isLast,
-                            );
-                          },
-                        ).toList(),
+                        children: sortedPast.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final isLast = index == sortedPast.length - 1;
+                          return _buildPastAssignmentCard(
+                            entry.value,
+                            index,
+                            Theme.of(context).cardTheme.color ??
+                                Theme.of(context).colorScheme.surface,
+                            isLast,
+                          );
+                        }).toList(),
                       ),
                     ),
-                    SizedBox(height: IOSSpacing.xlOf(context)),
-                  ],
-
-                  // Requires Revision Group
-                  if (revisionAssignments.isNotEmpty) ...[
-                    _buildStatusGroupHeader(
-                      localizations.requiresRevision,
-                      revisionAssignments.length,
-                      const Color(AppConstants.warningColor),
-                      Icons.warning_rounded,
-                    ),
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: IOSSpacing.lg),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).cardTheme.color ??
-                            Theme.of(context).colorScheme.surface,
-                        borderRadius: BorderRadius.circular(IOSDimensions.borderRadiusLargeOf(context)),
-                        boxShadow: Theme.of(context).brightness == Brightness.dark
-                            ? []
-                            : [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.02),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 1),
-                                ),
-                              ],
-                      ),
-                      child: Column(
-                        children: revisionAssignments.asMap().entries.map(
-                          (entry) {
-                            final index = entry.key;
-                            final isLast =
-                                index == revisionAssignments.length - 1;
-                            return _buildPastAssignmentCard(
-                              entry.value,
-                              index,
-                              Theme.of(context).cardTheme.color ??
-                                  Theme.of(context).colorScheme.surface,
-                              isLast,
-                            );
-                          },
-                        ).toList(),
-                      ),
-                    ),
-                    SizedBox(height: IOSSpacing.xlOf(context)),
-                  ],
-
-                  // Other Statuses Group
-                  if (otherAssignments.isNotEmpty) ...[
-                    _buildStatusGroupHeader(
-                      localizations.other,
-                      otherAssignments.length,
-                      const Color(AppConstants.textSecondary),
-                      Icons.info_rounded,
-                    ),
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: IOSSpacing.lg),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).cardTheme.color ??
-                            Theme.of(context).colorScheme.surface,
-                        borderRadius: BorderRadius.circular(IOSDimensions.borderRadiusLargeOf(context)),
-                        boxShadow: Theme.of(context).brightness == Brightness.dark
-                            ? []
-                            : [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.02),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 1),
-                                ),
-                              ],
-                      ),
-                      child: Column(
-                        children: otherAssignments.asMap().entries.map(
-                          (entry) {
-                            final index = entry.key;
-                            final isLast =
-                                index == otherAssignments.length - 1;
-                            return _buildPastAssignmentCard(
-                              entry.value,
-                              index,
-                              Theme.of(context).cardTheme.color ??
-                                  Theme.of(context).colorScheme.surface,
-                              isLast,
-                            );
-                          },
-                        ).toList(),
-                      ),
-                    ),
-                    SizedBox(height: IOSSpacing.xlOf(context)),
-                  ],
 
                   // Empty filtered state
                   if (filteredAssignments.isEmpty)
@@ -745,54 +653,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  Widget _buildStatusGroupHeader(
-    String title,
-    int count,
-    Color color,
-    IconData icon,
-  ) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(IOSSpacing.lg, IOSSpacing.sm, IOSSpacing.lg, IOSSpacing.md - 4),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: 16,
-            color: color,
-          ),
-          SizedBox(width: IOSSpacing.smOf(context)),
-          Text(
-            title,
-            style: IOSTextStyle.callout(context).copyWith(
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurface,
-              letterSpacing: -0.3,
-            ),
-          ),
-          SizedBox(width: IOSSpacing.sm),
-          Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: IOSSpacing.xsOf(context) + 2,
-                vertical: IOSSpacing.xsOf(context) / 2,
-              ),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              '$count',
-              style: IOSTextStyle.caption1(context).copyWith(
-                color: color,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildPastAssignmentCard(
     Assignment assignment,
     int index,
@@ -927,7 +787,6 @@ class _DashboardScreenState extends State<DashboardScreen>
           });
         }
 
-        final theme = Theme.of(context);
         return Scaffold(
           appBar: AppAppBar(
             title: localizations.dashboard,
@@ -1075,7 +934,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                     backgroundColor: Colors.transparent,
                                   ),
                                   _buildStatsCard(
-                                    title: localizations.completed,
+                                    title: localizations.pastAssignments,
                                     value: '${provider.pastAssignments.length}',
                                     color: const Color(
                                         AppConstants.successColor),
@@ -1085,8 +944,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                               ),
                             ),
 
-                          // Current Assignments Section
-                          if (provider.currentAssignments.isNotEmpty) ...[
+                          // Current assignments (same bucket as dashboard.html current_assignments)
+                          if (provider.currentAssignments.isNotEmpty ||
+                              provider.pastAssignments.isNotEmpty) ...[
                             _buildSectionHeader(
                               title: localizations.currentAssignments,
                               icon: Icons.assignment_rounded,
@@ -1094,83 +954,137 @@ class _DashboardScreenState extends State<DashboardScreen>
                                       Brightness.dark
                                   ? Colors.blue.shade300
                                   : context.navyIconColor,
-                              count: provider.currentAssignments.length,
+                              count: provider.currentAssignments.isEmpty
+                                  ? null
+                                  : provider.currentAssignments.length,
                             ),
-                            Container(
-                              color: Theme.of(context).cardTheme.color ??
-                                  Theme.of(context).colorScheme.surface,
-                              child: Column(
-                                children: provider.currentAssignments
-                                    .asMap()
-                                    .entries
-                                    .map((entry) {
-                                  final index = entry.key;
-                                  final assignment = entry.value;
-                                  final isExpanded =
-                                      _expandedCardIds.contains(assignment.id);
-                                  final isLast = index ==
-                                      provider.currentAssignments.length - 1;
+                            if (provider.currentAssignments.isNotEmpty)
+                              Container(
+                                color: Theme.of(context).cardTheme.color ??
+                                    Theme.of(context).colorScheme.surface,
+                                child: Column(
+                                  children: provider.currentAssignments
+                                      .asMap()
+                                      .entries
+                                      .map((entry) {
+                                    final index = entry.key;
+                                    final assignment = entry.value;
+                                    final isExpanded = _expandedCardIds
+                                        .contains(assignment.id);
+                                    final isLast = index ==
+                                        provider.currentAssignments.length -
+                                            1;
 
-                                  return Column(
-                                    children: [
-                                      AssignmentCard(
-                                        assignment: assignment,
-                                        isExpanded: isExpanded,
-                                        onToggleExpand: () {
-                                          HapticFeedback.selectionClick();
-                                          setState(() {
-                                            if (isExpanded) {
-                                              _expandedCardIds
-                                                  .remove(assignment.id);
-                                            } else {
-                                              _expandedCardIds
-                                                  .add(assignment.id);
-                                            }
-                                          });
-                                        },
-                                        onTap: () {
-                                          HapticFeedback.lightImpact();
-                                          Navigator.of(context).pushNamed(
-                                            AppRoutes.webview,
-                                            arguments: AppRoutes.formEntry(
-                                                assignment.id),
-                                          );
-                                        },
-                                        showEnterDataButton:
-                                            _shouldShowEnterDataButton(
-                                          authProvider.user?.role,
-                                          assignment.status,
+                                    return Column(
+                                      children: [
+                                        AssignmentCard(
+                                          assignment: assignment,
+                                          isExpanded: isExpanded,
+                                          onToggleExpand: () {
+                                            HapticFeedback.selectionClick();
+                                            setState(() {
+                                              if (isExpanded) {
+                                                _expandedCardIds
+                                                    .remove(assignment.id);
+                                              } else {
+                                                _expandedCardIds
+                                                    .add(assignment.id);
+                                              }
+                                            });
+                                          },
+                                          onTap: () {
+                                            HapticFeedback.lightImpact();
+                                            Navigator.of(context).pushNamed(
+                                              AppRoutes.webview,
+                                              arguments: AppRoutes.formEntry(
+                                                  assignment.id),
+                                            );
+                                          },
+                                          showEnterDataButton:
+                                              _shouldShowEnterDataButton(
+                                            authProvider.user?.role,
+                                            assignment,
+                                          ),
+                                          enterDataButtonText:
+                                              localizations.enterData,
+                                          onEnterData: () {
+                                            HapticFeedback.mediumImpact();
+                                            Navigator.of(context).pushNamed(
+                                              AppRoutes.webview,
+                                              arguments: AppRoutes.formEntry(
+                                                  assignment.id),
+                                            );
+                                          },
                                         ),
-                                        enterDataButtonText:
-                                            localizations.enterData,
-                                      onEnterData: () {
-                                        HapticFeedback.mediumImpact();
-                                        Navigator.of(context).pushNamed(
-                                          AppRoutes.webview,
-                                          arguments: AppRoutes.formEntry(
-                                              assignment.id),
-                                        );
-                                      },
+                                        if (!isLast)
+                                          Divider(
+                                            height: 0.5,
+                                            thickness: 0.5,
+                                            indent: IOSSpacing.lg,
+                                            endIndent: IOSSpacing.lg,
+                                            color: Theme.of(context)
+                                                .dividerColor
+                                                .withOpacity(0.5),
+                                          ),
+                                      ],
+                                    );
+                                  }).toList(),
+                                ),
+                              )
+                            else if (provider.pastAssignments.isNotEmpty)
+                              Padding(
+                                padding: EdgeInsets.fromLTRB(
+                                  IOSSpacing.lgOf(context),
+                                  0,
+                                  IOSSpacing.lgOf(context),
+                                  IOSSpacing.lgOf(context),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      Icons.check_circle_outline_rounded,
+                                      size: 48,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withOpacity(0.35),
+                                    ),
+                                    SizedBox(height: IOSSpacing.mdOf(context)),
+                                    Text(
+                                      localizations.noAssignmentsYet,
+                                      style: IOSTextStyle.subheadline(context)
+                                          .copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withOpacity(0.75),
                                       ),
-                                      if (!isLast)
-                                      Divider(
-                                        height: 0.5,
-                                        thickness: 0.5,
-                                        indent: IOSSpacing.lg,
-                                        endIndent: IOSSpacing.lg,
-                                          color: Theme.of(context)
-                                              .dividerColor
-                                              .withOpacity(0.5),
-                                        ),
-                                    ],
-                                  );
-                                }).toList(),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    SizedBox(height: IOSSpacing.smOf(context)),
+                                    Text(
+                                      localizations.newAssignmentsWillAppear,
+                                      style: IOSTextStyle.footnote(context)
+                                          .copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withOpacity(0.55),
+                                        height: 1.35,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            SizedBox(height: IOSSpacing.xxl),
+                            if (provider.currentAssignments.isNotEmpty)
+                              SizedBox(height: IOSSpacing.xxl)
+                            else if (provider.pastAssignments.isNotEmpty)
+                              SizedBox(height: IOSSpacing.mdOf(context)),
                           ],
 
-                          // Past Assignments Section (Grouped like HTML)
+                          // Past assignments (dashboard.html: collapsible + slicers + one list)
                           if (provider.pastAssignments.isNotEmpty) ...[
                             _buildPastAssignmentsSection(provider),
                           ],

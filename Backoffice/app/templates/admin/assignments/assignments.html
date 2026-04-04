@@ -246,20 +246,20 @@
                 if (isClosed && reopenClosedUrl) {
                     html += '<form action="' + reopenClosedUrl + '" method="POST" class="inline-block">';
                     html += '<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">';
-                    html += '<button type="submit" class="text-orange-600 hover:text-orange-900" title="{{ _("Reopen") }}"><i class="fas fa-fw fa-undo"></i></button>';
+                    html += '<button type="submit" class="text-orange-600 hover:text-orange-900" title="{{ _("Reopen") }}" data-loading-text=""><i class="fas fa-fw fa-undo"></i></button>';
                     html += '</form>';
                 } else {
                     if (toggleActiveUrl) {
                         html += '<form action="' + toggleActiveUrl + '" method="POST" class="inline-block">';
                         html += '<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">';
-                        html += '<button type="submit" class="' + (isActive ? 'text-amber-600 hover:text-amber-900' : 'text-green-600 hover:text-green-900') + '" title="' + (isActive ? '{{ _("Deactivate") }}' : '{{ _("Activate") }}') + '"><i class="fas fa-fw ' + (isActive ? 'fa-pause-circle' : 'fa-play-circle') + '"></i></button>';
+                        html += '<button type="submit" class="' + (isActive ? 'text-amber-600 hover:text-amber-900' : 'text-green-600 hover:text-green-900') + '" title="' + (isActive ? '{{ _("Deactivate") }}' : '{{ _("Activate") }}') + '" data-loading-text=""><i class="fas fa-fw ' + (isActive ? 'fa-pause-circle' : 'fa-play-circle') + '"></i></button>';
                         html += '</form>';
                     }
                     if (closeUrl) {
                         const closeConfirm = (params.data.close_confirm || '').replace(/'/g, "\\'");
                         html += '<form action="' + closeUrl + '" method="POST" class="inline-block close-assignment-form" data-confirm="' + closeConfirm + '">';
                         html += '<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">';
-                        html += '<button type="submit" class="close-assignment-btn text-slate-600 hover:text-slate-900" title="{{ _("Close") }}"><i class="fas fa-fw fa-lock"></i></button>';
+                        html += '<button type="submit" class="close-assignment-btn text-slate-600 hover:text-slate-900" title="{{ _("Close") }}" data-loading-text=""><i class="fas fa-fw fa-lock"></i></button>';
                         html += '</form>';
                     }
                 }
@@ -269,7 +269,7 @@
                 if (deleteUrl) {
                     html += '<form action="' + deleteUrl + '" method="POST" class="inline-block" data-confirm="' + deleteConfirm.replace(/'/g, "\\'") + '" data-confirm-danger="true">';
                     html += '<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">';
-                    html += '<button type="submit" class="text-red-600 hover:text-red-900 delete-assignment-btn" title="{{ _("Delete") }}" data-confirm="' + deleteConfirm.replace(/'/g, "\\'") + '"><i class="fas fa-trash fa-fw"></i></button>';
+                    html += '<button type="submit" class="text-red-600 hover:text-red-900 delete-assignment-btn" title="{{ _("Delete") }}" data-loading-text="" data-confirm="' + deleteConfirm.replace(/'/g, "\\'") + '"><i class="fas fa-trash fa-fw"></i></button>';
                     html += '</form>';
                 }
                 html += '</div>';

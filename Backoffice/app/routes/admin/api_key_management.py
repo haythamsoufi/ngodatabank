@@ -130,7 +130,15 @@ def create_api_key():
                 description=f'Created API key for client: {form.client_name.data}',
                 target_type='api_key',
                 target_id=api_key.id,
-                target_description=f'Client: {form.client_name.data}, Prefix: {key_prefix}...'
+                target_description=f'Client: {form.client_name.data}, Prefix: {key_prefix}...',
+                new_values={
+                    'client_name': form.client_name.data,
+                    'key_prefix': key_prefix,
+                    'rate_limit_per_minute': form.rate_limit_per_minute.data or 60,
+                    'expires_at': (
+                        form.expires_at.data.isoformat() if form.expires_at.data else None
+                    ),
+                },
             )
 
             # Flash success with the key (only shown once!)

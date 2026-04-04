@@ -432,9 +432,11 @@ def get_dashboard():
                 "name": string,
                 "status": string,
                 "due_date": "YYYY-MM-DD" | null,
+                "status_timestamp": ISO datetime string | null,
                 "completion_rate": float (0-100),
                 "template_name": string | null,
-                "period_name": string | null
+                "period_name": string | null,
+                "is_effectively_closed": bool
             }
         ],
         "past_assignments": [...], // Same structure as current_assignments
@@ -722,29 +724,48 @@ def get_dashboard():
                 # Get localized template name
                 localized_template_name = get_localized_template_name(template) if template else None
                 period_name = assigned_form.period_name if assigned_form and assigned_form.period_name else 'Assignment'
+                effectively_closed = bool(
+                    assigned_form and getattr(assigned_form, "is_effectively_closed", False)
+                )
                 assignment_data = {
                     'id': aes.id,
                     'name': f"{period_name} - {localized_template_name if localized_template_name else 'Template Missing'}",
                     'status': aes.status,
                     'due_date': aes.due_date.isoformat() if aes.due_date else None,
+                    'status_timestamp': aes.status_timestamp.isoformat()
+                    if aes.status_timestamp
+                    else None,
                     'completion_rate': round(completion_rate, 1),
                     'template_name': localized_template_name,
-                    'period_name': period_name
+                    'period_name': period_name,
+                    'is_effectively_closed': effectively_closed,
                 }
 
-                # Categorize as current or past (aligned with dashboard in main.py)
-                # Requires Revision -> past; Approved older than 1 month -> past; Pending/In Progress older than 1 year -> past
-                status_ts_utc = ensure_utc(aes.status_timestamp) if aes.status_timestamp else None
-                if not status_ts_utc and aes.status in ('Pending', 'In Progress') and assigned_form and assigned_form.assigned_at:
-                    status_ts_utc = ensure_utc(assigned_form.assigned_at)
-                is_past = (
-                    aes.status == 'Requires Revision' or
-                    (aes.status == 'Approved' and status_ts_utc and status_ts_utc < one_month_ago) or
-                    (aes.status in ('Pending', 'In Progress') and status_ts_utc and status_ts_utc < one_year_ago)
-                )
-
-                if is_past:
+                # Categorize as current or past (same rules as main.dashboard)
+                # Closed -> past; Requires Revision -> past; Approved older than 1 month -> past;
+                # Pending/In Progress older than 1 year -> past; other statuses -> current
+                if effectively_closed:
                     past_assignments.append(assignment_data)
+                    continue
+
+                if aes.status == 'Requires Revision':
+                    past_assignments.append(assignment_data)
+                elif aes.status in ('Approved', 'Pending', 'In Progress'):
+                    status_ts_utc = (
+                        ensure_utc(aes.status_timestamp) if aes.status_timestamp else None
+                    )
+                    if status_ts_utc is None and assigned_form and assigned_form.assigned_at:
+                        status_ts_utc = ensure_utc(assigned_form.assigned_at)
+                    if aes.status == 'Approved':
+                        if status_ts_utc and status_ts_utc < one_month_ago:
+                            past_assignments.append(assignment_data)
+                        else:
+                            current_assignments.append(assignment_data)
+                    else:
+                        if status_ts_utc and status_ts_utc < one_year_ago:
+                            past_assignments.append(assignment_data)
+                        else:
+                            current_assignments.append(assignment_data)
                 else:
                     current_assignments.append(assignment_data)
 

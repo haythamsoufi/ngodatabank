@@ -10,6 +10,8 @@ class Assignment {
   final bool isPublic;
   final int? publicSubmissionCount;
   final String? lastModifiedUserName;
+  /// Matches AssignedForm.is_effectively_closed (dashboard Enter Data / reopen rules).
+  final bool isEffectivelyClosed;
 
   Assignment({
     required this.id,
@@ -23,6 +25,7 @@ class Assignment {
     this.isPublic = false,
     this.publicSubmissionCount,
     this.lastModifiedUserName,
+    this.isEffectivelyClosed = false,
   });
 
   factory Assignment.fromJson(Map<String, dynamic> json) {
@@ -41,6 +44,7 @@ class Assignment {
       isPublic: json['is_public'] ?? false,
       publicSubmissionCount: json['public_submission_count'],
       lastModifiedUserName: json['last_modified_user_name'],
+      isEffectivelyClosed: json['is_effectively_closed'] == true,
     );
   }
 
@@ -57,17 +61,12 @@ class Assignment {
       'is_public': isPublic,
       'public_submission_count': publicSubmissionCount,
       'last_modified_user_name': lastModifiedUserName,
+      'is_effectively_closed': isEffectivelyClosed,
     };
   }
 
   bool get isOverdue {
     if (dueDate == null) return false;
     return DateTime.now().isAfter(dueDate!) && status != 'Approved';
-  }
-
-  bool get isCurrent {
-    return status != 'Requires Revision' &&
-        (statusTimestamp == null ||
-            DateTime.now().difference(statusTimestamp!).inDays < 30);
   }
 }

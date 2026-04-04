@@ -8,6 +8,8 @@ Provides routes for viewing user activity analytics, login logs,
 session analytics, and security events.
 """
 
+from urllib.parse import urlencode
+
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from flask_login import current_user
 from app import db
@@ -26,11 +28,13 @@ from app.utils.activity_middleware import track_admin_action
 from app.utils.api_helpers import GENERIC_ERROR_MESSAGE
 from app.utils.api_pagination import validate_pagination_params
 from app.utils.api_responses import json_ok
-from app.utils.activity_types import normalize_activity_type
-from app.utils.activity_endpoint_overrides import (
-    infer_activity_type_from_legacy_description,
-    resolve_post_activity_type,
-    description_for_activity_type,
+from app.utils.audit_details_formatters import format_admin_action_details
+from app.utils.audit_trail_display import (
+    build_form_context_lookups_from_activity_logs,
+    consolidate_activity_type,
+    create_consistent_description,
+    extract_entity_info,
+    refine_activity_row_consolidated_type,
 )
 from sqlalchemy import func, desc, and_, or_, cast, String
 from datetime import datetime, timedelta
@@ -619,7 +623,11 @@ def end_session(session_id):
 @admin_permission_required('admin.audit.view')
 def audit_trail():
     """View unified audit trail combining activity logs and admin actions."""
-    page, per_page = validate_pagination_params(request.args, default_per_page=50, max_per_page=100)
+    # Higher limits than typical admin lists: merged audit data is already capped in DB queries;
+    # the HTML grid had no client pagination, so users were stuck at the first page only.
+    page, per_page = validate_pagination_params(
+        request.args, default_per_page=100, max_per_page=500
+    )
 
     # Filters
     user_filter = request.args.getlist('user')  # Changed to getlist for multi-select
@@ -631,301 +639,6 @@ def audit_trail():
     date_from = request.args.get('date_from')
     date_to = request.args.get('date_to')
     requires_review = request.args.get('requires_review', type=bool)
-
-    # Function to consolidate activity types (moved to top for reuse)
-    def consolidate_activity_type(activity_type, action_type=None):
-        """Consolidate activity types into canonical, user-friendly keys.
-
-        New canonical types (produced by the updated middleware):
-          form_saved, form_submitted, form_reopened, form_validated,
-          data_modified, data_deleted, file_uploaded, page_view,
-          login, logout, profile_update, data_export, account_created.
-
-        Legacy types (kept for backward-compat with older DB rows):
-          form_save  → form_saved
-          form_submit → form_submitted
-          data_update → data_modified
-          data_delete → data_deleted
-          file_upload → file_uploaded
-        """
-        if activity_type:
-            normalized_activity_type = normalize_activity_type(activity_type)
-            if normalized_activity_type:
-                return normalized_activity_type
-            if 'view' in activity_type.lower():
-                return 'page_view'
-            # Unknown types should be preserved for accurate auditing.
-            return activity_type
-
-        elif action_type:
-            if 'view' in action_type.lower():
-                return 'page_view'
-            # Admin action types are passed through as-is (they already have
-            # descriptive names like user_create, form_section_update, etc.)
-            return action_type
-
-        return 'unknown'
-
-    # Function to create consistent descriptions
-    def create_consistent_description(entry_type, activity_type, action_type, original_description, endpoint=None, context_data=None):
-        """Create consistent, user-friendly descriptions for audit entries.
-
-        Handles both new canonical activity types (form_saved, form_submitted,
-        form_reopened, form_validated, data_modified, data_deleted, file_uploaded)
-        and legacy types (form_save, form_submit, data_update, data_delete,
-        file_upload) for backward compatibility with older DB rows.
-        """
-
-        # ── Helper: resolve template/assignment context from DB ────────────
-        def _resolve_form_context(context_data, endpoint):
-            """Return (template_name, assignment_name, country_name) from context."""
-            template_name = assignment_name = country_name = None
-            if not context_data or not isinstance(context_data, dict):
-                return template_name, assignment_name, country_name
-            try:
-                form_data = context_data.get('form_data', {}) or {}
-                aes_id = (
-                    form_data.get('aes_id') or context_data.get('aes_id') or
-                    form_data.get('assignment_id') or context_data.get('assignment_id')
-                )
-                template_id = form_data.get('template_id') or context_data.get('template_id')
-
-                if not aes_id:
-                    url_path = context_data.get('url_path') or context_data.get('endpoint', '')
-                    if url_path:
-                        import re
-                        m = re.search(r'/enter_data/(\d+)', url_path)
-                        if m:
-                            aes_id = int(m.group(1))
-
-                if aes_id:
-                    from app.models import AssignmentEntityStatus
-                    aes = AssignmentEntityStatus.query.get(aes_id)
-                    if aes:
-                        if aes.assigned_form and aes.assigned_form.template:
-                            template_name = aes.assigned_form.template.name
-                        assignment_name = aes.assigned_form.period_name if aes.assigned_form else None
-                        if aes.country:
-                            country_name = aes.country.name
-                elif template_id:
-                    from app.models import FormTemplate
-                    tmpl = FormTemplate.query.get(template_id)
-                    if tmpl:
-                        template_name = tmpl.name
-            except Exception as e:
-                from flask import current_app
-                current_app.logger.warning(f"Error resolving form context for description: {e}")
-            return template_name, assignment_name, country_name
-
-        # ── Helper: build form description with optional context ───────────
-        def _form_desc(base_verb, context_data, endpoint, suffix=""):
-            """'Saved / Submitted / Reopened … form data … for Country'"""
-            template_name, assignment_name, country_name = _resolve_form_context(context_data, endpoint)
-            parts = []
-            if template_name:
-                parts.append(f"'{template_name}'")
-            if assignment_name:
-                parts.append(f"({assignment_name})")
-            if country_name:
-                parts.append(f"for {country_name}")
-            if parts:
-                return f"{base_verb} {' '.join(parts)}{suffix}"
-            # Fallback based on endpoint
-            if endpoint and 'public' in endpoint:
-                return f"{base_verb} data via public link{suffix}"
-            return f"{base_verb} form data{suffix}"
-
-        # ── Helper: friendly page name from endpoint ────────────────────────
-        def _page_name(endpoint):
-            if not endpoint:
-                return "page"
-            # 'analytics.audit_trail' → 'Audit Trail'
-            part = endpoint.split('.')[-1] if '.' in endpoint else endpoint
-            return part.replace('_', ' ').title()
-
-        # ── Activity log entries ────────────────────────────────────────────
-        if entry_type == 'activity':
-            t = activity_type or ''
-
-            # Page views
-            if t == 'page_view' or 'view' in t.lower():
-                # If the stored description is already friendly (from new middleware), use it
-                if original_description and original_description.startswith('Viewed '):
-                    return original_description
-                return f"Viewed {_page_name(endpoint)}"
-
-            # Generic POST / API (canonical type `request` from activity middleware)
-            if t == 'request':
-                inferred = infer_activity_type_from_legacy_description(original_description)
-                if not inferred and endpoint:
-                    inferred = resolve_post_activity_type(endpoint)
-                if inferred:
-                    msg = description_for_activity_type(inferred)
-                    if msg:
-                        return msg
-                if original_description and original_description.startswith('Performed '):
-                    tail = original_description[len('Performed ') :].strip()
-                    return f"Submitted {tail}" if tail else "Submitted a request"
-                return original_description or "Submitted a request"
-
-            preset = description_for_activity_type(t)
-            if preset:
-                return preset
-
-            # Form saved (new type) or legacy form_save
-            if t in ('form_saved', 'form_save'):
-                return _form_desc("Saved", context_data, endpoint, " as draft")
-
-            # Form submitted (new type) or legacy form_submit
-            if t in ('form_submitted', 'form_submit'):
-                return _form_desc("Submitted", context_data, endpoint, " for review")
-
-            # Form approved
-            if t == 'form_approved':
-                template_name, assignment_name, country_name = _resolve_form_context(context_data, endpoint)
-                parts = []
-                if template_name:
-                    parts.append(f"'{template_name}'")
-                if country_name:
-                    parts.append(f"for {country_name}")
-                suffix = f" ({' '.join(parts)})" if parts else ""
-                return f"Approved form submission{suffix}"
-
-            # Form reopened
-            if t == 'form_reopened':
-                template_name, assignment_name, country_name = _resolve_form_context(context_data, endpoint)
-                parts = []
-                if template_name:
-                    parts.append(f"'{template_name}'")
-                if country_name:
-                    parts.append(f"for {country_name}")
-                suffix = f" ({' '.join(parts)})" if parts else ""
-                return f"Reopened form for editing{suffix}"
-
-            # Form validated / approved
-            if t == 'form_validated':
-                template_name, assignment_name, country_name = _resolve_form_context(context_data, endpoint)
-                parts = []
-                if template_name:
-                    parts.append(f"'{template_name}'")
-                if country_name:
-                    parts.append(f"for {country_name}")
-                suffix = f" ({' '.join(parts)})" if parts else ""
-                return f"Validated form data{suffix}"
-
-            # Data modified (new) / legacy data_update
-            if t in ('data_modified', 'data_update'):
-                return original_description if original_description else "Updated data"
-
-            # Data deleted (new) / legacy data_delete
-            if t in ('data_deleted', 'data_delete'):
-                return original_description if original_description else "Deleted item"
-
-            # File uploaded (new) / legacy file_upload
-            if t in ('file_uploaded', 'file_upload'):
-                return "Uploaded a file"
-
-            if t == 'login':
-                return "Logged in"
-            if t == 'logout':
-                return "Logged out"
-            if t == 'profile_update':
-                return "Updated profile settings"
-            if t == 'data_export':
-                return "Exported data"
-            if t == 'account_created':
-                return "Account created"
-
-            return original_description or "User activity"
-
-        # ── Admin action log entries ────────────────────────────────────────
-        else:
-            if not action_type:
-                return original_description or "Admin action"
-            if 'view' in action_type.lower():
-                base = action_type.replace('_', ' ').replace('view ', '').strip()
-                return original_description or f"Viewed {base.title()}"
-            # Use stored description when available (admin actions usually have good ones)
-            if original_description:
-                return original_description
-            return action_type.replace('_', ' ').title()
-
-    # Function to extract country information
-    def extract_entity_info(entry_type, context_data, details=None, admin_action=None):
-        """Extract entity information (country, NS branch, etc.) from log context.
-
-        Returns (entity_type, entity_id, entity_name) for activity logs.
-        Falls back to country-only info for admin action logs (which only store country_id).
-        All three values may be None if no entity info is present.
-        """
-        entity_type = None
-        entity_id = None
-        entity_name = None
-
-        try:
-            if entry_type == 'activity' and context_data and isinstance(context_data, dict):
-                # New fields written by the updated middleware
-                entity_type = context_data.get('entity_type')
-                entity_id = context_data.get('entity_id')
-                entity_name = context_data.get('entity_name')
-
-                # Fall back to legacy country_* fields (old DB rows or approve/reopen context)
-                if not entity_id:
-                    cid = context_data.get('country_id')
-                    cname = context_data.get('country_name')
-                    if not cid:
-                        form_data = context_data.get('form_data', {}) or {}
-                        cid = form_data.get('country_id')
-                        cname = cname or form_data.get('country_name')
-                    if cid:
-                        entity_type = 'country'
-                        entity_id = cid
-                        entity_name = cname
-
-                # Resolve name from DB if still missing
-                if entity_id and not entity_name and entity_type:
-                    try:
-                        from app.services.entity_service import EntityService
-                        entity_name = EntityService.get_entity_display_name(entity_type, int(entity_id))
-                    except Exception:
-                        pass
-
-            elif entry_type == 'admin_action':
-                # Admin action logs store country_id in new_values / old_values
-                cid = None
-                cname = None
-                if details and isinstance(details, dict):
-                    cid = details.get('country_id')
-                    cname = details.get('country_name')
-                if not cid and admin_action:
-                    for vals in [admin_action.new_values, admin_action.old_values]:
-                        if vals and isinstance(vals, dict):
-                            cid = vals.get('country_id')
-                            if cid:
-                                cname = vals.get('country_name')
-                                break
-                            cids = vals.get('country_ids')
-                            if cids and isinstance(cids, list) and len(cids) == 1:
-                                cid = cids[0]
-                                break
-                    if not cid and admin_action.target_type == 'country' and admin_action.target_id:
-                        cid = admin_action.target_id
-                if cid:
-                    entity_type = 'country'
-                    entity_id = cid
-                    if not cname:
-                        try:
-                            country = Country.query.get(int(cid))
-                            cname = country.name if country else None
-                        except Exception:
-                            pass
-                    entity_name = cname
-
-        except Exception as e:
-            from flask import current_app
-            current_app.logger.warning(f"Error extracting entity info: {str(e)}")
-
-        return entity_type, entity_id, entity_name
 
     # Limit date range to prevent loading excessive data (default to last 90 days if no date filter)
     # This prevents memory issues with very large datasets
@@ -998,6 +711,12 @@ def audit_trail():
         )
     )
 
+    # Omit page_view at SQL when the UI will not show them (default + filtered views
+    # that exclude page_view), to avoid loading thousands of low-value rows.
+    _need_page_views_in_results = bool(activity_type) and 'page_view' in activity_type
+    if not _need_page_views_in_results:
+        activity_query = activity_query.filter(UserActivityLog.activity_type != 'page_view')
+
     if user_filter:
         # Handle multiple user selections
         user_conditions = []
@@ -1037,20 +756,18 @@ def audit_trail():
 
     MAX_ACTIVITY_ROWS = 5000
     activity_logs = activity_query.order_by(UserActivityLog.timestamp.desc()).limit(MAX_ACTIVITY_ROWS).all()
+    form_lookups = build_form_context_lookups_from_activity_logs(activity_logs)
+
     for log in activity_logs:
         log_id = f'activity_{log.id}'
         if log_id not in processed_ids:
             processed_ids.add(log_id)
 
-            # Consolidate and create consistent data immediately
-            consolidated_type = consolidate_activity_type(log.activity_type)
-            # Upgrade generic ``request`` rows using legacy text or endpoint (no DB migration)
-            if consolidated_type == 'request':
-                refined = infer_activity_type_from_legacy_description(log.activity_description)
-                if not refined and log.endpoint:
-                    refined = resolve_post_activity_type(log.endpoint)
-                if refined:
-                    consolidated_type = refined
+            consolidated_type = refine_activity_row_consolidated_type(
+                log.activity_type,
+                log.activity_description,
+                log.endpoint,
+            )
 
             # Enhance context_data with url_path if available
             enhanced_context = log.context_data.copy() if log.context_data else {}
@@ -1063,7 +780,8 @@ def audit_trail():
                 None,
                 log.activity_description,
                 log.endpoint,
-                enhanced_context
+                enhanced_context,
+                form_lookups=form_lookups,
             )
 
             entity_type, entity_id, entity_name = extract_entity_info('activity', enhanced_context)
@@ -1159,10 +877,16 @@ def audit_trail():
                 action.action_type,
                 action.action_description,
                 action.endpoint,
-                action.new_values or action.old_values
+                action.new_values or action.old_values,
             )
 
             entity_type, entity_id, entity_name = extract_entity_info('admin_action', action.new_values or action.old_values, admin_action=action)
+
+            details_payload = format_admin_action_details(
+                action.action_type, action.old_values, action.new_values
+            )
+            if details_payload is None:
+                details_payload = action.old_values or action.new_values
 
             entries.append({
                 'id': action_id,
@@ -1180,7 +904,7 @@ def audit_trail():
                 'requires_review': action.requires_review,
                 'target_type': action.target_type,
                 'target_description': action.target_description,
-                'details': action.old_values or action.new_values,
+                'details': details_payload,
                 'entity_type': entity_type,
                 'entity_id': entity_id,
                 'entity_name': entity_name,
@@ -1284,6 +1008,14 @@ def audit_trail():
 
     users = User.query.order_by(User.email).all()
 
+    audit_trail_qs_pairs = [
+        (k, v)
+        for k in request.args
+        if k != 'page'
+        for v in request.args.getlist(k)
+    ]
+    audit_trail_qs_base = urlencode(audit_trail_qs_pairs, doseq=True)
+
     return render_template(
         'admin/analytics/audit_trail.html',
         entries=audit_entries,
@@ -1291,6 +1023,7 @@ def audit_trail():
         action_types=action_types,
         countries=countries,
         users=users,
+        audit_trail_qs_base=audit_trail_qs_base,
         filters={
             'user': user_filter,
             'activity_type': activity_type,

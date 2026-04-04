@@ -1,5 +1,6 @@
 """Form item management routes."""
 
+import copy
 from contextlib import suppress
 from flask import request, flash, redirect, url_for, current_app
 from flask_login import current_user
@@ -23,6 +24,49 @@ from .helpers import (_create_form_item, _update_indicator_fields, _update_quest
     _update_item_config, _update_version_timestamp, _ensure_template_access_or_redirect,
     is_conditions_meaningful)
 import json
+
+
+def _form_item_audit_snapshot(form_item):
+    """Serializable state for admin audit (before/after form item edits)."""
+    section = form_item.form_section
+    tpl = form_item.template
+    cfg = form_item.config
+    if cfg is not None:
+        cfg = copy.deepcopy(cfg)
+
+    def _jsonish(val):
+        if val is None:
+            return None
+        if isinstance(val, (dict, list)):
+            return copy.deepcopy(val)
+        return val
+
+    return {
+        'template_name': tpl.name if tpl else None,
+        'section_id': form_item.section_id,
+        'section_name': section.name if section else None,
+        'item_type': form_item.item_type,
+        'label': form_item.label,
+        'order': form_item.order,
+        'archived': bool(form_item.archived),
+        'relevance_condition': form_item.relevance_condition,
+        'validation_condition': form_item.validation_condition,
+        'validation_message': form_item.validation_message,
+        'config': cfg,
+        'indicator_bank_id': form_item.indicator_bank_id,
+        'definition': form_item.definition,
+        'type': form_item.type,
+        'unit': form_item.unit,
+        'options_json': _jsonish(form_item.options_json),
+        'lookup_list_id': form_item.lookup_list_id,
+        'list_display_column': form_item.list_display_column,
+        'list_filters_json': _jsonish(form_item.list_filters_json),
+        'description': form_item.description,
+        'label_translations': _jsonish(form_item.label_translations),
+        'definition_translations': _jsonish(form_item.definition_translations),
+        'options_translations': _jsonish(form_item.options_translations),
+        'description_translations': _jsonish(form_item.description_translations),
+    }
 
 
 @bp.route("/templates/<int:template_id>/sections/<int:section_id>/items/new", methods=["POST"])
@@ -257,6 +301,8 @@ def edit_item(item_id):
         current_app.logger.info(f"Edit {form_item.item_type.title()} Form validated. Processed form data: {form.data}")
 
         try:
+            old_values_snapshot = _form_item_audit_snapshot(form_item)
+
             form_item.section_id = form.section_id.data
             form_item.order = form.order.data if form.order.data is not None else form_item.order
 
@@ -304,6 +350,7 @@ def edit_item(item_id):
             db.session.flush()
 
             item_label = form_item.label or f"{form_item.item_type.title()} {item_id}"
+            new_values_snapshot = _form_item_audit_snapshot(form_item)
 
             log_admin_action(
                 action_type='form_item_update',
@@ -311,6 +358,8 @@ def edit_item(item_id):
                 target_type='form_item',
                 target_id=item_id,
                 target_description=f"Template ID: {template_id}, Item ID: {item_id}",
+                old_values=old_values_snapshot,
+                new_values=new_values_snapshot,
                 risk_level='low'
             )
 

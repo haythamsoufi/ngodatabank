@@ -1,5 +1,4 @@
 {% extends "core/layout.html" %}
-{% from "macros/breadcrumbs.html" import breadcrumb %}
 {% block title %}{{ _('Audit Trail - Admin Panel') }}{% endblock %}
 
 {% block head %}
@@ -15,22 +14,6 @@
         white-space: -pre-wrap;
         white-space: -o-pre-wrap;
         word-wrap: break-word;
-    }
-
-    /* Live search input styling */
-    .live-search-input {
-        border: 1px solid #d1d5db;
-        border-radius: 0.375rem;
-        padding: 8px 12px;
-        font-size: 14px;
-        color: #374151;
-        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-    }
-
-    .live-search-input:focus {
-        outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
 
     /* Column settings modal */
@@ -73,6 +56,117 @@
     .multiselect-checkbox:hover {
         transform: scale(1.05);
     }
+
+    /* User-update & form-item-update audit details (readable panel, not raw JSON) */
+    .audit-details-user-update {
+        max-height: 28rem;
+        overflow-y: auto;
+    }
+    .audit-details-user-update .audit-detail-section {
+        margin-bottom: 1rem;
+    }
+    .audit-details-user-update .audit-detail-section:last-child {
+        margin-bottom: 0;
+    }
+    .audit-details-user-update .audit-detail-h {
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #6b7280;
+        margin-bottom: 0.5rem;
+    }
+    .audit-details-user-update .audit-detail-sub {
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: #9ca3af;
+        margin-bottom: 0.25rem;
+    }
+    /* Form item audit: prose-style lines (no label/value grid tables) */
+    .audit-form-item-value-box {
+        border: 1px solid #e5e7eb;
+        background: #fff;
+        padding: 0.5rem 0.75rem;
+    }
+    .audit-form-item-kv-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        font-size: 0.8rem;
+        line-height: 1.5;
+        color: #111827;
+    }
+    .audit-form-item-kv-line {
+        margin: 0;
+    }
+    .audit-form-item-kv-label {
+        color: #6b7280;
+        font-weight: 600;
+    }
+    .audit-form-item-code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.72rem;
+        color: #1f2937;
+        background: #f3f4f6;
+        padding: 0.05rem 0.3rem;
+    }
+    .audit-form-item-nested {
+        margin-top: 0.25rem;
+        margin-left: 0.25rem;
+        padding-left: 0.65rem;
+        border-left: 2px solid #e5e7eb;
+    }
+    .audit-form-item-array-simple {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+    }
+    .audit-form-item-array-simple-row {
+        display: flex;
+        gap: 0.45rem;
+        align-items: flex-start;
+    }
+    .audit-form-item-array-simple-n {
+        flex-shrink: 0;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #9ca3af;
+        min-width: 1.1rem;
+    }
+    .audit-form-item-array-simple-body {
+        flex: 1;
+        min-width: 0;
+    }
+    .audit-form-item-condition-simple {
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+        font-size: 0.8rem;
+        line-height: 1.5;
+        color: #111827;
+    }
+    .audit-form-item-cond-box {
+        padding: 0.45rem 0.55rem;
+        background: #fafafa;
+        border: 1px solid #e5e7eb;
+    }
+    .audit-form-item-cond-title {
+        margin: 0 0 0.35rem 0;
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #6b7280;
+    }
+    .audit-form-item-cond-line {
+        margin: 0.25rem 0 0 0;
+    }
+    .audit-form-item-cond-line:first-of-type {
+        margin-top: 0;
+    }
+    .audit-form-item-cond-line-top {
+        margin-top: 0;
+    }
 </style>
 {% endblock %}
 
@@ -89,99 +183,143 @@
         ]
     ) }}
 
-    <!-- Filters Section -->
-    <div class="bg-gray-50 p-4 sm:p-6 shadow mb-8">
-        <div class="mb-4 flex items-center justify-between">
-            <h5 class="text-xl font-semibold text-gray-700 flex items-center">
-                <i class="fas fa-filter mr-2"></i> {{ _('Filters') }}
-            </h5>
-            <button
-                id="toggleFiltersBtn"
-                type="button"
-                class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-md transition-colors"
-                aria-expanded="false"
-                aria-controls="filtersPane"
-                title="{{ _('Expand or collapse filters') }}"
-            >
-                <span id="toggleFiltersLabel">{{ _('Show Filters') }}</span>
-                <i id="toggleFiltersIcon" class="fas fa-chevron-down transition-transform"></i>
-            </button>
+    {% from "components/ag_grid_includes.html" import ag_grid_container %}
+    {# Expand filter pane when any filter is present in the query string (after Apply) #}
+    {% set audit_filters_open = request.args.get('description') or request.args.get('date_from') or request.args.get('date_to')
+          or request.args.get('requires_review') or request.args.getlist('user') or request.args.getlist('country')
+          or request.args.getlist('activity_type') or request.args.getlist('risk_level') %}
+    <!-- Audit entries: title → collapsible filters → table -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 relative">
+        <div class="px-6 py-4 border-b border-gray-200 flex flex-wrap items-center justify-between gap-3">
+            <h3 class="text-lg font-semibold text-gray-900 min-w-0">{{ _('Audit entries') }}</h3>
+            <div class="flex flex-wrap items-center gap-3 shrink-0">
+                <button type="button"
+                        id="auditTrailFiltersToggle"
+                        class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 border border-gray-300 transition-colors"
+                        aria-expanded="{{ 'true' if audit_filters_open else 'false' }}"
+                        aria-controls="auditTrailFiltersPane"
+                        title="{{ _('Expand or collapse filters') }}">
+                    <span id="auditTrailFiltersToggleLabel">{% if audit_filters_open %}{{ _('Hide filters') }}{% else %}{{ _('Show filters') }}{% endif %}</span>
+                    <i id="auditTrailFiltersToggleIcon" class="fas fa-chevron-down transition-transform {% if audit_filters_open %}rotate-180{% endif %}"></i>
+                </button>
+                {# AG Grid column visibility control — filled by AgGridHelper into this id (see data-placeholder-id on #auditTrailGrid) #}
+                <div id="auditTrailColumnVisibilityPlaceholder" class="flex items-center justify-end"></div>
+            </div>
         </div>
-        <div id="filtersPane" class="hidden">
-        <form method="GET" class="space-y-4">
-            <!-- First Row -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ _('User Email') }}</label>
+
+        <div id="auditTrailFiltersPane" class="{% if not audit_filters_open %}hidden{% endif %} border-b border-gray-200 bg-gray-50">
+        <form id="auditTrailFiltersForm" method="GET" class="px-6 py-3">
+            <span class="text-sm font-medium text-gray-700 block mb-3">{{ _('Filters') }}:</span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
+                <div class="min-w-0">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">{{ _('User Email') }}</label>
                     <div id="user-multiselect-container"></div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ _('Country') }}</label>
+                <div class="min-w-0">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">{{ _('Country') }}</label>
                     <div id="country-multiselect-container"></div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ _('Risk Level') }}</label>
+                <div class="min-w-0">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">{{ _('Risk Level') }}</label>
                     <div id="risk-level-multiselect-container"></div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ _('Activity Type') }}</label>
+                <div class="min-w-0">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">{{ _('Activity Type') }}</label>
                     <div id="activity-type-multiselect-container"></div>
                 </div>
             </div>
 
-            <!-- Second Row -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                <div>
-                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">{{ _('Description') }}</label>
-                    <input type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm p-2" id="description" name="description"
-                           value="{{ filters.description or '' }}" placeholder="{{ _('Search description (e.g., template name)') }}">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
+                <div class="min-w-0">
+                    <label for="description" class="block text-xs font-medium text-gray-700 mb-1">{{ _('Description') }}</label>
+                    <input type="text" id="description" name="description"
+                           value="{{ filters.description or '' }}" placeholder="{{ _('Search description (e.g., template name)') }}"
+                           class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm py-1.5">
                 </div>
-                <div class="flex items-center pt-7">
-                    <input class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2" type="checkbox" id="requires_review"
-                           name="requires_review" value="1" {% if filters.requires_review %}checked{% endif %}>
-                    <label class="text-sm font-medium text-gray-700" for="requires_review">
-                        {{ _('Requires Review') }}
+                <div class="min-w-0 flex items-end pb-0.5">
+                    <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+                        <input class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" type="checkbox" id="requires_review"
+                               name="requires_review" value="1" {% if filters.requires_review %}checked{% endif %}>
+                        <span class="text-sm font-medium text-gray-700">{{ _('Requires Review') }}</span>
                     </label>
                 </div>
-                <div>
-                    <label for="date_from" class="block text-sm font-medium text-gray-700 mb-1">{{ _('From Date') }}</label>
-                    <input type="date" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm p-2" id="date_from" name="date_from"
-                           value="{{ filters.date_from or '' }}">
+                <div class="min-w-0">
+                    <label for="date_from" class="block text-xs font-medium text-gray-700 mb-1">{{ _('From Date') }}</label>
+                    <input type="date" id="date_from" name="date_from" value="{{ filters.date_from or '' }}"
+                           class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm py-1.5">
                 </div>
-                <div>
-                    <label for="date_to" class="block text-sm font-medium text-gray-700 mb-1">{{ _('To Date') }}</label>
-                    <input type="date" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm p-2" id="date_to" name="date_to"
-                           value="{{ filters.date_to or '' }}">
+                <div class="min-w-0">
+                    <label for="date_to" class="block text-xs font-medium text-gray-700 mb-1">{{ _('To Date') }}</label>
+                    <input type="date" id="date_to" name="date_to" value="{{ filters.date_to or '' }}"
+                           class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm py-1.5">
                 </div>
             </div>
 
-            <!-- Third Row - Action Buttons -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="flex items-end">
-                    <button type="submit" class="btn btn-primary w-full">
-                        <i class="fas fa-filter mr-2"></i> {{ _('Filter') }}
-                    </button>
-                </div>
-                <div class="flex items-end">
-                    <a href="{{ url_for('analytics.audit_trail') }}" class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-                        {{ _('Clear Filters') }}
-                    </a>
-                </div>
+            <div class="flex flex-wrap items-center gap-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter mr-1"></i>{{ _('Apply') }}
+                </button>
+                <a href="{{ url_for('analytics.audit_trail') }}" class="text-sm text-gray-600 hover:text-gray-900">{{ _('Clear') }}</a>
             </div>
         </form>
         </div>
-    </div>
 
-    {% from "components/ag_grid_includes.html" import ag_grid_container %}
-    <!-- Results Section -->
-    <div class="bg-white p-4 sm:p-6 shadow-md border border-gray-200 relative">
+        <div class="p-4 sm:p-6 relative">
         {% if entries.items %}
-            {{ ag_grid_container('auditTrailGrid', loading_text=_('Loading audit entries...'), grid_height='600px', include_card=false) }}
+            {{ ag_grid_container('auditTrailGrid', loading_text=_('Loading audit entries...'), grid_height='600px', include_card=false, show_placeholder=false, placeholder_id='auditTrailColumnVisibilityPlaceholder') }}
         {% else %}
             <div class="text-center py-12">
                 <i class="fas fa-search fa-3x text-gray-400 mb-3"></i>
                 <p class="text-gray-500 text-lg">{{ _('No audit entries found matching your criteria.') }}</p>
             </div>
+        {% endif %}
+        </div>
+
+        {# Server-side pagination (filters use multiselect query params; preserve via audit_trail_qs_base) #}
+        {% if entries.items %}
+        <div class="px-4 sm:px-6 py-3 border-t border-gray-200 bg-gray-50 text-sm text-gray-700 flex flex-wrap items-center justify-between gap-3">
+            <p class="m-0">
+                {{ _('Showing') }}
+                <span class="font-medium">{{ ((entries.page - 1) * entries.per_page) + 1 }}</span>
+                {{ _('to') }}
+                <span class="font-medium">{{ [entries.page * entries.per_page, entries.total] | min }}</span>
+                {{ _('of') }}
+                <span class="font-medium">{{ entries.total }}</span>
+                {{ _('entries') }}
+                {% if entries.pages > 1 %}
+                <span class="text-gray-500">({{ _('page') }} {{ entries.page }} / {{ entries.pages }})</span>
+                {% endif %}
+            </p>
+            {% if entries.pages > 1 %}
+            <nav class="flex flex-wrap items-center gap-1" aria-label="{{ _('Audit trail pages') }}">
+                {% if entries.has_prev %}
+                <a href="{{ url_for('analytics.audit_trail') }}?{% if audit_trail_qs_base %}{{ audit_trail_qs_base }}&{% endif %}page={{ entries.prev_num }}"
+                   class="btn btn-secondary btn-sm">{{ _('Previous') }}</a>
+                {% else %}
+                <span class="btn btn-secondary btn-sm opacity-50 pointer-events-none" aria-disabled="true">{{ _('Previous') }}</span>
+                {% endif %}
+                {% for page_num in entries.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if page_num %}
+                        {% if page_num != entries.page %}
+                        <a href="{{ url_for('analytics.audit_trail') }}?{% if audit_trail_qs_base %}{{ audit_trail_qs_base }}&{% endif %}page={{ page_num }}"
+                           class="inline-flex items-center justify-center min-w-[2.25rem] px-2 py-1 text-xs font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">{{ page_num }}</a>
+                        {% else %}
+                        <span class="inline-flex items-center justify-center min-w-[2.25rem] px-2 py-1 text-xs font-semibold border border-blue-600 bg-blue-600 text-white z-10"
+                              aria-current="page">{{ page_num }}</span>
+                        {% endif %}
+                    {% else %}
+                        <span class="inline-flex items-center px-2 py-1 text-xs text-gray-500">…</span>
+                    {% endif %}
+                {% endfor %}
+                {% if entries.has_next %}
+                <a href="{{ url_for('analytics.audit_trail') }}?{% if audit_trail_qs_base %}{{ audit_trail_qs_base }}&{% endif %}page={{ entries.next_num }}"
+                   class="btn btn-secondary btn-sm">{{ _('Next') }}</a>
+                {% else %}
+                <span class="btn btn-secondary btn-sm opacity-50 pointer-events-none" aria-disabled="true">{{ _('Next') }}</span>
+                {% endif %}
+            </nav>
+            {% endif %}
+        </div>
         {% endif %}
     </div>
 
@@ -227,11 +365,372 @@
         return '<span class="' + classes.join(' ') + '">' + escapeHtml(String(value)) + '</span>';
     }
 
-    function renderDetailsValue(details) {
+    function renderUserUpdateDetailsHtml(d) {
+        function ulList(items, liClass) {
+            if (!items || !items.length) {
+                return '<p class="text-xs text-gray-500 italic">{{ _("None") }}</p>';
+            }
+            var cls = liClass ? (' ' + liClass) : '';
+            return '<ul class="list-disc list-inside text-gray-800 space-y-0.5 text-xs">' +
+                items.map(function(x) { return '<li class="' + cls + '">' + escapeHtml(String(x)) + '</li>'; }).join('') +
+                '</ul>';
+        }
+        function section(title, inner) {
+            return '<div class="audit-detail-section"><div class="audit-detail-h">' + escapeHtml(title) + '</div>' + inner + '</div>';
+        }
+        function subBlock(label, content) {
+            return '<div class="mb-2 last:mb-0"><div class="audit-detail-sub">' + escapeHtml(label) + '</div>' + content + '</div>';
+        }
+        function profileBlock(obj) {
+            if (!obj) return '';
+            var rows = [
+                ['{{ _("Email") }}', obj.email || ''],
+                ['{{ _("Name") }}', obj.name || ''],
+                ['{{ _("Title") }}', obj.title || '']
+            ];
+            var h = '<dl class="text-xs space-y-1 text-gray-800">';
+            rows.forEach(function(r) {
+                h += '<div class="grid grid-cols-1 sm:grid-cols-[6rem_1fr] gap-x-2 gap-y-0.5">';
+                h += '<dt class="text-gray-500">' + escapeHtml(r[0]) + '</dt>';
+                h += '<dd class="text-gray-900 break-words">' + escapeHtml(r[1]) + '</dd></div>';
+            });
+            h += '</dl>';
+            return h;
+        }
+        var parts = [];
+        var pb = d['Profile (before)'];
+        var pa = d['Profile (after)'];
+        if (pb && pa) {
+            var inner = '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">' +
+                '<div><div class="audit-detail-sub mb-1">{{ _("Before") }}</div>' + profileBlock(pb) + '</div>' +
+                '<div><div class="audit-detail-sub mb-1">{{ _("After") }}</div>' + profileBlock(pa) + '</div></div>';
+            parts.push(section('{{ _("Profile") }}', inner));
+        }
+        var cAdd = d['Countries added'];
+        var cRem = d['Countries removed'];
+        var cBefore = d['Countries (before)'];
+        var cAfter = d['Countries (after)'];
+        var cDiff = cBefore && cAfter && JSON.stringify(cBefore) !== JSON.stringify(cAfter);
+        var hasCAdd = cAdd && cAdd.length;
+        var hasCRem = cRem && cRem.length;
+        if (hasCAdd || hasCRem) {
+            var cInner = '';
+            if (hasCAdd) cInner += subBlock('{{ _("Added") }}', ulList(cAdd, 'text-green-800'));
+            if (hasCRem) cInner += subBlock('{{ _("Removed") }}', ulList(cRem, 'text-amber-800'));
+            if (cAfter && cAfter.length) cInner += subBlock('{{ _("Current") }}', ulList(cAfter));
+            parts.push(section('{{ _("Countries") }}', cInner));
+        } else if (cDiff) {
+            parts.push(section('{{ _("Countries") }}',
+                '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">' +
+                '<div><div class="audit-detail-sub mb-1">{{ _("Before") }}</div>' + ulList(cBefore) + '</div>' +
+                '<div><div class="audit-detail-sub mb-1">{{ _("After") }}</div>' + ulList(cAfter) + '</div></div>'));
+        }
+
+        var rAdd = d['Roles added'];
+        var rRem = d['Roles removed'];
+        var rBefore = d['Roles (before)'];
+        var rAfter = d['Roles (after)'];
+        var rDiff = rBefore && rAfter && JSON.stringify(rBefore) !== JSON.stringify(rAfter);
+        var hasRAdd = rAdd && rAdd.length;
+        var hasRRem = rRem && rRem.length;
+        if (hasRAdd || hasRRem) {
+            var rInner = '';
+            if (hasRAdd) rInner += subBlock('{{ _("Added") }}', ulList(rAdd, 'text-green-800'));
+            if (hasRRem) rInner += subBlock('{{ _("Removed") }}', ulList(rRem, 'text-amber-800'));
+            if (rAfter && rAfter.length) rInner += subBlock('{{ _("Current") }}', ulList(rAfter));
+            parts.push(section('{{ _("Roles") }}', rInner));
+        } else if (rDiff) {
+            parts.push(section('{{ _("Roles") }}',
+                '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">' +
+                '<div><div class="audit-detail-sub mb-1">{{ _("Before") }}</div>' + ulList(rBefore) + '</div>' +
+                '<div><div class="audit-detail-sub mb-1">{{ _("After") }}</div>' + ulList(rAfter) + '</div></div>'));
+        } else if (rAfter && rAfter.length) {
+            parts.push(section('{{ _("Roles") }}', ulList(rAfter)));
+        }
+
+        var perms = d['Permissions via assigned roles (after change)'];
+        var permNote = d['Permissions (truncated note)'];
+        if (perms && perms.length) {
+            var pInner = '<div class="max-h-48 overflow-y-auto border border-gray-200 bg-white p-2">' + ulList(perms) + '</div>';
+            if (permNote) pInner += '<p class="text-xs text-gray-500 mt-1">' + escapeHtml(permNote) + '</p>';
+            parts.push(section('{{ _("Permissions (from assigned roles)") }}', pInner));
+        }
+
+        if (d['Password']) {
+            parts.push(section('{{ _("Password") }}', '<p class="text-xs text-amber-800 font-medium">{{ _("Password was changed") }}</p>'));
+        }
+
+        var ent = d['Non-country entity access (after)'];
+        if (ent && ent.length) {
+            parts.push(section('{{ _("Other entity access") }}', ulList(ent)));
+        }
+
+        if (!parts.length) {
+            return '<pre class="text-xs text-gray-700 details-pre">' + escapeHtml(JSON.stringify(d, null, 2)) + '</pre>';
+        }
+        return '<div class="audit-details-user-update">' + parts.join('') + '</div>';
+    }
+
+    function renderFormItemUpdateDetailsHtml(d) {
+        var MAX_DEPTH = 8;
+        var MAX_STR_PRE = 8000;
+
+        function humanizeKey(key) {
+            if (key === null || key === undefined) return '';
+            return String(key)
+                .replace(/_/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+        }
+
+        function tryParseJsonString(s) {
+            if (typeof s !== 'string') return null;
+            var t = s.trim();
+            if (!t.length) return null;
+            var c0 = t.charAt(0);
+            if (c0 !== '{' && c0 !== '[') return null;
+            try {
+                return JSON.parse(t);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function isLogicConditionsShape(o) {
+            return o && typeof o === 'object' && !Array.isArray(o) && Array.isArray(o.conditions);
+        }
+
+        function isTokenLikeString(s) {
+            return typeof s === 'string' && s.length > 0 && s.length < 256 && !/\s/.test(s);
+        }
+
+        function renderLogicConditionsBlock(o, depth) {
+            var parts = [];
+            if (o.logic !== undefined && o.logic !== null && String(o.logic).length) {
+                parts.push(
+                    '<p class="audit-form-item-cond-line audit-form-item-cond-line-top"><span class="audit-form-item-kv-label">{{ _("Logic") }}:</span> ' +
+                    '<code class="audit-form-item-code">' + escapeHtml(String(o.logic)) + '</code></p>'
+                );
+            }
+            var conds = o.conditions;
+            if (Array.isArray(conds) && conds.length) {
+                conds.forEach(function (c, i) {
+                    var inner;
+                    if (c && typeof c === 'object' && !Array.isArray(c)) {
+                        var keys = Object.keys(c).sort();
+                        inner = keys.map(function (ck) {
+                            return '<p class="audit-form-item-cond-line"><span class="audit-form-item-kv-label">' +
+                                escapeHtml(humanizeKey(ck)) + ':</span> ' + renderValuePretty(c[ck], depth + 1) + '</p>';
+                        }).join('');
+                    } else {
+                        inner = '<p class="audit-form-item-cond-line">' + renderValuePretty(c, depth + 1) + '</p>';
+                    }
+                    parts.push(
+                        '<div class="audit-form-item-cond-box"><p class="audit-form-item-cond-title">{{ _("Condition") }} ' + (i + 1) + '</p>' + inner + '</div>'
+                    );
+                });
+            }
+            return '<div class="audit-form-item-condition-simple">' + parts.join('') + '</div>';
+        }
+
+        function renderValuePretty(v, depth) {
+            depth = depth || 0;
+            if (v === null || v === undefined) {
+                return '<span class="text-sm text-gray-500">' + EMPTY_VALUE_PLACEHOLDER + '</span>';
+            }
+            if (depth > MAX_DEPTH) {
+                try {
+                    return '<pre class="text-xs text-gray-800 details-pre whitespace-pre-wrap break-words max-h-40 overflow-y-auto">' +
+                        escapeHtml(JSON.stringify(v, null, 2)) + '</pre>';
+                } catch (e) {
+                    return '<span class="text-sm text-gray-900">' + escapeHtml(String(v)) + '</span>';
+                }
+            }
+            if (typeof v === 'boolean') {
+                return '<span class="text-sm font-semibold ' + (v ? 'text-emerald-700' : 'text-gray-600') + '">' +
+                    (v ? '{{ _("Yes") }}' : '{{ _("No") }}') + '</span>';
+            }
+            if (typeof v === 'number' && isFinite(v)) {
+                return '<span class="text-sm font-mono text-gray-900">' + escapeHtml(String(v)) + '</span>';
+            }
+            if (typeof v === 'string') {
+                var parsed = tryParseJsonString(v);
+                if (parsed !== null && typeof parsed === 'object') {
+                    return renderValuePretty(parsed, depth);
+                }
+                if (v.length > MAX_STR_PRE || v.indexOf('\n') >= 0) {
+                    return '<pre class="text-xs text-gray-800 details-pre whitespace-pre-wrap break-words max-h-56 overflow-y-auto">' +
+                        escapeHtml(v) + '</pre>';
+                }
+                if (isTokenLikeString(v)) {
+                    return '<code class="audit-form-item-code">' + escapeHtml(v) + '</code>';
+                }
+                return '<span class="text-sm text-gray-900 break-words">' + escapeHtml(v) + '</span>';
+            }
+            if (Array.isArray(v)) {
+                if (!v.length) {
+                    return '<span class="text-xs text-gray-500 italic">{{ _("Empty list") }}</span>';
+                }
+                var hasObjects = v.some(function (x) {
+                    return x !== null && typeof x === 'object' && !Array.isArray(x);
+                });
+                if (hasObjects) {
+                    return '<div class="audit-form-item-array-simple">' +
+                        v.map(function (item, idx) {
+                            return '<div class="audit-form-item-array-simple-row">' +
+                                '<span class="audit-form-item-array-simple-n">' + (idx + 1) + '.</span>' +
+                                '<div class="audit-form-item-array-simple-body">' + renderValuePretty(item, depth + 1) + '</div>' +
+                                '</div>';
+                        }).join('') + '</div>';
+                }
+                var allSimple = v.every(function (x) {
+                    return x === null || typeof x === 'boolean' || typeof x === 'number' ||
+                        (typeof x === 'string' && x.length < 120);
+                });
+                if (allSimple && JSON.stringify(v).length < 400) {
+                    return '<ul class="list-disc pl-4 text-xs text-gray-900 space-y-0.5">' +
+                        v.map(function (item) {
+                            return '<li class="pl-0.5">' + renderValuePretty(item, depth + 1) + '</li>';
+                        }).join('') + '</ul>';
+                }
+                return '<ul class="list-disc pl-4 text-xs text-gray-900 space-y-1">' +
+                    v.map(function (item) {
+                        return '<li class="pl-0.5">' + renderValuePretty(item, depth + 1) + '</li>';
+                    }).join('') + '</ul>';
+            }
+            if (typeof v === 'object') {
+                if (isLogicConditionsShape(v)) {
+                    return renderLogicConditionsBlock(v, depth);
+                }
+                var keys = Object.keys(v);
+                if (!keys.length) {
+                    return '<span class="text-xs text-gray-500 italic">{{ _("Empty") }}</span>';
+                }
+                keys.sort();
+                var rows = keys.map(function (key) {
+                    var raw = v[key];
+                    return '<p class="audit-form-item-kv-line"><span class="audit-form-item-kv-label">' +
+                        escapeHtml(humanizeKey(key)) + ':</span> ' + renderValuePretty(raw, depth + 1) + '</p>';
+                }).join('');
+                var nestClass = depth > 0 ? ' audit-form-item-nested' : '';
+                return '<div class="audit-form-item-kv-stack' + nestClass + '">' + rows + '</div>';
+            }
+            return '<span class="text-sm text-gray-900 break-words">' + escapeHtml(String(v)) + '</span>';
+        }
+
+        function valBlock(v) {
+            if (v === null || v === undefined) {
+                return '<span class="text-sm text-gray-500">' + EMPTY_VALUE_PLACEHOLDER + '</span>';
+            }
+            if (typeof v === 'object') {
+                return '<div class="audit-form-item-value-box">' + renderValuePretty(v, 0) + '</div>';
+            }
+            var inner = renderValuePretty(v, 0);
+            if (typeof v === 'string') {
+                var p = tryParseJsonString(v);
+                if (p !== null && typeof p === 'object') {
+                    return '<div class="audit-form-item-value-box">' + inner + '</div>';
+                }
+            }
+            return inner;
+        }
+
+        function isFormItemAuditValueEmpty(v) {
+            if (v === null || v === undefined) return true;
+            if (typeof v === 'string') {
+                if (!v.trim()) return true;
+                var parsed = tryParseJsonString(v);
+                if (parsed !== null && typeof parsed === 'object') {
+                    if (Array.isArray(parsed)) return parsed.length === 0;
+                    return Object.keys(parsed).length === 0;
+                }
+                return false;
+            }
+            if (Array.isArray(v)) return v.length === 0;
+            if (typeof v === 'object') return Object.keys(v).length === 0;
+            return false;
+        }
+
+        function pairSection(title, beforeVal, afterVal) {
+            var emptyBefore = isFormItemAuditValueEmpty(beforeVal);
+            var emptyAfter = isFormItemAuditValueEmpty(afterVal);
+            if (emptyBefore && emptyAfter) {
+                return '';
+            }
+            var head = '<div class="audit-detail-section"><div class="audit-detail-h">' + escapeHtml(title) + '</div>';
+            if (emptyBefore && !emptyAfter) {
+                return head + '<div><div class="audit-detail-sub mb-1 text-emerald-800">{{ _("Added") }}</div>' +
+                    valBlock(afterVal) + '</div></div>';
+            }
+            if (!emptyBefore && emptyAfter) {
+                return head + '<div><div class="audit-detail-sub mb-1 text-amber-800">{{ _("Removed") }}</div>' +
+                    valBlock(beforeVal) + '</div></div>';
+            }
+            return head + '<div class="space-y-3">' +
+                '<div><div class="audit-detail-sub mb-1">{{ _("Before") }}</div>' + valBlock(beforeVal) + '</div>' +
+                '<div><div class="audit-detail-sub mb-1">{{ _("After") }}</div>' + valBlock(afterVal) + '</div>' +
+                '</div></div>';
+        }
+        var parts = [];
+        if (d.Note) {
+            parts.push('<p class="text-xs text-gray-600 mb-2">' + escapeHtml(String(d.Note)) + '</p>');
+        }
+        for (var k in d) {
+            if (!Object.prototype.hasOwnProperty.call(d, k)) continue;
+            if (k === 'Note') continue;
+            if (k.endsWith(' (before)')) {
+                var base = k.slice(0, -9);
+                var ak = base + ' (after)';
+                if (Object.prototype.hasOwnProperty.call(d, ak)) {
+                    var block = pairSection(base, d[k], d[ak]);
+                    if (block) parts.push(block);
+                }
+            }
+        }
+        if (!parts.length) {
+            return '<pre class="text-xs text-gray-700 details-pre">' + escapeHtml(JSON.stringify(d, null, 2)) + '</pre>';
+        }
+        return '<div class="audit-details-user-update audit-details-form-item">' + parts.join('') + '</div>';
+    }
+
+    /** Flat key–value admin details (RBAC, API keys, etc.) */
+    function renderSimpleStructuredAuditHtml(d) {
+        var keys = Object.keys(d).filter(function (k) {
+            return Object.prototype.hasOwnProperty.call(d, k) && d[k] !== undefined && d[k] !== null && d[k] !== '';
+        });
+        keys.sort();
+        if (!keys.length) {
+            try {
+                return '<pre class="text-xs text-gray-700 details-pre">' + escapeHtml(JSON.stringify(d, null, 2)) + '</pre>';
+            } catch (e) {
+                return renderTextCell(String(d));
+            }
+        }
+        var rows = keys.map(function (k) {
+            var v = d[k];
+            var vs = typeof v === 'object' ? JSON.stringify(v) : String(v);
+            return '<p class="text-xs text-gray-900 audit-form-item-kv-line"><span class="audit-form-item-kv-label">' +
+                escapeHtml(k) + ':</span> <span class="break-words">' + escapeHtml(vs) + '</span></p>';
+        }).join('');
+        return '<div class="audit-details-user-update">' + rows + '</div>';
+    }
+
+    function renderDetailsValue(details, entry) {
         if (details === null || details === undefined) {
             return '<span class="text-sm text-gray-500">' + EMPTY_VALUE_PLACEHOLDER + '</span>';
         }
-        if (typeof details === 'object') {
+        if (typeof details === 'object' && details !== null && !Array.isArray(details)) {
+            if (entry && entry.type === 'admin_action' && entry.action_type === 'user_update') {
+                return renderUserUpdateDetailsHtml(details);
+            }
+            if (entry && entry.type === 'admin_action' && entry.action_type === 'form_item_update') {
+                return renderFormItemUpdateDetailsHtml(details);
+            }
+            var at = entry && entry.action_type ? String(entry.action_type) : '';
+            if (at.indexOf('rbac_') === 0 || at === 'api_key_create' || at === 'api_key_revoke') {
+                return renderSimpleStructuredAuditHtml(details);
+            }
             try {
                 return '<pre class="text-xs text-gray-700 details-pre">' + escapeHtml(JSON.stringify(details, null, 2)) + '</pre>';
             } catch (e) {
@@ -418,36 +917,34 @@
 
 <script nonce="{{ csp_nonce() }}">
 $(document).ready(function() {
-    // Filters pane toggle (collapsed by default)
-    const filtersPane = document.getElementById('filtersPane');
-    const toggleFiltersBtn = document.getElementById('toggleFiltersBtn');
-    const toggleFiltersLabel = document.getElementById('toggleFiltersLabel');
-    const toggleFiltersIcon = document.getElementById('toggleFiltersIcon');
+    var filtersPane = document.getElementById('auditTrailFiltersPane');
+    var toggleBtn = document.getElementById('auditTrailFiltersToggle');
+    var toggleLabel = document.getElementById('auditTrailFiltersToggleLabel');
+    var toggleIcon = document.getElementById('auditTrailFiltersToggleIcon');
 
-    function setFiltersCollapsed(collapsed) {
-        if (!filtersPane || !toggleFiltersBtn) return;
+    function setAuditFiltersCollapsed(collapsed) {
+        if (!filtersPane || !toggleBtn) return;
         filtersPane.classList.toggle('hidden', collapsed);
-        toggleFiltersBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-        if (toggleFiltersLabel) {
-            toggleFiltersLabel.textContent = collapsed
-                ? '{{ _("Show Filters") }}'
-                : '{{ _("Hide Filters") }}';
+        toggleBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        if (toggleLabel) {
+            toggleLabel.textContent = collapsed
+                ? '{{ _("Show filters") }}'
+                : '{{ _("Hide filters") }}';
         }
-        if (toggleFiltersIcon) {
-            toggleFiltersIcon.classList.toggle('rotate-180', !collapsed);
+        if (toggleIcon) {
+            toggleIcon.classList.toggle('rotate-180', !collapsed);
         }
     }
 
-    if (toggleFiltersBtn) {
-        setFiltersCollapsed(true);
-        toggleFiltersBtn.addEventListener('click', function() {
-            const isCollapsed = filtersPane ? filtersPane.classList.contains('hidden') : true;
-            setFiltersCollapsed(!isCollapsed);
+    if (toggleBtn && filtersPane) {
+        toggleBtn.addEventListener('click', function() {
+            var nextCollapsed = !filtersPane.classList.contains('hidden');
+            setAuditFiltersCollapsed(nextCollapsed);
         });
     }
 
     // Handle form submission
-    $('form').on('submit', function(e) {
+    $('#auditTrailFiltersForm').on('submit', function(e) {
         e.preventDefault();
         const formData = new FormData(this);
 
@@ -608,8 +1105,13 @@ $(document).ready(function() {
             'device_registered':   { icon: 'fa-mobile-alt', bg: 'bg-cyan-100',   text: 'text-cyan-800',   label: '{{ _("Device registration") }}' },
             'device_unregistered': { icon: 'fa-mobile-alt', bg: 'bg-gray-100',   text: 'text-gray-700',   label: '{{ _("Device unregistered") }}' },
             'settings_updated':    { icon: 'fa-cog',        bg: 'bg-slate-100',  text: 'text-slate-800',  label: '{{ _("System settings") }}' },
+            'email_templates_updated': { icon: 'fa-envelope-open-text', bg: 'bg-slate-100', text: 'text-slate-800', label: '{{ _("Email templates") }}' },
             'country_access_requested': { icon: 'fa-globe', bg: 'bg-blue-50',   text: 'text-blue-800',   label: '{{ _("Country access") }}' },
             'country_selected':    { icon: 'fa-flag',       bg: 'bg-blue-50',    text: 'text-blue-800',   label: '{{ _("Country selection") }}' },
+
+            // ── AI chat (DELETE on /api/ai/v2/...) ──────────────────────────
+            'ai_conversation_deleted':      { icon: 'fa-comments', bg: 'bg-red-50',    text: 'text-red-800',    label: '{{ _("AI chat deleted") }}' },
+            'ai_conversations_deleted_all': { icon: 'fa-comments', bg: 'bg-red-100',   text: 'text-red-900',   label: '{{ _("All AI chats deleted") }}' },
         };
 
         const activity = activityMap[activityType] || {
@@ -704,6 +1206,7 @@ $(document).ready(function() {
             risk_level: {{ (entry.get('risk_level', '') or '')|tojson|safe }},
             ip_address: {{ (entry.get('ip_address', '') or '')|tojson|safe }},
             type: {{ (entry.get('type', '') or '')|tojson|safe }},
+            action_type: {{ (entry.get('action_type') or '')|tojson|safe }},
             requires_review: {{ entry.get('requires_review', False)|tojson|safe }},
             response_status_code: {% if entry.get('response_status_code') is not none %}{{ entry.get('response_status_code')|tojson|safe }}{% else %}null{% endif %}
         }{% if not loop.last %},{% endif %}
@@ -807,7 +1310,7 @@ $(document).ready(function() {
                     const detailsId = 'details-' + params.data.id;
                     html += '<button class="text-xs text-blue-500 hover:text-blue-700 mt-1 toggle-details-btn" type="button" data-details-id="' + detailsId + '">{{ _("View Details") }}</button>';
                     html += '<div class="hidden mt-2 p-3 bg-gray-100 rounded-md border border-gray-200" id="' + detailsId + '">';
-                    html += renderDetailsValue(params.data.details);
+                    html += renderDetailsValue(params.data.details, params.data);
                     html += '</div>';
                 }
                 return html;

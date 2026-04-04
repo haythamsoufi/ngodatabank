@@ -9,6 +9,7 @@ import '../../providers/shared/auth_provider.dart';
 import '../../utils/ios_constants.dart';
 import '../../widgets/app_bar.dart';
 import '../../widgets/bottom_navigation_bar.dart';
+import 'admin_user_detail_screen.dart';
 
 /// Read-only user directory for admins. Editing remains on the web backoffice only.
 class ManageUsersScreen extends StatefulWidget {
@@ -70,9 +71,13 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             final name = u.displayName.toLowerCase();
             final email = u.email.toLowerCase();
             final roles = u.rolesLabel.toLowerCase();
+            final countries = u.countries
+                .map((c) => '${c.name ?? ''} ${c.code ?? ''}'.toLowerCase())
+                .join(' ');
             return name.contains(q) ||
                 email.contains(q) ||
-                roles.contains(q);
+                roles.contains(q) ||
+                countries.contains(q);
           }).toList();
 
     return Scaffold(
@@ -195,7 +200,14 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
       itemBuilder: (context, i) {
         final u = filtered[i];
         return ListTile(
-          contentPadding: const EdgeInsets.symmetric(vertical: 4),
+          contentPadding: const EdgeInsets.symmetric(vertical: 8),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (ctx) => AdminUserDetailScreen(summary: u),
+              ),
+            );
+          },
           title: Text(
             u.displayName,
             maxLines: 1,
@@ -222,22 +234,151 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                       ),
                 ),
               ],
-              const SizedBox(height: 4),
-              Text(
-                u.rolesLabel,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-              ),
+              const SizedBox(height: 8),
+              _UserDirectoryRoleChips(user: u, localizations: localizations),
             ],
           ),
-          trailing: u.active
-              ? Icon(Icons.check_circle_outline, color: IOSColors.systemGreen, size: 22)
-              : Icon(Icons.cancel_outlined, color: Theme.of(context).colorScheme.outline, size: 22),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.outline),
+              const SizedBox(width: 4),
+              u.active
+                  ? Icon(Icons.check_circle_outline, color: IOSColors.systemGreen, size: 22)
+                  : Icon(Icons.cancel_outlined, color: Theme.of(context).colorScheme.outline, size: 22),
+            ],
+          ),
         );
       },
+    );
+  }
+}
+
+/// Role summary row: primary type (Admin / Focal Point), system manager, then grouped chips.
+class _UserDirectoryRoleChips extends StatelessWidget {
+  const _UserDirectoryRoleChips({
+    required this.user,
+    required this.localizations,
+  });
+
+  final AdminUserListItem user;
+  final AppLocalizations localizations;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final assignment = user.assignmentRoles;
+    final adminSys = user.adminAndSystemRoles;
+    final other = user.otherRoles;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [
+            Chip(
+              visualDensity: VisualDensity.compact,
+              label: Text(
+                user.computedRoleType == 'admin'
+                    ? localizations.adminRole
+                    : localizations.focalPointRole,
+              ),
+              backgroundColor: user.computedRoleType == 'admin'
+                  ? scheme.primaryContainer.withValues(alpha: 0.55)
+                  : scheme.secondaryContainer.withValues(alpha: 0.5),
+            ),
+            if (user.isSystemManager)
+              Chip(
+                visualDensity: VisualDensity.compact,
+                label: Text(localizations.systemManagerRole),
+                backgroundColor: scheme.errorContainer.withValues(alpha: 0.55),
+              ),
+          ],
+        ),
+        if (assignment.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Text(
+            localizations.userDirAssignmentRoles,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(color: scheme.onSurfaceVariant),
+          ),
+          const SizedBox(height: 4),
+          Wrap(
+            spacing: 4,
+            runSpacing: 4,
+            children: assignment
+                .map(
+                  (r) => Chip(
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    label: Text(
+                      (r.name != null && r.name!.trim().isNotEmpty) ? r.name! : r.code,
+                      style: Theme.of(context).textTheme.labelSmall,
+                    ),
+                    backgroundColor: IOSColors.systemGreen.withValues(alpha: 0.16),
+                  ),
+                )
+                .toList(),
+          ),
+        ],
+        if (adminSys.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Text(
+            localizations.userDirAdminRoles,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(color: scheme.onSurfaceVariant),
+          ),
+          const SizedBox(height: 4),
+          Wrap(
+            spacing: 4,
+            runSpacing: 4,
+            children: adminSys
+                .map(
+                  (r) => Chip(
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    label: Text(
+                      (r.name != null && r.name!.trim().isNotEmpty) ? r.name! : r.code,
+                      style: Theme.of(context).textTheme.labelSmall,
+                    ),
+                    backgroundColor: r.code == 'system_manager'
+                        ? scheme.errorContainer.withValues(alpha: 0.45)
+                        : scheme.primaryContainer.withValues(alpha: 0.4),
+                  ),
+                )
+                .toList(),
+          ),
+        ],
+        if (other.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Text(
+            localizations.userDirOtherRoles,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(color: scheme.onSurfaceVariant),
+          ),
+          const SizedBox(height: 4),
+          Wrap(
+            spacing: 4,
+            runSpacing: 4,
+            children: other
+                .map(
+                  (r) => Chip(
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    label: Text(
+                      (r.name != null && r.name!.trim().isNotEmpty) ? r.name! : r.code,
+                      style: Theme.of(context).textTheme.labelSmall,
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+        ],
+        if (user.rbacRoles.isEmpty)
+          Text(
+            '—',
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(color: scheme.onSurfaceVariant),
+          ),
+      ],
     );
   }
 }

@@ -10,6 +10,7 @@
  * - Include this script in your page
  * - Forms with class 'no-submit-guard' will be excluded
  * - Submit buttons with class 'no-submit-guard' will be excluded
+ * - Set data-loading-text="" on icon-only buttons for spinner-only (no "Saving..." label)
  * - Call FormSubmitGuard.reset(form) to manually reset a form's submission state
  */
 
@@ -138,9 +139,13 @@
                 button.classList.add('opacity-50', 'cursor-not-allowed');
 
                 if (button.tagName.toLowerCase() === 'button') {
-                    // Create loading content
-                    const loadingText = button.dataset.loadingText || 'Saving...';
-                    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>' + loadingText;
+                    // Default label; use data-loading-text="" on icon-only buttons for spinner-only.
+                    let loadingText = 'Saving...';
+                    if (button.hasAttribute('data-loading-text')) {
+                        loadingText = button.getAttribute('data-loading-text') || '';
+                    }
+                    const spinClass = loadingText ? 'fas fa-spinner fa-spin mr-2' : 'fas fa-spinner fa-spin';
+                    button.innerHTML = '<i class="' + spinClass + '"></i>' + loadingText;
                 }
             } else {
                 delete button.dataset.submitGuardActive;

@@ -12,10 +12,12 @@ from app.utils.request_utils import is_static_asset_request
 from app.utils.user_analytics import log_user_activity, log_admin_action
 from app.utils.activity_endpoint_overrides import (
     resolve_post_activity_type,
+    resolve_delete_activity_type,
     description_for_activity_type,
     endpoint_last_segment,
     strip_endpoint_verb_prefix,
 )
+from app.utils.activity_form_data_redaction import redact_activity_form_data
 import time
 
 
@@ -117,6 +119,9 @@ def _determine_activity_type(method, endpoint, form_data=None):
         return 'data_modified'
 
     if method == 'DELETE':
+        specific = resolve_delete_activity_type(endpoint)
+        if specific:
+            return specific
         return 'data_deleted'
 
     if method == 'POST':
@@ -265,13 +270,9 @@ def track_activity(activity_type=None, description=None, admin_action=False, ris
                         'status_code': status_code
                     }
 
-                    # Add form data for POST requests (excluding sensitive fields)
+                    # Add form data for POST requests (redacted; see activity_form_data_redaction)
                     if request.method == 'POST' and request.form:
-                        form_data = {}
-                        for key, value in request.form.items():
-                            if 'password' not in key.lower() and 'token' not in key.lower():
-                                form_data[key] = value[:100] if isinstance(value, str) else str(value)[:100]
-                        context_data['form_data'] = form_data
+                        context_data['form_data'] = redact_activity_form_data(request.form.items())
 
                     # Log as admin action if specified
                     from app.services.authorization_service import AuthorizationService
@@ -490,10 +491,12 @@ def init_activity_tracking(app):
                     if _should_skip_endpoint(request.endpoint):
                         return response
 
-                    # Skip admin routes that log via log_admin_action (avoids duplicates)
+                    # Skip POSTs to blueprints that call log_admin_action for mutations, so we do not
+                    # duplicate UserActivityLog + AdminActionLog. Assignment and AI admin POSTs are
+                    # not skipped — they rely on automatic activity logging.
                     admin_routes_with_explicit_logging = (
-                        'user_management.', 'form_builder.', 'assignment_management.',
-                        'template_management.', 'ai_management.',
+                        'user_management.',
+                        'form_builder.',
                     )
                     is_admin_route_with_logging = any(
                         request.endpoint and request.endpoint.startswith(p)
@@ -510,16 +513,9 @@ def init_activity_tracking(app):
                         'status_code': response.status_code
                     }
 
-                    # Enhanced context data for POST requests
+                    # Enhanced context data for POST requests (redacted)
                     if request.method == 'POST' and request.form:
-                        form_data = {}
-                        for key, value in request.form.items():
-                            if key not in ['csrf_token', 'password', 'confirm_password']:
-                                if isinstance(value, str) and len(value) > 100:
-                                    form_data[key] = value[:100] + '...'
-                                else:
-                                    form_data[key] = value
-                        context_data['form_data'] = form_data
+                        context_data['form_data'] = redact_activity_form_data(request.form.items())
 
                     # Extract country information (mirrors the non-deferred path)
                     _extract_entity_into_context(app, request, context_data)
@@ -567,10 +563,10 @@ def init_activity_tracking(app):
                 if _should_skip_endpoint(request.endpoint):
                     return response
 
-                # Skip admin routes that log via log_admin_action (avoids duplicates)
+                # See deferred path: only blueprints with explicit log_admin_action on POST.
                 admin_routes_with_explicit_logging = (
-                    'user_management.', 'form_builder.', 'assignment_management.',
-                    'template_management.', 'ai_management.',
+                    'user_management.',
+                    'form_builder.',
                 )
                 is_admin_route_with_logging = any(
                     request.endpoint and request.endpoint.startswith(p)
@@ -589,19 +585,9 @@ def init_activity_tracking(app):
                     'status_code': response.status_code
                 }
 
-                # Enhanced context data for POST requests
+                # Enhanced context data for POST requests (redacted)
                 if request.method == 'POST' and request.form:
-                    form_data = {}
-                    for key, value in request.form.items():
-                        if ('password' not in key.lower() and
-                            'token' not in key.lower() and
-                            'csrf' not in key.lower()):
-                            # Limit value length to prevent huge logs
-                            if isinstance(value, str):
-                                form_data[key] = value[:100] if len(value) > 100 else value
-                            else:
-                                form_data[key] = str(value)[:100]
-                    context_data['form_data'] = form_data
+                    context_data['form_data'] = redact_activity_form_data(request.form.items())
 
                 # Extract country information from form data, URL args, or view args
                 _extract_entity_into_context(app, request, context_data)

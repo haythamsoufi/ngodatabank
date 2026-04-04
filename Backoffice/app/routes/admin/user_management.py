@@ -1002,24 +1002,7 @@ def edit_user(user_id):
         .order_by(UserDevice.last_active_at.desc().nullslast(), UserDevice.created_at.desc().nullslast()) \
         .all()
 
-    # Determine the effective role type based on the user's actual RBAC roles.
-    computed_role_type = "admin"
-    try:
-        from app.models.rbac import RbacUserRole, RbacRole
-        user_role_codes = {
-            str(code)
-            for code, in (
-                RbacUserRole.query.join(RbacRole, RbacUserRole.role_id == RbacRole.id)
-                .with_entities(RbacRole.code)
-                .filter(RbacUserRole.user_id == user.id)
-                .all()
-            )
-        }
-        has_admin_roles = any(c.startswith("admin_") or c == "system_manager" for c in user_role_codes)
-        if not has_admin_roles:
-            computed_role_type = "focal_point"
-    except Exception as e:
-        current_app.logger.debug("computed_role_type check failed: %s", e)
+    computed_role_type = _compute_role_type_for_user_id(user.id)
 
     return render_template("admin/user_management/user_form.html",
                            form=form,
@@ -1034,6 +1017,30 @@ def edit_user(user_id):
                            notification_types_info=notification_types_info,
                            registered_devices=registered_devices,
                            computed_role_type=computed_role_type)
+
+
+def _compute_role_type_for_user_id(user_id: int) -> str:
+    """
+    Align with user_form.html role type selector: users with any admin_* or system_manager
+    role are treated as Admin; otherwise Focal Point.
+    """
+    try:
+        from app.models.rbac import RbacUserRole, RbacRole
+
+        user_role_codes = {
+            str(code)
+            for code, in (
+                RbacUserRole.query.join(RbacRole, RbacUserRole.role_id == RbacRole.id)
+                .with_entities(RbacRole.code)
+                .filter(RbacUserRole.user_id == user_id)
+                .all()
+            )
+        }
+        has_admin_roles = any(c.startswith("admin_") or c == "system_manager" for c in user_role_codes)
+        return "admin" if has_admin_roles else "focal_point"
+    except Exception as e:
+        current_app.logger.debug("computed_role_type check failed: %s", e)
+        return "admin"
 
 
 def _get_role_ids_by_code_for_user(user: User) -> dict:
@@ -1156,17 +1163,19 @@ def kickout_device(user_id, device_id):
         device.logged_out_at = utcnow()
         db.session.flush()
 
-        # Log admin action
         log_admin_action(
-            admin_user_id=current_user.id,
             action_type='kickout_device',
-            target_user_id=user_id,
-            details={
+            description=f"Ended session for device {device_id} (user {user_id})",
+            target_type='user',
+            target_id=user_id,
+            target_description=user.email if user else None,
+            new_values={
                 'device_id': device_id,
                 'platform': device.platform,
                 'device_name': device.device_name,
-                'device_token_preview': device.device_token[:15] + '...' if device.device_token else None
-            }
+                'device_token_preview': device.device_token[:15] + '...' if device.device_token else None,
+            },
+            risk_level='medium',
         )
 
         current_app.logger.info(
@@ -1202,12 +1211,14 @@ def remove_device(user_id, device_id):
         db.session.delete(device)
         db.session.flush()
 
-        # Log admin action
         log_admin_action(
-            admin_user_id=current_user.id,
             action_type='remove_device',
-            target_user_id=user_id,
-            details=device_info
+            description=f"Removed device {device_id} from user {user_id}",
+            target_type='user',
+            target_id=user_id,
+            target_description=user.email if user else None,
+            new_values=device_info,
+            risk_level='medium',
         )
 
         current_app.logger.info(
@@ -1381,9 +1392,89 @@ def api_users_list():
                 'country_ids': [c.id for c in user_countries_map.get(user.id, [])],
                 'countries': user_countries,
                 'entity_counts': entity_counts if entity_counts else None,
+                'computed_role_type': _compute_role_type_for_user_id(user.id),
             })
 
         return json_ok(status='success', data=users_data)
+    except Exception as e:
+        return handle_json_view_exception(e, GENERIC_ERROR_MESSAGE, status_code=500)
+
+
+@bp.route("/api/users/<int:user_id>", methods=["GET"])
+@permission_required('admin.users.view')
+def api_user_detail(user_id):
+    """JSON user profile for mobile/admin clients: roles, RBAC permissions, entity grants."""
+    try:
+        user = User.query.get(user_id)
+        if not user:
+            return json_not_found("User not found")
+
+        from sqlalchemy.orm import selectinload
+        from app.models.rbac import RbacUserRole, RbacRole
+
+        user_roles = RbacUserRole.query.filter_by(user_id=user_id).all()
+        role_ids = list({ur.role_id for ur in user_roles})
+        roles = (
+            RbacRole.query.options(selectinload(RbacRole.permissions))
+            .filter(RbacRole.id.in_(role_ids))
+            .all()
+            if role_ids
+            else []
+        )
+        roles_by_id = {r.id: r for r in roles}
+
+        rbac_roles = []
+        perm_agg = {}
+        for ur in user_roles:
+            r = roles_by_id.get(ur.role_id)
+            if not r:
+                continue
+            perms = [{"code": p.code, "name": p.name} for p in sorted(r.permissions, key=lambda x: x.code)]
+            for p in r.permissions:
+                perm_agg.setdefault(p.code, p.name)
+            rbac_roles.append({
+                "id": r.id,
+                "code": r.code,
+                "name": r.name,
+                "description": r.description,
+                "permissions": perms,
+            })
+
+        effective_permissions = [{"code": c, "name": perm_agg[c]} for c in sorted(perm_agg.keys())]
+
+        entity_permissions = UserEntityPermission.query.filter_by(user_id=user_id).all()
+        entities_data = []
+        for perm in entity_permissions:
+            entity = EntityService.get_entity(perm.entity_type, perm.entity_id)
+            name = None
+            if entity:
+                name = EntityService.get_entity_name(perm.entity_type, perm.entity_id, include_hierarchy=True)
+            entities_data.append({
+                "permission_id": perm.id,
+                "entity_type": perm.entity_type,
+                "entity_id": perm.entity_id,
+                "entity_name": name,
+            })
+        entities_data.sort(key=lambda x: (x["entity_type"] or "", (x["entity_name"] or "").lower(), x["entity_id"]))
+
+        computed_role_type = _compute_role_type_for_user_id(user_id)
+        is_system_manager = any((r.get("code") == "system_manager") for r in rbac_roles)
+
+        payload = {
+            "id": user.id,
+            "email": user.email,
+            "name": user.name,
+            "title": user.title,
+            "active": user.active,
+            "chatbot_enabled": user.chatbot_enabled,
+            "profile_color": user.profile_color,
+            "rbac_roles": rbac_roles,
+            "effective_permissions": effective_permissions,
+            "entity_permissions": entities_data,
+            "computed_role_type": computed_role_type,
+            "is_system_manager": is_system_manager,
+        }
+        return json_ok(status="success", data=payload)
     except Exception as e:
         return handle_json_view_exception(e, GENERIC_ERROR_MESSAGE, status_code=500)
 

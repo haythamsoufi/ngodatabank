@@ -474,6 +474,21 @@ class AppLocalizations {
       'no_translations_found': 'No translations found',
       'no_documents_found': 'No documents found',
       'no_users_found': 'No users found',
+      'loading_user_profile': 'Loading user profile…',
+      'failed_load_user_profile': 'Could not load this user.',
+      'assigned_roles_title': 'Assigned roles',
+      'role_type_label': 'Role type',
+      'permissions_by_role': 'Permissions by role',
+      'all_permissions_union': 'All permissions (from roles)',
+      'entity_permissions_title': 'Entity permissions',
+      'manage_users_detail_footer':
+          'To edit roles, entity access, devices, or notifications, use the web backoffice user form.',
+      'no_roles_assigned': 'No RBAC roles assigned.',
+      'no_entities_assigned': 'No entity assignments.',
+      'no_permissions_listed': 'No permissions listed for this role.',
+      'user_dir_assignment_roles': 'Assignment roles',
+      'user_dir_admin_roles': 'Admin & system roles',
+      'user_dir_other_roles': 'Other roles',
       'no_assignments_found': 'No assignments found',
       'no_templates_found': 'No templates found',
       'assignment_deleted_successfully': 'Assignment deleted successfully',
@@ -1063,6 +1078,21 @@ class AppLocalizations {
       'no_translations_found': 'No se encontraron traducciones',
       'no_documents_found': 'No se encontraron documentos',
       'no_users_found': 'No se encontraron usuarios',
+      'loading_user_profile': 'Cargando perfil de usuario…',
+      'failed_load_user_profile': 'No se pudo cargar este usuario.',
+      'assigned_roles_title': 'Roles asignados',
+      'role_type_label': 'Tipo de rol',
+      'permissions_by_role': 'Permisos por rol',
+      'all_permissions_union': 'Todos los permisos (desde roles)',
+      'entity_permissions_title': 'Permisos de entidad',
+      'manage_users_detail_footer':
+          'Para editar roles, acceso a entidades, dispositivos o notificaciones, use el formulario de usuario en la web.',
+      'no_roles_assigned': 'No hay roles RBAC asignados.',
+      'no_entities_assigned': 'Sin asignaciones de entidad.',
+      'no_permissions_listed': 'No hay permisos listados para este rol.',
+      'user_dir_assignment_roles': 'Roles de asignación',
+      'user_dir_admin_roles': 'Admin y sistema',
+      'user_dir_other_roles': 'Otros roles',
       'no_assignments_found': 'No se encontraron asignaciones',
       'no_templates_found': 'No se encontraron plantillas',
       'assignment_deleted_successfully': 'Asignación eliminada exitosamente',
@@ -1655,6 +1685,21 @@ class AppLocalizations {
       'no_translations_found': 'Aucune traduction trouvée',
       'no_documents_found': 'Aucun document trouvé',
       'no_users_found': 'Aucun utilisateur trouvé',
+      'loading_user_profile': 'Chargement du profil…',
+      'failed_load_user_profile': 'Impossible de charger cet utilisateur.',
+      'assigned_roles_title': 'Rôles attribués',
+      'role_type_label': 'Type de rôle',
+      'permissions_by_role': 'Permissions par rôle',
+      'all_permissions_union': 'Toutes les permissions (via les rôles)',
+      'entity_permissions_title': 'Permissions d’entité',
+      'manage_users_detail_footer':
+          'Pour modifier les rôles, l’accès aux entités, les appareils ou les notifications, utilisez le formulaire web.',
+      'no_roles_assigned': 'Aucun rôle RBAC attribué.',
+      'no_entities_assigned': 'Aucune entité attribuée.',
+      'no_permissions_listed': 'Aucune permission listée pour ce rôle.',
+      'user_dir_assignment_roles': 'Rôles d’affectation',
+      'user_dir_admin_roles': 'Admin et système',
+      'user_dir_other_roles': 'Autres rôles',
       'no_assignments_found': 'Aucune assignation trouvée',
       'no_templates_found': 'Aucun modèle trouvé',
       'assignment_deleted_successfully': 'Assignation supprimée avec succès',
@@ -2239,6 +2284,21 @@ class AppLocalizations {
       'no_translations_found': 'لم يتم العثور على ترجمات',
       'no_documents_found': 'لم يتم العثور على مستندات',
       'no_users_found': 'لم يتم العثور على مستخدمين',
+      'loading_user_profile': 'جاري تحميل ملف المستخدم…',
+      'failed_load_user_profile': 'تعذر تحميل هذا المستخدم.',
+      'assigned_roles_title': 'الأدوار المعيّنة',
+      'role_type_label': 'نوع الدور',
+      'permissions_by_role': 'الأذونات حسب الدور',
+      'all_permissions_union': 'جميع الأذونات (من الأدوار)',
+      'entity_permissions_title': 'أذونات الكيان',
+      'manage_users_detail_footer':
+          'لتعديل الأدوار أو صلاحيات الكيانات أو الأجهزة أو الإشعارات، استخدم نموذج المستخدم في الويب.',
+      'no_roles_assigned': 'لا توجد أدوار RBAC معيّنة.',
+      'no_entities_assigned': 'لا توجد كيانات معيّنة.',
+      'no_permissions_listed': 'لا توجد أذونات مدرجة لهذا الدور.',
+      'user_dir_assignment_roles': 'أدوار المهام',
+      'user_dir_admin_roles': 'المسؤول والنظام',
+      'user_dir_other_roles': 'أدوار أخرى',
       'no_assignments_found': 'لم يتم العثور على مهام',
       'no_templates_found': 'لم يتم العثور على قوالب',
       'assignment_deleted_successfully': 'تم حذف المهمة بنجاح',
@@ -2818,6 +2878,21 @@ class AppLocalizations {
       'no_translations_found': 'कोई अनुवाद नहीं मिला',
       'no_documents_found': 'कोई दस्तावेज नहीं मिला',
       'no_users_found': 'कोई उपयोगकर्ता नहीं मिला',
+      'loading_user_profile': 'उपयोगकर्ता प्रोफ़ाइल लोड हो रही है…',
+      'failed_load_user_profile': 'इस उपयोगकर्ता को लोड नहीं किया जा सका.',
+      'assigned_roles_title': 'निर्धारित भूमिकाएँ',
+      'role_type_label': 'भूमिका प्रकार',
+      'permissions_by_role': 'भूमिका के अनुसार अनुमतियाँ',
+      'all_permissions_union': 'सभी अनुमतियाँ (भूमिकाओं से)',
+      'entity_permissions_title': 'इकाई अनुमतियाँ',
+      'manage_users_detail_footer':
+          'भूमिकाएँ, इकाई पहुँच, उपकरण या सूचनाएँ संपादित करने के लिए वेब बैकऑफिस उपयोगकर्ता फ़ॉर्म का उपयोग करें।',
+      'no_roles_assigned': 'कोई RBAC भूमिका निर्धारित नहीं।',
+      'no_entities_assigned': 'कोई इकाई असाइनमेंट नहीं।',
+      'no_permissions_listed': 'इस भूमिका के लिए कोई अनुमति सूचीबद्ध नहीं।',
+      'user_dir_assignment_roles': 'असाइनमेंट भूमिकाएँ',
+      'user_dir_admin_roles': 'व्यवस्थापक और सिस्टम',
+      'user_dir_other_roles': 'अन्य भूमिकाएँ',
       'no_assignments_found': 'कोई असाइनमेंट नहीं मिला',
       'no_templates_found': 'कोई टेम्प्लेट नहीं मिला',
       'assignment_deleted_successfully': 'असाइनमेंट सफलतापूर्वक हटाया गया',
@@ -3404,6 +3479,21 @@ class AppLocalizations {
       'no_translations_found': 'Переводы не найдены',
       'no_documents_found': 'Документы не найдены',
       'no_users_found': 'Пользователи не найдены',
+      'loading_user_profile': 'Загрузка профиля…',
+      'failed_load_user_profile': 'Не удалось загрузить пользователя.',
+      'assigned_roles_title': 'Назначенные роли',
+      'role_type_label': 'Тип роли',
+      'permissions_by_role': 'Разрешения по ролям',
+      'all_permissions_union': 'Все разрешения (из ролей)',
+      'entity_permissions_title': 'Разрешения на сущности',
+      'manage_users_detail_footer':
+          'Чтобы изменить роли, доступ к сущностям, устройства или уведомления, используйте веб-форму пользователя.',
+      'no_roles_assigned': 'RBAC-роли не назначены.',
+      'no_entities_assigned': 'Нет назначений сущностей.',
+      'no_permissions_listed': 'Для этой роли разрешения не перечислены.',
+      'user_dir_assignment_roles': 'Роли назначений',
+      'user_dir_admin_roles': 'Админ и система',
+      'user_dir_other_roles': 'Прочие роли',
       'no_assignments_found': 'Назначения не найдены',
       'no_templates_found': 'Шаблоны не найдены',
       'assignment_deleted_successfully': 'Назначение успешно удалено',
@@ -3970,6 +4060,20 @@ class AppLocalizations {
       'no_translations_found': '未找到翻译',
       'no_documents_found': '未找到文档',
       'no_users_found': '未找到用户',
+      'loading_user_profile': '正在加载用户资料…',
+      'failed_load_user_profile': '无法加载该用户。',
+      'assigned_roles_title': '已分配角色',
+      'role_type_label': '角色类型',
+      'permissions_by_role': '按角色的权限',
+      'all_permissions_union': '全部权限（来自角色）',
+      'entity_permissions_title': '实体权限',
+      'manage_users_detail_footer': '若要编辑角色、实体访问、设备或通知，请使用网页后台的用户表单。',
+      'no_roles_assigned': '未分配 RBAC 角色。',
+      'no_entities_assigned': '无实体分配。',
+      'no_permissions_listed': '此角色下列出的权限为空。',
+      'user_dir_assignment_roles': '任务角色',
+      'user_dir_admin_roles': '管理与系统',
+      'user_dir_other_roles': '其他角色',
       'no_assignments_found': '未找到任务',
       'no_templates_found': '未找到模板',
       'assignment_deleted_successfully': '任务已成功删除',
@@ -4726,6 +4830,20 @@ class AppLocalizations {
   String get noTranslationsFound => translate('no_translations_found');
   String get noDocumentsFound => translate('no_documents_found');
   String get noUsersFound => translate('no_users_found');
+  String get loadingUserProfile => translate('loading_user_profile');
+  String get failedLoadUserProfile => translate('failed_load_user_profile');
+  String get assignedRolesTitle => translate('assigned_roles_title');
+  String get roleTypeLabel => translate('role_type_label');
+  String get permissionsByRole => translate('permissions_by_role');
+  String get allPermissionsUnion => translate('all_permissions_union');
+  String get entityPermissionsTitle => translate('entity_permissions_title');
+  String get manageUsersDetailFooter => translate('manage_users_detail_footer');
+  String get noRolesAssigned => translate('no_roles_assigned');
+  String get noEntitiesAssigned => translate('no_entities_assigned');
+  String get noPermissionsListed => translate('no_permissions_listed');
+  String get userDirAssignmentRoles => translate('user_dir_assignment_roles');
+  String get userDirAdminRoles => translate('user_dir_admin_roles');
+  String get userDirOtherRoles => translate('user_dir_other_roles');
   String get noAssignmentsFound => translate('no_assignments_found');
   String get noTemplatesFound => translate('no_templates_found');
   String get assignmentDeletedSuccessfully =>

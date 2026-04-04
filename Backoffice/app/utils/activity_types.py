@@ -11,6 +11,7 @@ from typing import Optional
 LEGACY_ACTIVITY_TYPE_MAP = {
     "form_submit": "form_submitted",
     "form_save": "form_saved",
+    "data_save": "form_saved",
     "data_update": "data_modified",
     "data_delete": "data_deleted",
     "file_upload": "file_uploaded",
@@ -39,6 +40,11 @@ CANONICAL_ACTIVITY_TYPES = {
     "settings_updated",
     "country_access_requested",
     "country_selected",
+    "ai_conversation_deleted",
+    "ai_conversations_deleted_all",
+    "email_templates_updated",
+    "api_key_create",
+    "api_key_revoke",
 }
 
 

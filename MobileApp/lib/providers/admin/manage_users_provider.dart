@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import '../../models/admin/admin_user_detail.dart';
 import '../../models/admin/admin_user_list_item.dart';
 import '../../services/api_service.dart';
 import '../../services/error_handler.dart';
@@ -91,5 +92,40 @@ class ManageUsersProvider with ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
+  }
+
+  /// Single-user profile (roles, RBAC permissions, entity grants). Does not mutate the list cache.
+  Future<AdminUserDetail?> fetchUserDetail(int userId) async {
+    final response =
+        await _errorHandler.executeWithErrorHandling<http.Response>(
+      apiCall: () => _api.get(
+            '/admin/api/users/$userId',
+            useCache: false,
+          ),
+      context: 'User detail',
+      defaultValue: null,
+      maxRetries: 1,
+      handleAuthErrors: true,
+    );
+
+    if (response == null || response.statusCode != 200) {
+      return null;
+    }
+
+    try {
+      final decoded = jsonDecode(response.body);
+      if (decoded is! Map<String, dynamic>) return null;
+      if (decoded['success'] != true) return null;
+      final data = decoded['data'];
+      if (data is! Map<String, dynamic>) return null;
+      return AdminUserDetail.fromJson(data);
+    } catch (e, stackTrace) {
+      _errorHandler.parseError(
+        error: e,
+        stackTrace: stackTrace,
+        context: 'Parse user detail',
+      );
+      return null;
+    }
   }
 }
