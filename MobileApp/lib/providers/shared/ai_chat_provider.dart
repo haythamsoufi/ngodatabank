@@ -627,6 +627,28 @@ class AiChatProvider with ChangeNotifier {
           final decoded = jsonDecode(event.toString());
           if (decoded is! Map) return;
           final data = Map<String, dynamic>.from(decoded);
+
+          // When the backend sends auth_required through the WS protocol and the
+          // user is authenticated, the bearer token is stale or was never obtained.
+          // Mirror the HTTP path's 401/403 retry: clear the stale token and fall
+          // back to the HTTP endpoint (which will issue a fresh one automatically).
+          if (data['type'] == 'error' &&
+              data['error_type'] == 'auth_required' &&
+              isAuthenticated) {
+            _clearAgentProgress();
+            _streamStatusHint = null;
+            notifyListeners();
+            unawaited(_disconnectWs());
+            await _service.clearToken();
+            await _sendHttpIntoLastAssistant(
+              message,
+              isAuthenticated: isAuthenticated,
+              persistUserMessage: false,
+              clientMessageId: clientMessageId,
+            );
+            return;
+          }
+
           await _handleWsJson(data, outboundMessage: message, isAuthenticated: isAuthenticated);
           notifyListeners();
         } catch (_) {

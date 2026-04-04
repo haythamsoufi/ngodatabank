@@ -156,10 +156,13 @@ class AiChatService {
 
   /// Streaming via WebSocket (mobile-first)
   Future<WebSocketChannel> connectWebSocket() async {
-    String? token = await getCachedToken();
-    // Best-effort: if we don't have a token yet but the app considers us authenticated,
-    // try fetching one before opening the WS.
-    token ??= await fetchAndCacheToken();
+    // Always attempt a fresh token fetch before opening the WS connection.
+    // Using only a cached token risks sending a stale/expired JWT whose
+    // rejection is delivered inside the WS protocol (not as an HTTP error),
+    // bypassing the normal HTTP-level 401/403 retry logic.
+    // If the fresh fetch fails (network issue, etc.), fall back to the cache.
+    String? token = await fetchAndCacheToken();
+    token ??= await getCachedToken();
     // Convert HTTP(S) URL to WebSocket URL (ws:// or wss://)
     String base = AppConfig.baseApiUrl;
 
