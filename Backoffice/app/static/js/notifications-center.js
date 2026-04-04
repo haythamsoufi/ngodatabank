@@ -462,7 +462,7 @@ class NotificationCenter {
 
         const timeSpan = document.createElement('span');
         timeSpan.className = 'notification-group-time';
-        timeSpan.textContent = notifications[notifications.length - 1].time_ago || '';
+        timeSpan.textContent = this.formatNotificationTimeDisplay(notifications[notifications.length - 1]);
 
         headerFlex.appendChild(leftDiv);
         headerFlex.appendChild(timeSpan);
@@ -512,6 +512,28 @@ class NotificationCenter {
 
     attachGroupEventListeners() {
         // Deprecated: groups are handled via delegated data-action handlers
+    }
+
+    /** Local calendar date + time for display (API sends ISO UTC in created_at / timestamp). */
+    formatNotificationDateTime(iso) {
+        if (!iso) return '';
+        const d = new Date(iso);
+        if (Number.isNaN(d.getTime())) return '';
+        try {
+            return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(d);
+        } catch (_) {
+            return d.toLocaleString();
+        }
+    }
+
+    /** Relative time from API plus absolute local date/time. */
+    formatNotificationTimeDisplay(notification) {
+        const timeAgo = (notification && notification.time_ago) ? String(notification.time_ago).trim() : '';
+        const absolute = this.formatNotificationDateTime(
+            (notification && (notification.created_at || notification.timestamp)) || ''
+        );
+        if (timeAgo && absolute) return `${timeAgo} · ${absolute}`;
+        return timeAgo || absolute || '';
     }
 
     getTranslation(key) {
@@ -603,7 +625,7 @@ class NotificationCenter {
         const safeIcon = notification.icon ? this.safeCssClasses(notification.icon) : '';
         const typeLabelRaw = notification.notification_type_label || (notification.notification_type ? notification.notification_type.replace('_', ' ') : 'notification');
         const typeLabel = typeLabelRaw;
-        const timeAgo = notification.time_ago || '';
+        const timeDisplay = this.formatNotificationTimeDisplay(notification);
         const priorityLabel = (notification.priority || '').toUpperCase();
         const relatedUrlRaw = notification.related_url;
         const safeRelatedUrl = (window.SafeDom && relatedUrlRaw) ? window.SafeDom.safeUrl(relatedUrlRaw, { allowSameOrigin: true }) : relatedUrlRaw;
@@ -715,7 +737,10 @@ class NotificationCenter {
         }
 
         const timeSpan = document.createElement('span');
-        timeSpan.textContent = timeAgo;
+        timeSpan.className = 'notification-time';
+        timeSpan.textContent = timeDisplay;
+        const absOnly = this.formatNotificationDateTime(notification.created_at || notification.timestamp);
+        if (absOnly) timeSpan.setAttribute('title', absOnly);
         metaDiv.appendChild(timeSpan);
 
         if (notification.priority !== 'normal') {

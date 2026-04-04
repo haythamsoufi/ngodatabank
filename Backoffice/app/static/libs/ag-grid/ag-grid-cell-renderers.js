@@ -389,8 +389,8 @@
                 encodedProfile = '';
             }
 
-            var html = '<div class="ag-user-hover-cell" style="display:flex;width:100%;min-width:0;">';
-            html += '<span class="ag-user-hover-trigger" style="display:inline-flex;flex-direction:column;min-width:0;cursor:pointer;"';
+            var html = '<div class="ag-user-hover-cell" style="display:flex;width:100%;max-width:100%;min-width:0;overflow:hidden;box-sizing:border-box;">';
+            html += '<span class="ag-user-hover-trigger" style="display:flex;flex:1 1 0%;flex-direction:column;min-width:0;max-width:100%;overflow:hidden;cursor:pointer;"';
             if (userId !== null && userId !== undefined && userId !== '') {
                 html += ' data-user-id="' + escapeHtmlAttr(userId) + '"';
             }
@@ -401,9 +401,9 @@
                 html += ' data-user-inline="' + escapeHtmlAttr(encodedProfile) + '"';
             }
             html += '>';
-            html += '<span class="ag-user-hover-name" style="font-size:0.875rem;font-weight:500;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(displayName) + '</span>';
+            html += '<span class="ag-user-hover-name" style="display:block;font-size:0.875rem;font-weight:500;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;">' + escapeHtml(displayName) + '</span>';
             if (showEmail && userName && userEmail) {
-                html += '<span class="ag-user-hover-subline" style="font-size:0.75rem;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(userEmail) + '</span>';
+                html += '<span class="ag-user-hover-subline" style="display:block;font-size:0.75rem;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;">' + escapeHtml(userEmail) + '</span>';
             }
             html += '</span>';
             html += '</div>';

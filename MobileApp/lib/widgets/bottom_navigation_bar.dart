@@ -281,10 +281,35 @@ class AppBottomNavigationBar extends StatelessWidget {
     final isSelected = safeIndex == index;
     final isNotifications = label == 'Notifications';
     final theme = Theme.of(context);
-    final primary = theme.colorScheme.primary;
-    final iconFg = isSelected
-        ? primary
-        : context.iconColor.withOpacity(context.isDarkTheme ? 0.72 : 0.55);
+    final cs = theme.colorScheme;
+    final primary = cs.primary;
+    // Dark: pure primary (#011E41) sits on ~#1E1E1E bar — edges disappear. Lighten fill + hairline
+    // border so the chip reads clearly; keep white icon on the tinted navy.
+    final Color iconFg;
+    final Color selectedPillColor;
+    final BoxBorder? selectedPillBorder;
+    if (isSelected) {
+      if (context.isDarkTheme) {
+        iconFg = cs.onPrimary;
+        selectedPillColor = Color.alphaBlend(
+          Colors.white.withOpacity(0.34),
+          primary,
+        );
+        selectedPillBorder = Border.all(
+          color: Colors.white.withOpacity(0.45),
+          width: 1,
+        );
+      } else {
+        iconFg = primary;
+        selectedPillColor = primary.withOpacity(0.12);
+        selectedPillBorder = null;
+      }
+    } else {
+      iconFg =
+          context.iconColor.withOpacity(context.isDarkTheme ? 0.72 : 0.55);
+      selectedPillColor = Colors.transparent;
+      selectedPillBorder = null;
+    }
 
     Widget iconChild;
     if (isNotifications) {
@@ -345,8 +370,12 @@ class AppBottomNavigationBar extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
-        splashColor: primary.withOpacity(0.12),
-        highlightColor: primary.withOpacity(0.06),
+        splashColor: context.isDarkTheme && isSelected
+            ? Colors.white.withOpacity(0.18)
+            : primary.withOpacity(0.12),
+        highlightColor: context.isDarkTheme && isSelected
+            ? Colors.white.withOpacity(0.1)
+            : primary.withOpacity(0.06),
         child: SizedBox.expand(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -362,11 +391,10 @@ class AppBottomNavigationBar extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: isSelected
-                        ? primary.withOpacity(context.isDarkTheme ? 0.22 : 0.12)
-                        : Colors.transparent,
+                    color: isSelected ? selectedPillColor : Colors.transparent,
                     borderRadius:
                         BorderRadius.circular(AppConstants.radiusLarge),
+                    border: isSelected ? selectedPillBorder : null,
                   ),
                   child: iconChild,
                 ),

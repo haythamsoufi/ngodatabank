@@ -105,7 +105,7 @@ class NotificationsGridManager {
                         showEmail: true
                     });
                 },
-                cellStyle: { 'white-space': 'normal', 'line-height': '1.4' }
+                cellStyle: { overflow: 'hidden', 'line-height': '1.4' }
             },
             {
                 field: 'user_email',
@@ -536,7 +536,8 @@ class CampaignsGridManager {
                         fallbackLabel: 'Unknown User',
                         showEmail: false
                     });
-                }
+                },
+                cellStyle: { overflow: 'hidden', 'line-height': '1.4' }
             },
             {
                 field: 'sent_count',

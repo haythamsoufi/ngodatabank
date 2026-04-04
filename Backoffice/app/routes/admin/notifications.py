@@ -17,7 +17,6 @@ from app.utils.email_client import send_email as send_email_message
 from app.services.authorization_service import AuthorizationService
 from app.utils.app_settings import get_notification_templates, get_email_template
 from app.utils.api_helpers import GENERIC_ERROR_MESSAGE, get_json_safe
-from app.utils.api_pagination import validate_pagination_params
 from app.utils.error_handling import handle_json_view_exception
 from app.utils.api_responses import json_bad_request, json_ok, json_server_error
 from flask_babel import gettext as _
@@ -36,10 +35,6 @@ def notifications_center():
 
     # Get all notification types for the filter dropdown
     notification_types = [nt.value for nt in NotificationType]
-
-    # Fetch notifications for the table (server-side rendering)
-    page, per_page = validate_pagination_params(request.args, default_per_page=50, max_per_page=100)
-    offset = (page - 1) * per_page
 
     # Get filter parameters
     unread_only = request.args.get('unread_only', 'false').lower() == 'true'
@@ -84,11 +79,9 @@ def notifications_center():
     if date_to:
         query = query.filter(Notification.created_at <= date_to)
 
-    # Get total count
-    total_count = query.count()
-
-    # Apply pagination and ordering
-    notifications = query.order_by(Notification.created_at.desc()).offset(offset).limit(per_page).all()
+    # All matching rows for the grid (client-side AG Grid pagination)
+    notifications = query.order_by(Notification.created_at.desc()).all()
+    total_count = len(notifications)
 
     # Format notifications for template
     notifications_data = []
@@ -199,9 +192,9 @@ def notifications_center():
         notification_types=notification_types,
         notifications=notifications_data,
         total_count=total_count,
-        page=page,
-        per_page=per_page,
-        total_pages=(total_count + per_page - 1) // per_page,
+        page=1,
+        per_page=total_count,
+        total_pages=1 if total_count else 0,
         campaigns=campaigns_data,
         notification_templates=notification_templates,
     )
@@ -556,9 +549,6 @@ def api_search_users():
 def api_get_all_notifications():
     """Get all notifications from all users (admin view)"""
     try:
-        page, per_page = validate_pagination_params(request.args, default_per_page=20, max_per_page=100)
-        offset = (page - 1) * per_page
-
         # Get filter parameters
         unread_only = request.args.get('unread_only', 'false').lower() == 'true'
         notification_type = request.args.get('type', None)
@@ -599,11 +589,8 @@ def api_get_all_notifications():
         if date_to:
             query = query.filter(Notification.created_at <= date_to)
 
-        # Get total count
-        total_count = query.count()
-
-        # Apply pagination and ordering
-        notifications = query.order_by(Notification.created_at.desc()).offset(offset).limit(per_page).all()
+        notifications = query.order_by(Notification.created_at.desc()).all()
+        total_count = len(notifications)
 
         notif_user_ids = list({n.user_id for n in notifications if getattr(n, "user_id", None) is not None})
         rbac_role_codes_by_user_id = AuthorizationService.prefetch_role_codes(notif_user_ids)
@@ -613,10 +600,8 @@ def api_get_all_notifications():
         for notification in notifications:
             user = notification.user
             message, title = NotificationService._translate_notification_content(notification)
-        if message is None:
-            message = notification.message
-
-            # Use dynamically constructed title if available, otherwise use stored title
+            if message is None:
+                message = notification.message
             if title is None:
                 title = notification.title
 
@@ -645,10 +630,10 @@ def api_get_all_notifications():
             success=True,
             notifications=notifications_data,
             pagination={
-                'page': page,
-                'per_page': per_page,
+                'page': 1,
+                'per_page': total_count,
                 'total': total_count,
-                'pages': (total_count + per_page - 1) // per_page
+                'pages': 1 if total_count else 0,
             },
         )
 

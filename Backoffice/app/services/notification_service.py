@@ -11,7 +11,7 @@ This service handles:
 - Updating notification preferences
 """
 # ========== Notification Service ==========
-from app.utils.datetime_helpers import utcnow
+from app.utils.datetime_helpers import utcnow, ensure_utc
 
 from typing import Dict, List, Tuple, Optional, Any
 from datetime import datetime, timedelta
@@ -657,12 +657,13 @@ class NotificationService:
                     logger.debug("_icon_for fallback: %s", e)
                     return 'fa-bell'
 
-            # Time ago
+            # Time ago (created_at may be naive from SQLite — normalize before subtracting aware utcnow())
             def _time_ago(ts):
                 try:
                     if not ts:
                         return ''
-                    delta = utcnow() - ts
+                    ts_utc = ensure_utc(ts)
+                    delta = utcnow() - ts_utc
                     s = int(delta.total_seconds())
                     if s < 60:
                         return f"{s}s ago"

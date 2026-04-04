@@ -695,3 +695,9 @@
     background-color: #DBEAFE !important;
     border-style: solid !important;
 }
+
+/* AG Grid (Notifications Center): clip cell content so User column cannot paint over Email/Type */
+.admin-notifications-center-container #notificationsGrid .ag-cell,
+.admin-notifications-center-container #campaignsGrid .ag-cell {
+    overflow: hidden;
+}
