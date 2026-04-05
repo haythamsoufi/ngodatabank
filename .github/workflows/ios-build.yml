@@ -112,7 +112,8 @@ jobs:
         working-directory: ${{ steps.flutter_path.outputs.path }}/ios
         run: |
           sudo gem install cocoapods
-          pod install
+          # --repo-update: refresh CocoaPods trunk when FlutterFire bumps Firebase (avoids lock/snapshot mismatches)
+          pod install --repo-update
 
       - name: Configure alternate bundle identifier and app name
         working-directory: ${{ steps.flutter_path.outputs.path }}

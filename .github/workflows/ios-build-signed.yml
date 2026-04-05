@@ -101,7 +101,7 @@ jobs:
         working-directory: ${{ steps.flutter_path.outputs.path }}/ios
         run: |
           sudo gem install cocoapods
-          pod install
+          pod install --repo-update
 
       - name: Import Code Signing Certificate
         uses: apple-actions/import-codesign-certs@v2
