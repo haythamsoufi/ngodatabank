@@ -14,8 +14,8 @@ on:
         required: true
         type: choice
         options:
-          - staging
-          - production
+          - Staging
+          - Production
       version:
         description: 'Image version tag (e.g., v1.1, v1.2)'
         required: true
@@ -25,14 +25,14 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: ${{ inputs.environment == 'Production' && 'production' || 'staging' }}
     permissions:
       contents: read
     steps:
       - name: Set deployment target
         id: config
         run: |
-          if [ "${{ inputs.environment }}" = "production" ]; then
+          if [ "${{ inputs.environment }}" = "Production" ]; then
             echo "app_name=ifrc-databank-app" >> "$GITHUB_OUTPUT"
           else
             echo "app_name=ifrc-databank-staging-2" >> "$GITHUB_OUTPUT"
@@ -91,7 +91,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     needs: validate
-    environment: ${{ inputs.environment }}
+    environment: ${{ inputs.environment == 'Production' && 'production' || 'staging' }}
     permissions:
       contents: read #This is required for actions/checkout
 
@@ -260,7 +260,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: build
-    environment: ${{ inputs.environment }}
+    environment: ${{ inputs.environment == 'Production' && 'production' || 'staging' }}
     permissions:
       contents: read
     env:
@@ -270,7 +270,7 @@ jobs:
       - name: Set deployment target
         id: config
         run: |
-          if [ "${{ inputs.environment }}" = "production" ]; then
+          if [ "${{ inputs.environment }}" = "Production" ]; then
             echo "app_name=ifrc-databank-app" >> "$GITHUB_OUTPUT"
           else
             echo "app_name=ifrc-databank-staging-2" >> "$GITHUB_OUTPUT"
