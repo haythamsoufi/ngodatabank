@@ -59,7 +59,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^6.0.0  # Downgraded to support Dart 3.6.0 (Flutter 3.27.0)
+  # 6.x requires Dart ^3.8.0; keep 5.x for Flutter 3.27 / Dart 3.6 CI runners
+  flutter_lints: ^5.0.0
   flutter_launcher_icons: ^0.14.4
 
 flutter:
