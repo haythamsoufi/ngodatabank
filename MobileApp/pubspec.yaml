@@ -34,8 +34,8 @@ dependencies:
   # State Management
   provider: ^6.1.1
 
-  # Connectivity
-  connectivity_plus: ^7.1.0
+  # Connectivity — stay on 6.x until CI/Xcode supports NWPath.isUltraConstrained (connectivity_plus 7+)
+  connectivity_plus: ">=6.1.0 <7.0.0"
 
   # Navigation and URLs
   url_launcher: ^6.2.0

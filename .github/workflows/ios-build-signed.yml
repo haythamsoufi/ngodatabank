@@ -1,4 +1,4 @@
-name: Build iOS (Signed IPA)
+name: iOS Build (Signed IPA)
 
 on:
   workflow_dispatch:  # Manual trigger only for security

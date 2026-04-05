@@ -1,4 +1,4 @@
-name: Build Android
+name: Android Build
 
 on:
   workflow_dispatch:  # Manual trigger only - auto-run disabled

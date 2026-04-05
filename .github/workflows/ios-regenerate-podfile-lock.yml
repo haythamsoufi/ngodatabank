@@ -8,7 +8,7 @@
 #
 # Typical triggers: after bumping firebase_* or other plugins in pubspec.yaml, or when
 # CI reports a CocoaPods version conflict with the committed lockfile.
-name: Regenerate iOS Podfile.lock
+name: iOS Regenerate Podfile.lock
 
 on:
   workflow_dispatch:
