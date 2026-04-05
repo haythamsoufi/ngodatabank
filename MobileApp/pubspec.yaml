@@ -47,7 +47,8 @@ dependencies:
   # Utilities
   intl: ^0.20.2
   cupertino_icons: ^1.0.6
-  device_info_plus: ^12.4.0
+  # 12.x requires Dart >=3.7 / Flutter >=3.29; keep 11.x for Dart 3.6 CI
+  device_info_plus: ^11.3.0
   package_info_plus: ^9.0.1
   uuid: ^4.5.1
 
