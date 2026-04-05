@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import '../../services/api_service.dart';
+import '../../services/audit_trail_home_widget_sync.dart';
 
 class AuditTrailProvider with ChangeNotifier {
   final ApiService _api = ApiService();
@@ -63,16 +64,19 @@ class AuditTrailProvider with ChangeNotifier {
                 _auditLogs = [];
               }
               _error = null;
+              await syncAuditTrailToHomeWidget(_auditLogs);
             } else {
               // Fallback to HTML parsing
               _auditLogs = _parseAuditLogsFromHtml(response.body);
               _error = null;
+              await syncAuditTrailToHomeWidget(_auditLogs);
             }
           } catch (e) {
             // If JSON parsing fails, try HTML parsing as fallback
             print('[AUDIT] JSON parse failed, trying HTML: $e');
             _auditLogs = _parseAuditLogsFromHtml(response.body);
             _error = null;
+            await syncAuditTrailToHomeWidget(_auditLogs);
           }
         } else {
           _error = 'Failed to load audit logs: ${response.statusCode}';

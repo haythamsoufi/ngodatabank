@@ -15,6 +15,9 @@
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		BB079E199F8632BB6EA11196 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 188149CB2F4F80AAFB4AB220 /* Pods_Runner.framework */; };
+		EEBB11AF1CF9000F007C1206 /* AuditTrailWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEBB11B11CF9000F007C1208 /* AuditTrailWidget.swift */; };
+		EEBB11B01CF9000F007C1207 /* AuditTrailWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEBB11B21CF9000F007C1209 /* AuditTrailWidgetBundle.swift */; };
+		EEBB11B61CF9000F007C120D /* AuditTrailWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = EEBB11AB1CF9000F007C1202 /* AuditTrailWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -24,6 +27,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 97C146ED1CF9000F007C117D;
 			remoteInfo = Runner;
+		};
+		EEBB11B81CF9000F007C120F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EEBB11AA1CF9000F007C1201;
+			remoteInfo = AuditTrailWidgetExtension;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -36,6 +46,17 @@
 			files = (
 			);
 			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EEBB11B51CF9000F007C120C /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				EEBB11B61CF9000F007C120D /* AuditTrailWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -61,6 +82,11 @@
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E3DAE48DCB439513457A472E /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
+		EEBB11AB1CF9000F007C1202 /* AuditTrailWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AuditTrailWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		EEBB11B11CF9000F007C1208 /* AuditTrailWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuditTrailWidget.swift; sourceTree = "<group>"; };
+		EEBB11B21CF9000F007C1209 /* AuditTrailWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuditTrailWidgetBundle.swift; sourceTree = "<group>"; };
+		EEBB11B31CF9000F007C120A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		EEBB11B41CF9000F007C120B /* AuditTrailWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AuditTrailWidgetExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,6 +95,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				BB079E199F8632BB6EA11196 /* Pods_Runner.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EEBB11AD1CF9000F007C1204 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -108,6 +141,7 @@
 			children = (
 				9740EEB11CF90186004384FC /* Flutter */,
 				97C146F01CF9000F007C117D /* Runner */,
+				EEBB11C01CF9000F007C1215 /* AuditTrailWidget */,
 				97C146EF1CF9000F007C117D /* Products */,
 				331C8082294A63A400263BE5 /* RunnerTests */,
 				C9A5AAC33C5452A687A78F10 /* Pods */,
@@ -119,6 +153,7 @@
 			isa = PBXGroup;
 			children = (
 				97C146EE1CF9000F007C117D /* Runner.app */,
+				EEBB11AB1CF9000F007C1202 /* AuditTrailWidgetExtension.appex */,
 				331C8081294A63A400263BE5 /* RunnerTests.xctest */,
 			);
 			name = Products;
@@ -149,9 +184,37 @@
 			path = Pods;
 			sourceTree = "<group>";
 		};
+		EEBB11C01CF9000F007C1215 /* AuditTrailWidget */ = {
+			isa = PBXGroup;
+			children = (
+				EEBB11B11CF9000F007C1208 /* AuditTrailWidget.swift */,
+				EEBB11B21CF9000F007C1209 /* AuditTrailWidgetBundle.swift */,
+				EEBB11B31CF9000F007C120A /* Info.plist */,
+				EEBB11B41CF9000F007C120B /* AuditTrailWidgetExtension.entitlements */,
+			);
+			path = AuditTrailWidget;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		EEBB11AA1CF9000F007C1201 /* AuditTrailWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EEBB11BD1CF9000F007C1214 /* Build configuration list for PBXNativeTarget "AuditTrailWidgetExtension" */;
+			buildPhases = (
+				EEBB11AC1CF9000F007C1203 /* Sources */,
+				EEBB11AD1CF9000F007C1204 /* Frameworks */,
+				EEBB11AE1CF9000F007C1205 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AuditTrailWidgetExtension;
+			productName = AuditTrailWidgetExtension;
+			productReference = EEBB11AB1CF9000F007C1202 /* AuditTrailWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		331C8080294A63A400263BE5 /* RunnerTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 331C8087294A63A400263BE5 /* Build configuration list for PBXNativeTarget "RunnerTests" */;
@@ -178,6 +241,7 @@
 				97C146EA1CF9000F007C117D /* Sources */,
 				97C146EB1CF9000F007C117D /* Frameworks */,
 				97C146EC1CF9000F007C117D /* Resources */,
+				EEBB11B51CF9000F007C120C /* Embed Foundation Extensions */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				E437B06532EC1630C9617B78 /* [CP] Embed Pods Frameworks */,
@@ -186,6 +250,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				EEBB11B71CF9000F007C120E /* PBXTargetDependency */,
 			);
 			name = Runner;
 			productName = Runner;
@@ -205,6 +270,9 @@
 					331C8080294A63A400263BE5 = {
 						CreatedOnToolsVersion = 14.0;
 						TestTargetID = 97C146ED1CF9000F007C117D;
+					};
+					EEBB11AA1CF9000F007C1201 = {
+						CreatedOnToolsVersion = 15.0;
 					};
 					97C146ED1CF9000F007C117D = {
 						CreatedOnToolsVersion = 7.3.1;
@@ -226,6 +294,7 @@
 			projectRoot = "";
 			targets = (
 				97C146ED1CF9000F007C117D /* Runner */,
+				EEBB11AA1CF9000F007C1201 /* AuditTrailWidgetExtension */,
 				331C8080294A63A400263BE5 /* RunnerTests */,
 			);
 		};
@@ -247,6 +316,13 @@
 				3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */,
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EEBB11AE1CF9000F007C1205 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -360,6 +436,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		EEBB11AC1CF9000F007C1203 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EEBB11AF1CF9000F007C1206 /* AuditTrailWidget.swift in Sources */,
+				EEBB11B01CF9000F007C1207 /* AuditTrailWidgetBundle.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -367,6 +452,11 @@
 			isa = PBXTargetDependency;
 			target = 97C146ED1CF9000F007C117D /* Runner */;
 			targetProxy = 331C8085294A63A400263BE5 /* PBXContainerItemProxy */;
+		};
+		EEBB11B71CF9000F007C120E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = EEBB11AA1CF9000F007C1201 /* AuditTrailWidgetExtension */;
+			targetProxy = EEBB11B81CF9000F007C120F /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -673,6 +763,92 @@
 			};
 			name = Release;
 		};
+		EEBB11BA1CF9000F007C1211 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = AuditTrailWidget/AuditTrailWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7RW3A5P8B7;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AuditTrailWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ngo.databank.AuditTrailWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		EEBB11BB1CF9000F007C1212 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = AuditTrailWidget/AuditTrailWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7RW3A5P8B7;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AuditTrailWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ngo.databank.AuditTrailWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		EEBB11BC1CF9000F007C1213 /* Profile */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = AuditTrailWidget/AuditTrailWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7RW3A5P8B7;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AuditTrailWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ngo.databank.AuditTrailWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Profile;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -702,6 +878,16 @@
 				97C147061CF9000F007C117D /* Debug */,
 				97C147071CF9000F007C117D /* Release */,
 				249021D4217E4FDB00AE95B9 /* Profile */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EEBB11BD1CF9000F007C1214 /* Build configuration list for PBXNativeTarget "AuditTrailWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EEBB11BA1CF9000F007C1211 /* Debug */,
+				EEBB11BB1CF9000F007C1212 /* Release */,
+				EEBB11BC1CF9000F007C1213 /* Profile */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

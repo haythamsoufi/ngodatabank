@@ -30,7 +30,24 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="ngodatabank" />
             </intent-filter>
+            <!-- home_widget: tap-to-open from Audit Trail widget -->
+            <intent-filter>
+                <action android:name="es.antonborri.home_widget.action.LAUNCH" />
+            </intent-filter>
         </activity>
+
+        <receiver
+            android:name=".AuditTrailWidgetProvider"
+            android:exported="true"
+            android:label="@string/audit_trail_widget_title">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/audit_trail_widget_info" />
+        </receiver>
+
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />

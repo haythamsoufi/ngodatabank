@@ -23,10 +23,14 @@ class _AiChatAgentProgressPanelState extends State<AiChatAgentProgressPanel> {
   Widget build(BuildContext context) {
     if (widget.steps.isEmpty) return const SizedBox.shrink();
 
-    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     final muted = cs.onSurfaceVariant;
     final subtle = cs.outline;
     final doneGreen = const Color(AppConstants.successColor);
+    final doneIconColor = theme.brightness == Brightness.dark
+        ? const Color(0xFFBDBDBD)
+        : doneGreen;
 
     return Align(
       alignment: Alignment.centerLeft,
@@ -83,7 +87,7 @@ class _AiChatAgentProgressPanelState extends State<AiChatAgentProgressPanel> {
                                         color: muted,
                                       ),
                                     )
-                                  : Icon(Icons.check, size: 14, color: doneGreen),
+                                  : Icon(Icons.check, size: 14, color: doneIconColor),
                             ),
                             const SizedBox(width: 6),
                             Expanded(

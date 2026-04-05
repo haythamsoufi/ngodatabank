@@ -89,6 +89,10 @@ class AppConstants {
   static const int semanticEntityChipLightWash = 0xFFF0F9FF;
   static const int semanticDefaultProfileAccent = 0xFF3B82F6;
 
+  /// Public source repo (matches Backoffice admin sidebar “Powered by” link).
+  static const String ngoDatabankGithubRepoUrl =
+      'https://github.com/haythamsoufi/ngodatabank';
+
   // Spacing
   static const double paddingSmall = 8.0;
   static const double paddingMedium = 16.0;

@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'config/routes.dart';
 import 'config/app_config.dart';
+import 'config/app_navigation.dart';
 import 'l10n/app_localizations.dart';
 import 'utils/debug_logger.dart';
 // Shared providers
@@ -80,7 +81,11 @@ import 'widgets/horizontal_swipe_page_view.dart';
 import 'widgets/offline_indicator.dart';
 import 'widgets/session_expiration_warning.dart';
 import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:firebase_core/firebase_core.dart';
+import 'package:home_widget/home_widget.dart';
+import 'services/audit_trail_home_widget_sync.dart';
+import 'services/launcher_shortcuts_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 // Sentry import - use prefix to avoid conflicts
 import 'package:sentry_flutter/sentry_flutter.dart' as sentry;
@@ -92,6 +97,10 @@ void main() async {
   performanceService.recordMainStart();
 
   WidgetsFlutterBinding.ensureInitialized();
+
+  if (!kIsWeb && (Platform.isIOS || Platform.isAndroid)) {
+    await HomeWidget.setAppGroupId(auditTrailHomeWidgetAppGroupId);
+  }
 
   // Load environment variables (e.g., MOBILE_APP_API_KEY, BACKEND_URL)
   await dotenv.load(fileName: '.env', isOptional: true);
@@ -144,6 +153,8 @@ void main() async {
   // Wait for critical services to initialize
   await Future.wait(initFutures);
   performanceService.endInit('critical_services');
+
+  await LauncherShortcutsService.install();
 
   // Set up API service language header interceptor once at app startup
   // This ensures all API requests include the Accept-Language header
@@ -227,10 +238,6 @@ Future<Map<String, String>> _languageHeaderInterceptor(
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
-
-  // Create a global navigator key for push notification navigation
-  static final GlobalKey<NavigatorState> navigatorKey =
-      GlobalKey<NavigatorState>();
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -362,11 +369,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
 
           // Set navigator key for push notification service
-          PushNotificationService().setNavigatorKey(MyApp.navigatorKey);
+          PushNotificationService().setNavigatorKey(appNavigatorKey);
 
           return SessionExpirationWarning(
             child: MaterialApp(
-            navigatorKey: MyApp.navigatorKey,
+            navigatorKey: appNavigatorKey,
             title: AppConfig.appName,
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme(locale: locale),

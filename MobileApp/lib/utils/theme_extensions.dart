@@ -130,6 +130,17 @@ extension ThemeColors on BuildContext {
   Color get navyForegroundColor =>
       isDarkTheme ? textColor : Color(AppConstants.ifrcNavy);
 
+  /// Links, [TextButton]s, HTML anchors, and small accents drawn **on** surfaces (cards, chat, search chrome).
+  ///
+  /// [ColorScheme.primary] is brand navy (~`#011E41`). On light backgrounds it reads as a normal link colour.
+  /// On dark greys it is nearly the same luminance as the surface, so it must not be used as plain text/link
+  /// colour there — use this getter instead (lightened brand tint in dark mode).
+  Color get linkOnSurfaceColor {
+    final cs = Theme.of(this).colorScheme;
+    if (!isDarkTheme) return cs.primary;
+    return Color.alphaBlend(Colors.white.withOpacity(0.58), cs.primary);
+  }
+
   /// Gets theme-aware navy background color with opacity
   /// In dark theme, uses white with opacity for subtle backgrounds
   /// In light theme, uses navy with opacity

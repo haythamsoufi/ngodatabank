@@ -1,6 +1,11 @@
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/admin/audit_trail_provider.dart';
+import '../../services/audit_trail_home_widget_sync.dart';
+import '../../services/audit_trail_widget_prefs.dart';
 import '../../widgets/app_bar.dart';
 import '../../widgets/bottom_navigation_bar.dart';
 import '../../config/routes.dart';
@@ -22,12 +27,20 @@ class _AuditTrailScreenState extends State<AuditTrailScreen> {
   String? _selectedUserFilter;
   DateTime? _selectedDateFrom;
   DateTime? _selectedDateTo;
+  Set<String> _widgetActivityFilter = {};
+
+  bool get _showWidgetSection =>
+      !kIsWeb && (Platform.isIOS || Platform.isAndroid);
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadAuditLogs();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final f = await AuditTrailWidgetPrefs.getActivityTypeFilter();
+      if (mounted) {
+        setState(() => _widgetActivityFilter = f);
+      }
+      if (mounted) _loadAuditLogs();
     });
   }
 
@@ -35,6 +48,22 @@ class _AuditTrailScreenState extends State<AuditTrailScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _onWidgetTypeToggled(String type) async {
+    setState(() {
+      final next = Set<String>.from(_widgetActivityFilter);
+      if (next.contains(type)) {
+        next.remove(type);
+      } else {
+        next.add(type);
+      }
+      _widgetActivityFilter = next;
+    });
+    await AuditTrailWidgetPrefs.setActivityTypeFilter(_widgetActivityFilter);
+    if (!mounted) return;
+    final provider = Provider.of<AuditTrailProvider>(context, listen: false);
+    await syncAuditTrailToHomeWidget(provider.auditLogs);
   }
 
   void _loadAuditLogs() {
@@ -276,6 +305,62 @@ class _AuditTrailScreenState extends State<AuditTrailScreen> {
                       ),
                     ],
                   ),
+                  if (_showWidgetSection) ...[
+                    const SizedBox(height: 16),
+                    Divider(height: 1, color: context.borderColor),
+                    const SizedBox(height: 12),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        localizations.homeScreenWidgetTitle,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: context.textColor,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      localizations.auditWidgetActivityTypesHint,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: context.textSecondaryColor,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _widgetTypeChip(
+                          context,
+                          'create',
+                          localizations.create,
+                        ),
+                        _widgetTypeChip(
+                          context,
+                          'update',
+                          localizations.update,
+                        ),
+                        _widgetTypeChip(
+                          context,
+                          'delete',
+                          localizations.delete,
+                        ),
+                        _widgetTypeChip(
+                          context,
+                          'login',
+                          localizations.login,
+                        ),
+                        _widgetTypeChip(
+                          context,
+                          'logout',
+                          localizations.logout,
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -473,6 +558,17 @@ class _AuditTrailScreenState extends State<AuditTrailScreen> {
           });
         },
       ),
+    );
+  }
+
+  Widget _widgetTypeChip(BuildContext context, String type, String label) {
+    final selected = _widgetActivityFilter.contains(type);
+    return FilterChip(
+      label: Text(label),
+      selected: selected,
+      onSelected: (_) => _onWidgetTypeToggled(type),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      showCheckmark: false,
     );
   }
 }

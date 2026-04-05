@@ -209,8 +209,8 @@ class AppLocalizations {
           'Welcome to the IFRC Network Databank',
       'splash_description':
           'This is the one and only system for reporting data to IFRC. Say goodbye to scattered Excel files, KoBo forms, multiple platforms, and logins — everything is now centralized and streamlined here.',
-      'built_by_haytham':
-          'Built by Haytham Alsoufi,\nvolunteer of Syrian Arab Red Crescent',
+      'powered_by_ngo_databank': 'Powered by NGO Databank',
+      'open_on_github': 'Open on GitHub',
 
       // Dashboard
       'national_society': 'National Society',
@@ -399,6 +399,9 @@ class AppLocalizations {
       'self_report_created': 'Self Report Created',
       'deadline_reminder': 'Deadline Reminder',
       'search_audit_logs': 'Search audit logs...',
+      'home_screen_widget_title': 'Home screen widget',
+      'audit_widget_activity_types_hint':
+          'Choose activity types for the widget. Leave all unchecked to show every type. Saved on this device.',
       'action': 'Action',
       'all_actions': 'All Actions',
       'create': 'Create',
@@ -823,8 +826,8 @@ class AppLocalizations {
           'Bienvenido al Banco de Datos de la Red IFRC',
       'splash_description':
           'Este es el único sistema para reportar datos a la FICR. Di adiós a archivos Excel dispersos, formularios KoBo, múltiples plataformas e inicios de sesión: todo está ahora centralizado y optimizado aquí.',
-      'built_by_haytham':
-          'Construido por Haytham Alsoufi,\nvoluntario de la Media Luna Roja Árabe Siria',
+      'powered_by_ngo_databank': 'Impulsado por NGO Databank',
+      'open_on_github': 'Abrir en GitHub',
 
       // Dashboard
       'national_society': 'Sociedad Nacional',
@@ -1015,6 +1018,9 @@ class AppLocalizations {
       'self_report_created': 'Informe Propio Creado',
       'deadline_reminder': 'Recordatorio de Fecha Límite',
       'search_audit_logs': 'Buscar registros de auditoría...',
+      'home_screen_widget_title': 'Widget de inicio',
+      'audit_widget_activity_types_hint':
+          'Elija tipos de actividad para el widget. Sin selección, se muestran todos. Se guarda en este dispositivo.',
       'action': 'Acción',
       'all_actions': 'Todas las Acciones',
       'create': 'Crear',
@@ -1428,8 +1434,8 @@ class AppLocalizations {
           'Bienvenue dans la Banque de Données du Réseau IFRC',
       'splash_description':
           'C\'est le seul système pour rapporter des données à la FICR. Dites adieu aux fichiers Excel dispersés, aux formulaires KoBo, aux multiples plateformes et connexions — tout est maintenant centralisé et rationalisé ici.',
-      'built_by_haytham':
-          'Construit par Haytham Alsoufi,\nbénévole du Croissant-Rouge Arabe Syrien',
+      'powered_by_ngo_databank': 'Propulsé par NGO Databank',
+      'open_on_github': 'Ouvrir sur GitHub',
 
       // Dashboard
       'national_society': 'Société Nationale',
@@ -1622,6 +1628,9 @@ class AppLocalizations {
       'self_report_created': 'Rapport Personnel Créé',
       'deadline_reminder': 'Rappel d\'Échéance',
       'search_audit_logs': 'Rechercher les journaux d\'audit...',
+      'home_screen_widget_title': 'Widget écran d\'accueil',
+      'audit_widget_activity_types_hint':
+          'Choisissez les types d\'activité pour le widget. Aucune sélection = tous les types. Enregistré sur cet appareil.',
       'action': 'Action',
       'all_actions': 'Toutes les Actions',
       'create': 'Créer',
@@ -2035,8 +2044,8 @@ class AppLocalizations {
           'مرحباً بك في بنك بيانات شبكة الاتحاد الدولي',
       'splash_description':
           'هذا هو النظام الوحيد للإبلاغ عن البيانات إلى الاتحاد الدولي. وداعاً لملفات Excel المتناثرة ونماذج KoBo والمنصات المتعددة وتسجيلات الدخول — كل شيء الآن مركزي ومبسط هنا.',
-      'built_by_haytham':
-          'تم بناؤه بواسطة هيثم الصوفي،\nمتطوع في الهلال الأحمر العربي السوري',
+      'powered_by_ngo_databank': 'مدعوم بواسطة NGO Databank',
+      'open_on_github': 'فتح على GitHub',
 
       // Dashboard
       'national_society': 'الجمعية الوطنية',
@@ -2221,6 +2230,9 @@ class AppLocalizations {
       'self_report_created': 'تم إنشاء التقرير الذاتي',
       'deadline_reminder': 'تذكير بالموعد النهائي',
       'search_audit_logs': 'البحث في سجلات التدقيق...',
+      'home_screen_widget_title': 'عنصر الشاشة الرئيسية',
+      'audit_widget_activity_types_hint':
+          'اختر أنواع النشاط للعنصر. بدون اختيار تُعرض كل الأنواع. يُحفظ على هذا الجهاز.',
       'action': 'الإجراء',
       'all_actions': 'جميع الإجراءات',
       'create': 'إنشاء',
@@ -2627,8 +2639,8 @@ class AppLocalizations {
           'IFRC नेटवर्क डेटाबैंक में आपका स्वागत है',
       'splash_description':
           'यह IFRC को डेटा रिपोर्ट करने के लिए एकमात्र प्रणाली है। बिखरे हुए Excel फ़ाइलों, KoBo फ़ॉर्म, कई प्लेटफ़ॉर्म और लॉगिन को अलविदा कहें — सब कुछ अब यहाँ केंद्रीकृत और सुव्यवस्थित है।',
-      'built_by_haytham':
-          'हयथम अलसौफी द्वारा निर्मित,\nसीरियाई अरब रेड क्रिसेंट के स्वयंसेवक',
+      'powered_by_ngo_databank': 'NGO डेटाबैंक द्वारा संचालित',
+      'open_on_github': 'GitHub पर खोलें',
 
       // Dashboard
       'national_society': 'राष्ट्रीय समाज',
@@ -2815,6 +2827,9 @@ class AppLocalizations {
       'self_report_created': 'स्व-रिपोर्ट बनाई गई',
       'deadline_reminder': 'अंतिम तिथि अनुस्मारक',
       'search_audit_logs': 'ऑडिट लॉग खोजें...',
+      'home_screen_widget_title': 'होम स्क्रीन विजेट',
+      'audit_widget_activity_types_hint':
+          'विजेट के लिए गतिविधि प्रकार चुनें। कोई चयन न होने पर सभी दिखेंगे। इस डिवाइस पर सहेजा जाता है।',
       'action': 'कार्रवाई',
       'all_actions': 'सभी कार्रवाइयां',
       'create': 'बनाएं',
@@ -3224,8 +3239,8 @@ class AppLocalizations {
           'Добро пожаловать в Банк Данных Сети МФОКК',
       'splash_description':
           'Это единственная система для отчетности данных в МФОКК. Попрощайтесь с разбросанными файлами Excel, формами KoBo, множественными платформами и входами — все теперь централизовано и оптимизировано здесь.',
-      'built_by_haytham':
-          'Создано Хайтамом Аль-Суфи,\nволонтером Сирийского Арабского Красного Полумесяца',
+      'powered_by_ngo_databank': 'На платформе NGO Databank',
+      'open_on_github': 'Открыть на GitHub',
 
       // Dashboard
       'national_society': 'Национальное Общество',
@@ -3416,6 +3431,9 @@ class AppLocalizations {
       'self_report_created': 'Собственный Отчет Создан',
       'deadline_reminder': 'Напоминание о Сроке',
       'search_audit_logs': 'Поиск журналов аудита...',
+      'home_screen_widget_title': 'Виджет главного экрана',
+      'audit_widget_activity_types_hint':
+          'Выберите типы активности для виджета. Без выбора — все типы. Сохраняется на этом устройстве.',
       'action': 'Действие',
       'all_actions': 'Все Действия',
       'create': 'Создать',
@@ -3823,7 +3841,8 @@ class AppLocalizations {
       'welcome_to_ifrc_network_databank': '欢迎使用IFRC网络数据库',
       'splash_description':
           '这是向IFRC报告数据的唯一系统。告别分散的Excel文件、KoBo表单、多个平台和登录 — 现在一切都集中并简化在这里。',
-      'built_by_haytham': '由Haytham Alsoufi构建，\n叙利亚阿拉伯红新月会志愿者',
+      'powered_by_ngo_databank': '由 NGO Databank 提供支持',
+      'open_on_github': '在 GitHub 上打开',
 
       // Dashboard
       'national_society': '国家协会',
@@ -3997,6 +4016,9 @@ class AppLocalizations {
       'self_report_created': '自报告已创建',
       'deadline_reminder': '截止日期提醒',
       'search_audit_logs': '搜索审计日志...',
+      'home_screen_widget_title': '主屏幕小组件',
+      'audit_widget_activity_types_hint':
+          '选择要在小组件中显示的活动类型。不选则显示全部类型。已保存在本机。',
       'action': '操作',
       'all_actions': '所有操作',
       'create': '创建',
@@ -4755,6 +4777,9 @@ class AppLocalizations {
   String get selfReportCreated => translate('self_report_created');
   String get deadlineReminder => translate('deadline_reminder');
   String get searchAuditLogs => translate('search_audit_logs');
+  String get homeScreenWidgetTitle => translate('home_screen_widget_title');
+  String get auditWidgetActivityTypesHint =>
+      translate('audit_widget_activity_types_hint');
   String get allActions => translate('all_actions');
   String get allUsers => translate('all_users');
   String get fromDate => translate('from_date');
@@ -4885,7 +4910,8 @@ class AppLocalizations {
   String get welcomeToIfrcNetworkDatabank =>
       translate('welcome_to_ifrc_network_databank');
   String get splashDescription => translate('splash_description');
-  String get builtByHaytham => translate('built_by_haytham');
+  String get poweredByNgoDatabank => translate('powered_by_ngo_databank');
+  String get openOnGithub => translate('open_on_github');
 
   // Indicator Detail getters
   String get indicatorDetailTitle => translate('indicator_detail_title');

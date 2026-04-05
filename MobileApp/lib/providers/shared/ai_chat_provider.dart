@@ -27,6 +27,8 @@ class AiChatProvider with ChangeNotifier {
 
   List<AiChatMessage> _messages = [];
   List<AiConversationSummary> _conversations = [];
+  /// Local-only: pinned conversations surface at the top of the list (drawer / chats).
+  Set<String> _pinnedConversationIds = {};
 
   WebSocketChannel? _channel;
   StreamSubscription? _wsSub;
@@ -60,7 +62,55 @@ class AiChatProvider with ChangeNotifier {
   String? get failedMessage => _failedMessage;
 
   List<AiChatMessage> get messages => List.unmodifiable(_messages);
-  List<AiConversationSummary> get conversations => List.unmodifiable(_conversations);
+  List<AiConversationSummary> get conversations => List.unmodifiable(_orderedConversations());
+
+  List<AiConversationSummary> _orderedConversations() {
+    final list = List<AiConversationSummary>.from(_conversations);
+    list.sort(_compareConversationDrawerOrder);
+    return list;
+  }
+
+  int _compareConversationDrawerOrder(AiConversationSummary a, AiConversationSummary b) {
+    final ap = _pinnedConversationIds.contains(a.id);
+    final bp = _pinnedConversationIds.contains(b.id);
+    if (ap != bp) {
+      return ap ? -1 : 1;
+    }
+    final aTime = a.lastMessageAt ?? a.updatedAt ?? DateTime(0);
+    final bTime = b.lastMessageAt ?? b.updatedAt ?? DateTime(0);
+    return bTime.compareTo(aTime);
+  }
+
+  bool isConversationPinned(String conversationId) => _pinnedConversationIds.contains(conversationId);
+
+  Future<void> setConversationPinned(String conversationId, bool pinned) async {
+    if (pinned) {
+      _pinnedConversationIds = {..._pinnedConversationIds, conversationId};
+    } else {
+      _pinnedConversationIds = {..._pinnedConversationIds}..remove(conversationId);
+    }
+    await _persistPinnedIds();
+    notifyListeners();
+  }
+
+  Future<void> _persistPinnedIds() async {
+    await _storage.init();
+    await _storage.setString('ngodb_chatbot_pinned_conversation_ids', jsonEncode(_pinnedConversationIds.toList()));
+  }
+
+  void _pruneStalePinnedIds() {
+    if (_conversations.isEmpty) {
+      if (_pinnedConversationIds.isEmpty) return;
+      _pinnedConversationIds = {};
+      unawaited(_persistPinnedIds());
+      return;
+    }
+    final ids = _conversations.map((c) => c.id).toSet();
+    final next = _pinnedConversationIds.intersection(ids);
+    if (next.length == _pinnedConversationIds.length) return;
+    _pinnedConversationIds = next;
+    unawaited(_persistPinnedIds());
+  }
 
   List<AiChatAgentStep> get agentSteps => List.unmodifiable(_agentSteps);
   bool get policyAcknowledged => _policyAcknowledged;
@@ -91,6 +141,18 @@ class AiChatProvider with ChangeNotifier {
         }
       } catch (_) {
         /* keep default */
+      }
+    }
+    _pinnedConversationIds = {};
+    final pinsRaw = await _storage.getString('ngodb_chatbot_pinned_conversation_ids');
+    if (pinsRaw != null && pinsRaw.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(pinsRaw);
+        if (decoded is List) {
+          _pinnedConversationIds = decoded.map((e) => e.toString()).where((s) => s.isNotEmpty).toSet();
+        }
+      } catch (_) {
+        _pinnedConversationIds = {};
       }
     }
     notifyListeners();
@@ -707,6 +769,7 @@ class AiChatProvider with ChangeNotifier {
         final bTime = b.lastMessageAt ?? b.updatedAt ?? DateTime(0);
         return bTime.compareTo(aTime);
       });
+      _pruneStalePinnedIds();
       notifyListeners();
       return;
     }
@@ -748,6 +811,7 @@ class AiChatProvider with ChangeNotifier {
           final bTime = b.lastMessageAt ?? b.updatedAt ?? DateTime(0);
           return bTime.compareTo(aTime);
         });
+        _pruneStalePinnedIds();
       } catch (e) {
         DebugLogger.logWarn('AI', 'Failed to sync conversations from server, using local: $e');
         // Keep local conversations if server sync fails
@@ -851,6 +915,8 @@ class AiChatProvider with ChangeNotifier {
 
       // Remove from in-memory list
       _conversations.removeWhere((c) => c.id == conversationId);
+      _pinnedConversationIds = {..._pinnedConversationIds}..remove(conversationId);
+      await _persistPinnedIds();
 
       // If this was the current conversation, start a new one
       if (_conversationId == conversationId) {
@@ -883,6 +949,8 @@ class AiChatProvider with ChangeNotifier {
 
       // Clear in-memory list
       _conversations = [];
+      _pinnedConversationIds = {};
+      await _persistPinnedIds();
 
       // Start a new conversation
       startNewConversation();

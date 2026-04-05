@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../providers/shared/auth_provider.dart';
 import '../../config/routes.dart';
 import '../../utils/constants.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/performance_service.dart';
+import '../../services/launcher_shortcuts_service.dart';
 import '../../utils/debug_logger.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -113,6 +115,19 @@ class _SplashScreenState extends State<SplashScreen>
     super.dispose();
   }
 
+  Future<void> _openNgoDatabankGithub() async {
+    final uri = Uri.parse(AppConstants.ngoDatabankGithubRepoUrl);
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        DebugLogger.logWarn('SPLASH', 'Cannot launch GitHub URL');
+      }
+    } catch (e) {
+      DebugLogger.logWarn('SPLASH', 'launchUrl failed: $e');
+    }
+  }
+
   Future<void> _checkAuthAndNavigate() async {
     final performanceService = PerformanceService();
     performanceService.startInit('splash_auth_check');
@@ -196,6 +211,7 @@ class _SplashScreenState extends State<SplashScreen>
       AppRoutes.dashboard,
       arguments: 2, // Navigate to Home screen (index 2)
     );
+    LauncherShortcutsService.markSplashFinished();
   }
 
   @override
@@ -279,7 +295,7 @@ class _SplashScreenState extends State<SplashScreen>
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                 color: Theme.of(context)
                                     .colorScheme.onPrimary
-                                    .withOpacity(0.7),
+                                    .withValues(alpha: 0.7),
                               ),
                           textAlign: TextAlign.center,
                         ),
@@ -296,18 +312,57 @@ class _SplashScreenState extends State<SplashScreen>
                       ),
                     ),
                     const SizedBox(height: 32),
-                    // Attribution with fade animation
+                    // Attribution + GitHub (matches Backoffice sidebar)
                     FadeTransition(
                       opacity: _attributionFadeAnimation,
-                      child: Text(
-                        localizations.builtByHaytham,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Theme.of(context)
-                              .colorScheme.onPrimary
-                              .withOpacity(0.7),
-                        ),
-                        textAlign: TextAlign.center,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            localizations.poweredByNgoDatabank,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context)
+                                  .colorScheme.onPrimary
+                                  .withValues(alpha: 0.7),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 10),
+                          OutlinedButton.icon(
+                            onPressed: _openNgoDatabankGithub,
+                            icon: Icon(
+                              Icons.open_in_new,
+                              size: 18,
+                              color: Theme.of(context).colorScheme.onPrimary,
+                            ),
+                            label: Text(
+                              localizations.openOnGithub,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onPrimary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor:
+                                  Theme.of(context).colorScheme.onPrimary,
+                              side: BorderSide(
+                                color: Theme.of(context)
+                                    .colorScheme.onPrimary
+                                    .withValues(alpha: 0.85),
+                              ),
+                              backgroundColor:
+                                  Colors.white.withValues(alpha: 0.12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 18,
+                                vertical: 10,
+                              ),
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.zero,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],

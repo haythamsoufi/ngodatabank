@@ -229,7 +229,7 @@ class _LineChartView extends StatelessWidget {
     final maxY = spots.map((s) => s.y).reduce(math.max);
     final padY = (maxY - minY).abs() < 1e-6 ? 1.0 : (maxY - minY) * 0.1;
 
-    final lineColor = Theme.of(context).colorScheme.primary;
+    final lineColor = context.linkOnSurfaceColor;
 
     return SizedBox(
       height: 200,
