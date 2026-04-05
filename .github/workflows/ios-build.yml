@@ -40,6 +40,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          # Default image Xcode can lag; plugins may reference newer SDK APIs (e.g. device_info_plus 12+).
+          xcode-version: latest-stable
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:

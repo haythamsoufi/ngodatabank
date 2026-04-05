@@ -56,7 +56,8 @@ dependencies:
   # Wide range so both Flutter SDK pins resolve (e.g. 0.19.x vs 0.20.x via flutter_localizations)
   intl: ">=0.19.0 <0.21.0"
   cupertino_icons: ^1.0.6
-  device_info_plus: ^12.0.0
+  # 12.x calls NSProcessInfo.isiOSAppOnVision (iOS 18 SDK / Xcode 16+). Cap for CI runners that use older Xcode.
+  device_info_plus: ">=11.3.0 <12.0.0"
   package_info_plus: ^9.0.1
   uuid: ^4.5.1
 
