@@ -80,9 +80,14 @@ class AppSwitchListTile extends StatelessWidget {
                 ),
               )
             : null,
-        activeThumbColor: theme.isDarkTheme
-            ? const Color(AppConstants.themeSwitchCheckboxActiveDark)
-            : theme.colorScheme.primary,
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return theme.isDarkTheme
+                ? const Color(AppConstants.themeSwitchCheckboxActiveDark)
+                : theme.colorScheme.primary;
+          }
+          return null;
+        }),
         contentPadding: effectivePadding,
         dense: true,
       ),

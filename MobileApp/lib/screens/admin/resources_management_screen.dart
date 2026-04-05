@@ -118,7 +118,7 @@ class _ResourcesManagementScreenState extends State<ResourcesManagementScreen> {
                       Expanded(
                         flex: 1,
                         child: DropdownButtonFormField<String>(
-                          initialValue: _selectedCategoryFilter,
+                          value: _selectedCategoryFilter,
                           isExpanded: true,
                           decoration: InputDecoration(
                             labelText: localizations.category,
@@ -173,7 +173,7 @@ class _ResourcesManagementScreenState extends State<ResourcesManagementScreen> {
                       Expanded(
                         flex: 1,
                         child: DropdownButtonFormField<String>(
-                          initialValue: _selectedLanguageFilter,
+                          value: _selectedLanguageFilter,
                           isExpanded: true,
                           decoration: InputDecoration(
                             labelText: localizations.language,

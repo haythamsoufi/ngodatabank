@@ -493,7 +493,8 @@ class _DashboardScreenState extends State<DashboardScreen>
               _selectedTemplateFilter = null;
               _selectedStatusFilter = null;
             });
-          }, minimumSize: Size.zero,
+          },
+          minSize: 0,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -533,7 +534,8 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     return cupertino.CupertinoButton(
       padding: EdgeInsets.zero,
-      onPressed: onTap, minimumSize: Size.zero,
+      onPressed: onTap,
+      minSize: 0,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: IOSSpacing.md - 6, vertical: IOSSpacing.xs + 2),
         decoration: BoxDecoration(

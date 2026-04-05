@@ -188,7 +188,7 @@ class _DocumentManagementScreenState extends State<DocumentManagementScreen> {
                       Expanded(
                         flex: 1,
                         child: DropdownButtonFormField<String>(
-                          initialValue: _selectedStatusFilter,
+                          value: _selectedStatusFilter,
                           isExpanded: true,
                           decoration: InputDecoration(
                             labelText: localizations.status,
@@ -243,7 +243,7 @@ class _DocumentManagementScreenState extends State<DocumentManagementScreen> {
                       Expanded(
                         flex: 1,
                         child: DropdownButtonFormField<String>(
-                          initialValue: _selectedTypeFilter,
+                          value: _selectedTypeFilter,
                           isExpanded: true,
                           decoration: InputDecoration(
                             labelText: localizations.type,

@@ -823,7 +823,7 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
               children: [
                 // Type filter
                 DropdownButtonFormField<String>(
-                  initialValue: provider.selectedType.isEmpty
+                  value: provider.selectedType.isEmpty
                       ? null
                       : provider.selectedType,
                   decoration: InputDecoration(
@@ -877,7 +877,7 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
                     final sectorList = uniqueSectors.values.toList();
 
                     return DropdownButtonFormField<String>(
-                      initialValue: provider.selectedSector.isEmpty
+                      value: provider.selectedSector.isEmpty
                           ? null
                           : (sectorList
                                   .any((s) => s.name == provider.selectedSector)
@@ -953,7 +953,7 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
                     final subsectorList = uniqueSubsectors.values.toList();
 
                     return DropdownButtonFormField<String>(
-                      initialValue: provider.selectedSubSector.isEmpty
+                      value: provider.selectedSubSector.isEmpty
                           ? null
                           : (subsectorList.any(
                                   (s) => s.name == provider.selectedSubSector)
@@ -1006,7 +1006,7 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
                 const SizedBox(height: 16),
                 // Archived filter
                 DropdownButtonFormField<String>(
-                  initialValue: provider.archived ? 'all' : 'active',
+                  value: provider.archived ? 'all' : 'active',
                   decoration: InputDecoration(
                     labelText: localizations.indicatorBankFilterStatus,
                     border: OutlineInputBorder(

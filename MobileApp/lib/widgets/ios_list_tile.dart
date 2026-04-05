@@ -73,7 +73,8 @@ class IOSListTile extends StatelessWidget {
       content = cupertino.CupertinoButton(
         padding: EdgeInsets.zero,
         color: Colors.transparent,
-        onPressed: onTap, minimumSize: Size.zero,
+        onPressed: onTap,
+        minSize: 0,
         child: content,
       );
     }

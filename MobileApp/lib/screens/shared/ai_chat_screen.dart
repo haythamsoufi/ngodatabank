@@ -688,15 +688,18 @@ class _AiChatScreenState extends State<AiChatScreen> {
         iconTheme: IconThemeData(
           color: _chatBody(theme),
         ),
-        actionsPadding: const EdgeInsetsDirectional.only(end: 14),
         actions: [
-          IOSIconButton(
-            icon: Icons.add_comment_outlined,
-            color: _chatBody(theme),
-            onPressed: () => context.read<AiChatProvider>().startNewConversation(),
-            tooltip: 'New chat',
-            semanticLabel: 'New chat',
-            semanticHint: 'Starts a new empty conversation',
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: 14),
+            child: IOSIconButton(
+              icon: Icons.add_comment_outlined,
+              color: _chatBody(theme),
+              onPressed: () =>
+                  context.read<AiChatProvider>().startNewConversation(),
+              tooltip: 'New chat',
+              semanticLabel: 'New chat',
+              semanticHint: 'Starts a new empty conversation',
+            ),
           ),
         ],
         bottom: PreferredSize(

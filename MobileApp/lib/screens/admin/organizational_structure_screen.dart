@@ -98,7 +98,7 @@ class _OrganizationalStructureScreenState
                   const SizedBox(height: 12),
                   // Entity Type Filter
                   DropdownButtonFormField<String>(
-                    initialValue: _selectedLevelFilter,
+                    value: _selectedLevelFilter,
                     decoration: InputDecoration(
                       labelText: localizations.entityType,
                       border: OutlineInputBorder(

@@ -164,7 +164,7 @@ class _AuditTrailScreenState extends State<AuditTrailScreen> {
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          initialValue: _selectedActionFilter,
+                          value: _selectedActionFilter,
                           decoration: InputDecoration(
                             labelText: localizations.action,
                             border: OutlineInputBorder(
@@ -213,7 +213,7 @@ class _AuditTrailScreenState extends State<AuditTrailScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          initialValue: _selectedUserFilter,
+                          value: _selectedUserFilter,
                           decoration: InputDecoration(
                             labelText: localizations.user,
                             border: OutlineInputBorder(
