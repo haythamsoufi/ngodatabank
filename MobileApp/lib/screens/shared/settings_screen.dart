@@ -532,8 +532,9 @@ class SettingsScreen extends StatelessWidget {
               ],
             );
 
-            if (confirm == true && context.mounted) {
+            if (confirm == true) {
               await authProvider.logout();
+              if (!context.mounted) return;
               // Navigate back to main navigation (dashboard) instead of login
               // This allows users to browse as non-authenticated users
               Navigator.of(context).pushNamedAndRemoveUntil(

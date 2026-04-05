@@ -1431,11 +1431,10 @@ class _AiChatScreenState extends State<AiChatScreen> {
     // If a quota error occurs, restore the message to the controller
     // Wait a bit for the provider to process the error
     Future.delayed(const Duration(milliseconds: 100), () {
-      if (mounted) {
-        final ai = context.read<AiChatProvider>();
-        if (ai.errorType == 'quota_exceeded' && ai.failedMessage != null && _controller.text.isEmpty) {
-          _controller.text = ai.failedMessage!;
-        }
+      if (!context.mounted) return;
+      final ai = context.read<AiChatProvider>();
+      if (ai.errorType == 'quota_exceeded' && ai.failedMessage != null && _controller.text.isEmpty) {
+        _controller.text = ai.failedMessage!;
       }
     });
   }

@@ -13,10 +13,8 @@ class AuthErrorHandler {
   AuthProvider? _authProvider;
   final AuthService _authService = AuthService();
 
-  /// Set the auth provider reference (called from main app initialization)
-  void setAuthProvider(AuthProvider authProvider) {
-    _authProvider = authProvider;
-  }
+  /// Auth provider reference (set from main app initialization)
+  set authProvider(AuthProvider authProvider) => _authProvider = authProvider;
 
   /// Handle authentication errors consistently across the app.
   /// This clears the session and notifies the auth provider.

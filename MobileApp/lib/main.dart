@@ -300,7 +300,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         ChangeNotifierProvider(create: (_) {
           final authProvider = AuthProvider();
           // Set auth provider reference in error handler
-          AuthErrorHandler().setAuthProvider(authProvider);
+          AuthErrorHandler().authProvider = authProvider;
           return authProvider;
         }),
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
@@ -371,7 +371,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
 
           // Set navigator key for push notification service
-          PushNotificationService().setNavigatorKey(appNavigatorKey);
+          PushNotificationService().navigatorKey = appNavigatorKey;
 
           return SessionExpirationWarning(
             child: MaterialApp(

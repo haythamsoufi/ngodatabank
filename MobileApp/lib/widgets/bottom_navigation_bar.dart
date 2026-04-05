@@ -28,19 +28,19 @@ class AppBottomNavigationBar extends StatelessWidget {
     }
   }
 
-  bool _isAdmin(context) {
+  bool _isAdmin(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final user = authProvider.user;
     return user != null &&
         (user.role == 'admin' || user.role == 'system_manager');
   }
 
-  bool _isAuthenticated(context) {
+  bool _isAuthenticated(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     return authProvider.isAuthenticated;
   }
 
-  bool _isFocalPoint(context) {
+  bool _isFocalPoint(BuildContext context) {
     if (isFocalPoint != null) {
       return isFocalPoint!;
     }

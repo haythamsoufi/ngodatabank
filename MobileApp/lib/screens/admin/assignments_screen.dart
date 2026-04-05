@@ -56,6 +56,7 @@ class _AssignmentsScreenState extends State<AssignmentsScreen> {
     );
 
     if (confirmed == true) {
+      if (!mounted) return;
       final provider = Provider.of<AssignmentsProvider>(context, listen: false);
       final success = await provider.deleteAssignment(assignment.id);
 

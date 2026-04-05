@@ -229,7 +229,7 @@ class PushNotificationService {
     );
 
     await _localNotifications.initialize(
-      initSettings,
+      settings: initSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
         DebugLogger.logNotifications(
             'Notification tapped: ${response.payload}');
@@ -403,10 +403,9 @@ class PushNotificationService {
     }
   }
 
-  /// Set the navigator key for navigation
-  void setNavigatorKey(GlobalKey<NavigatorState> navigatorKey) {
-    _navigatorKey = navigatorKey;
-  }
+  /// Navigator key for navigation (set from main app initialization)
+  set navigatorKey(GlobalKey<NavigatorState> navigatorKey) =>
+      _navigatorKey = navigatorKey;
 
   /// Show local notification
   Future<void> _showLocalNotification(
@@ -443,10 +442,10 @@ class PushNotificationService {
             : data.toString());
 
     await _localNotifications.show(
-      DateTime.now().millisecondsSinceEpoch.remainder(100000),
-      title,
-      body,
-      details,
+      id: DateTime.now().millisecondsSinceEpoch.remainder(100000),
+      title: title,
+      body: body,
+      notificationDetails: details,
       payload: notificationPayload,
     );
   }

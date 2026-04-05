@@ -34,7 +34,8 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace "com.ngo.databank"
     compileSdkVersion 36
-    ndkVersion = "27.0.12077973"
+    // jni (and other plugins) require NDK 28.x; align with highest required version
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         coreLibraryDesugaringEnabled true
@@ -82,7 +83,7 @@ flutter {
 }
 
 dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:2.1.0"
 
     // Import the Firebase BoM

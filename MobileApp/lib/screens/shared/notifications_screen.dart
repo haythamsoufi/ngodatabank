@@ -37,6 +37,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Consumer builders shadow `context`; keep State's context for post-async UI.
+    final stateContext = context;
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
         final localizations = AppLocalizations.of(context)!;
@@ -127,7 +129,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               },
                             );
 
-                            if (confirmed != true || !mounted) {
+                            if (confirmed != true || !stateContext.mounted) {
                               return;
                             }
 
@@ -139,61 +141,75 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               final success =
                                   await provider.markAsRead(unreadIds);
 
-                              if (mounted) {
-                                if (success) {
-                                  // Refresh notifications to ensure UI is in sync
-                                  await provider.loadNotifications();
-
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(localizations
-                                          .allNotificationsMarkedAsRead),
-                                      duration: const Duration(seconds: 2),
-                                      backgroundColor:
-                                          Theme.of(context).colorScheme.primary,
-                                    ),
-                                  );
-                                } else {
-                                  // Refresh to get latest state even on failure
-                                  await provider.loadNotifications();
-
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        provider.error ??
-                                            'Failed to mark notifications as read',
-                                      ),
-                                      duration: const Duration(seconds: 4),
-                                      backgroundColor:
-                                          Theme.of(context).colorScheme.error,
-                                    ),
-                                  );
-                                }
+                              if (!stateContext.mounted) {
+                                return;
                               }
-                            } catch (e, stackTrace) {
-                              if (mounted) {
-                                // Refresh to get latest state even on error
+                              if (success) {
+                                // Refresh notifications to ensure UI is in sync
                                 await provider.loadNotifications();
 
-                                final errorHandler = ErrorHandler();
-                                final error = errorHandler.parseError(
-                                  error: e,
-                                  stackTrace: stackTrace,
-                                  context: 'Mark All Notifications Read',
-                                );
-                                errorHandler.logError(error);
-
-                                ScaffoldMessenger.of(context).showSnackBar(
+                                if (!stateContext.mounted) {
+                                  return;
+                                }
+                                ScaffoldMessenger.of(stateContext).showSnackBar(
                                   SnackBar(
-                                    content: Text(error.getUserMessage()),
+                                    content: Text(localizations
+                                        .allNotificationsMarkedAsRead),
+                                    duration: const Duration(seconds: 2),
+                                    backgroundColor:
+                                        Theme.of(stateContext)
+                                            .colorScheme
+                                            .primary,
+                                  ),
+                                );
+                              } else {
+                                // Refresh to get latest state even on failure
+                                await provider.loadNotifications();
+
+                                if (!stateContext.mounted) {
+                                  return;
+                                }
+                                ScaffoldMessenger.of(stateContext).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      provider.error ??
+                                          'Failed to mark notifications as read',
+                                    ),
                                     duration: const Duration(seconds: 4),
                                     backgroundColor:
-                                        Theme.of(context).colorScheme.error,
+                                        Theme.of(stateContext)
+                                            .colorScheme
+                                            .error,
                                   ),
                                 );
                               }
+                            } catch (e, stackTrace) {
+                              // Refresh to get latest state even on error
+                              await provider.loadNotifications();
+
+                              if (!stateContext.mounted) {
+                                return;
+                              }
+                              final errorHandler = ErrorHandler();
+                              final error = errorHandler.parseError(
+                                error: e,
+                                stackTrace: stackTrace,
+                                context: 'Mark All Notifications Read',
+                              );
+                              errorHandler.logError(error);
+
+                              ScaffoldMessenger.of(stateContext).showSnackBar(
+                                SnackBar(
+                                  content: Text(error.getUserMessage()),
+                                  duration: const Duration(seconds: 4),
+                                  backgroundColor:
+                                      Theme.of(stateContext)
+                                          .colorScheme
+                                          .error,
+                                ),
+                              );
                             } finally {
-                              if (mounted) {
+                              if (stateContext.mounted) {
                                 setState(() {
                                   _isMarkingAllAsRead = false;
                                 });
@@ -416,26 +432,28 @@ class _RestrictedSwipeDismissibleState
         final uri = Uri.parse(fullUrl);
         if (await canLaunchUrl(uri)) {
           await launchUrl(uri, mode: LaunchMode.platformDefault);
-          if (mounted) {
-            final localizations = AppLocalizations.of(context)!;
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(localizations.downloadStarted),
-                duration: const Duration(seconds: 2),
-                backgroundColor: Theme.of(context).colorScheme.primary,
-              ),
-            );
+          if (!context.mounted) {
+            return;
           }
+          final localizations = AppLocalizations.of(context)!;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(localizations.downloadStarted),
+              duration: const Duration(seconds: 2),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+            ),
+          );
         } else {
-          if (mounted) {
-            final localizations = AppLocalizations.of(context)!;
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(localizations.couldNotStartDownload),
-                backgroundColor: Theme.of(context).colorScheme.error,
-              ),
-            );
+          if (!context.mounted) {
+            return;
           }
+          final localizations = AppLocalizations.of(context)!;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(localizations.couldNotStartDownload),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
         }
         return;
       }
@@ -467,15 +485,16 @@ class _RestrictedSwipeDismissibleState
       }
     } catch (e) {
       DebugLogger.logError('Error navigating to route $route: $e');
-      if (mounted) {
-        final localizations = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${localizations.error}: ${e.toString()}'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
+      if (!context.mounted) {
+        return;
       }
+      final localizations = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${localizations.error}: ${e.toString()}'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
     }
   }
 
@@ -569,6 +588,8 @@ class _RestrictedSwipeDismissibleState
                   if (!_allowSwipe) {
                     return false;
                   }
+                  final messenger = ScaffoldMessenger.of(context);
+                  final errorColor = Theme.of(context).colorScheme.error;
                   // Update the notification state
                   bool success = false;
                   if (widget.notification.isRead) {
@@ -580,15 +601,15 @@ class _RestrictedSwipeDismissibleState
                   }
 
                   // Show error message if operation failed
-                  if (!success && mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                  if (!success) {
+                    messenger.showSnackBar(
                       SnackBar(
                         content: Text(
                           widget.provider.error ??
                               'Failed to update notification',
                         ),
                         duration: const Duration(seconds: 3),
-                        backgroundColor: Theme.of(context).colorScheme.error,
+                        backgroundColor: errorColor,
                       ),
                     );
                   }
@@ -602,6 +623,9 @@ class _RestrictedSwipeDismissibleState
                     if (!widget.notification.isRead) {
                       await widget.provider
                           .markAsRead([widget.notification.id]);
+                    }
+                    if (!context.mounted) {
+                      return;
                     }
                     // Navigate to related URL or screen if available
                     if (widget.notification.relatedUrl != null &&

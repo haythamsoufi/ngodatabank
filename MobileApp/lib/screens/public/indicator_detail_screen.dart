@@ -79,6 +79,8 @@ class _IndicatorDetailScreenState extends State<IndicatorDetailScreen> {
 
   Future<void> _fetchIndicatorFromApi(String locale) async {
     try {
+      final provider =
+          Provider.of<IndicatorBankProvider>(context, listen: false);
       final api = ApiService();
       final response = await api.get(
         '/api/v1/indicator-bank/${widget.indicatorId}',
@@ -92,9 +94,7 @@ class _IndicatorDetailScreenState extends State<IndicatorDetailScreen> {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         final indicator = Indicator.fromJson(data);
 
-        // Get provider for sector lookups
-        final provider =
-            Provider.of<IndicatorBankProvider>(context, listen: false);
+        // Get provider for sector lookups (captured before await above)
 
         // Process localized fields
         final processedIndicator =

@@ -2969,15 +2969,9 @@
                         row.classList.remove('hover:bg-gray-50');
                         row.classList.add('bg-gray-50', 'hover:bg-gray-100');
 
-                        // Show success message
-                        const successMsg = document.createElement('div');
-                        successMsg.className = 'fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-lg z-50';
-                        successMsg.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Device session ended successfully.';
-                        document.body.appendChild(successMsg);
-
-                        setTimeout(() => {
-                            successMsg.remove();
-                        }, 3000);
+                        if (typeof window.showFlashMessage === 'function') {
+                            window.showFlashMessage('Device session ended successfully.', 'success');
+                        }
                     } else {
                         throw new Error(data.error || 'Failed to kick out device');
                     }
@@ -3056,15 +3050,9 @@
                             }
                         }, 300);
 
-                        // Show success message
-                        const successMsg = document.createElement('div');
-                        successMsg.className = 'fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-lg z-50';
-                        successMsg.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Device removed successfully.';
-                        document.body.appendChild(successMsg);
-
-                        setTimeout(() => {
-                            successMsg.remove();
-                        }, 3000);
+                        if (typeof window.showFlashMessage === 'function') {
+                            window.showFlashMessage('Device removed successfully.', 'success');
+                        }
                     } else {
                         throw new Error(data.error || 'Failed to remove device');
                     }

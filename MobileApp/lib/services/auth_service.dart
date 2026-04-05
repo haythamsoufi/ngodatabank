@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:async';
+import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
 import '../models/shared/user.dart';
 import 'api_service.dart';
@@ -1152,7 +1153,7 @@ class AuthService {
     }
   }
 
-  String _extractErrorMessage(response) {
+  String _extractErrorMessage(http.Response response) {
     DebugLogger.logAuth('Extracting error message from response...');
     try {
       final body = jsonDecode(response.body);

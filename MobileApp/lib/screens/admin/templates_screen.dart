@@ -57,6 +57,7 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
     );
 
     if (confirmed == true) {
+      if (!mounted) return;
       final provider = Provider.of<TemplatesProvider>(context, listen: false);
       final success = await provider.deleteTemplate(template.id);
 

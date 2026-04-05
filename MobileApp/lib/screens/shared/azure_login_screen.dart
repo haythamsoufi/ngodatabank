@@ -77,7 +77,9 @@ class _AzureLoginScreenState extends State<AzureLoginScreen> {
         print('[AZURE LOGIN] Session cookie extracted and saved');
 
         // Try to refresh user profile through auth provider
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        if (!mounted) return;
+        final authProvider =
+            Provider.of<AuthProvider>(context, listen: false);
         await authProvider.refreshUser();
       } else {
         print('[AZURE LOGIN] WARNING: No session cookie found');
@@ -91,6 +93,7 @@ class _AzureLoginScreenState extends State<AzureLoginScreen> {
             await _sessionService.saveSessionCookie(cookieString);
             await _sessionService.injectSessionIntoWebView();
             print('[AZURE LOGIN] Session cookie found on retry');
+            if (!mounted) return;
             final authProvider =
                 Provider.of<AuthProvider>(context, listen: false);
             await authProvider.refreshUser();
@@ -151,11 +154,10 @@ class _AzureLoginScreenState extends State<AzureLoginScreen> {
                 _extractAndSaveSession(urlString).then((_) {
                   // Give it a moment for cookies to be fully set
                   Future.delayed(const Duration(milliseconds: 800), () {
-                    if (mounted) {
-                      Navigator.of(context).pop(true); // Return success
-                      Navigator.of(context)
-                          .pushReplacementNamed(AppRoutes.dashboard);
-                    }
+                    if (!context.mounted) return;
+                    Navigator.of(context).pop(true); // Return success
+                    Navigator.of(context)
+                        .pushReplacementNamed(AppRoutes.dashboard);
                   });
                 });
               }
@@ -177,11 +179,10 @@ class _AzureLoginScreenState extends State<AzureLoginScreen> {
                 await _extractAndSaveSession(urlString);
                 // Give it a moment for cookies to be fully set and profile loaded
                 Future.delayed(const Duration(milliseconds: 800), () {
-                  if (mounted) {
-                    Navigator.of(context).pop(true);
-                    Navigator.of(context)
-                        .pushReplacementNamed(AppRoutes.dashboard);
-                  }
+                  if (!context.mounted) return;
+                  Navigator.of(context).pop(true);
+                  Navigator.of(context)
+                      .pushReplacementNamed(AppRoutes.dashboard);
                 });
               }
             },

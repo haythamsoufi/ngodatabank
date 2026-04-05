@@ -21,8 +21,9 @@ class _AiConversationsScreenState extends State<AiConversationsScreen> {
 
   Future<void> _load() async {
     final auth = context.read<AuthProvider>();
-    await context.read<AiChatProvider>().ensureTokenIfLoggedIn(isAuthenticated: auth.isAuthenticated);
-    await context.read<AiChatProvider>().loadConversations(isAuthenticated: auth.isAuthenticated);
+    final ai = context.read<AiChatProvider>();
+    await ai.ensureTokenIfLoggedIn(isAuthenticated: auth.isAuthenticated);
+    await ai.loadConversations(isAuthenticated: auth.isAuthenticated);
   }
 
   @override

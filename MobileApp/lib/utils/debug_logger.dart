@@ -18,10 +18,8 @@ class DebugLogger {
   // Minimum log level (only logs at or above this level)
   static LogLevel _minLevel = LogLevel.debug;
 
-  /// Set minimum log level (only logs at or above this level)
-  static void setMinLevel(LogLevel level) {
-    _minLevel = level;
-  }
+  /// Minimum log level (only logs at or above this level)
+  static set minLevel(LogLevel level) => _minLevel = level;
 
   /// Log a message with a tag and level
   static void log(String tag, String message,
