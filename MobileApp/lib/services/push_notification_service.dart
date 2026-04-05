@@ -229,7 +229,7 @@ class PushNotificationService {
     );
 
     await _localNotifications.initialize(
-      settings: initSettings,
+      initSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
         DebugLogger.logNotifications(
             'Notification tapped: ${response.payload}');
@@ -442,10 +442,10 @@ class PushNotificationService {
             : data.toString());
 
     await _localNotifications.show(
-      id: DateTime.now().millisecondsSinceEpoch.remainder(100000),
-      title: title,
-      body: body,
-      notificationDetails: details,
+      DateTime.now().millisecondsSinceEpoch.remainder(100000),
+      title,
+      body,
+      details,
       payload: notificationPayload,
     );
   }
