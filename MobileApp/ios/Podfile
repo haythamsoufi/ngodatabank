@@ -1,7 +1,7 @@
 # Uncomment this line to define a global platform for your project
 platform :ios, '14.0'
 
-d# If `pod install` fails after upgrading firebase_* (or other) plugins, run from this directory:
+# If `pod install` fails after upgrading firebase_* (or other) plugins, run from this directory:
 #   pod install --repo-update
 # Optionally commit the generated Podfile.lock for reproducible CI.
 
