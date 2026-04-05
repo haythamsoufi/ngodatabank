@@ -211,7 +211,7 @@ class _TranslationManagementScreenState
                       Expanded(
                         flex: 1,
                         child: DropdownButtonFormField<String>(
-                          value: _selectedLanguageFilter,
+                          initialValue: _selectedLanguageFilter,
                           isExpanded: true,
                           decoration: InputDecoration(
                             labelText: localizations.language,
@@ -273,7 +273,7 @@ class _TranslationManagementScreenState
                       Expanded(
                         flex: 1,
                         child: DropdownButtonFormField<String>(
-                          value: _selectedStatusFilter,
+                          initialValue: _selectedStatusFilter,
                           isExpanded: true,
                           decoration: InputDecoration(
                             labelText: localizations.status,

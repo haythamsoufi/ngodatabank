@@ -106,7 +106,7 @@ class _IndicatorBankAdminScreenState extends State<IndicatorBankAdminScreen> {
                           children: [
                             Expanded(
                               child: DropdownButtonFormField<String>(
-                                value: _selectedCategoryFilter,
+                                initialValue: _selectedCategoryFilter,
                                 decoration: InputDecoration(
                                   labelText: localizations.category,
                                   border: OutlineInputBorder(
@@ -147,7 +147,7 @@ class _IndicatorBankAdminScreenState extends State<IndicatorBankAdminScreen> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: DropdownButtonFormField<String>(
-                                value: _selectedSectorFilter,
+                                initialValue: _selectedSectorFilter,
                                 decoration: InputDecoration(
                                   labelText: localizations.sector,
                                   border: OutlineInputBorder(
@@ -196,7 +196,7 @@ class _IndicatorBankAdminScreenState extends State<IndicatorBankAdminScreen> {
                         return Column(
                           children: [
                             DropdownButtonFormField<String>(
-                              value: _selectedCategoryFilter,
+                              initialValue: _selectedCategoryFilter,
                               decoration: InputDecoration(
                                 labelText: localizations.category,
                                 border: OutlineInputBorder(
@@ -235,7 +235,7 @@ class _IndicatorBankAdminScreenState extends State<IndicatorBankAdminScreen> {
                             ),
                             const SizedBox(height: 12),
                             DropdownButtonFormField<String>(
-                              value: _selectedSectorFilter,
+                              initialValue: _selectedSectorFilter,
                               decoration: InputDecoration(
                                 labelText: localizations.sector,
                                 border: OutlineInputBorder(

@@ -188,7 +188,7 @@ class IOSIconButton extends StatelessWidget {
             : null,
         padding: EdgeInsets.zero,
         color: Colors.transparent,
-        minSize: 0,
+        minimumSize: Size.zero,
         child: Icon(
           icon,
           size: iconSize ?? 24,

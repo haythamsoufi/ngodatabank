@@ -43,8 +43,8 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          # Keep in sync with MobileApp/pubspec.yaml (Dart 3.6.x). Flutter 3.27 stable ships Dart 3.6, not 3.8.
-          flutter-version: '3.27.0'
+          # Keep in sync with MobileApp/pubspec.yaml. Flutter 3.35.7 stable ships Dart 3.9.2.
+          flutter-version: '3.35.7'
           channel: 'stable'
           cache: false  # Disabled because pubspec.lock is in MobileApp/ subdirectory
 

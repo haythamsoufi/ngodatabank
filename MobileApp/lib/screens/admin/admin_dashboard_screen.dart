@@ -297,7 +297,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: IOSSpacing.lg),
             itemCount: metrics.length,
-            separatorBuilder: (_, __) => const SizedBox(
+            separatorBuilder: (_, _) => const SizedBox(
               width: _DashboardConstants.cardSpacing,
             ),
             itemBuilder: (context, index) {
@@ -443,7 +443,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: IOSSpacing.lg),
             itemCount: actions.length,
-            separatorBuilder: (_, __) => const SizedBox(
+            separatorBuilder: (_, _) => const SizedBox(
               width: _DashboardConstants.cardSpacing,
             ),
             itemBuilder: (context, index) {

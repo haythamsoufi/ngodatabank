@@ -129,12 +129,14 @@ Map<String, dynamic>? coerceStructuredPayload(dynamic payload) {
     if (value == null) continue;
     final year = _extractYear(row['year'] ?? row['period_used'] ?? row['period']);
     final region = row['region']?.toString().trim();
+    final String? regionForMap =
+        (region != null && region.isNotEmpty) ? region : null;
     countries.add({
       'iso3': iso3,
       'value': value,
       'label': (row['label'] ?? row['name'] ?? iso3).toString().trim().isEmpty ? iso3 : (row['label'] ?? row['name'] ?? iso3).toString().trim(),
-      if (year != null) 'year': year,
-      if (region != null && region.isNotEmpty) 'region': region,
+      'year': ?year,
+      'region': ?regionForMap,
     });
   }
   if (countries.isEmpty) return null;

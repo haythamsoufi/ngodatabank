@@ -228,7 +228,7 @@ class _EditIndicatorScreenState extends State<EditIndicatorScreen> {
 
                         // Type Field (Dropdown)
                         DropdownButtonFormField<String>(
-                          value: _typeController.text.isEmpty
+                          initialValue: _typeController.text.isEmpty
                               ? null
                               : _typeController.text,
                           decoration: InputDecoration(

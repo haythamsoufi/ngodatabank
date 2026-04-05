@@ -53,7 +53,7 @@ class IOSListTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (title != null) title!,
+                ?title,
                 if (subtitle != null) ...[
                   const SizedBox(height: IOSSpacing.xs / 2),
                   subtitle!,
@@ -74,7 +74,7 @@ class IOSListTile extends StatelessWidget {
         padding: EdgeInsets.zero,
         color: Colors.transparent,
         onPressed: onTap,
-        minSize: 0,
+        minimumSize: Size.zero,
         child: content,
       );
     }

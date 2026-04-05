@@ -196,7 +196,7 @@ class OfflineQueueService {
         _tableName,
         {
           'retry_count': retryCount,
-          if (errorMessage != null) 'error_message': errorMessage,
+          'error_message': ?errorMessage,
         },
         where: 'id = ?',
         whereArgs: [id],

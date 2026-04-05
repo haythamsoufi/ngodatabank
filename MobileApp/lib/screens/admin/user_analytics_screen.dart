@@ -60,7 +60,7 @@ class _UserAnalyticsScreenState extends State<UserAnalyticsScreen> {
                     return Column(
                       children: [
                         DropdownButtonFormField<String>(
-                          value: _selectedTimeRange,
+                          initialValue: _selectedTimeRange,
                           decoration: InputDecoration(
                             labelText: localizations.timeRange,
                             border: OutlineInputBorder(
@@ -120,7 +120,7 @@ class _UserAnalyticsScreenState extends State<UserAnalyticsScreen> {
                         ),
                         const SizedBox(height: 12),
                         DropdownButtonFormField<String>(
-                          value: _selectedMetricFilter,
+                          initialValue: _selectedMetricFilter,
                           decoration: InputDecoration(
                             labelText: localizations.metric,
                             border: OutlineInputBorder(
@@ -184,7 +184,7 @@ class _UserAnalyticsScreenState extends State<UserAnalyticsScreen> {
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          value: _selectedTimeRange,
+                          initialValue: _selectedTimeRange,
                           decoration: InputDecoration(
                             labelText: localizations.timeRange,
                             border: OutlineInputBorder(
@@ -246,7 +246,7 @@ class _UserAnalyticsScreenState extends State<UserAnalyticsScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          value: _selectedMetricFilter,
+                          initialValue: _selectedMetricFilter,
                           decoration: InputDecoration(
                             labelText: localizations.metric,
                             border: OutlineInputBorder(

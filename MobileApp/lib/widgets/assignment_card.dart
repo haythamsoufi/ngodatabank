@@ -88,7 +88,7 @@ class AssignmentCard extends StatelessWidget {
       color: Colors.transparent,
       child: cupertino.CupertinoButton(
         padding: EdgeInsets.zero,
-        minSize: 0,
+        minimumSize: Size.zero,
         color: Colors.transparent,
         onPressed: onToggleExpand ?? onTap,
         child: ConstrainedBox(
@@ -210,7 +210,7 @@ class AssignmentCard extends StatelessWidget {
           // Header with collapse button
           cupertino.CupertinoButton(
             padding: EdgeInsets.zero,
-            minSize: 0,
+            minimumSize: Size.zero,
             color: Colors.transparent,
             onPressed: onToggleExpand,
             child: ConstrainedBox(
@@ -274,7 +274,7 @@ class AssignmentCard extends StatelessWidget {
           // Expanded content
           cupertino.CupertinoButton(
             padding: EdgeInsets.zero,
-            minSize: 0,
+            minimumSize: Size.zero,
             color: Colors.transparent,
             onPressed: onTap,
             child: Container(
@@ -334,7 +334,7 @@ class AssignmentCard extends StatelessWidget {
                         cupertino.CupertinoButton(
                           onPressed: onEnterData,
                           padding: EdgeInsets.zero,
-                          minSize: 0,
+                          minimumSize: Size.zero,
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,

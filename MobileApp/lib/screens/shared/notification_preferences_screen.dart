@@ -351,7 +351,7 @@ class _NotificationPreferencesScreenState
                   child: SizedBox(
                     height: formFieldHeight,
                     child: DropdownButtonFormField<String>(
-                      value: _notificationFrequency,
+                      initialValue: _notificationFrequency,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         contentPadding: EdgeInsets.symmetric(
@@ -417,7 +417,7 @@ class _NotificationPreferencesScreenState
                                 child: SizedBox(
                                   height: formFieldHeight,
                                   child: DropdownButtonFormField<String>(
-                                    value: _digestDay ?? 'monday',
+                                    initialValue: _digestDay ?? 'monday',
                                     decoration: InputDecoration(
                                       labelText: localizations.dayOfWeek,
                                       border: const OutlineInputBorder(),
@@ -540,7 +540,7 @@ class _NotificationPreferencesScreenState
                                 SizedBox(
                                   height: formFieldHeight,
                                   child: DropdownButtonFormField<String>(
-                                    value: _digestDay ?? 'monday',
+                                    initialValue: _digestDay ?? 'monday',
                                     decoration: InputDecoration(
                                       labelText: localizations.dayOfWeek,
                                       border: const OutlineInputBorder(),

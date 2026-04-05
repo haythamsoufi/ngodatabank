@@ -235,7 +235,7 @@ class EntitySelector extends StatelessWidget {
                 }
 
                 return DropdownButtonFormField<Entity>(
-                  value: matchingEntity,
+                  initialValue: matchingEntity,
                   decoration: InputDecoration(
                     hintText: 'Choose an entity...',
                     prefixIcon: matchingEntity != null

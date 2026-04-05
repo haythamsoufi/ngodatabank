@@ -3,14 +3,12 @@ description: NGO Databank Mobile Application - Generic mobile app for NGO databa
 publish_to: 'none'
 version: 1.0.0+1
 
-# CI pins Flutter 3.27.x in .github/workflows (android-build / ios-build*). That SDK
-# ships Dart 3.6.x — keep this `environment.sdk` and caps below aligned with it.
-# Dependency caps avoid packages that require Dart 3.7+ / 3.8+ / 3.9+ / 3.10+.
-# When CI upgrades Flutter (e.g. Dart 3.10+), relax:
-# font_awesome_flutter → ^11.0.0, fl_chart → ^1.2.0, flutter_local_notifications → ^21.0.0,
-# device_info_plus → ^12.0.0, flutter_lints → ^6.0.0.
+# CI pins Flutter 3.35.x in .github/workflows (android-build / ios-build*). That SDK
+# ships Dart 3.9.x — keep this `environment.sdk` and caps below aligned with it.
+# When CI upgrades Flutter (e.g. Dart 3.10+), you can relax further:
+# font_awesome_flutter → ^11.0.0, flutter_local_notifications → ^21.0.0, etc.
 environment:
-  sdk: '>=3.6.0 <4.0.0'
+  sdk: '>=3.9.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -40,24 +38,25 @@ dependencies:
   # Navigation and URLs
   url_launcher: ^6.2.0
 
-  # Firebase: pinned to match ios/Podfile.lock (Firebase iOS 11.15.x). Bump only with a new Podfile.lock from macOS/CocoaPods.
+  # Firebase — iOS native versions come from committed ios/Podfile.lock (CocoaPods).
+  # Exact versions below are optional: they reduce drift when lockfile is not regenerated.
+  # After bumping firebase_* (or switching to ^ ranges), run GitHub Actions
+  # "iOS Regenerate Podfile.lock" (.github/workflows/ios-regenerate-podfile-lock.yml),
+  # then commit MobileApp/ios/Podfile.lock (and pubspec.lock) with the dependency change.
   firebase_core: 3.15.2
   firebase_messaging: 15.2.10
-  # 20+ needs Dart 3.8, 21+ needs Dart 3.10
-  flutter_local_notifications: ">=19.5.0 <20.0.0"
+  # 21+ needs Dart 3.10 — cap below until CI uses Dart 3.10+
+  flutter_local_notifications: ">=19.5.0 <21.0.0"
 
   # UI
   cached_network_image: ^3.3.0
-  # 1.x needs Dart >=3.6.2; stay on 0.70.x for Dart 3.6.0
-  fl_chart: ">=0.70.2 <1.0.0"
-  # 10.10+ requires Dart >=3.9
-  font_awesome_flutter: ">=10.9.0 <10.10.0"
+  fl_chart: ">=0.70.2 <2.0.0"
+  font_awesome_flutter: ">=10.9.0 <11.0.0"
 
   # Wide range so both Flutter SDK pins resolve (e.g. 0.19.x vs 0.20.x via flutter_localizations)
   intl: ">=0.19.0 <0.21.0"
   cupertino_icons: ^1.0.6
-  # 12.x requires Dart >=3.7
-  device_info_plus: ^11.3.0
+  device_info_plus: ^12.0.0
   package_info_plus: ^9.0.1
   uuid: ^4.5.1
 
@@ -69,8 +68,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  # 6.x requires Dart ^3.8.0
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
 
 flutter:

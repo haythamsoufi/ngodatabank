@@ -196,7 +196,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
       itemCount: filtered.length,
-      separatorBuilder: (_, __) => const Divider(height: 1),
+      separatorBuilder: (_, _) => const Divider(height: 1),
       itemBuilder: (context, i) {
         final u = filtered[i];
         return ListTile(

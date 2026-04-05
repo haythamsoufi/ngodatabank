@@ -49,7 +49,7 @@ class _AiConversationsScreenState extends State<AiConversationsScreen> {
               ? const Center(child: CircularProgressIndicator())
               : ListView.separated(
                   itemCount: ai.conversations.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  separatorBuilder: (_, _) => const Divider(height: 1),
                   itemBuilder: (context, i) {
                     final c = ai.conversations[i];
                     return ListTile(
