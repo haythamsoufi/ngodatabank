@@ -50,8 +50,7 @@ dependencies:
   # 10.10+ requires Dart >=3.9
   font_awesome_flutter: ">=10.9.0 <10.10.0"
 
-  # Utilities
-  intl: ^0.20.2
+  # intl: do not pin here — version is fixed by flutter_localizations (differs per Flutter SDK)
   cupertino_icons: ^1.0.6
   # 12.x requires Dart >=3.7
   device_info_plus: ^11.3.0
