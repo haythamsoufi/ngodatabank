@@ -3,8 +3,10 @@ description: NGO Databank Mobile Application - Generic mobile app for NGO databa
 publish_to: 'none'
 version: 1.0.0+1
 
-# CI uses Flutter 3.27 / Dart 3.6.0. Dependency caps below avoid packages that
-# require Dart 3.7+ / 3.8+ / 3.9+ / 3.10+. When CI moves to Dart 3.10+, relax:
+# CI pins Flutter 3.27.x in .github/workflows (android-build / ios-build*). That SDK
+# ships Dart 3.6.x — keep this `environment.sdk` and caps below aligned with it.
+# Dependency caps avoid packages that require Dart 3.7+ / 3.8+ / 3.9+ / 3.10+.
+# When CI upgrades Flutter (e.g. Dart 3.10+), relax:
 # font_awesome_flutter → ^11.0.0, fl_chart → ^1.2.0, flutter_local_notifications → ^21.0.0,
 # device_info_plus → ^12.0.0, flutter_lints → ^6.0.0.
 environment:
@@ -50,7 +52,8 @@ dependencies:
   # 10.10+ requires Dart >=3.9
   font_awesome_flutter: ">=10.9.0 <10.10.0"
 
-  # intl: do not pin here — version is fixed by flutter_localizations (differs per Flutter SDK)
+  # Wide range so both Flutter SDK pins resolve (e.g. 0.19.x vs 0.20.x via flutter_localizations)
+  intl: ">=0.19.0 <0.21.0"
   cupertino_icons: ^1.0.6
   # 12.x requires Dart >=3.7
   device_info_plus: ^11.3.0

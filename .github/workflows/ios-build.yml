@@ -43,7 +43,8 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.27.0'  # Flutter version with Dart 3.8.0+ for flutter_lints 6.0.0
+          # Keep in sync with MobileApp/pubspec.yaml (Dart 3.6.x). Flutter 3.27 stable ships Dart 3.6, not 3.8.
+          flutter-version: '3.27.0'
           channel: 'stable'
           cache: false  # Disabled because pubspec.lock is in MobileApp/ subdirectory
 
@@ -102,6 +103,10 @@ jobs:
       - name: Get Flutter dependencies
         working-directory: ${{ steps.flutter_path.outputs.path }}
         run: flutter pub get
+
+      - name: Analyze Dart (catch dependency/API issues before CocoaPods)
+        working-directory: ${{ steps.flutter_path.outputs.path }}
+        run: flutter analyze --no-fatal-infos
 
       - name: Install CocoaPods dependencies
         working-directory: ${{ steps.flutter_path.outputs.path }}/ios

@@ -48,10 +48,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # APK builds need JDK 17 (AGP / Kotlin); avoid relying on runner defaults
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.27.0'  # Flutter version with Dart 3.8.0+ for flutter_lints 6.0.0
+          # Keep in sync with MobileApp/pubspec.yaml (Dart 3.6.x floor). Flutter 3.27 stable ships Dart 3.6, not 3.8.
+          flutter-version: '3.27.0'
           channel: 'stable'
           cache: true
 
@@ -85,6 +93,10 @@ jobs:
       - name: Get Flutter dependencies
         working-directory: ${{ steps.flutter_path.outputs.path }}
         run: flutter pub get
+
+      - name: Analyze Dart (catch dependency/API issues before Gradle)
+        working-directory: ${{ steps.flutter_path.outputs.path }}
+        run: flutter analyze --no-fatal-infos
 
       - name: Configure alternate package name and app name
         working-directory: ${{ steps.flutter_path.outputs.path }}
