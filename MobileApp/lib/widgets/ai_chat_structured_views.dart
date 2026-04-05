@@ -2,10 +2,13 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/foundation.dart' show Factory;
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 import '../config/app_config.dart';
+import '../services/webview_service.dart';
 import '../utils/accessibility_helper.dart';
 import '../utils/theme_extensions.dart';
 
@@ -441,7 +444,7 @@ class _WorldMapWebViewState extends State<_WorldMapWebView> {
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 html,body{margin:0;padding:0;height:100%;background:$bg;}
-#map{height:220px;width:100%;}
+#map{height:280px;width:100%;touch-action:none;}
 .info{font:12px/1.35 system-ui;padding:6px 8px;color:$fg;}
 </style>
 </head><body>
@@ -465,14 +468,29 @@ function colorFor(v){
   const b = Math.round(180 - 100 * t);
   return 'rgb('+r+','+g+','+b+')';
 }
-const map = L.map('map', { scrollWheelZoom: false, zoomControl: true }).setView([20, 0], 2);
+const map = L.map('map', { scrollWheelZoom: false, zoomControl: true, worldCopyJump: true }).setView([20, 0], 2);
+window.__ngodbMap = map;
+window.__ngodbInvalidateMap = function(){
+  try { map.invalidateSize(true); } catch (e) {}
+};
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 8,
   attribution: '&copy; OpenStreetMap'
 }).addTo(map);
-fetch('https://cdn.jsdelivr.net/gh/datasets/geo-countries@master/data/countries.geojson')
-  .then(function(r){return r.json();})
-  .then(function(geo){
+function loadWorldGeoJson(){
+  var urls = [
+    'https://cdn.jsdelivr.net/gh/datasets/geo-countries@master/data/countries.geojson',
+    'https://cdn.jsdelivr.net/gh/holtzy/D3-graph-gallery@master/DATA/world.geojson'
+  ];
+  function tryFetch(i){
+    if (i >= urls.length){
+      document.getElementById('t').textContent = 'Map data unavailable (network)';
+      return;
+    }
+    fetch(urls[i]).then(function(r){
+      if (!r.ok) throw new Error('geojson');
+      return r.json();
+    }).then(function(geo){
     L.geoJSON(geo, {
       style: function(feature){
         var p = feature.properties || {};
@@ -486,27 +504,50 @@ fetch('https://cdn.jsdelivr.net/gh/datasets/geo-countries@master/data/countries.
         };
       }
     }).addTo(map);
-    setTimeout(function(){ map.invalidateSize(); }, 200);
-  })
-  .catch(function(){
-    document.getElementById('t').textContent = 'Map data unavailable offline';
-  });
+    setTimeout(function(){ window.__ngodbInvalidateMap(); }, 100);
+    setTimeout(function(){ window.__ngodbInvalidateMap(); }, 400);
+    }).catch(function(){ tryFetch(i + 1); });
+  }
+  tryFetch(0);
+}
+loadWorldGeoJson();
 </script>
 </body></html>
 ''';
   }
 
+  /// HTTPS base avoids Android mixed-content blocking when API is http:// during dev.
+  WebUri _initialBaseUrl() {
+    try {
+      final u = Uri.parse(AppConfig.baseApiUrl);
+      if (u.scheme == 'https' && u.host.isNotEmpty) {
+        return WebUri(AppConfig.baseApiUrl);
+      }
+    } catch (_) {}
+    return WebUri('https://cdn.jsdelivr.net/');
+  }
+
   @override
   Widget build(BuildContext context) {
-    final baseUri = WebUri(AppConfig.baseApiUrl);
     final cs = Theme.of(context).colorScheme;
+    final settings = WebViewService.defaultSettings(allowMixedContent: true);
     return SizedBox(
-      height: 248,
+      height: 308,
       child: InAppWebView(
+        initialSettings: settings,
+        gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+          Factory<OneSequenceGestureRecognizer>(() => VerticalDragGestureRecognizer()),
+          Factory<OneSequenceGestureRecognizer>(() => HorizontalDragGestureRecognizer()),
+        }.toSet(),
         initialData: InAppWebViewInitialData(
           data: _html(cs),
-          baseUrl: baseUri,
+          baseUrl: _initialBaseUrl(),
         ),
+        onLoadStop: (controller, url) async {
+          await controller.evaluateJavascript(
+            source: 'try{window.__ngodbInvalidateMap&&window.__ngodbInvalidateMap();}catch(e){}',
+          );
+        },
       ),
     );
   }

@@ -459,7 +459,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               AppRoutes.quizGame: (context) => const QuizGameScreen(),
               AppRoutes.leaderboard: (context) => const LeaderboardScreen(),
               AppRoutes.aiConversations: (context) => const AiConversationsScreen(),
-              AppRoutes.aiChat: (context) => const AiChatScreen(),
+              AppRoutes.aiChat: (context) => const AiChatScreenWithBottomNav(),
             },
             onGenerateRoute: (settings) {
               if (settings.name == AppRoutes.webview) {

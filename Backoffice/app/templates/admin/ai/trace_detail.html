@@ -729,8 +729,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     var handledKeys = {};
                     if (op.map_payload) {
                         handledKeys.map_payload = true;
-                        var mapRows = (op.map_payload.rows || []).length;
-                        lines.push('map_payload: present (' + mapRows + ' rows)');
+                        var mp = op.map_payload;
+                        var mapCount = (mp.countries && mp.countries.length) ? mp.countries.length
+                            : (mp.rows && mp.rows.length) ? mp.rows.length : 0;
+                        var mapLabel = (mp.countries && mp.countries.length) ? 'countries' : 'rows';
+                        lines.push('map_payload: present (' + mapCount + ' ' + mapLabel + ')');
                     }
                     if (op.chart_payload) {
                         handledKeys.chart_payload = true;

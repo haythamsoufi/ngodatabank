@@ -85,6 +85,10 @@ class _AiChatAgentProgressPanelState extends State<AiChatAgentProgressPanel> {
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
                                         color: muted,
+                                        // Override M3 default min size (36×36) so the ring stays circular in a 14×14 slot.
+                                        constraints:
+                                            const BoxConstraints.tightFor(width: 14, height: 14),
+                                        padding: EdgeInsets.zero,
                                       ),
                                     )
                                   : Icon(Icons.check, size: 14, color: doneIconColor),

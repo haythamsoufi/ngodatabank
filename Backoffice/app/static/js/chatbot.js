@@ -34,6 +34,8 @@ class NGODatabankChatbot {
         this._inflightPollRequestId = null;
         this._inflightLastRendered = null;
         this._pendingStructuredPayload = null;
+        /** Non-stream HTTP responses may include map + table; dispatch each in addMessageToDOM. */
+        this._pendingStructuredRawPieces = null;
         this._lastPreparingQueryDetail = null; // refined query for "Preparing query…" step
 
         // Debug mode - managed by centralized debug.js
@@ -2054,8 +2056,20 @@ class NGODatabankChatbot {
                 } else {
                     const _confidence = this._pendingConfidence || {};
                     this._pendingConfidence = null;
+                    let _spEntry = null;
+                    if (this._pendingStructuredRawPieces && this._pendingStructuredRawPieces.length) {
+                        for (const _p of this._pendingStructuredRawPieces) {
+                            const _c = this._coerceStructuredPayload(_p);
+                            if (_c) {
+                                _spEntry = _c;
+                                break;
+                            }
+                        }
+                    } else {
+                        _spEntry = this._consumePendingStructuredPayload();
+                    }
                     this.addMessage(response, false, {
-                        structuredPayload: this._consumePendingStructuredPayload(),
+                        structuredPayload: _spEntry,
                         confidence: _confidence.confidence || null,
                         grounding_score: _confidence.grounding_score != null ? _confidence.grounding_score : null,
                     });
@@ -2360,14 +2374,22 @@ class NGODatabankChatbot {
                 //
                 // Always consume the pending payload here so it can't leak into the next message.
                 const pendingStructured = this._consumePendingStructuredPayload();
-                const rawPayload = msg.table_payload || msg.chart_payload || msg.map_payload || pendingStructured;
-                const coerced = this._coerceStructuredPayload(rawPayload);
-                if (coerced) ctx.structuredPayload = coerced;
-                this._dispatchStructuredPayload(rawPayload, ctx.messageElement, wrapperEl);
-                // table_payload may coexist with map/chart; dispatch separately if not already handled.
-                if (msg.table_payload && rawPayload !== msg.table_payload) {
-                    this._dispatchStructuredPayload(msg.table_payload, ctx.messageElement, wrapperEl);
+                // Backend often sends map + table together (e.g. heatmap + data table). Do not use
+                // table||chart||map — that drops the map. Dispatch every coercible payload.
+                const rawPieces = [];
+                if (msg.map_payload && typeof msg.map_payload === 'object') rawPieces.push(msg.map_payload);
+                if (msg.chart_payload && typeof msg.chart_payload === 'object') rawPieces.push(msg.chart_payload);
+                if (msg.table_payload && typeof msg.table_payload === 'object') rawPieces.push(msg.table_payload);
+                if (!rawPieces.length && pendingStructured) rawPieces.push(pendingStructured);
+                let primaryCoerced = null;
+                for (const piece of rawPieces) {
+                    const c = this._coerceStructuredPayload(piece);
+                    if (c) {
+                        if (!primaryCoerced) primaryCoerced = c;
+                        this._dispatchStructuredPayload(piece, ctx.messageElement, wrapperEl);
+                    }
                 }
+                ctx.structuredPayload = primaryCoerced;
 
                 if (msg.detected_language && msg.detected_language !== this.preferredLanguage) {
                     this._setPreferredLanguage(msg.detected_language);
@@ -2407,7 +2429,8 @@ class NGODatabankChatbot {
                 break;
 
             case 'structured':
-                this._setPendingStructuredPayload(msg.table_payload || msg.chart_payload || msg.map_payload || null);
+                // `done` carries the same payloads; avoid storing only table (table||… hid map+chart).
+                this._setPendingStructuredPayload(null);
                 this._log('Stream structured payload received');
                 break;
 
@@ -3043,15 +3066,16 @@ class NGODatabankChatbot {
             }
             this._scheduleConversationTitleRefresh(data.conversation_id || this.getActiveConversationId());
 
-            this._setPendingStructuredPayload(
-                data.table_payload
-                || (data.meta && data.meta.table_payload)
-                || data.chart_payload
-                || (data.meta && data.meta.chart_payload)
-                || data.map_payload
-                || (data.meta && data.meta.map_payload)
-                || null
-            );
+            const _meta = data.meta && typeof data.meta === 'object' ? data.meta : {};
+            const _httpPieces = [];
+            const _mp = data.map_payload || _meta.map_payload;
+            const _cp = data.chart_payload || _meta.chart_payload;
+            const _tp = data.table_payload || _meta.table_payload;
+            if (_mp && typeof _mp === 'object') _httpPieces.push(_mp);
+            if (_cp && typeof _cp === 'object') _httpPieces.push(_cp);
+            if (_tp && typeof _tp === 'object') _httpPieces.push(_tp);
+            this._pendingStructuredRawPieces = _httpPieces.length ? _httpPieces : null;
+            this._setPendingStructuredPayload(null);
 
             // Store confidence / grounding metadata for the next addMessage call
             if (data.meta && (data.meta.confidence || data.meta.grounding_score != null)) {
@@ -4705,17 +4729,34 @@ class NGODatabankChatbot {
 
         this.elements.messages.appendChild(wrapper);
         if (!isUser && !isError) {
-            const structuredPayload = opts.structuredPayload || this._consumePendingStructuredPayload();
-            this._tableDebugLog('addMessageToDOM', {
-                messageIndex,
-                hasStructuredPayload: !!structuredPayload,
-                payloadType: structuredPayload && (structuredPayload.type || (structuredPayload.table_payload && 'table_payload') || 'unknown'),
-                fromOpts: !!opts.structuredPayload,
-                wrapperInDOM: !!(wrapper && wrapper.parentElement),
-                messageDivInDOM: !!(messageDiv && messageDiv.parentElement),
-                totalWrappers: this.elements.messages ? this.elements.messages.querySelectorAll('.chat-message-wrapper').length : 0
-            });
-            this._dispatchStructuredPayload(structuredPayload, messageDiv, wrapper);
+            const pieces = this._pendingStructuredRawPieces;
+            if (pieces && pieces.length) {
+                this._pendingStructuredRawPieces = null;
+                this._tableDebugLog('addMessageToDOM', {
+                    messageIndex,
+                    hasStructuredPayload: true,
+                    payloadType: 'multi',
+                    fromOpts: !!opts.structuredPayload,
+                    wrapperInDOM: !!(wrapper && wrapper.parentElement),
+                    messageDivInDOM: !!(messageDiv && messageDiv.parentElement),
+                    totalWrappers: this.elements.messages ? this.elements.messages.querySelectorAll('.chat-message-wrapper').length : 0
+                });
+                for (const p of pieces) {
+                    this._dispatchStructuredPayload(p, messageDiv, wrapper);
+                }
+            } else {
+                const structuredPayload = opts.structuredPayload || this._consumePendingStructuredPayload();
+                this._tableDebugLog('addMessageToDOM', {
+                    messageIndex,
+                    hasStructuredPayload: !!structuredPayload,
+                    payloadType: structuredPayload && (structuredPayload.type || (structuredPayload.table_payload && 'table_payload') || 'unknown'),
+                    fromOpts: !!opts.structuredPayload,
+                    wrapperInDOM: !!(wrapper && wrapper.parentElement),
+                    messageDivInDOM: !!(messageDiv && messageDiv.parentElement),
+                    totalWrappers: this.elements.messages ? this.elements.messages.querySelectorAll('.chat-message-wrapper').length : 0
+                });
+                this._dispatchStructuredPayload(structuredPayload, messageDiv, wrapper);
+            }
         }
         this.scrollToBottom();
     }

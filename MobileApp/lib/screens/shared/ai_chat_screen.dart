@@ -17,6 +17,7 @@ import '../../config/routes.dart';
 import '../../utils/theme_extensions.dart';
 import '../../utils/accessibility_helper.dart';
 import '../../widgets/modern_navigation_drawer.dart';
+import '../../widgets/bottom_navigation_bar.dart';
 import '../../widgets/ios_button.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -655,6 +656,14 @@ class _AiChatScreenState extends State<AiChatScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: _chatSurface(theme),
+      onDrawerChanged: (isOpened) {
+        if (isOpened != true) return;
+        // Keep keyboard hidden until the user taps the drawer search field.
+        _inputFocusNode.unfocus();
+        _searchFocusNode.unfocus();
+        FocusManager.instance.primaryFocus?.unfocus();
+        SystemChannels.textInput.invokeMethod('TextInput.hide');
+      },
       appBar: AppBar(
         backgroundColor: _chatSurface(theme),
         surfaceTintColor: Colors.transparent,
@@ -667,7 +676,11 @@ class _AiChatScreenState extends State<AiChatScreen> {
             return IOSIconButton(
               icon: Icons.menu,
               color: _chatBody(theme),
-              onPressed: () => Scaffold.of(scaffoldContext).openDrawer(),
+              onPressed: () {
+                FocusScope.of(scaffoldContext).unfocus();
+                _inputFocusNode.unfocus();
+                Scaffold.of(scaffoldContext).openDrawer();
+              },
               tooltip: localizations.navigation,
               semanticLabel: localizations.navigation,
               semanticHint: 'Opens conversations and settings',
@@ -1043,8 +1056,10 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                                     },
                                                   ),
                                       ),
+                                      // Show structured payloads (maps/charts) even while the assistant row
+                                      // is still in "typing/steps" state if the server sent them early.
                                       if (!isUser &&
-                                          !isLastAssistant &&
+                                          (!isLastAssistant || m.structuredPayloads.isNotEmpty) &&
                                           ((m.confidence != null) ||
                                               (m.groundingScore != null) ||
                                               m.structuredPayloads.isNotEmpty))
@@ -1469,15 +1484,6 @@ class _AiChatScreenState extends State<AiChatScreen> {
     }
   }
 
-  /// Close the conversations drawer, then leave the AI chat route (same stack as [pushNamed] entry).
-  void _exitChatToApp() {
-    final nav = Navigator.of(context);
-    nav.pop();
-    if (mounted && nav.canPop()) {
-      nav.pop();
-    }
-  }
-
   Widget _drawerConversationSectionHeader(ThemeData theme, String label, {required bool isFirst}) {
     return Padding(
       padding: EdgeInsets.fromLTRB(4, isFirst ? 0 : 14, 4, 6),
@@ -1525,16 +1531,8 @@ class _AiChatScreenState extends State<AiChatScreen> {
         child: Column(
           children: [
             // Title
-            Container(
+            Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: _chatOutline(theme),
-                    width: 1,
-                  ),
-                ),
-              ),
               child: Row(
                 children: [
                   Text(
@@ -1550,16 +1548,8 @@ class _AiChatScreenState extends State<AiChatScreen> {
             ),
           // Search bar — pill style aligned with main chat composer
           if (ai.conversations.isNotEmpty)
-            Container(
+            Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: _chatOutline(theme),
-                    width: 1,
-                  ),
-                ),
-              ),
               child: Container(
                 padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
                 decoration: BoxDecoration(
@@ -1576,6 +1566,10 @@ class _AiChatScreenState extends State<AiChatScreen> {
                   autofocus: false,
                   enableInteractiveSelection: true,
                   textAlignVertical: TextAlignVertical.center,
+                  onTapOutside: (_) {
+                    _searchFocusNode.unfocus();
+                    SystemChannels.textInput.invokeMethod('TextInput.hide');
+                  },
                   onTap: () {
                     _searchFocusNode.requestFocus();
                   },
@@ -1837,34 +1831,6 @@ class _AiChatScreenState extends State<AiChatScreen> {
                             'Help & About',
                             style: TextStyle(
                               fontSize: 15,
-                              color: _chatBody(theme),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: _exitChatToApp,
-                    borderRadius: BorderRadius.circular(8),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.arrow_back_rounded,
-                            size: 20,
-                            color: _chatBody(theme),
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            'Back to app',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
                               color: _chatBody(theme),
                             ),
                           ),
@@ -2378,6 +2344,31 @@ class _AiChatScreenState extends State<AiChatScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Pushes [AiChatScreen] with the same bottom bar as [MainNavigationScreen]; tab taps use [NavigationHelper].
+class AiChatScreenWithBottomNav extends StatelessWidget {
+  const AiChatScreenWithBottomNav({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final args = ModalRoute.of(context)?.settings.arguments;
+    final navTabIndex = args is int ? args : 2;
+
+    return Consumer<AuthProvider>(
+      builder: (context, auth, _) {
+        final isFocalPoint = auth.user?.role == 'focal_point';
+        return Scaffold(
+          resizeToAvoidBottomInset: false,
+          body: const AiChatScreen(),
+          bottomNavigationBar: AppBottomNavigationBar(
+            currentIndex: navTabIndex,
+            isFocalPoint: isFocalPoint,
+          ),
+        );
+      },
     );
   }
 }
