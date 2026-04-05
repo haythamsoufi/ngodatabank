@@ -50,10 +50,10 @@ class AppTheme {
     final textPrimary =
         isDark ? Colors.white : const Color(AppConstants.textColor);
     final bodySmallColor = isDark
-        ? Colors.white.withOpacity(0.7)
+        ? Colors.white.withValues(alpha: 0.7)
         : const Color(AppConstants.textSecondary);
     final bodyMediumColor =
-        isDark ? Colors.white.withOpacity(0.9) : textPrimary;
+        isDark ? Colors.white.withValues(alpha: 0.9) : textPrimary;
 
     final inputRadius = BorderRadius.circular(AppConstants.radiusMedium);
 
@@ -92,7 +92,7 @@ class AppTheme {
           letterSpacing: -0.5,
         ),
         iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black),
-        shadowColor: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
+        shadowColor: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
         scrolledUnderElevation: 1,
       ),
       textTheme: TextTheme(
@@ -205,7 +205,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: isDark
-              ? Colors.white.withOpacity(0.9)
+              ? Colors.white.withValues(alpha: 0.9)
               : primary,
           padding: const EdgeInsets.symmetric(
             horizontal: AppConstants.paddingLarge,
@@ -215,13 +215,13 @@ class AppTheme {
             borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
           ),
           side: BorderSide(
-            color: isDark ? Colors.white.withOpacity(0.5) : primary,
+            color: isDark ? Colors.white.withValues(alpha: 0.5) : primary,
             width: 1.5,
           ),
           textStyle: getTextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: isDark ? Colors.white.withOpacity(0.9) : primary,
+            color: isDark ? Colors.white.withValues(alpha: 0.9) : primary,
             letterSpacing: 0.2,
           ),
         ),
@@ -235,7 +235,7 @@ class AppTheme {
           borderRadius: inputRadius,
           borderSide: BorderSide(
             color: isDark
-                ? Colors.white.withOpacity(0.12)
+                ? Colors.white.withValues(alpha: 0.12)
                 : const Color(AppConstants.themeInputBorderLight),
             width: 1,
           ),
@@ -244,7 +244,7 @@ class AppTheme {
           borderRadius: inputRadius,
           borderSide: BorderSide(
             color: isDark
-                ? Colors.white.withOpacity(0.12)
+                ? Colors.white.withValues(alpha: 0.12)
                 : const Color(AppConstants.themeInputBorderLight),
             width: 1,
           ),
@@ -253,7 +253,7 @@ class AppTheme {
           borderRadius: inputRadius,
           borderSide: BorderSide(
             color: isDark
-                ? Colors.white.withOpacity(0.7)
+                ? Colors.white.withValues(alpha: 0.7)
                 : const Color(AppConstants.themeInputBorderFocusedLight),
             width: isDark ? 1.5 : 2,
           ),
@@ -280,15 +280,15 @@ class AppTheme {
           fontSize: 12,
           fontWeight: FontWeight.normal,
           color: isDark
-              ? Colors.white.withOpacity(0.7)
+              ? Colors.white.withValues(alpha: 0.7)
               : const Color(AppConstants.themeInputLabelLight),
         ),
       ),
       cardTheme: CardThemeData(
         elevation: isDark ? 0 : 1,
         shadowColor: isDark
-            ? Colors.black.withOpacity(0.35)
-            : Colors.black.withOpacity(0.06),
+            ? Colors.black.withValues(alpha: 0.35)
+            : Colors.black.withValues(alpha: 0.06),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
         ),
@@ -300,7 +300,7 @@ class AppTheme {
       ),
       dividerTheme: DividerThemeData(
         color: isDark
-            ? Colors.white.withOpacity(0.15)
+            ? Colors.white.withValues(alpha: 0.15)
             : const Color(AppConstants.borderColor),
         thickness: 1,
         space: 1,
@@ -309,7 +309,7 @@ class AppTheme {
         backgroundColor: isDark
             ? const Color(AppConstants.themeElevatedSurfaceDark)
             : colorScheme.surfaceContainerLow,
-        selectedColor: primary.withOpacity(isDark ? 0.3 : 0.1),
+        selectedColor: primary.withValues(alpha: isDark ? 0.3 : 0.1),
         labelStyle: getTextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w500,
@@ -358,8 +358,8 @@ class AppTheme {
       bottomSheetTheme: BottomSheetThemeData(
         showDragHandle: true,
         dragHandleColor: isDark
-            ? Colors.white.withOpacity(0.35)
-            : Colors.black.withOpacity(0.25),
+            ? Colors.white.withValues(alpha: 0.35)
+            : Colors.black.withValues(alpha: 0.25),
         backgroundColor: isDark
             ? const Color(AppConstants.themeSurfaceDark)
             : Colors.white,

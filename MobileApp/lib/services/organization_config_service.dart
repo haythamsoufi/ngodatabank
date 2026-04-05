@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
 import '../utils/debug_logger.dart';
 
 /// Organization configuration model

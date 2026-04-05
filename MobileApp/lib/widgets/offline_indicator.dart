@@ -170,7 +170,7 @@ class OfflineBanner extends StatelessWidget {
                       Text(
                         '${offlineProvider.queuedRequestsCount} request(s) will be synced when online',
                         style: TextStyle(
-                          color: scheme.onError.withOpacity(0.92),
+                          color: scheme.onError.withValues(alpha: 0.92),
                           fontSize: 12,
                         ),
                       ),

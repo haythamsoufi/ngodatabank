@@ -54,7 +54,7 @@ class _OrganizationalStructureScreenState
       appBar: AppAppBar(
         title: localizations.organizationalStructure,
       ),
-      body: Container(
+      body: ColoredBox(
         color: theme.scaffoldBackgroundColor,
         child: Column(
           children: [
@@ -98,7 +98,7 @@ class _OrganizationalStructureScreenState
                   const SizedBox(height: 12),
                   // Entity Type Filter
                   DropdownButtonFormField<String>(
-                    value: _selectedLevelFilter,
+                    initialValue: _selectedLevelFilter,
                     decoration: InputDecoration(
                       labelText: localizations.entityType,
                       border: OutlineInputBorder(
@@ -179,7 +179,7 @@ class _OrganizationalStructureScreenState
                               color: Theme.of(context)
                                   .colorScheme
                                   .onSurface
-                                  .withOpacity(0.6),
+                                  .withValues(alpha: 0.6),
                               fontSize: 14,
                             ),
                           ),
@@ -208,7 +208,7 @@ class _OrganizationalStructureScreenState
                                 color: Theme.of(context)
                                     .colorScheme
                                     .onSurface
-                                    .withOpacity(0.6),
+                                    .withValues(alpha: 0.6),
                                 fontSize: 14,
                               ),
                               textAlign: TextAlign.center,
@@ -246,7 +246,7 @@ class _OrganizationalStructureScreenState
                             color: Theme.of(context)
                                 .colorScheme
                                 .onSurface
-                                .withOpacity(0.5),
+                                .withValues(alpha: 0.5),
                           ),
                           const SizedBox(height: 16),
                           Text(
@@ -302,7 +302,7 @@ class _OrganizationalStructureScreenState
                                     ),
                                     if (org['id'] != null)
                                       IconButton(
-                                        icon: Icon(Icons.edit, size: 18),
+                                        icon: const Icon(Icons.edit, size: 18),
                                         color: Theme.of(context)
                                             .colorScheme
                                             .primary,

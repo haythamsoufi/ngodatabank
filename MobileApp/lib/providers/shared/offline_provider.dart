@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'dart:async';
 import '../../services/connectivity_service.dart';
 import '../../services/offline_queue_service.dart';
-import '../../services/offline_cache_service.dart';
 import '../../services/api_service.dart';
 import '../../services/storage_service.dart';
 import '../../utils/debug_logger.dart';
@@ -13,7 +12,6 @@ import '../../services/user_scope_service.dart';
 class OfflineProvider with ChangeNotifier {
   final ConnectivityService _connectivity = ConnectivityService();
   final OfflineQueueService _queueService = OfflineQueueService();
-  final OfflineCacheService _cacheService = OfflineCacheService();
   final ApiService _apiService = ApiService();
   final StorageService _storage = StorageService();
   final UserScopeService _scopeService = UserScopeService();

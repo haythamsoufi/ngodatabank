@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:provider/provider.dart';
 import '../../models/shared/notification.dart';
 import '../../models/shared/notification_preferences.dart';
 import '../../services/notification_service.dart';
@@ -96,7 +95,7 @@ class NotificationProvider with ChangeNotifier {
       _error = null;
       final success = await _notificationService.markAsRead(notificationIds);
       if (success) {
-        for (var id in notificationIds) {
+        for (final id in notificationIds) {
           final index = _notifications.indexWhere((n) => n.id == id);
           if (index != -1) {
             _notifications[index] = Notification(
@@ -119,7 +118,7 @@ class NotificationProvider with ChangeNotifier {
         notifyListeners();
       }
       return success;
-    } on AuthenticationException catch (e) {
+    } on AuthenticationException {
       _error = 'Session expired. Please log in again.';
       notifyListeners();
       return false;
@@ -135,7 +134,7 @@ class NotificationProvider with ChangeNotifier {
       _error = null;
       final success = await _notificationService.markAsUnread(notificationIds);
       if (success) {
-        for (var id in notificationIds) {
+        for (final id in notificationIds) {
           final index = _notifications.indexWhere((n) => n.id == id);
           if (index != -1) {
             _notifications[index] = Notification(
@@ -158,7 +157,7 @@ class NotificationProvider with ChangeNotifier {
         notifyListeners();
       }
       return success;
-    } on AuthenticationException catch (e) {
+    } on AuthenticationException {
       _error = 'Session expired. Please log in again.';
       notifyListeners();
       return false;
@@ -181,9 +180,7 @@ class NotificationProvider with ChangeNotifier {
 
     try {
       _preferences = await _notificationService.getPreferences();
-      if (_preferences == null) {
-        // Create default preferences if none exist
-        _preferences = NotificationPreferences(
+      _preferences ??= NotificationPreferences(
           emailNotifications: true,
           notificationTypesEnabled: [],
           notificationFrequency: 'instant',
@@ -193,7 +190,6 @@ class NotificationProvider with ChangeNotifier {
           pushNotifications: true,
           pushNotificationTypesEnabled: [],
         );
-      }
     } catch (e) {
       _preferencesError = e.toString();
     } finally {

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart' as cupertino;
-import '../utils/constants.dart';
 
 class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -49,7 +47,7 @@ class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
           child: Container(
-            color: theme.dividerColor.withOpacity(0.5),
+            color: theme.dividerColor.withValues(alpha: 0.5),
             height: 0.5,
           ),
         ),
@@ -76,7 +74,7 @@ class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(0.5),
         child: Container(
-          color: theme.dividerColor.withOpacity(0.5),
+          color: theme.dividerColor.withValues(alpha: 0.5),
           height: 0.5,
         ),
       ),

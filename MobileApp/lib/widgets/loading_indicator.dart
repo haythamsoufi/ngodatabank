@@ -45,7 +45,7 @@ class AppLoadingIndicator extends StatelessWidget {
             Text(
               message!,
               style: TextStyle(
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 fontSize: 15,
                 fontWeight: FontWeight.w400,
                 letterSpacing: -0.2,
@@ -100,7 +100,7 @@ class AppFullScreenLoading extends StatelessWidget {
               Text(
                 message!,
                 style: TextStyle(
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   fontSize: 15,
                   fontWeight: FontWeight.w400,
                   letterSpacing: -0.2,

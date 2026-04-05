@@ -50,7 +50,7 @@ class AppErrorState extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(IOSSpacing.xl),
               decoration: BoxDecoration(
-                color: errorIconColor.withOpacity(isDark ? 0.15 : 0.1),
+                color: errorIconColor.withValues(alpha: isDark ? 0.15 : 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -73,7 +73,7 @@ class AppErrorState extends StatelessWidget {
               Text(
                 errorMessage,
                 style: IOSTextStyle.subheadline(context).copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   height: 1.4,
                 ),
                 textAlign: TextAlign.center,

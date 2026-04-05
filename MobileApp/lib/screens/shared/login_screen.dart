@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../providers/shared/auth_provider.dart';
 import '../../services/error_handler.dart';
 import '../../services/auth_error_handler.dart';
@@ -370,12 +369,12 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: context.isDarkTheme
-                ? Colors.blue.shade900.withOpacity(0.45)
+                ? Colors.blue.shade900.withValues(alpha: 0.45)
                 : Colors.blue.shade50,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: context.isDarkTheme
-                  ? Colors.blue.shade600.withOpacity(0.85)
+                  ? Colors.blue.shade600.withValues(alpha: 0.85)
                   : Colors.blue.shade200,
               width: 1.5,
             ),
@@ -665,10 +664,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 child: Text(
                   localizations.forgotPassword,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
-                    color: const Color(AppConstants.themeFilledButtonBlue),
+                    color: Color(AppConstants.themeFilledButtonBlue),
                   ),
                 ),
               ),

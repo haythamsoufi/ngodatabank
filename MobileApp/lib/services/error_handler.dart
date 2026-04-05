@@ -480,7 +480,7 @@ class ErrorHandler {
   }
 
   /// Send error to Sentry if configured
-  void _sendToSentry(AppError error) async {
+  Future<void> _sendToSentry(AppError error) async {
     // Only send to Sentry if DSN is configured
     if (AppConfig.sentryDsn.isEmpty) {
       return;
@@ -504,20 +504,23 @@ class ErrorHandler {
         } else if (error is ServerError) {
           scope.setTag('status_code', error.statusCode?.toString() ?? 'unknown');
           if (error.serverMessage != null) {
-            scope.setExtra('server_message', error.serverMessage);
+            scope.setContexts('server_error', {
+              'server_message': error.serverMessage!,
+            });
           }
         } else if (error is ValidationError) {
           if (error.fieldErrors != null) {
-            scope.setExtra('field_errors', error.fieldErrors);
+            scope.setContexts('validation_error', {
+              'field_errors': error.fieldErrors!,
+            });
           }
         }
 
-        // Set extra context
-        scope.setExtra('user_message', error.getUserMessage());
-        scope.setExtra('actionable_steps', error.getActionableSteps().join(', '));
-        if (error.context != null) {
-          scope.setExtra('context', error.context!);
-        }
+        scope.setContexts('app_error', {
+          'user_message': error.getUserMessage(),
+          'actionable_steps': error.getActionableSteps().join(', '),
+          if (error.context != null) 'context': error.context!,
+        });
       });
 
       // Use captureException - simpler API

@@ -59,7 +59,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
       return Scaffold(
         appBar: AppAppBar(title: localizations.manageUsers),
         body: Center(child: Text(localizations.accessDenied)),
-        bottomNavigationBar: AppBottomNavigationBar(currentIndex: -1),
+        bottomNavigationBar: const AppBottomNavigationBar(currentIndex: -1),
       );
     }
 
@@ -128,7 +128,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: AppBottomNavigationBar(currentIndex: -1),
+      bottomNavigationBar: const AppBottomNavigationBar(currentIndex: -1),
     );
   }
 
@@ -244,7 +244,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
               Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.outline),
               const SizedBox(width: 4),
               u.active
-                  ? Icon(Icons.check_circle_outline, color: IOSColors.systemGreen, size: 22)
+                  ? const Icon(Icons.check_circle_outline, color: IOSColors.systemGreen, size: 22)
                   : Icon(Icons.cancel_outlined, color: Theme.of(context).colorScheme.outline, size: 22),
             ],
           ),

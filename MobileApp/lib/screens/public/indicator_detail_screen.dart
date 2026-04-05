@@ -6,7 +6,6 @@ import '../../models/indicator_bank/indicator.dart';
 import '../../models/indicator_bank/sector.dart';
 import '../../utils/constants.dart';
 import '../../utils/theme_extensions.dart';
-import '../../config/routes.dart';
 import '../../services/api_service.dart';
 import '../../widgets/bottom_navigation_bar.dart';
 import '../../widgets/app_bar.dart';
@@ -412,10 +411,8 @@ class _IndicatorDetailScreenState extends State<IndicatorDetailScreen> {
             foundSubSector = sector.subsectors.firstWhere(
               (s) => s.name == primarySubSectorName,
             );
-            if (foundSubSector != null) {
-              break;
-            }
-          } catch (e) {
+            break;
+                    } catch (e) {
             // Continue searching in next sector
           }
         }
@@ -436,10 +433,8 @@ class _IndicatorDetailScreenState extends State<IndicatorDetailScreen> {
           foundSubSector = sector.subsectors.firstWhere(
             (s) => s.name == subSectorName,
           );
-          if (foundSubSector != null) {
-            break;
-          }
-        } catch (e) {
+          break;
+                } catch (e) {
           // Continue searching in next sector
         }
       }
@@ -505,7 +500,7 @@ class _IndicatorDetailScreenState extends State<IndicatorDetailScreen> {
           appBar: AppAppBar(
             title: localizations.indicatorDetailTitle,
           ),
-          body: Container(
+          body: ColoredBox(
             color: theme.scaffoldBackgroundColor,
             child: _isLoading
                 ? Center(

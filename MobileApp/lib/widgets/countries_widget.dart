@@ -6,7 +6,6 @@ import '../utils/constants.dart';
 import '../utils/theme_extensions.dart';
 import '../utils/url_helper.dart';
 import '../config/routes.dart';
-import '../config/app_config.dart';
 import 'dart:convert';
 
 class CountriesWidget extends StatefulWidget {
@@ -148,7 +147,7 @@ class _CountriesWidgetState extends State<CountriesWidget> {
             Text(
               'Loading countries...',
               style: TextStyle(
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 fontSize: 14,
               ),
             ),
@@ -359,9 +358,9 @@ class _CountriesWidgetState extends State<CountriesWidget> {
                                       fontSize: 12,
                                       color: isSelected
                                           ? theme.colorScheme.onSecondary
-                                              .withOpacity(0.9)
+                                              .withValues(alpha: 0.9)
                                           : theme.colorScheme.onSurface
-                                              .withOpacity(0.6),
+                                              .withValues(alpha: 0.6),
                                     ),
                                   ),
                                 ],
@@ -427,7 +426,7 @@ class _CountriesWidgetState extends State<CountriesWidget> {
                     );
                   },
                   child: Text(
-                    'See ${_selectedRegion} Region Overview',
+                    'See $_selectedRegion Region Overview',
                     style: TextStyle(
                       color: Color(AppConstants.ifrcRed),
                       fontSize: 14,
@@ -484,7 +483,7 @@ class _CountriesWidgetState extends State<CountriesWidget> {
                         : 'No countries available',
                     style: TextStyle(
                       color: theme.colorScheme.onSurface
-                          .withOpacity(0.6),
+                          .withValues(alpha: 0.6),
                       fontSize: 14,
                     ),
                   ),
@@ -518,7 +517,7 @@ class _CountriesWidgetState extends State<CountriesWidget> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(4),
                         border: Border.all(
-                          color: context.dividerColor.withOpacity(0.3),
+                          color: context.dividerColor.withValues(alpha: 0.3),
                           width: 0.5,
                         ),
                       ),

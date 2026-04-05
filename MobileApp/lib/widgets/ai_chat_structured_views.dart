@@ -10,8 +10,10 @@ import '../utils/accessibility_helper.dart';
 import '../utils/theme_extensions.dart';
 
 String _cssHex(Color color) {
-  final int rgb =
-      (color.red << 16) | (color.green << 8) | color.blue;
+  final r = (color.r * 255.0).round().clamp(0, 255);
+  final g = (color.g * 255.0).round().clamp(0, 255);
+  final b = (color.b * 255.0).round().clamp(0, 255);
+  final int rgb = (r << 16) | (g << 8) | b;
   return '#${rgb.toRadixString(16).padLeft(6, '0')}';
 }
 
@@ -239,12 +241,12 @@ class _LineChartView extends StatelessWidget {
           maxX: maxX,
           minY: minY - padY,
           maxY: maxY + padY,
-          gridData: FlGridData(show: true, drawVerticalLine: false, horizontalInterval: null),
-          titlesData: FlTitlesData(
+          gridData: const FlGridData(show: true, drawVerticalLine: false, horizontalInterval: null),
+          titlesData: const FlTitlesData(
             leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 36)),
             bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 28)),
-            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
           ),
           borderData: FlBorderData(show: true),
           lineBarsData: [
@@ -292,7 +294,7 @@ class _BarChartView extends StatelessWidget {
           alignment: BarChartAlignment.spaceAround,
           maxY: maxY <= 0 ? 1 : maxY * 1.15,
           titlesData: FlTitlesData(
-            leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 36)),
+            leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 36)),
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,

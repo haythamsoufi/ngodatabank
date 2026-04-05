@@ -85,7 +85,7 @@ class _AssignmentsScreenState extends State<AssignmentsScreen> {
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppAppBar(
         title: localizations.manageAssignments,
-        actions: [
+        actions: const [
         ],
       ),
       body: Consumer<AssignmentsProvider>(

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import '../utils/debug_logger.dart';
@@ -13,7 +12,6 @@ class PerformanceService {
 
   // Startup timing
   DateTime? _appStartTime;
-  DateTime? _mainStartTime;
   DateTime? _firstFrameTime;
 
   // Initialization timings
@@ -30,7 +28,6 @@ class PerformanceService {
   Future<void> initialize() async {
     if (_initialized) return;
 
-    _mainStartTime = DateTime.now();
     _appStartTime = DateTime.now();
 
     DebugLogger.logInfo('PERF', 'Performance monitoring initialized');
@@ -45,7 +42,6 @@ class PerformanceService {
 
   /// Record main initialization start
   void recordMainStart() {
-    _mainStartTime = DateTime.now();
     _logEvent('main_start', 'Main function started');
   }
 
@@ -218,7 +214,6 @@ class PerformanceService {
     _operationDurations.clear();
     _events.clear();
     _appStartTime = null;
-    _mainStartTime = null;
     _firstFrameTime = null;
   }
 }

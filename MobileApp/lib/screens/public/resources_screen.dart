@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:provider/provider.dart';
 import '../../services/session_service.dart';
 import '../../providers/shared/auth_provider.dart';
 import '../../providers/shared/language_provider.dart';
-import '../../config/app_config.dart';
 import '../../utils/constants.dart';
 import '../../utils/theme_extensions.dart';
 import '../../utils/url_helper.dart';
@@ -15,8 +13,6 @@ import '../../widgets/bottom_navigation_bar.dart';
 import '../../widgets/countries_widget.dart';
 import '../../widgets/app_bar.dart';
 import '../../config/routes.dart';
-import '../../providers/shared/auth_provider.dart';
-import '../../utils/url_helper.dart';
 import '../../widgets/webview_pull_to_refresh.dart';
 
 class ResourcesScreen extends StatefulWidget {
@@ -122,7 +118,7 @@ class _ResourcesScreenState extends State<ResourcesScreen>
         return Scaffold(
           backgroundColor: theme.scaffoldBackgroundColor,
           appBar: AppAppBar(
-            title: localizations.resources ?? 'Resources',
+            title: localizations.resources,
           ),
           floatingActionButton: isStandalone
               ? FloatingActionButton(
@@ -130,13 +126,13 @@ class _ResourcesScreenState extends State<ResourcesScreen>
                   onPressed: () => _showNavigationMenu(context, languageProvider, theme, localizations, language),
                   backgroundColor: Color(AppConstants.ifrcRed),
                   foregroundColor: theme.colorScheme.onPrimary,
-                  child: const Icon(Icons.menu),
                   tooltip: 'Navigation Menu',
+                  child: const Icon(Icons.menu),
                 )
               : null,
           body: Stack(
             children: [
-              Container(
+              ColoredBox(
             color: theme.scaffoldBackgroundColor,
             child: SafeArea(
               top: true,
@@ -174,23 +170,7 @@ class _ResourcesScreenState extends State<ResourcesScreen>
                               );
                             },
                             onConsoleMessage: (controller, consoleMessage) {
-                              // Suppress console messages from WebView pages, especially syntax errors
-                              // Filter out common remote website errors that don't affect app functionality
-                              final message = consoleMessage.message.toLowerCase();
-                              final shouldIgnore = message.contains('uncaught syntaxerror') ||
-                                  message.contains('unexpected identifier') ||
-                                  message.contains('uncaught typeerror') ||
-                                  message.contains('cannot read properties of null') ||
-                                  message.contains('cannot read property') ||
-                                  message.contains('scrolltop') ||
-                                  message.contains('scroll') ||
-                                  message.contains('self');
-
-                              // Suppress all console messages - these are from the remote website
-                              // Only log in debug mode if you need to debug WebView issues
-                              // if (!shouldIgnore && kDebugMode) {
-                              //   print('[RESOURCES WEBVIEW] ${consoleMessage.messageLevel}: ${consoleMessage.message}');
-                              // }
+                              // Remote site console noise suppressed intentionally.
                             },
                             shouldOverrideUrlLoading:
                                 (controller, navigationAction) async {
@@ -200,7 +180,7 @@ class _ResourcesScreenState extends State<ResourcesScreen>
                                 if (mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text(
+                                      content: const Text(
                                           'Navigation to this URL is not allowed'),
                                       backgroundColor: Theme.of(context)
                                           .colorScheme
@@ -370,7 +350,7 @@ class _ResourcesScreenState extends State<ResourcesScreen>
                                   padding: const EdgeInsets.all(20),
                                   decoration: BoxDecoration(
                                     color: const Color(AppConstants.errorColor)
-                                        .withOpacity(0.1),
+                                        .withValues(alpha: 0.1),
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(
@@ -393,7 +373,7 @@ class _ResourcesScreenState extends State<ResourcesScreen>
                                   _error!,
                                   style: TextStyle(
                                     color: theme.colorScheme.onSurface
-                                        .withOpacity(0.6),
+                                        .withValues(alpha: 0.6),
                                     fontSize: 14,
                                   ),
                                   textAlign: TextAlign.center,
@@ -454,11 +434,7 @@ class _ResourcesScreenState extends State<ResourcesScreen>
   void _showNavigationMenu(BuildContext context, LanguageProvider languageProvider, ThemeData theme, AppLocalizations localizations, String language) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final user = authProvider.user;
-    final isAdmin = user != null && (user.role == 'admin' || user.role == 'system_manager');
-    final isAuthenticated = authProvider.isAuthenticated;
     final isFocalPoint = user != null && user.role == 'focal_point';
-
-    final homeTabIndex = 2;
 
     showModalBottomSheet(
       context: context,
@@ -506,7 +482,7 @@ class _ResourcesScreenState extends State<ResourcesScreen>
                         context: context,
                         theme: theme,
                         icon: Icons.home,
-                        title: localizations.home ?? 'Global Overview',
+                        title: localizations.home,
                         onTap: () {
                           Navigator.pop(bottomSheetContext);
                           Navigator.of(context).popUntil((route) {
@@ -531,7 +507,7 @@ class _ResourcesScreenState extends State<ResourcesScreen>
                           context: context,
                           theme: theme,
                           icon: Icons.notifications,
-                          title: localizations.notifications ?? 'Notifications',
+                          title: localizations.notifications,
                           onTap: () {
                             Navigator.pop(bottomSheetContext);
                             Navigator.of(context).pop();
@@ -543,7 +519,7 @@ class _ResourcesScreenState extends State<ResourcesScreen>
                           context: context,
                           theme: theme,
                           icon: Icons.folder,
-                          title: localizations.resources ?? 'Resources',
+                          title: localizations.resources,
                           onTap: () {
                             Navigator.pop(bottomSheetContext);
                             // Already on Resources screen
@@ -566,7 +542,7 @@ class _ResourcesScreenState extends State<ResourcesScreen>
                           'Analysis',
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.onSurface.withOpacity(0.7),
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                           ),
                         ),
                       ),
@@ -657,8 +633,8 @@ class _ResourcesScreenState extends State<ResourcesScreen>
                   ),
                 ),
                 const Divider(height: 1),
-                Expanded(
-                  child: const CountriesWidget(),
+                const Expanded(
+                  child: CountriesWidget(),
                 ),
               ],
             ),
@@ -692,7 +668,7 @@ class _ResourcesScreenState extends State<ResourcesScreen>
       ),
       trailing: Icon(
         Icons.chevron_right,
-        color: theme.colorScheme.onSurface.withOpacity(0.3),
+        color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
         size: 20,
       ),
       onTap: onTap,

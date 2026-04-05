@@ -569,7 +569,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
 
   bool _isAllowedInternalRoute(String route) {
     // Basic hardening: avoid path traversal-ish inputs.
-    if (route.contains('..') || route.contains('\\')) return false;
+    if (route.contains('..') || route.contains(r'\')) return false;
     if (!route.startsWith('/')) return false;
 
     final allowedPrefixes = <String>[
@@ -726,7 +726,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                   Material(
                     color: _chatBannerSurface(theme),
                     child: Padding(
-                      padding: EdgeInsets.fromLTRB(
+                      padding: const EdgeInsets.fromLTRB(
                         _chatPagePaddingH,
                         10,
                         _chatPagePaddingH,
@@ -752,7 +752,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                   ),
                 if (showInflightBar)
                   Padding(
-                    padding: EdgeInsets.fromLTRB(_chatPagePaddingH, 8, _chatPagePaddingH, 0),
+                    padding: const EdgeInsets.fromLTRB(_chatPagePaddingH, 8, _chatPagePaddingH, 0),
                     child: AiChatAgentProgressPanel(steps: ai.agentSteps),
                   ),
                 Flexible(
@@ -768,7 +768,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                               constraints: const BoxConstraints(maxWidth: _chatEmptyMaxWidth),
                               child: SingleChildScrollView(
                                 child: Padding(
-                                  padding: EdgeInsets.fromLTRB(
+                                  padding: const EdgeInsets.fromLTRB(
                                     _chatPagePaddingH,
                                     32,
                                     _chatPagePaddingH,
@@ -908,7 +908,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                           )
                         : ListView.builder(
                             controller: _scrollController,
-                            padding: EdgeInsets.fromLTRB(
+                            padding: const EdgeInsets.fromLTRB(
                               _chatPagePaddingH,
                               12,
                               _chatPagePaddingH,
@@ -999,11 +999,11 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                                 : Html(
                                                     data: _processHtmlForMobile(m.content),
                                                     style: {
-                                                      "a": Style(
+                                                      'a': Style(
                                                         color: _chatLink(theme),
                                                         textDecoration: TextDecoration.underline,
                                                       ),
-                                                      "body": Style(
+                                                      'body': Style(
                                                         margin: Margins.zero,
                                                         padding: HtmlPaddings.zero,
                                                         color: _chatBody(theme),
@@ -1011,7 +1011,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                                         lineHeight: const LineHeight(1.45),
                                                       ),
                                                       // Style tour trigger links with a soft pill (ChatGPT-like)
-                                                      ".chatbot-tour-trigger": Style(
+                                                      '.chatbot-tour-trigger': Style(
                                                         display: Display.inlineBlock,
                                                         padding: HtmlPaddings.symmetric(horizontal: 12, vertical: 8),
                                                         margin: Margins.only(top: 8),
@@ -1021,7 +1021,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                                         ),
                                                       ),
                                                       // Source chips: neutral pills (ChatGPT iOS–like)
-                                                      ".source-doc-link": Style(
+                                                      '.source-doc-link': Style(
                                                         display: Display.inlineBlock,
                                                         padding: HtmlPaddings.symmetric(horizontal: 10, vertical: 6),
                                                         margin: Margins.only(top: 6, right: 6),
@@ -1200,7 +1200,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                   child: SafeArea(
                     top: false,
                     child: Padding(
-                      padding: EdgeInsets.fromLTRB(_chatPagePaddingH, 6, _chatPagePaddingH, 8),
+                      padding: const EdgeInsets.fromLTRB(_chatPagePaddingH, 6, _chatPagePaddingH, 8),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1366,7 +1366,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                           child: InkWell(
                                             customBorder: const CircleBorder(),
                                             onTap: hasText ? () => _send(context, isAuthed) : null,
-                                            child: Center(
+                                            child: const Center(
                                               child: Icon(
                                                 Icons.arrow_upward_rounded,
                                                 size: 20,
@@ -1910,7 +1910,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
     final pinned = provider.isConversationPinned(conversation.id);
     final menuCs = theme.colorScheme;
 
-    await showMenu<void>(
+    await showMenu<String>(
       context: anchorContext,
       position: RelativeRect.fromRect(anchorRect, Offset.zero & overlay.size),
       color: _chatSurface(theme),
@@ -1920,8 +1920,8 @@ class _AiChatScreenState extends State<AiChatScreen> {
         side: BorderSide(color: _chatOutline(theme)),
       ),
       elevation: 4,
-      items: <PopupMenuEntry<void>>[
-        PopupMenuItem<void>(
+      items: <PopupMenuEntry<String>>[
+        PopupMenuItem<String>(
           value: 'pin',
           height: 40,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
@@ -1950,7 +1950,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
             ],
           ),
         ),
-        PopupMenuItem<void>(
+        PopupMenuItem<String>(
           value: 'delete',
           height: 40,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
@@ -2420,7 +2420,7 @@ class _TypingIndicatorState extends State<_TypingIndicator> with TickerProviderS
 
   @override
   void dispose() {
-    for (var controller in _controllers) {
+    for (final controller in _controllers) {
       controller.dispose();
     }
     super.dispose();

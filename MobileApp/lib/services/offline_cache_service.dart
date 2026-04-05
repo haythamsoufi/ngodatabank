@@ -181,7 +181,6 @@ class OfflineCacheService {
     try {
       final db = await database;
       final maps = await db.query(_tableName);
-      final now = DateTime.now();
 
       for (final map in maps) {
         final cache = CachedResponse.fromMap(map);

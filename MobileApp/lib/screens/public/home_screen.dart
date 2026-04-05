@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:provider/provider.dart';
 import '../../services/session_service.dart';
@@ -160,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen>
               },
             ),
             title: Text(
-              _pageTitle ?? localizations.home ?? 'Global Overview',
+              _pageTitle ?? localizations.home,
               style: IOSTextStyle.headline(context),
             ),
           ),
@@ -188,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                 )
               : null,
-          body: Container(
+          body: ColoredBox(
             color: theme.scaffoldBackgroundColor,
             child: SafeArea(
               top: false,
@@ -220,23 +219,7 @@ class _HomeScreenState extends State<HomeScreen>
                                 _webViewController = controller;
                               },
                             onConsoleMessage: (controller, consoleMessage) {
-                              // Suppress console messages from WebView pages, especially syntax errors
-                              // Filter out common remote website errors that don't affect app functionality
-                              final message = consoleMessage.message.toLowerCase();
-                              final shouldIgnore = message.contains('uncaught syntaxerror') ||
-                                  message.contains('unexpected identifier') ||
-                                  message.contains('uncaught typeerror') ||
-                                  message.contains('cannot read properties of null') ||
-                                  message.contains('cannot read property') ||
-                                  message.contains('scrolltop') ||
-                                  message.contains('scroll') ||
-                                  message.contains('self');
-
-                              // Suppress all console messages - these are from the remote website
-                              // Only log in debug mode if you need to debug WebView issues
-                              // if (!shouldIgnore && kDebugMode) {
-                              //   print('[HOME WEBVIEW] ${consoleMessage.messageLevel}: ${consoleMessage.message}');
-                              // }
+                              // Remote site console noise suppressed intentionally.
                             },
                             shouldOverrideUrlLoading:
                                 (controller, navigationAction) async {
@@ -247,7 +230,7 @@ class _HomeScreenState extends State<HomeScreen>
                                 if (mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text(
+                                      content: const Text(
                                           'Navigation to this URL is not allowed'),
                                       backgroundColor: Theme.of(context)
                                           .colorScheme
@@ -435,7 +418,7 @@ class _HomeScreenState extends State<HomeScreen>
                 children: [
                   ModernDrawerTile(
                     icon: Icons.home_rounded,
-                    title: localizations.home ?? 'Global Overview',
+                    title: localizations.home,
                     onTap: () {
                       Navigator.pop(context);
                       reload();
@@ -472,7 +455,7 @@ class _HomeScreenState extends State<HomeScreen>
                   if (isFocalPoint)
                     ModernDrawerTile(
                       icon: Icons.notifications_rounded,
-                      title: localizations.notifications ?? 'Notifications',
+                      title: localizations.notifications,
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.of(context).pushNamed(AppRoutes.notifications);
@@ -481,7 +464,7 @@ class _HomeScreenState extends State<HomeScreen>
                   else
                     ModernDrawerTile(
                       icon: Icons.folder_rounded,
-                      title: localizations.resources ?? 'Resources',
+                      title: localizations.resources,
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.of(context).pushNamed(AppRoutes.resources);
@@ -578,16 +561,16 @@ class _HomeScreenState extends State<HomeScreen>
                       IOSIconButton(
                         icon: Icons.close,
                         onPressed: () => Navigator.pop(bottomSheetContext),
-                        tooltip: localizations.close ?? 'Close',
-                        semanticLabel: localizations.close ?? 'Close',
+                        tooltip: localizations.close,
+                        semanticLabel: localizations.close,
                       ),
                     ],
                   ),
                 ),
                 const Divider(height: 1),
                 // Countries widget
-                Expanded(
-                  child: const CountriesWidget(),
+                const Expanded(
+                  child: CountriesWidget(),
                 ),
               ],
             ),

@@ -68,7 +68,7 @@ class DashboardRepository {
     try {
       return _parseDashboardResponse(response.body);
     } catch (e, stackTrace) {
-      final error = _errorHandler.parseError(
+      _errorHandler.parseError(
         error: e,
         stackTrace: stackTrace,
         context: 'Dashboard parsing',

@@ -114,7 +114,7 @@ class TemplatesProvider with ChangeNotifier {
           : index;
 
       // Extract created date
-      DateTime createdAt = DateTime.now();
+      final DateTime createdAt = DateTime.now();
 
       templates.add(Template(
         id: id,

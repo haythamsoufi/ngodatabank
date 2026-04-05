@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../l10n/app_localizations.dart';
 
 /// Wrapper for buttons with built-in accessibility support
 class AccessibleButton extends StatelessWidget {
@@ -22,8 +21,6 @@ class AccessibleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context);
-
     return Semantics(
       label: semanticLabel,
       hint: semanticHint,

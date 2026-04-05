@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'auth_service.dart';
 import 'api_service.dart';
 import '../providers/shared/auth_provider.dart';
@@ -58,7 +57,7 @@ class AuthErrorHandler {
   }) async {
     try {
       return await apiCall();
-    } on AuthenticationException catch (e) {
+    } on AuthenticationException {
       await handleAuthenticationError(context: context, silent: silent);
       return defaultValue;
     } catch (e) {

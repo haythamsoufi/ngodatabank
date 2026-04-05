@@ -769,7 +769,7 @@ class ApiService {
       }
 
       return response;
-    } on http.ClientException catch (e) {
+    } on http.ClientException catch (_) {
       // Queue request if offline
       if (!isOnline && queueOnOffline) {
         await _queuePostRequest(
@@ -781,7 +781,7 @@ class ApiService {
         );
       }
       rethrow;
-    } catch (e) {
+    } catch (_) {
       // Queue request if offline
       if (!isOnline && queueOnOffline) {
         await _queuePostRequest(
@@ -896,7 +896,7 @@ class ApiService {
       }
 
       return response;
-    } on http.ClientException catch (e) {
+    } on http.ClientException {
       // Queue request if offline
       if (!isOnline && queueOnOffline) {
         await _queuePutRequest(
@@ -907,7 +907,7 @@ class ApiService {
         );
       }
       rethrow;
-    } catch (e) {
+    } catch (_) {
       // Queue request if offline
       if (!isOnline && queueOnOffline) {
         await _queuePutRequest(
@@ -982,7 +982,7 @@ class ApiService {
       }
 
       return response;
-    } on http.ClientException catch (e) {
+    } on http.ClientException catch (_) {
       // Queue request if offline
       if (!isOnline && queueOnOffline) {
         await _queueDeleteRequest(
@@ -992,7 +992,7 @@ class ApiService {
         );
       }
       rethrow;
-    } catch (e) {
+    } catch (_) {
       // Queue request if offline
       if (!isOnline && queueOnOffline) {
         await _queueDeleteRequest(

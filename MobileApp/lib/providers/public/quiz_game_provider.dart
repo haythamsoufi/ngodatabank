@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'dart:math';
 import '../../models/indicator_bank/indicator.dart';
-import '../../models/indicator_bank/sector.dart';
 import '../../providers/public/indicator_bank_provider.dart';
 import '../../providers/shared/language_provider.dart';
 import '../../services/api_service.dart';

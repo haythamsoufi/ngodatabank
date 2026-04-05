@@ -174,7 +174,6 @@ class SessionService {
     await _storage.remove(_sessionLastValidatedOnlineKey);
 
     try {
-      final backendUri = Uri.parse(AppConfig.backendUrl);
       await _cookieManager.deleteCookies(
         url: WebUri(AppConfig.backendUrl),
       );

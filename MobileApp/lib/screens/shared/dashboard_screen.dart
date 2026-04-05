@@ -7,7 +7,6 @@ import '../../providers/shared/notification_provider.dart';
 import '../../providers/shared/auth_provider.dart';
 import '../../providers/shared/language_provider.dart';
 import '../../widgets/assignment_card.dart';
-import '../../widgets/admin_drawer.dart';
 import '../../widgets/app_bar.dart';
 import '../../config/routes.dart';
 import '../../utils/constants.dart';
@@ -180,7 +179,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               child: Text(
                 title,
                 style: IOSTextStyle.caption1(context).copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   fontWeight: FontWeight.w500,
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -236,7 +235,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     final theme = Theme.of(context);
     return Container(
-      margin: const EdgeInsets.only(bottom: 0),
+      margin: EdgeInsets.zero,
       child: Theme(
         data: theme.copyWith(
           dividerColor: Colors.transparent,
@@ -260,7 +259,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 localizations.pastAssignments.toUpperCase(),
                 style: IOSTextStyle.footnote(context).copyWith(
                   fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   letterSpacing: 0.5,
                 ),
               ),
@@ -271,13 +270,13 @@ class _DashboardScreenState extends State<DashboardScreen>
                 vertical: IOSSpacing.xsOf(context) / 2,
               ),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.onSurface.withOpacity(0.15),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(IOSDimensions.borderRadiusSmallOf(context)),
                 ),
                 child: Text(
                   '${filteredAssignments.length}',
                   style: IOSTextStyle.caption2(context).copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.8),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -349,7 +348,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (sortedPast.isNotEmpty)
-                    Container(
+                    ColoredBox(
                       color: Theme.of(context).cardTheme.color ??
                           Theme.of(context).colorScheme.surface,
                       child: Column(
@@ -371,7 +370,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   if (filteredAssignments.isEmpty)
                     Container(
                       margin: const EdgeInsets.symmetric(horizontal: IOSSpacing.lg),
-                      padding: EdgeInsets.all(IOSSpacing.xxl),
+                      padding: const EdgeInsets.all(IOSSpacing.xxl),
                       child: Column(
                         children: [
                           Icon(
@@ -380,7 +379,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                             color: Theme.of(context)
                                 .colorScheme
                                 .onSurface
-                                .withOpacity(0.4),
+                                .withValues(alpha: 0.4),
                           ),
                           SizedBox(height: IOSSpacing.mdOf(context)),
                           Text(
@@ -389,7 +388,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                               color: Theme.of(context)
                                   .colorScheme
                                   .onSurface
-                                  .withOpacity(0.6),
+                                  .withValues(alpha: 0.6),
                               fontWeight: FontWeight.w500,
                             ),
                             textAlign: TextAlign.center,
@@ -487,7 +486,6 @@ class _DashboardScreenState extends State<DashboardScreen>
             horizontal: IOSSpacing.md - 4,
             vertical: IOSSpacing.xs + 2,
           ),
-          minSize: 0,
           onPressed: () {
             HapticFeedback.lightImpact();
             setState(() {
@@ -495,14 +493,14 @@ class _DashboardScreenState extends State<DashboardScreen>
               _selectedTemplateFilter = null;
               _selectedStatusFilter = null;
             });
-          },
+          }, minimumSize: Size.zero,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 cupertino.CupertinoIcons.clear,
                 size: 14,
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               ),
               SizedBox(width: IOSSpacing.xsOf(context)),
               Text(
@@ -527,7 +525,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     final hasSelection = value != null;
 
     String displayText = label;
-    if (hasSelection && value != null) {
+    if (hasSelection) {
       displayText = isStatusFilter
           ? localizations.localizeStatus(value)
           : value;
@@ -535,18 +533,17 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     return cupertino.CupertinoButton(
       padding: EdgeInsets.zero,
-      minSize: 0,
-      onPressed: onTap,
+      onPressed: onTap, minimumSize: Size.zero,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: IOSSpacing.md - 6, vertical: IOSSpacing.xs + 2),
         decoration: BoxDecoration(
           color: hasSelection
-              ? IOSColors.getSystemBlue(context).withOpacity(0.1)
-              : theme.colorScheme.onSurface.withOpacity(0.06),
+              ? IOSColors.getSystemBlue(context).withValues(alpha: 0.1)
+              : theme.colorScheme.onSurface.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(6),
           border: hasSelection
               ? Border.all(
-                  color: IOSColors.getSystemBlue(context).withOpacity(0.3),
+                  color: IOSColors.getSystemBlue(context).withValues(alpha: 0.3),
                   width: 0.5,
                 )
               : null,
@@ -561,7 +558,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   fontWeight: hasSelection ? FontWeight.w600 : FontWeight.w400,
                   color: hasSelection
                       ? IOSColors.getSystemBlue(context)
-                      : theme.colorScheme.onSurface.withOpacity(0.7),
+                      : theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -573,7 +570,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               size: 12,
               color: hasSelection
                   ? IOSColors.getSystemBlue(context)
-                  : theme.colorScheme.onSurface.withOpacity(0.4),
+                  : theme.colorScheme.onSurface.withValues(alpha: 0.4),
             ),
           ],
         ),
@@ -693,7 +690,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               thickness: 0.5,
               indent: IOSSpacing.md,
               endIndent: IOSSpacing.md,
-              color: Theme.of(context).dividerColor.withOpacity(0.5),
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
             ),
         ],
       ),
@@ -717,14 +714,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  void _triggerHapticSelection() {
-    HapticFeedback.selectionClick();
-  }
-
-  void _triggerHapticLight() {
-    HapticFeedback.lightImpact();
-  }
-
   Widget _buildSectionHeader({
     required String title,
     required IconData icon,
@@ -745,7 +734,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             title.toUpperCase(),
             style: IOSTextStyle.footnote(context).copyWith(
               fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
           if (count != null && count > 0) ...[
@@ -753,13 +742,13 @@ class _DashboardScreenState extends State<DashboardScreen>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: IOSSpacing.xs + 2, vertical: IOSSpacing.xs / 2),
               decoration: BoxDecoration(
-                color: theme.colorScheme.onSurface.withOpacity(0.15),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 '$count',
                 style: IOSTextStyle.caption2(context).copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.8),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -796,7 +785,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             title: localizations.dashboard,
           ),
           backgroundColor: IOSColors.getGroupedBackground(context), // iOS grouped background
-          body: Container(
+          body: ColoredBox(
             color: IOSColors.getGroupedBackground(context),
             child: RefreshIndicator(
               onRefresh: () async {
@@ -884,7 +873,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                           Icons.location_on_rounded,
                                           size: 20,
                                           color: theme.colorScheme.onSurface
-                                              .withOpacity(0.7),
+                                              .withValues(alpha: 0.7),
                                         ),
                                         SizedBox(width: IOSSpacing.mdOf(context) - 4),
                                         Expanded(
@@ -907,7 +896,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                           Icon(
                                             Icons.chevron_right_rounded,
                                             color: theme.colorScheme.onSurface
-                                                .withOpacity(0.4),
+                                                .withValues(alpha: 0.4),
                                             size: 20,
                                           ),
                                       ],
@@ -963,7 +952,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                   : provider.currentAssignments.length,
                             ),
                             if (provider.currentAssignments.isNotEmpty)
-                              Container(
+                              ColoredBox(
                                 color: Theme.of(context).cardTheme.color ??
                                     Theme.of(context).colorScheme.surface,
                                 child: Column(
@@ -1030,7 +1019,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                               endIndent: IOSSpacing.lg,
                                               color: Theme.of(context)
                                                   .dividerColor
-                                                  .withOpacity(0.5),
+                                                  .withValues(alpha: 0.5),
                                             ),
                                         ],
                                       ),
@@ -1054,7 +1043,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                       color: Theme.of(context)
                                           .colorScheme
                                           .onSurface
-                                          .withOpacity(0.35),
+                                          .withValues(alpha: 0.35),
                                     ),
                                     SizedBox(height: IOSSpacing.mdOf(context)),
                                     Text(
@@ -1065,7 +1054,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                         color: Theme.of(context)
                                             .colorScheme
                                             .onSurface
-                                            .withOpacity(0.75),
+                                            .withValues(alpha: 0.75),
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
@@ -1077,7 +1066,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                         color: Theme.of(context)
                                             .colorScheme
                                             .onSurface
-                                            .withOpacity(0.55),
+                                            .withValues(alpha: 0.55),
                                         height: 1.35,
                                       ),
                                       textAlign: TextAlign.center,
@@ -1086,7 +1075,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                 ),
                               ),
                             if (provider.currentAssignments.isNotEmpty)
-                              SizedBox(height: IOSSpacing.xxl)
+                              const SizedBox(height: IOSSpacing.xxl)
                             else if (provider.pastAssignments.isNotEmpty)
                               SizedBox(height: IOSSpacing.mdOf(context)),
                           ],
@@ -1119,7 +1108,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                             color: Theme.of(context)
                                 .colorScheme
                                 .onSurface
-                                .withOpacity(0.25),
+                                .withValues(alpha: 0.25),
                           ),
                           SizedBox(height: IOSSpacing.xlOf(context)),
                           Text(
@@ -1134,7 +1123,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                               color: Theme.of(context)
                                   .colorScheme
                                   .onSurface
-                                  .withOpacity(0.6),
+                                  .withValues(alpha: 0.6),
                               height: 1.4,
                             ),
                             textAlign: TextAlign.center,
@@ -1145,7 +1134,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                               ),
                             ),
 
-                          SizedBox(height: 80), // Space for FAB
+                          const SizedBox(height: 80), // Space for FAB
                         ],
                       ),
                     ),
@@ -1298,7 +1287,7 @@ class _EntitySelectorBottomSheetState
             width: 36,
             height: 5,
             decoration: BoxDecoration(
-              color: widget.theme.colorScheme.onSurface.withOpacity(0.2),
+              color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(2.5),
             ),
           ),
@@ -1345,12 +1334,12 @@ class _EntitySelectorBottomSheetState
               controller: _searchController,
               placeholder: 'Search...',
               placeholderStyle: IOSTextStyle.subheadline(context).copyWith(
-                color: widget.theme.colorScheme.onSurface.withOpacity(0.4),
+                color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.4),
               ),
               style: IOSTextStyle.subheadline(context).copyWith(
                 color: widget.theme.colorScheme.onSurface,
               ),
-              backgroundColor: widget.theme.colorScheme.onSurface.withOpacity(0.06),
+              backgroundColor: widget.theme.colorScheme.onSurface.withValues(alpha: 0.06),
               itemColor: widget.theme.colorScheme.onSurface,
             ),
           ),
@@ -1365,7 +1354,7 @@ class _EntitySelectorBottomSheetState
                           Icons.search_off,
                           size: 48,
                           color: widget.theme.colorScheme.onSurface
-                              .withOpacity(0.4),
+                              .withValues(alpha: 0.4),
                         ),
                         SizedBox(height: IOSSpacing.mdOf(context)),
                         Text(
@@ -1373,7 +1362,7 @@ class _EntitySelectorBottomSheetState
                           style: IOSTextStyle.subheadline(context).copyWith(
                             color: widget.theme.textTheme.bodyMedium?.color ??
                                 widget.theme.colorScheme.onSurface
-                                    .withOpacity(0.6),
+                                    .withValues(alpha: 0.6),
                           ),
                         ),
                       ],
@@ -1433,7 +1422,7 @@ class _EntitySelectorBottomSheetState
                                   border: Border(
                                     bottom: BorderSide(
                                       color: widget.theme.dividerColor
-                                          .withOpacity(0.5),
+                                          .withValues(alpha: 0.5),
                                       width: 0.5,
                                     ),
                                   ),
@@ -1493,10 +1482,10 @@ class _EntitySelectorBottomSheetState
         IOSSpacing.smOf(context),
       ),
       decoration: BoxDecoration(
-        color: widget.theme.colorScheme.onSurface.withOpacity(0.04),
+        color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.04),
         border: Border(
           bottom: BorderSide(
-            color: widget.theme.dividerColor.withOpacity(0.3),
+            color: widget.theme.dividerColor.withValues(alpha: 0.3),
             width: 0.5,
           ),
         ),
@@ -1506,14 +1495,14 @@ class _EntitySelectorBottomSheetState
           Icon(
             _getEntityIcon(entityType),
             size: 16,
-            color: widget.theme.colorScheme.onSurface.withOpacity(0.6),
+            color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.6),
           ),
           SizedBox(width: IOSSpacing.smOf(context)),
           Text(
             _getEntityTypeLabel(entityType).toUpperCase(),
             style: IOSTextStyle.footnote(context).copyWith(
               fontWeight: FontWeight.w600,
-              color: widget.theme.colorScheme.onSurface.withOpacity(0.6),
+              color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.6),
               letterSpacing: 0.5,
             ),
           ),
@@ -1524,13 +1513,13 @@ class _EntitySelectorBottomSheetState
               vertical: IOSSpacing.xsOf(context) / 2,
             ),
             decoration: BoxDecoration(
-              color: widget.theme.colorScheme.onSurface.withOpacity(0.15),
+              color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
               '${_groupedEntities[entityType]?.length ?? 0}',
               style: IOSTextStyle.caption2(context).copyWith(
-                color: widget.theme.colorScheme.onSurface.withOpacity(0.8),
+                color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.8),
                 fontWeight: FontWeight.w700,
               ),
             ),

@@ -11,7 +11,6 @@ import '../../utils/constants.dart';
 import '../../utils/accessibility_helper.dart';
 import '../../utils/theme_extensions.dart';
 import '../../utils/ios_constants.dart';
-import '../../widgets/ios_card.dart';
 import '../../widgets/ios_list_tile.dart';
 import '../../widgets/ios_dialog.dart';
 import '../../l10n/app_localizations.dart';
@@ -33,7 +32,7 @@ class SettingsScreen extends StatelessWidget {
             title: localizations.accountSettings,
           ),
           body: SafeArea(
-            child: Container(
+            child: ColoredBox(
               color: IOSColors.getGroupedBackground(context),
               child: ListView(
                 padding: EdgeInsets.zero,
@@ -41,33 +40,33 @@ class SettingsScreen extends StatelessWidget {
                   // Profile Section - Only show for authenticated users
                   if (isAuthenticated && user != null) ...[
                     _buildProfileSection(context, user),
-                    SizedBox(height: IOSSpacing.xxl),
+                    const SizedBox(height: IOSSpacing.xxl),
                   ],
 
                   // Account Information Section - Only show for authenticated users
                   if (isAuthenticated && user != null) ...[
                     _buildAccountInfoSection(context, user),
-                    SizedBox(height: IOSSpacing.xxl),
+                    const SizedBox(height: IOSSpacing.xxl),
                   ],
 
                   // Preferences Section - Only show for authenticated users
                   if (isAuthenticated && user != null) ...[
                     _buildPreferencesSection(context, user),
-                    SizedBox(height: IOSSpacing.xxl),
+                    const SizedBox(height: IOSSpacing.xxl),
                   ],
 
                   // Account Actions Section
                   _buildAccountActionsSection(context, isAuthenticated),
 
-                  SizedBox(height: IOSSpacing.xxl),
+                  const SizedBox(height: IOSSpacing.xxl),
 
                   // Login/Logout Button
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: IOSSpacing.md),
+                    padding: const EdgeInsets.symmetric(horizontal: IOSSpacing.md),
                     child: _buildAuthButton(
                         context, authProvider, isAuthenticated),
                   ),
-                  SizedBox(height: IOSSpacing.lg),
+                  const SizedBox(height: IOSSpacing.lg),
                 ],
               ),
             ),
@@ -79,7 +78,6 @@ class SettingsScreen extends StatelessWidget {
 
   /// Builds the Profile section with user information (iPhone-style)
   Widget _buildProfileSection(BuildContext context, user) {
-    final localizations = AppLocalizations.of(context)!;
     // Safe extraction of initial for avatar
     final displayName = user.displayName;
     final initial = displayName.isNotEmpty
@@ -112,7 +110,7 @@ class SettingsScreen extends StatelessWidget {
               gradient: LinearGradient(
                 colors: [
                   profileColor,
-                  profileColor.withOpacity(0.8),
+                  profileColor.withValues(alpha: 0.8),
                 ],
               ),
               shape: BoxShape.circle,
@@ -139,7 +137,7 @@ class SettingsScreen extends StatelessWidget {
           subtitle: Text(
             user.email,
             style: IOSTextStyle.callout(context).copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -177,13 +175,13 @@ class SettingsScreen extends StatelessWidget {
               user.name ?? localizations.enterYourName,
               style: IOSTextStyle.callout(context).copyWith(
                 color: user.name != null && user.name!.isNotEmpty
-                    ? theme.colorScheme.onSurface.withOpacity(0.6)
-                    : theme.colorScheme.onSurface.withOpacity(0.4),
+                    ? theme.colorScheme.onSurface.withValues(alpha: 0.6)
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.4),
               ),
             ),
             trailing: Icon(
               cupertino.CupertinoIcons.chevron_right,
-              color: theme.colorScheme.onSurface.withOpacity(0.3),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
               size: 13,
             ),
             onTap: () {
@@ -211,13 +209,13 @@ class SettingsScreen extends StatelessWidget {
               user.title ?? localizations.enterYourJobTitle,
               style: IOSTextStyle.callout(context).copyWith(
                 color: user.title != null && user.title!.isNotEmpty
-                    ? theme.colorScheme.onSurface.withOpacity(0.6)
-                    : theme.colorScheme.onSurface.withOpacity(0.4),
+                    ? theme.colorScheme.onSurface.withValues(alpha: 0.6)
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.4),
               ),
             ),
             trailing: Icon(
               cupertino.CupertinoIcons.chevron_right,
-              color: theme.colorScheme.onSurface.withOpacity(0.3),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
               size: 13,
             ),
             onTap: () {
@@ -235,7 +233,7 @@ class SettingsScreen extends StatelessWidget {
     required List<Widget> children,
   }) {
     return IOSGroupedList(
-      margin: EdgeInsets.symmetric(horizontal: IOSSpacing.md),
+      margin: const EdgeInsets.symmetric(horizontal: IOSSpacing.md),
       children: children,
     );
   }
@@ -278,7 +276,7 @@ class SettingsScreen extends StatelessWidget {
           subtitle: Text(
             user.profileColor ?? '#3B82F6',
             style: IOSTextStyle.callout(context).copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
           trailing: Row(
@@ -296,10 +294,10 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(width: IOSSpacing.xs + 2),
+              const SizedBox(width: IOSSpacing.xs + 2),
               Icon(
                 cupertino.CupertinoIcons.chevron_right,
-                color: theme.colorScheme.onSurface.withOpacity(0.3),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
                 size: 13,
               ),
             ],
@@ -354,7 +352,7 @@ class SettingsScreen extends StatelessWidget {
             ),
             trailing: Icon(
               cupertino.CupertinoIcons.chevron_right,
-              color: theme.colorScheme.onSurface.withOpacity(0.3),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
               size: 13,
             ),
             onTap: () {
@@ -401,12 +399,12 @@ class SettingsScreen extends StatelessWidget {
             subtitle: Text(
               modeLabel(themeProvider.currentThemeMode),
               style: IOSTextStyle.callout(context).copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
             trailing: Icon(
               cupertino.CupertinoIcons.chevron_right,
-              color: theme.colorScheme.onSurface.withOpacity(0.3),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
               size: 13,
             ),
             onTap: () {
@@ -441,12 +439,12 @@ class SettingsScreen extends StatelessWidget {
             subtitle: Text(
               languageName,
               style: IOSTextStyle.callout(context).copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
             trailing: Icon(
               cupertino.CupertinoIcons.chevron_right,
-              color: theme.colorScheme.onSurface.withOpacity(0.3),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
               size: 13,
             ),
             onTap: () {
@@ -470,12 +468,11 @@ class SettingsScreen extends StatelessWidget {
     bool isAuthenticated,
   ) {
     final localizations = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
 
     if (!isAuthenticated) {
       // Login Button for non-authenticated users
       return IOSGroupedList(
-        margin: EdgeInsets.symmetric(horizontal: IOSSpacing.md),
+        margin: const EdgeInsets.symmetric(horizontal: IOSSpacing.md),
         children: [
           IOSListTile(
             title: Center(
@@ -497,7 +494,7 @@ class SettingsScreen extends StatelessWidget {
     } else {
       // Logout Button for authenticated users - iPhone style (red text in card)
       return IOSGroupedList(
-        margin: EdgeInsets.symmetric(horizontal: IOSSpacing.md),
+        margin: const EdgeInsets.symmetric(horizontal: IOSSpacing.md),
         children: [
           IOSListTile(
             title: Center(
@@ -553,7 +550,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   /// Shows a color picker dialog
-  void _showColorPicker(
+  Future<void> _showColorPicker(
       BuildContext context, AuthProvider authProvider, user) async {
     final localizations = AppLocalizations.of(context)!;
 
@@ -626,7 +623,7 @@ class SettingsScreen extends StatelessWidget {
                     color: context.textSecondaryColor,
                   ),
                 ),
-                SizedBox(height: IOSSpacing.md),
+                const SizedBox(height: IOSSpacing.md),
                 // Color grid
                 GridView.builder(
                   shrinkWrap: true,
@@ -641,7 +638,6 @@ class SettingsScreen extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final colorData = colorsList[index];
                     final colorHex = colorData['color']!;
-                    final colorName = colorData['name']!;
                     final colorObj =
                         parseColor(colorHex) ?? const Color(AppConstants.semanticDefaultProfileAccent);
                     final isSelected = colorHex == currentColor;
@@ -663,7 +659,7 @@ class SettingsScreen extends StatelessWidget {
                           boxShadow: isSelected
                               ? [
                                   BoxShadow(
-                                    color: colorObj.withOpacity(0.4),
+                                    color: colorObj.withValues(alpha: 0.4),
                                     blurRadius: 8,
                                     spreadRadius: 2,
                                   ),
@@ -684,10 +680,10 @@ class SettingsScreen extends StatelessWidget {
                     );
                   },
                 ),
-                SizedBox(height: IOSSpacing.md),
+                const SizedBox(height: IOSSpacing.md),
                 // Current color display
                 Container(
-                  padding: EdgeInsets.all(IOSSpacing.md - 4),
+                  padding: const EdgeInsets.all(IOSSpacing.md - 4),
                   decoration: BoxDecoration(
                     color: context.subtleSurfaceColor,
                     borderRadius:
@@ -710,7 +706,7 @@ class SettingsScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      SizedBox(width: IOSSpacing.md - 4),
+                      const SizedBox(width: IOSSpacing.md - 4),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -721,7 +717,7 @@ class SettingsScreen extends StatelessWidget {
                                 color: context.textSecondaryColor,
                               ),
                             ),
-                            SizedBox(height: IOSSpacing.xs / 2),
+                            const SizedBox(height: IOSSpacing.xs / 2),
                             Text(
                               currentColor,
                               style: IOSTextStyle.subheadline(context).copyWith(
@@ -798,9 +794,9 @@ class SettingsScreen extends StatelessWidget {
     final confirmPasswordController = TextEditingController();
 
     final formKey = GlobalKey<FormState>();
-    bool _obscureCurrentPassword = true;
-    bool _obscureNewPassword = true;
-    bool _obscureConfirmPassword = true;
+    bool obscureCurrentPassword = true;
+    bool obscureNewPassword = true;
+    bool obscureConfirmPassword = true;
 
     showDialog(
       context: context,
@@ -827,21 +823,21 @@ class SettingsScreen extends StatelessWidget {
                     // Current Password Field
                     TextFormField(
                       controller: currentPasswordController,
-                      obscureText: _obscureCurrentPassword,
+                      obscureText: obscureCurrentPassword,
                       decoration: InputDecoration(
                         labelText: localizations.currentPassword,
                         hintText: localizations.enterCurrentPassword,
                         prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscureCurrentPassword
+                            obscureCurrentPassword
                                 ? Icons.visibility_outlined
                                 : Icons.visibility_off_outlined,
                           ),
                           onPressed: () {
                             setState(() {
-                              _obscureCurrentPassword =
-                                  !_obscureCurrentPassword;
+                              obscureCurrentPassword =
+                                  !obscureCurrentPassword;
                             });
                           },
                         ),
@@ -859,25 +855,25 @@ class SettingsScreen extends StatelessWidget {
                         return null;
                       },
                     ),
-                    SizedBox(height: IOSSpacing.md),
+                    const SizedBox(height: IOSSpacing.md),
 
                     // New Password Field
                     TextFormField(
                       controller: newPasswordController,
-                      obscureText: _obscureNewPassword,
+                      obscureText: obscureNewPassword,
                       decoration: InputDecoration(
                         labelText: localizations.newPassword,
                         hintText: localizations.enterNewPassword,
                         prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscureNewPassword
+                            obscureNewPassword
                                 ? Icons.visibility_outlined
                                 : Icons.visibility_off_outlined,
                           ),
                           onPressed: () {
                             setState(() {
-                              _obscureNewPassword = !_obscureNewPassword;
+                              obscureNewPassword = !obscureNewPassword;
                             });
                           },
                         ),
@@ -901,26 +897,26 @@ class SettingsScreen extends StatelessWidget {
                         return null;
                       },
                     ),
-                    SizedBox(height: IOSSpacing.md),
+                    const SizedBox(height: IOSSpacing.md),
 
                     // Confirm Password Field
                     TextFormField(
                       controller: confirmPasswordController,
-                      obscureText: _obscureConfirmPassword,
+                      obscureText: obscureConfirmPassword,
                       decoration: InputDecoration(
                         labelText: localizations.confirmPassword,
                         hintText: localizations.confirmNewPassword,
                         prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscureConfirmPassword
+                            obscureConfirmPassword
                                 ? Icons.visibility_outlined
                                 : Icons.visibility_off_outlined,
                           ),
                           onPressed: () {
                             setState(() {
-                              _obscureConfirmPassword =
-                                  !_obscureConfirmPassword;
+                              obscureConfirmPassword =
+                                  !obscureConfirmPassword;
                             });
                           },
                         ),
@@ -1053,7 +1049,7 @@ class SettingsScreen extends StatelessWidget {
                 color: IOSColors.getSystemBlue(context),
                 size: 18,
               ),
-              SizedBox(width: IOSSpacing.sm),
+              const SizedBox(width: IOSSpacing.sm),
             ],
             Text(
               language['name'] ?? '',
@@ -1115,7 +1111,7 @@ class SettingsScreen extends StatelessWidget {
                 color: IOSColors.getSystemBlue(context),
                 size: 18,
               ),
-              SizedBox(width: IOSSpacing.sm),
+              const SizedBox(width: IOSSpacing.sm),
             ],
             Text(
               name,
@@ -1346,7 +1342,6 @@ class SettingsScreen extends StatelessWidget {
 
   /// Updates chatbot preference
   Future<void> _updateChatbotPreference(BuildContext context, bool value) async {
-    final localizations = AppLocalizations.of(context)!;
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     // Show loading indicator

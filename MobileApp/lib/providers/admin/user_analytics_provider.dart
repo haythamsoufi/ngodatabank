@@ -101,9 +101,7 @@ class UserAnalyticsProvider with ChangeNotifier {
             activityPayload.remove('status');
             activityPayload.remove('message');
           }
-          if (_analyticsData == null) {
-            _analyticsData = {};
-          }
+          _analyticsData ??= {};
           _analyticsData!['activity'] = activityPayload;
           notifyListeners();
         }

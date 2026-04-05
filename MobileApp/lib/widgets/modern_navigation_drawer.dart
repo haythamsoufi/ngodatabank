@@ -50,7 +50,7 @@ class ModernDrawerHeader extends StatelessWidget {
     final cs = theme.colorScheme;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(
+      padding: const EdgeInsets.fromLTRB(
         IOSSpacing.lg,
         IOSSpacing.md + 4,
         IOSSpacing.lg,
@@ -69,7 +69,7 @@ class ModernDrawerHeader extends StatelessWidget {
                 IOSTextStyle.title2(context),
           ),
           if (user != null) ...[
-            SizedBox(height: IOSSpacing.md),
+            const SizedBox(height: IOSSpacing.md),
             Builder(
               builder: (context) {
                 final u = user!;
@@ -95,7 +95,7 @@ class ModernDrawerHeader extends StatelessWidget {
                         ),
                       ),
                     ),
-                    SizedBox(width: IOSSpacing.md),
+                    const SizedBox(width: IOSSpacing.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,7 +145,7 @@ class ModernDrawerSectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: EdgeInsets.fromLTRB(
+      padding: const EdgeInsets.fromLTRB(
         IOSSpacing.lg,
         IOSSpacing.lg,
         IOSSpacing.lg,

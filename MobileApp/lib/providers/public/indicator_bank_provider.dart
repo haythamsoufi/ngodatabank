@@ -742,10 +742,8 @@ class IndicatorBankProvider with ChangeNotifier {
                   foundSubSector = sector.subsectors.firstWhere(
                     (s) => s.name == primarySubSectorName,
                   );
-                  if (foundSubSector != null) {
-                    break;
-                  }
-                } catch (e) {
+                  break;
+                                } catch (e) {
                   // Continue searching in next sector
                 }
               }
@@ -770,10 +768,8 @@ class IndicatorBankProvider with ChangeNotifier {
                 foundSubSector = sector.subsectors.firstWhere(
                   (s) => s.name == subSectorName,
                 );
-                if (foundSubSector != null) {
-                  break;
-                }
-              } catch (e) {
+                break;
+                            } catch (e) {
                 // Continue searching in next sector
               }
             }

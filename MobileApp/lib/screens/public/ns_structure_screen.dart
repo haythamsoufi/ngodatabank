@@ -4,8 +4,6 @@ import '../../services/api_service.dart';
 import '../../providers/shared/language_provider.dart';
 import '../../utils/constants.dart';
 import '../../utils/theme_extensions.dart';
-import '../../config/routes.dart';
-import '../../config/app_config.dart';
 import '../../l10n/app_localizations.dart';
 import '../../utils/debug_logger.dart';
 import 'dart:convert';
@@ -194,7 +192,7 @@ class _NSStructureScreenState extends State<NSStructureScreen> {
                   Text(
                     'Loading organizational structure...',
                     style: TextStyle(
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       fontSize: 14,
                     ),
                   ),
@@ -267,7 +265,7 @@ class _NSStructureScreenState extends State<NSStructureScreen> {
                             ),
                           ),
                           // Branches section with search
-                          Container(
+                          SizedBox(
                             height: 200,
                             child: Column(
                               children: [
@@ -421,7 +419,7 @@ class _NSStructureScreenState extends State<NSStructureScreen> {
         child: Text(
           'No branches found',
           style: TextStyle(
-            color: theme.colorScheme.onSurface.withOpacity(0.6),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             fontSize: 14,
           ),
         ),
@@ -470,8 +468,8 @@ class _NSStructureScreenState extends State<NSStructureScreen> {
                     style: TextStyle(
                       fontSize: 12,
                       color: isSelected
-                          ? theme.colorScheme.onSecondary.withOpacity(0.9)
-                          : theme.colorScheme.onSurface.withOpacity(0.6),
+                          ? theme.colorScheme.onSecondary.withValues(alpha: 0.9)
+                          : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
               ],
@@ -553,7 +551,7 @@ class _NSStructureScreenState extends State<NSStructureScreen> {
                         ? 'Select a branch to view sub-branches'
                         : 'No sub-branches found',
                     style: TextStyle(
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       fontSize: 14,
                     ),
                   ),
@@ -582,7 +580,7 @@ class _NSStructureScreenState extends State<NSStructureScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(4),
                       border: Border.all(
-                        color: context.dividerColor.withOpacity(0.3),
+                        color: context.dividerColor.withValues(alpha: 0.3),
                         width: 0.5,
                       ),
                     ),

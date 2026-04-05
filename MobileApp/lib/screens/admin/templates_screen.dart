@@ -7,7 +7,6 @@ import '../../config/routes.dart';
 import '../../utils/constants.dart';
 import '../../widgets/bottom_navigation_bar.dart';
 import '../../widgets/app_bar.dart';
-import 'package:flutter/services.dart';
 import '../../l10n/app_localizations.dart';
 
 class TemplatesScreen extends StatefulWidget {
@@ -96,16 +95,6 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
         _loadTemplates();
       }
     }
-  }
-
-  void _copyToClipboard(String text, String message) {
-    Clipboard.setData(ClipboardData(text: text));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: const Duration(seconds: 2),
-      ),
-    );
   }
 
   @override
@@ -249,10 +238,10 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
                                             color: theme.isDarkTheme
                                                 ? const Color(AppConstants
                                                         .successColor)
-                                                    .withOpacity(0.22)
+                                                    .withValues(alpha: 0.22)
                                                 : const Color(AppConstants
                                                         .successColor)
-                                                    .withOpacity(0.10),
+                                                    .withValues(alpha: 0.10),
                                             borderRadius:
                                                 BorderRadius.circular(8),
                                           ),
@@ -322,9 +311,9 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
                                     value: 'edit',
                                     child: Row(
                                       children: [
-                                        Icon(Icons.edit,
+                                        const Icon(Icons.edit,
                                             size: 20, color: Colors.blue),
-                                        SizedBox(width: 8),
+                                        const SizedBox(width: 8),
                                         Text(localizations.edit),
                                       ],
                                     ),
@@ -344,7 +333,7 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
                                     value: 'preview',
                                     child: Row(
                                       children: [
-                                        Icon(Icons.visibility,
+                                        const Icon(Icons.visibility,
                                             size: 20, color: Colors.green),
                                         const SizedBox(width: 8),
                                         Text(localizations.preview),

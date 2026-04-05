@@ -77,7 +77,7 @@ class AiChatService {
     int maxRetries = 2,
     bool isAuthenticated = false,
   }) async {
-    Future<Map<String, dynamic>> _doRequest({required String? token}) async {
+    Future<Map<String, dynamic>> doChatRequest({required String? token}) async {
       final headers = <String, String>{};
       if (token != null && token.isNotEmpty) {
         headers['Authorization'] = 'Bearer $token';
@@ -127,7 +127,8 @@ class AiChatService {
       }
 
       if (resp.statusCode != 200) {
-        String errorMessage = _extractErrorMessage(Map<String, dynamic>.from(data), resp.statusCode);
+        final errorMessage =
+            _extractErrorMessage(Map<String, dynamic>.from(data), resp.statusCode);
         throw Exception(errorMessage);
       }
 
@@ -138,7 +139,7 @@ class AiChatService {
     for (int attempt = 0; attempt <= maxRetries; attempt++) {
       try {
         final token = await getCachedToken();
-        return await _doRequest(token: token);
+        return await doChatRequest(token: token);
       } catch (e) {
         lastError = e is Exception ? e : Exception(e.toString());
         // Retry on network errors
@@ -163,7 +164,7 @@ class AiChatService {
     String? token = await fetchAndCacheToken();
     token ??= await getCachedToken();
     // Convert HTTP(S) URL to WebSocket URL (ws:// or wss://)
-    String base = AppConfig.baseApiUrl;
+    final base = AppConfig.baseApiUrl;
 
     // Parse the base URL to extract host and port properly
     final baseUri = Uri.parse(base);
@@ -185,7 +186,7 @@ class AiChatService {
     // Debug log the WebSocket URL (remove in production)
     DebugLogger.logInfo('AI', 'Connecting to WebSocket: ${wsUri.toString()}');
 
-    Future<WebSocketChannel> _connectWith(String? t) async {
+    Future<WebSocketChannel> connectWithToken(String? t) async {
       return IOWebSocketChannel.connect(
         wsUri,
         headers: t != null && t.isNotEmpty ? {'Authorization': 'Bearer $t'} : null,
@@ -193,7 +194,7 @@ class AiChatService {
     }
 
     try {
-      return await _connectWith(token);
+      return await connectWithToken(token);
     } catch (e) {
       // If auth failed, clear + refresh token once and retry.
       final msg = e.toString().toLowerCase();
@@ -201,7 +202,7 @@ class AiChatService {
         await clearToken();
         final refreshed = await fetchAndCacheToken();
         if (refreshed != null && refreshed.isNotEmpty) {
-          return await _connectWith(refreshed);
+          return await connectWithToken(refreshed);
         }
       }
       rethrow;
@@ -358,13 +359,13 @@ class AiChatService {
   /// Extract detailed error message from API response
   String _extractErrorMessage(Map<String, dynamic> data, int statusCode) {
     // Try multiple fields that might contain error information
-    String? error = data['error']?.toString();
-    String? message = data['message']?.toString();
-    String? detail = data['detail']?.toString();
-    String? details = data['details']?.toString();
+    final String? error = data['error']?.toString();
+    final String? message = data['message']?.toString();
+    final String? detail = data['detail']?.toString();
+    final String? details = data['details']?.toString();
 
     // Build error message with available information
-    List<String> parts = [];
+    final List<String> parts = [];
 
     if (error != null && error.isNotEmpty && error != 'Chat failed') {
       parts.add(error);
@@ -384,7 +385,7 @@ class AiChatService {
 
     // If we have detailed info, use it
     if (parts.isNotEmpty) {
-      String fullMessage = parts.join(' - ');
+      final fullMessage = parts.join(' - ');
       // Include status code for server errors
       if (statusCode >= 500) {
         return 'Server error ($statusCode): $fullMessage';
@@ -410,7 +411,7 @@ class AiChatService {
       String? token = await getCachedToken();
       final headers = <String, String>{};
       if (token != null && token.isNotEmpty) headers['Authorization'] = 'Bearer $token';
-      Future<dynamic> _post(String? t) async {
+      Future<dynamic> postFeedbackRequest(String? t) async {
         final h = <String, String>{};
         if (t != null && t.isNotEmpty) h['Authorization'] = 'Bearer $t';
         return _api.post(
@@ -421,12 +422,12 @@ class AiChatService {
         );
       }
 
-      var resp = await _post(token);
+      var resp = await postFeedbackRequest(token);
       if (resp.statusCode == 401 || resp.statusCode == 403) {
         await clearToken();
         token = await fetchAndCacheToken();
         if (token != null && token.isNotEmpty) {
-          resp = await _post(token);
+          resp = await postFeedbackRequest(token);
         }
       }
       return resp.statusCode == 200;

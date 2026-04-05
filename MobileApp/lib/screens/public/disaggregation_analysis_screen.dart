@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:provider/provider.dart';
 import '../../services/session_service.dart';
 import '../../providers/shared/auth_provider.dart';
 import '../../providers/shared/language_provider.dart';
-import '../../config/app_config.dart';
 import '../../utils/constants.dart';
 import '../../utils/theme_extensions.dart';
 import '../../utils/url_helper.dart';
@@ -122,7 +120,6 @@ class _DisaggregationAnalysisScreenState
         final url = _buildUrl(language);
         final localizations = AppLocalizations.of(context)!;
         final theme = Theme.of(context);
-        final isStandalone = _isStandaloneScreen(context);
         return Scaffold(
           backgroundColor: theme.scaffoldBackgroundColor,
           appBar: AppAppBar(
@@ -144,7 +141,7 @@ class _DisaggregationAnalysisScreenState
           drawer: _buildNavigationDrawer(context, languageProvider, theme, localizations, language),
           body: Stack(
             children: [
-              Container(
+              ColoredBox(
             color: theme.scaffoldBackgroundColor,
             child: SafeArea(
               top: true,
@@ -176,23 +173,7 @@ class _DisaggregationAnalysisScreenState
                                 _webViewController = controller;
                               },
                             onConsoleMessage: (controller, consoleMessage) {
-                              // Suppress console messages from WebView pages, especially syntax errors
-                              // Filter out common remote website errors that don't affect app functionality
-                              final message = consoleMessage.message.toLowerCase();
-                              final shouldIgnore = message.contains('uncaught syntaxerror') ||
-                                  message.contains('unexpected identifier') ||
-                                  message.contains('uncaught typeerror') ||
-                                  message.contains('cannot read properties of null') ||
-                                  message.contains('cannot read property') ||
-                                  message.contains('scrolltop') ||
-                                  message.contains('scroll') ||
-                                  message.contains('self');
-
-                              // Suppress all console messages - these are from the remote website
-                              // Only log in debug mode if you need to debug WebView issues
-                              // if (!shouldIgnore && kDebugMode) {
-                              //   print('[DISAGGREGATION WEBVIEW] ${consoleMessage.messageLevel}: ${consoleMessage.message}');
-                              // }
+                              // Remote site console noise suppressed intentionally.
                             },
                             shouldOverrideUrlLoading:
                                 (controller, navigationAction) async {
@@ -202,7 +183,7 @@ class _DisaggregationAnalysisScreenState
                                 if (mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text(
+                                      content: const Text(
                                           'Navigation to this URL is not allowed'),
                                       backgroundColor: Theme.of(context)
                                           .colorScheme
@@ -371,7 +352,7 @@ class _DisaggregationAnalysisScreenState
                                   padding: const EdgeInsets.all(20),
                                   decoration: BoxDecoration(
                                     color: const Color(AppConstants.errorColor)
-                                        .withOpacity(0.1),
+                                        .withValues(alpha: 0.1),
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(
@@ -394,7 +375,7 @@ class _DisaggregationAnalysisScreenState
                                   _error!,
                                   style: TextStyle(
                                     color: theme.colorScheme.onSurface
-                                        .withOpacity(0.6),
+                                        .withValues(alpha: 0.6),
                                     fontSize: 14,
                                   ),
                                   textAlign: TextAlign.center,
@@ -478,7 +459,7 @@ class _DisaggregationAnalysisScreenState
                 children: [
                   ModernDrawerTile(
                     icon: Icons.home_rounded,
-                    title: localizations.home ?? 'Global Overview',
+                    title: localizations.home,
                     onTap: () {
                       Navigator.pop(context);
                       Navigator.of(context).popUntil((route) {
@@ -516,7 +497,7 @@ class _DisaggregationAnalysisScreenState
                   if (isFocalPoint)
                     ModernDrawerTile(
                       icon: Icons.notifications_rounded,
-                      title: localizations.notifications ?? 'Notifications',
+                      title: localizations.notifications,
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.of(context).pop();
@@ -526,7 +507,7 @@ class _DisaggregationAnalysisScreenState
                   else
                     ModernDrawerTile(
                       icon: Icons.folder_rounded,
-                      title: localizations.resources ?? 'Resources',
+                      title: localizations.resources,
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.of(context).pop();
@@ -624,16 +605,16 @@ class _DisaggregationAnalysisScreenState
                       IOSIconButton(
                         icon: Icons.close,
                         onPressed: () => Navigator.pop(bottomSheetContext),
-                        tooltip: localizations.close ?? 'Close',
-                        semanticLabel: localizations.close ?? 'Close',
+                        tooltip: localizations.close,
+                        semanticLabel: localizations.close,
                       ),
                     ],
                   ),
                 ),
                 const Divider(height: 1),
                 // Countries widget
-                Expanded(
-                  child: const CountriesWidget(),
+                const Expanded(
+                  child: CountriesWidget(),
                 ),
               ],
             ),

@@ -377,9 +377,6 @@ class WebViewService {
 
   static InAppWebViewSettings defaultSettings(
       {bool allowMixedContent = false}) {
-    // Build CSP meta tag script for injection
-    final cspMeta = AppConfig.contentSecurityPolicy;
-
     return InAppWebViewSettings(
       javaScriptEnabled: true,
       domStorageEnabled: true,

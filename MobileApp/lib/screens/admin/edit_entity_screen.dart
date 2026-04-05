@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../providers/admin/organizational_structure_provider.dart';
-import '../../utils/theme_extensions.dart';
 import '../../widgets/app_bar.dart';
 import '../../widgets/app_checkbox_list_tile.dart';
 import '../../config/routes.dart';
@@ -159,7 +156,7 @@ class _EditEntityScreenState extends State<EditEntityScreen> {
                 ),
               ),
             )
-          : Container(
+          : ColoredBox(
               color: theme.scaffoldBackgroundColor,
               child: Form(
                 key: _formKey,
@@ -173,7 +170,7 @@ class _EditEntityScreenState extends State<EditEntityScreen> {
                         labelText: '${_getEntityTypeLabel()} Name *',
                         hintText:
                             'Enter ${_getEntityTypeLabel().toLowerCase()} name',
-                        prefixIcon: Icon(Icons.business_outlined),
+                        prefixIcon: const Icon(Icons.business_outlined),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -199,7 +196,7 @@ class _EditEntityScreenState extends State<EditEntityScreen> {
                       decoration: InputDecoration(
                         labelText: 'Code',
                         hintText: 'Enter code (optional)',
-                        prefixIcon: Icon(Icons.tag_outlined),
+                        prefixIcon: const Icon(Icons.tag_outlined),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -219,7 +216,7 @@ class _EditEntityScreenState extends State<EditEntityScreen> {
                       decoration: InputDecoration(
                         labelText: 'Description',
                         hintText: 'Enter description (optional)',
-                        prefixIcon: Icon(Icons.description_outlined),
+                        prefixIcon: const Icon(Icons.description_outlined),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -255,7 +252,7 @@ class _EditEntityScreenState extends State<EditEntityScreen> {
                         decoration: InputDecoration(
                           labelText: 'Display Order',
                           hintText: 'Enter display order',
-                          prefixIcon: Icon(Icons.sort_outlined),
+                          prefixIcon: const Icon(Icons.sort_outlined),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -323,7 +320,7 @@ class _EditEntityScreenState extends State<EditEntityScreen> {
                         ),
                       ),
                       child: Text(
-                        localizations.cancel ?? 'Cancel',
+                        localizations.cancel,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,

@@ -45,7 +45,7 @@ class AdminDrawer extends StatelessWidget {
                   child: ListView(
                     padding: const EdgeInsets.only(top: 8, bottom: 16),
                     children: [
-                      ModernDrawerSectionTitle(label: 'General'),
+                      const ModernDrawerSectionTitle(label: 'General'),
                       ModernDrawerTile(
                         icon: Icons.home_rounded,
                         title: 'Dashboard',
@@ -110,7 +110,7 @@ class AdminDrawer extends StatelessWidget {
                           },
                         ),
                       const SizedBox(height: 8),
-                      ModernDrawerSectionTitle(label: 'Form & data'),
+                      const ModernDrawerSectionTitle(label: 'Form & data'),
                       ModernDrawerTile(
                         icon: Icons.article_rounded,
                         title: 'Manage Templates',
@@ -132,7 +132,7 @@ class AdminDrawer extends StatelessWidget {
                         },
                       ),
                       const SizedBox(height: 8),
-                      ModernDrawerSectionTitle(label: 'Website'),
+                      const ModernDrawerSectionTitle(label: 'Website'),
                       ModernDrawerTile(
                         icon: Icons.folder_open_rounded,
                         title: 'Manage Resources',
@@ -147,7 +147,7 @@ class AdminDrawer extends StatelessWidget {
                         },
                       ),
                       const SizedBox(height: 8),
-                      ModernDrawerSectionTitle(label: 'Reference data'),
+                      const ModernDrawerSectionTitle(label: 'Reference data'),
                       ModernDrawerTile(
                         icon: Icons.account_tree_rounded,
                         title: 'Organizational Structure',
@@ -175,7 +175,7 @@ class AdminDrawer extends StatelessWidget {
                         },
                       ),
                       const SizedBox(height: 8),
-                      ModernDrawerSectionTitle(label: 'Analytics'),
+                      const ModernDrawerSectionTitle(label: 'Analytics'),
                       ModernDrawerTile(
                         icon: Icons.bar_chart_rounded,
                         title: 'User Analytics',

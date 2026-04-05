@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
 import 'dart:math' as math;
 
 /// A PageView wrapper that only responds to horizontal swipes within ±5 degrees.
@@ -27,19 +26,8 @@ class _HorizontalSwipePageViewState extends State<HorizontalSwipePageView> {
   Offset? _dragStartPosition;
   bool _isHorizontalSwipe = false;
   bool _shouldAllowPageSwipe = true; // Only allow if not on interactive widget
-  double _dragDistance = 0.0;
   double _initialPage = 0.0;
   double? _screenWidth;
-
-  // Convert degrees to radians
-  static const double _maxAngleDegrees = 5.0;
-  static const double _maxAngleRadians = _maxAngleDegrees * math.pi / 180.0;
-
-  // More lenient angle for canceling (hysteresis) - once horizontal swipe is detected,
-  // it won't cancel unless angle exceeds this
-  static const double _cancelAngleDegrees = 20.0;
-  static const double _cancelAngleRadians =
-      _cancelAngleDegrees * math.pi / 180.0;
 
   // Minimum horizontal distance to consider it a swipe (reduced for faster activation)
   static const double _minSwipeDistance = 5.0;
@@ -72,7 +60,6 @@ class _HorizontalSwipePageViewState extends State<HorizontalSwipePageView> {
 
   void _onPointerDown(PointerDownEvent event) {
     _dragStartPosition = event.position;
-    _dragDistance = 0.0;
     _isHorizontalSwipe = false;
 
     // Only allow page navigation when swiping from the screen edges
@@ -102,8 +89,6 @@ class _HorizontalSwipePageViewState extends State<HorizontalSwipePageView> {
     final verticalDistance = delta.dy.abs();
     final totalDistance = math.sqrt(horizontalDistance * horizontalDistance +
         verticalDistance * verticalDistance);
-
-    _dragDistance = totalDistance;
 
     // Only check angle if we've moved enough
     if (totalDistance < _minSwipeDistance) {
@@ -218,7 +203,6 @@ class _HorizontalSwipePageViewState extends State<HorizontalSwipePageView> {
 
   void _resetDragState() {
     _dragStartPosition = null;
-    _dragDistance = 0.0;
     _isHorizontalSwipe = false;
     _shouldAllowPageSwipe = true;
     _initialPage = 0.0;

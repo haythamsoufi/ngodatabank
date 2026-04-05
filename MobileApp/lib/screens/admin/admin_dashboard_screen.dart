@@ -6,7 +6,6 @@ import '../../providers/shared/auth_provider.dart';
 import '../../config/routes.dart';
 import '../../utils/constants.dart';
 import '../../utils/ios_constants.dart';
-import '../../utils/theme_extensions.dart';
 import '../../widgets/bottom_navigation_bar.dart';
 import '../../widgets/app_bar.dart';
 import '../../widgets/loading_indicator.dart';
@@ -119,7 +118,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
             backgroundColor: IOSColors.getGroupedBackground(context),
             body: Center(
               child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: IOSSpacing.xxl),
+                    padding: const EdgeInsets.symmetric(horizontal: IOSSpacing.xxl),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -129,7 +128,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                       color: Theme.of(context)
                           .colorScheme
                           .onSurface
-                          .withOpacity(0.3),
+                          .withValues(alpha: 0.3),
                     ),
                     const SizedBox(height: IOSSpacing.lg),
                     Text(
@@ -150,7 +149,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           appBar: AppAppBar(
             title: localizations.adminDashboard,
           ),
-          body: Container(
+          body: ColoredBox(
             color: IOSColors.getGroupedBackground(context),
             child: RefreshIndicator(
               onRefresh: () async {
@@ -193,7 +192,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                           color: Theme.of(context)
                               .colorScheme
                               .onSurface
-                              .withOpacity(0.6),
+                              .withValues(alpha: 0.6),
                         ),
                       ),
                     );
@@ -201,13 +200,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
 
                   final content = SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: EdgeInsets.only(bottom: IOSSpacing.xxl),
+                    padding: const EdgeInsets.only(bottom: IOSSpacing.xxl),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        SizedBox(height: IOSSpacing.sm),
+                        const SizedBox(height: IOSSpacing.sm),
                         Padding(
-                          padding: EdgeInsets.symmetric(
+                          padding: const EdgeInsets.symmetric(
                             horizontal: IOSSpacing.lg,
                           ),
                           child: AdminUserBanner(user: user),
@@ -215,12 +214,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                         // Key Metrics - Horizontal Scroll
                         _buildKeyMetrics(provider),
 
-                        SizedBox(height: IOSSpacing.xl),
+                        const SizedBox(height: IOSSpacing.xl),
 
                         // Quick Actions - Horizontal Scroll
                         _buildQuickActions(provider),
 
-                        SizedBox(height: IOSSpacing.xl),
+                        const SizedBox(height: IOSSpacing.xl),
 
                         // Overview Section (combines attention + activity)
                         _buildOverviewSection(provider),
@@ -255,7 +254,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   // Simplified key metrics - horizontal scroll
   Widget _buildKeyMetrics(AdminDashboardProvider provider) {
     final localizations = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
 
     final metrics = [
       _MetricData(
@@ -290,7 +288,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: IOSSpacing.lg),
+          padding: const EdgeInsets.symmetric(horizontal: IOSSpacing.lg),
           child: Text(
             localizations.keyMetrics.toUpperCase(),
             style: IOSTextStyle.footnote(context).copyWith(
@@ -299,12 +297,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
             ),
           ),
         ),
-        SizedBox(height: IOSSpacing.md - 4),
+        const SizedBox(height: IOSSpacing.md - 4),
         SizedBox(
           height: _DashboardConstants.metricCardHeight,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.symmetric(horizontal: IOSSpacing.lg),
+            padding: const EdgeInsets.symmetric(horizontal: IOSSpacing.lg),
             itemCount: metrics.length,
             separatorBuilder: (_, __) => const SizedBox(
               width: _DashboardConstants.cardSpacing,
@@ -353,7 +351,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
               minWidth: _DashboardConstants.metricCardMinWidth,
               maxWidth: _DashboardConstants.metricCardMaxWidth,
             ),
-            padding: EdgeInsets.all(IOSSpacing.sm + 6),
+            padding: const EdgeInsets.all(IOSSpacing.sm + 6),
             decoration: BoxDecoration(
               color: theme.cardTheme.color ?? theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(_DashboardConstants.cardBorderRadius),
@@ -363,7 +361,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(icon, color: color, size: 22),
-                SizedBox(height: IOSSpacing.sm),
+                const SizedBox(height: IOSSpacing.sm),
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
@@ -375,7 +373,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     ),
                   ),
                 ),
-                SizedBox(height: IOSSpacing.xs),
+                const SizedBox(height: IOSSpacing.xs),
                 Flexible(
                   child: Text(
                     title,
@@ -427,7 +425,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       _ActionData(
         icon: Icons.settings_rounded,
         label: localizations.settings,
-        color: theme.colorScheme.onSurface.withOpacity(0.6),
+        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
         route: AppRoutes.settings,
       ),
     ];
@@ -436,7 +434,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: IOSSpacing.lg),
+          padding: const EdgeInsets.symmetric(horizontal: IOSSpacing.lg),
           child: Text(
             localizations.quickActions.toUpperCase(),
             style: IOSTextStyle.footnote(context).copyWith(
@@ -445,12 +443,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
             ),
           ),
         ),
-        SizedBox(height: IOSSpacing.md - 4),
+        const SizedBox(height: IOSSpacing.md - 4),
         SizedBox(
           height: _DashboardConstants.actionCardHeight,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.symmetric(horizontal: IOSSpacing.lg),
+            padding: const EdgeInsets.symmetric(horizontal: IOSSpacing.lg),
             itemCount: actions.length,
             separatorBuilder: (_, __) => const SizedBox(
               width: _DashboardConstants.cardSpacing,
@@ -505,14 +503,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(
                       _DashboardConstants.iconContainerBorderRadius,
                     ),
                   ),
                   child: Icon(icon, color: color, size: 20),
                 ),
-                SizedBox(height: IOSSpacing.sm),
+                const SizedBox(height: IOSSpacing.sm),
                 Flexible(
                   child: Text(
                     label,
@@ -542,7 +540,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         provider.securityAlerts > 0;
 
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: IOSSpacing.lg),
+      margin: const EdgeInsets.symmetric(horizontal: IOSSpacing.lg),
       decoration: BoxDecoration(
         color: theme.cardTheme.color ?? theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(
@@ -553,7 +551,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.fromLTRB(
+            padding: const EdgeInsets.fromLTRB(
               IOSSpacing.lg,
               IOSSpacing.lg,
               IOSSpacing.lg,
@@ -605,7 +603,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                 thickness: 0.5,
                 indent: IOSSpacing.lg,
                 endIndent: IOSSpacing.lg,
-                color: theme.dividerColor.withOpacity(0.5),
+                color: theme.dividerColor.withValues(alpha: 0.5),
               ),
           ],
 
@@ -647,20 +645,20 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
               provider.recentActivities == 0 &&
               provider.activeSessions == 0)
             Padding(
-              padding: EdgeInsets.all(IOSSpacing.xxl),
+              padding: const EdgeInsets.all(IOSSpacing.xxl),
               child: Center(
                 child: Column(
                   children: [
                     Icon(
                       Icons.check_circle_outline_rounded,
                       size: 48,
-                      color: theme.colorScheme.onSurface.withOpacity(0.3),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
                     ),
-                    SizedBox(height: IOSSpacing.md - 4),
+                    const SizedBox(height: IOSSpacing.md - 4),
                     Text(
                       localizations.allCaughtUp,
                       style: IOSTextStyle.subheadline(context).copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -668,7 +666,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
               ),
             ),
 
-          SizedBox(height: IOSSpacing.lg),
+          const SizedBox(height: IOSSpacing.lg),
         ],
       ),
     );
@@ -682,7 +680,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     if (items.isEmpty) return const SizedBox.shrink();
 
     return Padding(
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: IOSSpacing.lg,
         vertical: 12,
       ),
@@ -694,7 +692,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
               Icon(
                 icon,
                 size: 18,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
               const SizedBox(width: 8),
               Flexible(
@@ -708,7 +706,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
               ),
             ],
           ),
-          SizedBox(height: IOSSpacing.md - 4),
+          const SizedBox(height: IOSSpacing.md - 4),
           ...items,
         ],
       ),
@@ -721,7 +719,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     required int count,
     required Color color,
   }) {
-    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -733,7 +730,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Icon(icon, color: color, size: 16),
@@ -755,7 +752,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
+              color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(

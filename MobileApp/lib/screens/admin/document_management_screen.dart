@@ -65,7 +65,7 @@ class _DocumentManagementScreenState extends State<DocumentManagementScreen> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: context.textSecondaryColor.withOpacity(0.3),
+                color: context.textSecondaryColor.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -122,11 +122,11 @@ class _DocumentManagementScreenState extends State<DocumentManagementScreen> {
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppAppBar(
         title: localizations.documentManagement,
-        actions: [
+        actions: const [
           // Add actions if needed
         ],
       ),
-      body: Container(
+      body: ColoredBox(
         color: theme.scaffoldBackgroundColor,
         child: Column(
           children: [
@@ -188,7 +188,7 @@ class _DocumentManagementScreenState extends State<DocumentManagementScreen> {
                       Expanded(
                         flex: 1,
                         child: DropdownButtonFormField<String>(
-                          value: _selectedStatusFilter,
+                          initialValue: _selectedStatusFilter,
                           isExpanded: true,
                           decoration: InputDecoration(
                             labelText: localizations.status,
@@ -216,14 +216,14 @@ class _DocumentManagementScreenState extends State<DocumentManagementScreen> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            DropdownMenuItem<String>(
+                            const DropdownMenuItem<String>(
                               value: 'pending',
                               child: Text(
                                 'Pending',
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            DropdownMenuItem<String>(
+                            const DropdownMenuItem<String>(
                               value: 'rejected',
                               child: Text(
                                 'Rejected',
@@ -243,7 +243,7 @@ class _DocumentManagementScreenState extends State<DocumentManagementScreen> {
                       Expanded(
                         flex: 1,
                         child: DropdownButtonFormField<String>(
-                          value: _selectedTypeFilter,
+                          initialValue: _selectedTypeFilter,
                           isExpanded: true,
                           decoration: InputDecoration(
                             labelText: localizations.type,
@@ -264,7 +264,7 @@ class _DocumentManagementScreenState extends State<DocumentManagementScreen> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            DropdownMenuItem<String>(
+                            const DropdownMenuItem<String>(
                               value: 'report',
                               child: Text(
                                 'Report',
@@ -278,7 +278,7 @@ class _DocumentManagementScreenState extends State<DocumentManagementScreen> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            DropdownMenuItem<String>(
+                            const DropdownMenuItem<String>(
                               value: 'cover_image',
                               child: Text(
                                 'Cover Image',
@@ -333,10 +333,10 @@ class _DocumentManagementScreenState extends State<DocumentManagementScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.error_outline,
                               size: 48,
-                              color: const Color(AppConstants.errorColor),
+                              color: Color(AppConstants.errorColor),
                             ),
                             const SizedBox(height: 16),
                             Text(
@@ -490,7 +490,7 @@ class _DocumentCard extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: _getStatusColor(document.status!, context)
-                            .withOpacity(0.1),
+                            .withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(

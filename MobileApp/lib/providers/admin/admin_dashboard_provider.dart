@@ -4,7 +4,6 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import '../../services/api_service.dart';
 import '../../services/error_handler.dart';
-import '../../config/app_config.dart';
 
 class AdminDashboardProvider with ChangeNotifier {
   final ApiService _api = ApiService();

@@ -42,8 +42,10 @@ dependencies:
   # UI
   cached_network_image: ^3.3.0
   fl_chart: ^0.69.0
+  font_awesome_flutter: ^10.8.0
 
   # Utilities
+  intl: ^0.20.2
   cupertino_icons: ^1.0.6
   device_info_plus: ^10.1.0
   package_info_plus: ^8.0.0

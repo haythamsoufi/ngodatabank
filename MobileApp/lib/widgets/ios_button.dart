@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart' as cupertino;
 import 'package:flutter/services.dart';
 import '../utils/ios_constants.dart';
-import '../l10n/app_localizations.dart';
 
 /// iOS-style filled button with accessibility support
 class IOSFilledButton extends StatelessWidget {
@@ -29,12 +28,11 @@ class IOSFilledButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context);
     final effectiveOnPressed = disabled ? null : onPressed;
 
     final buttonColor = color ?? IOSColors.getSystemBlue(context);
-    final disabledButtonColor = color?.withOpacity(0.3) ??
-        IOSColors.getSystemBlue(context).withOpacity(0.3);
+    final disabledButtonColor = color?.withValues(alpha: 0.3) ??
+        IOSColors.getSystemBlue(context).withValues(alpha: 0.3);
 
     return Semantics(
       label: semanticLabel,
@@ -45,7 +43,7 @@ class IOSFilledButton extends StatelessWidget {
         onPressed: effectiveOnPressed != null
             ? () {
                 HapticFeedback.mediumImpact();
-                effectiveOnPressed!();
+                effectiveOnPressed();
               }
             : null,
         padding: EdgeInsets.zero,
@@ -108,7 +106,7 @@ class IOSOutlinedButton extends StatelessWidget {
         onPressed: effectiveOnPressed != null
             ? () {
                 HapticFeedback.lightImpact();
-                effectiveOnPressed!();
+                effectiveOnPressed();
               }
             : null,
         padding: padding ??
@@ -124,7 +122,7 @@ class IOSOutlinedButton extends StatelessWidget {
             border: Border.all(
               color: effectiveOnPressed != null
                   ? buttonColor
-                  : buttonColor.withOpacity(0.3),
+                  : buttonColor.withValues(alpha: 0.3),
               width: 1.5,
             ),
             borderRadius: BorderRadius.circular(borderRadius ?? 10),
@@ -138,7 +136,7 @@ class IOSOutlinedButton extends StatelessWidget {
             style: (textTheme.labelLarge ?? const TextStyle()).copyWith(
               color: effectiveOnPressed != null
                   ? buttonColor
-                  : buttonColor.withOpacity(0.3),
+                  : buttonColor.withValues(alpha: 0.3),
               fontWeight: FontWeight.w600,
               letterSpacing: -0.2,
             ),
@@ -176,7 +174,7 @@ class IOSIconButton extends StatelessWidget {
     final theme = Theme.of(context);
     final iconColor = color ?? theme.iconTheme.color ?? theme.colorScheme.onSurface;
 
-    Widget button = Semantics(
+    final Widget button = Semantics(
       label: semanticLabel ?? tooltip,
       hint: semanticHint,
       button: true,
@@ -189,12 +187,11 @@ class IOSIconButton extends StatelessWidget {
               }
             : null,
         padding: EdgeInsets.zero,
-        minSize: 0,
-        color: Colors.transparent,
+        color: Colors.transparent, minimumSize: Size.zero,
         child: Icon(
           icon,
           size: iconSize ?? 24,
-          color: onPressed != null ? iconColor : iconColor.withOpacity(0.3),
+          color: onPressed != null ? iconColor : iconColor.withValues(alpha: 0.3),
         ),
       ),
     );

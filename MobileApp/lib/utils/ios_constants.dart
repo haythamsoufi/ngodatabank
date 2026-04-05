@@ -246,7 +246,7 @@ class IOSTextStyle {
       fontSize: _scaledFontSize(context, _footnoteSize),
       fontWeight: FontWeight.w400,
       letterSpacing: -0.08,
-      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
     );
   }
 
@@ -255,7 +255,7 @@ class IOSTextStyle {
       fontSize: _scaledFontSize(context, _caption1Size),
       fontWeight: FontWeight.w400,
       letterSpacing: 0,
-      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
     );
   }
 
@@ -264,7 +264,7 @@ class IOSTextStyle {
       fontSize: _scaledFontSize(context, _caption2Size),
       fontWeight: FontWeight.w400,
       letterSpacing: 0.07,
-      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
     );
   }
 }

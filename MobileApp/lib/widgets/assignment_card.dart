@@ -56,9 +56,7 @@ class AssignmentCard extends StatelessWidget {
   }
 
   Widget _buildCompactView(BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final isDark = theme.isDarkTheme;
     // Get current locale for date formatting
     final locale = Localizations.localeOf(context);
     // Format date with localized month names but keep Western numerals
@@ -90,7 +88,7 @@ class AssignmentCard extends StatelessWidget {
       color: Colors.transparent,
       child: cupertino.CupertinoButton(
         padding: EdgeInsets.zero,
-        minSize: 0,
+        minimumSize: Size.zero,
         color: Colors.transparent,
         onPressed: onToggleExpand ?? onTap,
         child: ConstrainedBox(
@@ -136,7 +134,7 @@ class AssignmentCard extends StatelessWidget {
                                 shape: BoxShape.circle,
                               ),
                             ),
-                            SizedBox(width: IOSSpacing.xs),
+                            const SizedBox(width: IOSSpacing.xs),
                             Text(
                               '${assignment.completionRate.toStringAsFixed(0)}%',
                               style: IOSTextStyle.footnote(context),
@@ -147,13 +145,13 @@ class AssignmentCard extends StatelessWidget {
                     ),
                     // Due date on separate line if available
                     if (assignment.dueDate != null) ...[
-                      SizedBox(height: IOSSpacing.xs / 2),
+                      const SizedBox(height: IOSSpacing.xs / 2),
                       Text(
                         formatDate(assignment.dueDate!),
                         style: IOSTextStyle.footnote(context).copyWith(
                           color: isOverdue
                               ? const Color(AppConstants.errorColor)
-                              : theme.colorScheme.onSurface.withOpacity(0.6),
+                              : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                           fontWeight: isOverdue ? FontWeight.w600 : FontWeight.w400,
                         ),
                       ),
@@ -165,7 +163,7 @@ class AssignmentCard extends StatelessWidget {
               Icon(
                 cupertino.CupertinoIcons.chevron_right,
                 size: 13,
-                color: theme.colorScheme.onSurface.withOpacity(0.25),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.25),
               ),
             ],
           ),
@@ -212,7 +210,7 @@ class AssignmentCard extends StatelessWidget {
           // Header with collapse button
           cupertino.CupertinoButton(
             padding: EdgeInsets.zero,
-            minSize: 0,
+            minimumSize: Size.zero,
             color: Colors.transparent,
             onPressed: onToggleExpand,
             child: ConstrainedBox(
@@ -255,7 +253,7 @@ class AssignmentCard extends StatelessWidget {
                             style: IOSTextStyle.footnote(context).copyWith(
                               color: isOverdue
                                   ? const Color(AppConstants.errorColor)
-                                  : theme.colorScheme.onSurface.withOpacity(0.6),
+                                  : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                               fontWeight: isOverdue ? FontWeight.w600 : FontWeight.w400,
                             ),
                           ),
@@ -266,7 +264,7 @@ class AssignmentCard extends StatelessWidget {
                   Icon(
                     cupertino.CupertinoIcons.chevron_up,
                     size: 13,
-                    color: theme.colorScheme.onSurface.withOpacity(0.25),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.25),
                   ),
                 ],
               ),
@@ -276,7 +274,7 @@ class AssignmentCard extends StatelessWidget {
           // Expanded content
           cupertino.CupertinoButton(
             padding: EdgeInsets.zero,
-            minSize: 0,
+            minimumSize: Size.zero,
             color: Colors.transparent,
             onPressed: onTap,
             child: Container(
@@ -314,7 +312,7 @@ class AssignmentCard extends StatelessWidget {
                               height: 3,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(1.5),
-                                color: theme.dividerColor.withOpacity(0.2),
+                                color: theme.dividerColor.withValues(alpha: 0.2),
                               ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(1.5),
@@ -336,7 +334,7 @@ class AssignmentCard extends StatelessWidget {
                         cupertino.CupertinoButton(
                           onPressed: onEnterData,
                           padding: EdgeInsets.zero,
-                          minSize: 0,
+                          minimumSize: Size.zero,
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,
@@ -374,7 +372,7 @@ class AssignmentCard extends StatelessWidget {
                               Icon(
                                 cupertino.CupertinoIcons.person,
                                 size: 14,
-                                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                               ),
                               const SizedBox(width: 4),
                               Text(
@@ -416,36 +414,6 @@ class AssignmentCard extends StatelessWidget {
       ),
     );
   }
-
-  Color _getStatusColor(BuildContext context) {
-    switch (assignment.status.toLowerCase()) {
-      case 'approved':
-        return const Color(AppConstants.successColor);
-      case 'in progress':
-        return context.navyTextColor;
-      case 'requires revision':
-        return const Color(AppConstants.errorColor);
-      case 'pending':
-        return const Color(AppConstants.warningColor);
-      default:
-        return const Color(AppConstants.textSecondary);
-    }
-  }
-
-  IconData _getStatusIcon() {
-    switch (assignment.status.toLowerCase()) {
-      case 'approved':
-        return Icons.check_circle;
-      case 'in progress':
-        return Icons.work;
-      case 'requires revision':
-        return Icons.warning;
-      case 'pending':
-        return Icons.pending;
-      default:
-        return Icons.info;
-    }
-  }
 }
 
 class _StatusBadge extends StatelessWidget {
@@ -473,7 +441,6 @@ class _StatusBadge extends StatelessWidget {
     final localizations = AppLocalizations.of(context)!;
     final statusColor = _getStatusColor(context);
     final localizedStatus = localizations.localizeStatus(status);
-    final theme = Theme.of(context);
 
     // iOS-style minimal badge
     return Container(
@@ -482,7 +449,7 @@ class _StatusBadge extends StatelessWidget {
         vertical: 2,
       ),
       decoration: BoxDecoration(
-        color: statusColor.withOpacity(0.1),
+        color: statusColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(

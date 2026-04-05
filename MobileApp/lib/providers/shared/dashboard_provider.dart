@@ -15,7 +15,6 @@ class DashboardProvider with ChangeNotifier {
   Entity? _selectedEntity;
   bool _isLoading = false;
   String? _error;
-  DateTime? _lastCacheTime;
 
   List<Assignment> get currentAssignments => _currentAssignments;
   List<Assignment> get pastAssignments => _pastAssignments;
@@ -98,7 +97,6 @@ class DashboardProvider with ChangeNotifier {
     } else {
       _selectedEntity = data.selectedEntity ?? _selectedEntity;
     }
-    _lastCacheTime = data.timestamp;
   }
 
 
@@ -175,7 +173,6 @@ class DashboardProvider with ChangeNotifier {
     _pastAssignments = [];
     _entities = [];
     _selectedEntity = null;
-    _lastCacheTime = null;
     notifyListeners();
   }
 
@@ -187,7 +184,6 @@ class DashboardProvider with ChangeNotifier {
     _currentAssignments = [];
     _pastAssignments = [];
     _entities = [];
-    _lastCacheTime = null;
     // Restore the preserved entity
     _selectedEntity = preservedEntity;
     notifyListeners();

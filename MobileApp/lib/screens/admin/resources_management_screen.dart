@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/admin/resources_management_provider.dart';
-import '../../models/shared/resource.dart';
 import '../../widgets/app_bar.dart';
 import '../../widgets/bottom_navigation_bar.dart';
 import '../../config/routes.dart';
@@ -57,7 +56,7 @@ class _ResourcesManagementScreenState extends State<ResourcesManagementScreen> {
       appBar: AppAppBar(
         title: localizations.manageResources,
       ),
-      body: Container(
+      body: ColoredBox(
         color: theme.scaffoldBackgroundColor,
         child: Column(
           children: [
@@ -119,7 +118,7 @@ class _ResourcesManagementScreenState extends State<ResourcesManagementScreen> {
                       Expanded(
                         flex: 1,
                         child: DropdownButtonFormField<String>(
-                          value: _selectedCategoryFilter,
+                          initialValue: _selectedCategoryFilter,
                           isExpanded: true,
                           decoration: InputDecoration(
                             labelText: localizations.category,
@@ -174,7 +173,7 @@ class _ResourcesManagementScreenState extends State<ResourcesManagementScreen> {
                       Expanded(
                         flex: 1,
                         child: DropdownButtonFormField<String>(
-                          value: _selectedLanguageFilter,
+                          initialValue: _selectedLanguageFilter,
                           isExpanded: true,
                           decoration: InputDecoration(
                             labelText: localizations.language,
@@ -187,7 +186,7 @@ class _ResourcesManagementScreenState extends State<ResourcesManagementScreen> {
                             ),
                             isDense: true,
                           ),
-                          items: [
+                          items: const [
                             DropdownMenuItem<String>(
                               value: null,
                               child: Text(
@@ -271,10 +270,10 @@ class _ResourcesManagementScreenState extends State<ResourcesManagementScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.error_outline,
                               size: 48,
-                              color: const Color(AppConstants.errorColor),
+                              color: Color(AppConstants.errorColor),
                             ),
                             const SizedBox(height: 16),
                             Text(

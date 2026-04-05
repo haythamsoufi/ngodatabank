@@ -51,7 +51,7 @@ class AdminScreen extends StatelessWidget {
             title: localizations.adminPanel,
           ),
           backgroundColor: theme.scaffoldBackgroundColor,
-          body: Container(
+          body: ColoredBox(
             color: IOSColors.getGroupedBackground(context),
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(
@@ -63,7 +63,7 @@ class AdminScreen extends StatelessWidget {
                 children: [
                   AdminUserBanner(user: user),
 
-                  SizedBox(height: IOSSpacing.lg),
+                  const SizedBox(height: IOSSpacing.lg),
                   // General Section
                   _buildSectionCard(
                     context: context,
@@ -95,7 +95,7 @@ class AdminScreen extends StatelessWidget {
                     ],
                   ),
 
-                  SizedBox(height: IOSSpacing.md),
+                  const SizedBox(height: IOSSpacing.md),
 
                   // Form & Data Management Section
                   _buildSectionCard(
@@ -121,7 +121,7 @@ class AdminScreen extends StatelessWidget {
                     ],
                   ),
 
-                  SizedBox(height: IOSSpacing.md),
+                  const SizedBox(height: IOSSpacing.md),
 
                   // Website Management Section
                   _buildSectionCard(
@@ -140,7 +140,7 @@ class AdminScreen extends StatelessWidget {
                     ],
                   ),
 
-                  SizedBox(height: IOSSpacing.md),
+                  const SizedBox(height: IOSSpacing.md),
 
                   // Reference Data Section
                   _buildSectionCard(
@@ -166,7 +166,7 @@ class AdminScreen extends StatelessWidget {
                     ],
                   ),
 
-                  SizedBox(height: IOSSpacing.md),
+                  const SizedBox(height: IOSSpacing.md),
 
                   // Analytics & Monitoring Section
                   _buildSectionCard(
@@ -192,13 +192,13 @@ class AdminScreen extends StatelessWidget {
                     ],
                   ),
 
-                  SizedBox(height: IOSSpacing.xl),
+                  const SizedBox(height: IOSSpacing.xl),
                 ],
               ),
             ),
           ),
           bottomNavigationBar: showBottomNav
-              ? AppBottomNavigationBar(
+              ? const AppBottomNavigationBar(
                   currentIndex:
                       -1, // -1 means no tab is active (Admin screen is on top)
                   // onTap is optional - if not provided, uses NavigationHelper.navigateToMainTab by default
@@ -221,9 +221,9 @@ class AdminScreen extends StatelessWidget {
       header: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(IOSSpacing.sm),
+            padding: const EdgeInsets.all(IOSSpacing.sm),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
+              color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -232,12 +232,12 @@ class AdminScreen extends StatelessWidget {
               size: 16,
             ),
           ),
-          SizedBox(width: IOSSpacing.sm),
+          const SizedBox(width: IOSSpacing.sm),
           Text(
             title,
             style: IOSTextStyle.footnote(context).copyWith(
               fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
         ],
@@ -258,9 +258,9 @@ class AdminScreen extends StatelessWidget {
     final theme = Theme.of(context);
     return IOSListTile(
       leading: Container(
-        padding: EdgeInsets.all(IOSSpacing.sm + 2),
+        padding: const EdgeInsets.all(IOSSpacing.sm + 2),
         decoration: BoxDecoration(
-          color: iconColor.withOpacity(0.1),
+          color: iconColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(
@@ -278,7 +278,7 @@ class AdminScreen extends StatelessWidget {
       ),
       trailing: Icon(
         cupertino.CupertinoIcons.chevron_right,
-        color: theme.colorScheme.onSurface.withOpacity(0.3),
+        color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
         size: 13,
       ),
       onTap: () {

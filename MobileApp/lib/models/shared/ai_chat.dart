@@ -91,12 +91,12 @@ class AiConversationSummary {
   });
 
   factory AiConversationSummary.fromJson(Map<String, dynamic> json) {
-    DateTime? _dt(String? s) => s == null ? null : DateTime.tryParse(s);
+    DateTime? dt(String? s) => s == null ? null : DateTime.tryParse(s);
     return AiConversationSummary(
       id: json['id']?.toString() ?? '',
       title: json['title']?.toString(),
-      updatedAt: _dt(json['updated_at']?.toString()),
-      lastMessageAt: _dt(json['last_message_at']?.toString()),
+      updatedAt: dt(json['updated_at']?.toString()),
+      lastMessageAt: dt(json['last_message_at']?.toString()),
     );
   }
 }

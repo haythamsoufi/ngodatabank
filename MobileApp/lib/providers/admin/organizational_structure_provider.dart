@@ -449,13 +449,11 @@ class OrganizationalStructureProvider with ChangeNotifier {
         ).firstMatch(html);
 
         // Pattern 2: Table with id in quotes (different spacing)
-        if (match == null) {
-          match = RegExp(
+        match ??= RegExp(
             r'<table[^>]*\sid="' + tableId + r'"[^>]*>([\s\S]*?)</table>',
             caseSensitive: false,
             dotAll: true,
           ).firstMatch(html);
-        }
 
         // Pattern 3: Find by table ID anywhere in attributes
         if (match == null) {
@@ -646,84 +644,6 @@ class OrganizationalStructureProvider with ChangeNotifier {
         .replaceAll(RegExp(r'<[^>]+>'), '')
         .replaceAll(RegExp(r'\s+'), ' ')
         .trim();
-  }
-
-  List<Map<String, dynamic>> _filterByEntityType(
-    List<Map<String, dynamic>> organizations,
-    String entityType,
-  ) {
-    // Filter based on entity type - use the entityType field if available, otherwise fall back to name/level matching
-    return organizations.where((org) {
-      final orgEntityType = org['entityType']?.toString();
-
-      // If we have the entity type from parsing, use it directly
-      if (orgEntityType != null) {
-        if (entityType == 'secretariat') {
-          // For general secretariat, include all secretariat sub-types
-          return orgEntityType == 'divisions' ||
-              orgEntityType == 'departments' ||
-              orgEntityType == 'regions' ||
-              orgEntityType == 'clusters' ||
-              orgEntityType == 'secretariat';
-        }
-        return orgEntityType == entityType;
-      }
-
-      // Fallback to name/level matching if entityType not available
-      final name = org['name']?.toString().toLowerCase() ?? '';
-      final level = org['level']?.toString().toLowerCase() ?? '';
-
-      switch (entityType) {
-        case 'countries':
-          return !name.contains('branch') &&
-              !name.contains('subbranch') &&
-              !name.contains('local unit') &&
-              !name.contains('division') &&
-              !name.contains('department') &&
-              !name.contains('regional office') &&
-              !name.contains('cluster office') &&
-              !name.contains('red cross') &&
-              !name.contains('red crescent');
-
-        case 'nss':
-          return name.contains('red cross') ||
-              name.contains('red crescent') ||
-              name.contains('national society');
-
-        case 'ns_structure':
-          return name.contains('branch') ||
-              name.contains('subbranch') ||
-              name.contains('local unit') ||
-              level.contains('branch') ||
-              level.contains('subbranch') ||
-              level.contains('local unit');
-
-        case 'secretariat':
-          return name.contains('division') ||
-              name.contains('department') ||
-              name.contains('regional office') ||
-              name.contains('cluster office') ||
-              level.contains('division') ||
-              level.contains('department') ||
-              level.contains('regional') ||
-              level.contains('cluster');
-
-        case 'divisions':
-          return name.contains('division') || level.contains('division');
-
-        case 'departments':
-          return name.contains('department') || level.contains('department');
-
-        case 'regions':
-          return name.contains('regional office') || level.contains('regional');
-
-        case 'clusters':
-          return name.contains('cluster office') || level.contains('cluster');
-
-        default:
-          return true;
-      }
-    }).toList();
   }
 
   void clearError() {

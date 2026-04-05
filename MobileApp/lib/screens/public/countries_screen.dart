@@ -6,7 +6,6 @@ import '../../utils/constants.dart';
 import '../../utils/theme_extensions.dart';
 import '../../utils/url_helper.dart';
 import '../../config/routes.dart';
-import '../../config/app_config.dart';
 import '../../l10n/app_localizations.dart';
 import 'dart:convert';
 
@@ -164,7 +163,7 @@ class _CountriesScreenState extends State<CountriesScreen> {
                   Text(
                     'Loading countries...',
                     style: TextStyle(
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       fontSize: 14,
                     ),
                   ),
@@ -368,9 +367,9 @@ class _CountriesScreenState extends State<CountriesScreen> {
                                                   fontSize: 12,
                                                   color: isSelected
                                                       ? theme.colorScheme.onSecondary
-                                                          .withOpacity(0.9)
+                                                          .withValues(alpha: 0.9)
                                                       : theme.colorScheme.onSurface
-                                                          .withOpacity(0.6),
+                                                          .withValues(alpha: 0.6),
                                                 ),
                                               ),
                                             ],
@@ -437,7 +436,7 @@ class _CountriesScreenState extends State<CountriesScreen> {
                     );
                   },
                   child: Text(
-                    'See ${_selectedRegion} Region Overview',
+                    'See $_selectedRegion Region Overview',
                     style: TextStyle(
                       color: Color(AppConstants.ifrcRed),
                       fontSize: 14,
@@ -494,7 +493,7 @@ class _CountriesScreenState extends State<CountriesScreen> {
                         : 'No countries available',
                     style: TextStyle(
                       color: theme.colorScheme.onSurface
-                          .withOpacity(0.6),
+                          .withValues(alpha: 0.6),
                       fontSize: 14,
                     ),
                   ),
@@ -567,7 +566,7 @@ class _CountriesScreenState extends State<CountriesScreen> {
                               style: TextStyle(
                                 fontSize: 12,
                                 color: theme.colorScheme.onSurface
-                                    .withOpacity(0.6),
+                                    .withValues(alpha: 0.6),
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,

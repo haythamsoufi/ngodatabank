@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../providers/shared/auth_provider.dart';
 import '../../config/routes.dart';
 import '../../utils/constants.dart';
@@ -329,37 +330,31 @@ class _SplashScreenState extends State<SplashScreen>
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 10),
-                          OutlinedButton.icon(
+                          ElevatedButton.icon(
                             onPressed: _openNgoDatabankGithub,
-                            icon: Icon(
-                              Icons.open_in_new,
+                            icon: FaIcon(
+                              FontAwesomeIcons.github,
                               size: 18,
-                              color: Theme.of(context).colorScheme.onPrimary,
+                              color: Color(AppConstants.ifrcNavy),
                             ),
                             label: Text(
                               localizations.openOnGithub,
                               style: TextStyle(
-                                color: Theme.of(context).colorScheme.onPrimary,
+                                color: Color(AppConstants.ifrcNavy),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor:
-                                  Theme.of(context).colorScheme.onPrimary,
-                              side: BorderSide(
-                                color: Theme.of(context)
-                                    .colorScheme.onPrimary
-                                    .withValues(alpha: 0.85),
-                              ),
-                              backgroundColor:
-                                  Colors.white.withValues(alpha: 0.12),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Color(AppConstants.ifrcNavy),
+                              elevation: 2,
+                              shadowColor: Colors.black38,
+                              surfaceTintColor: Colors.transparent,
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 18,
-                                vertical: 10,
+                                horizontal: 20,
+                                vertical: 12,
                               ),
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.zero,
-                              ),
+                              shape: const StadiumBorder(),
                             ),
                           ),
                         ],

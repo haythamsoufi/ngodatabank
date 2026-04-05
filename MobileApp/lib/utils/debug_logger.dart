@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart'
-    show kDebugMode, kReleaseMode, kProfileMode;
+    show kDebugMode, kProfileMode;
 
 /// Log levels for filtering
 enum LogLevel {

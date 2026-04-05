@@ -8,7 +8,6 @@ import '../../widgets/bottom_navigation_bar.dart';
 import '../../models/shared/notification_preferences.dart';
 import '../../utils/constants.dart';
 import '../../utils/theme_extensions.dart';
-import '../../config/routes.dart';
 import '../../l10n/app_localizations.dart';
 
 class NotificationPreferencesScreen extends StatefulWidget {
@@ -40,7 +39,6 @@ class _NotificationPreferencesScreenState
   static const double gridUnit = 8.0;
   static const double grid2 = gridUnit * 2; // 16
   static const double grid3 = gridUnit * 3; // 24
-  static const double grid4 = gridUnit * 4; // 32
   static const double grid6 = gridUnit * 6; // 48
   static const double formFieldHeight = grid6; // 48
   static const double sectionSpacing = grid2; // 16
@@ -326,7 +324,7 @@ class _NotificationPreferencesScreenState
           }
 
           return SingleChildScrollView(
-            padding: EdgeInsets.all(horizontalPadding),
+            padding: const EdgeInsets.all(horizontalPadding),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -345,7 +343,7 @@ class _NotificationPreferencesScreenState
                   ),
                 ),
 
-                SizedBox(height: sectionSpacing),
+                const SizedBox(height: sectionSpacing),
 
                 // Email Frequency
                 _buildSection(
@@ -353,9 +351,9 @@ class _NotificationPreferencesScreenState
                   child: SizedBox(
                     height: formFieldHeight,
                     child: DropdownButtonFormField<String>(
-                      value: _notificationFrequency,
-                      decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
+                      initialValue: _notificationFrequency,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
                         contentPadding: EdgeInsets.symmetric(
                           horizontal: formFieldPadding,
                           vertical: formFieldVerticalPadding,
@@ -401,7 +399,7 @@ class _NotificationPreferencesScreenState
                 // Digest Schedule (shown when daily or weekly is selected)
                 if (_notificationFrequency == 'daily' ||
                     _notificationFrequency == 'weekly') ...[
-                  SizedBox(height: sectionSpacing),
+                  const SizedBox(height: sectionSpacing),
                   _buildSection(
                     title: localizations.digestSchedule,
                     child: LayoutBuilder(
@@ -419,11 +417,11 @@ class _NotificationPreferencesScreenState
                                 child: SizedBox(
                                   height: formFieldHeight,
                                   child: DropdownButtonFormField<String>(
-                                    value: _digestDay ?? 'monday',
+                                    initialValue: _digestDay ?? 'monday',
                                     decoration: InputDecoration(
                                       labelText: localizations.dayOfWeek,
                                       border: const OutlineInputBorder(),
-                                      contentPadding: EdgeInsets.symmetric(
+                                      contentPadding: const EdgeInsets.symmetric(
                                         horizontal: formFieldPadding,
                                         vertical: formFieldVerticalPadding,
                                       ),
@@ -466,7 +464,7 @@ class _NotificationPreferencesScreenState
                                   ),
                                 ),
                               ),
-                              SizedBox(width: sectionSpacing),
+                              const SizedBox(width: sectionSpacing),
                               Expanded(
                                 child: SizedBox(
                                   height: formFieldHeight,
@@ -512,7 +510,7 @@ class _NotificationPreferencesScreenState
                                       decoration: InputDecoration(
                                         labelText: localizations.timeLocalTime,
                                         border: const OutlineInputBorder(),
-                                        contentPadding: EdgeInsets.symmetric(
+                                        contentPadding: const EdgeInsets.symmetric(
                                           horizontal: formFieldPadding,
                                           vertical: formFieldVerticalPadding,
                                         ),
@@ -542,11 +540,11 @@ class _NotificationPreferencesScreenState
                                 SizedBox(
                                   height: formFieldHeight,
                                   child: DropdownButtonFormField<String>(
-                                    value: _digestDay ?? 'monday',
+                                    initialValue: _digestDay ?? 'monday',
                                     decoration: InputDecoration(
                                       labelText: localizations.dayOfWeek,
                                       border: const OutlineInputBorder(),
-                                      contentPadding: EdgeInsets.symmetric(
+                                      contentPadding: const EdgeInsets.symmetric(
                                         horizontal: formFieldPadding,
                                         vertical: formFieldVerticalPadding,
                                       ),
@@ -588,7 +586,7 @@ class _NotificationPreferencesScreenState
                                     },
                                   ),
                                 ),
-                                SizedBox(height: sectionSpacing),
+                                const SizedBox(height: sectionSpacing),
                               ],
                               SizedBox(
                                 height: formFieldHeight,
@@ -633,7 +631,7 @@ class _NotificationPreferencesScreenState
                                     decoration: InputDecoration(
                                       labelText: localizations.timeLocalTime,
                                       border: const OutlineInputBorder(),
-                                      contentPadding: EdgeInsets.symmetric(
+                                      contentPadding: const EdgeInsets.symmetric(
                                         horizontal: formFieldPadding,
                                         vertical: formFieldVerticalPadding,
                                       ),
@@ -662,7 +660,7 @@ class _NotificationPreferencesScreenState
                   ),
                 ],
 
-                SizedBox(height: sectionSpacing),
+                const SizedBox(height: sectionSpacing),
 
                 // Notification Types Table
                 _buildSection(
@@ -677,7 +675,7 @@ class _NotificationPreferencesScreenState
                           color: context.textSecondaryColor,
                         ),
                       ),
-                      SizedBox(height: sectionSpacing),
+                      const SizedBox(height: sectionSpacing),
                       Container(
                         decoration: BoxDecoration(
                           border: Border.all(
@@ -692,7 +690,7 @@ class _NotificationPreferencesScreenState
                             Container(
                               decoration: BoxDecoration(
                                 color: context.subtleSurfaceColor,
-                                borderRadius: BorderRadius.only(
+                                borderRadius: const BorderRadius.only(
                                   topLeft: Radius.circular(gridUnit),
                                   topRight: Radius.circular(gridUnit),
                                 ),
@@ -715,7 +713,7 @@ class _NotificationPreferencesScreenState
                                     ),
                                     children: [
                                       Padding(
-                                        padding: EdgeInsets.symmetric(
+                                        padding: const EdgeInsets.symmetric(
                                           horizontal: formFieldPadding,
                                           vertical: formFieldVerticalPadding,
                                         ),
@@ -773,15 +771,15 @@ class _NotificationPreferencesScreenState
                                       ),
                                     ),
                                     children: [
-                                      Padding(
+                                      const Padding(
                                         padding: EdgeInsets.symmetric(
                                           horizontal: formFieldPadding,
                                           vertical: gridUnit - 2,
                                         ),
-                                        child: const SizedBox.shrink(),
+                                        child: SizedBox.shrink(),
                                       ),
                                       Padding(
-                                        padding: EdgeInsets.symmetric(
+                                        padding: const EdgeInsets.symmetric(
                                           horizontal: gridUnit,
                                           vertical: gridUnit - 2,
                                         ),
@@ -850,7 +848,7 @@ class _NotificationPreferencesScreenState
                                         ),
                                       ),
                                       Padding(
-                                        padding: EdgeInsets.symmetric(
+                                        padding: const EdgeInsets.symmetric(
                                           horizontal: gridUnit,
                                           vertical: gridUnit - 2,
                                         ),
@@ -958,7 +956,7 @@ class _NotificationPreferencesScreenState
                                       ),
                                       children: [
                                         Padding(
-                                          padding: EdgeInsets.symmetric(
+                                          padding: const EdgeInsets.symmetric(
                                             horizontal: formFieldPadding,
                                             vertical: formFieldVerticalPadding,
                                           ),
@@ -972,7 +970,7 @@ class _NotificationPreferencesScreenState
                                           ),
                                         ),
                                         Padding(
-                                          padding: EdgeInsets.symmetric(
+                                          padding: const EdgeInsets.symmetric(
                                             horizontal: formFieldPadding,
                                             vertical: formFieldVerticalPadding,
                                           ),
@@ -1039,7 +1037,7 @@ class _NotificationPreferencesScreenState
                   ),
                 ),
 
-                SizedBox(height: grid3),
+                const SizedBox(height: grid3),
 
                 // Save Button
                 SizedBox(
@@ -1053,7 +1051,7 @@ class _NotificationPreferencesScreenState
                           : theme.colorScheme.primary,
                       foregroundColor: theme.colorScheme.onPrimary,
                       padding:
-                          EdgeInsets.symmetric(vertical: sectionSpacing - 4),
+                          const EdgeInsets.symmetric(vertical: sectionSpacing - 4),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(gridUnit - 2),
                       ),
@@ -1114,7 +1112,7 @@ class _NotificationPreferencesScreenState
               color: context.textColor,
             ),
           ),
-          SizedBox(height: sectionTitleSpacing),
+          const SizedBox(height: sectionTitleSpacing),
           child,
         ],
       ),

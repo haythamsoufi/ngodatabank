@@ -117,7 +117,7 @@ class _AuditTrailScreenState extends State<AuditTrailScreen> {
       appBar: AppAppBar(
         title: localizations.auditTrail,
       ),
-      body: Container(
+      body: ColoredBox(
         color: theme.scaffoldBackgroundColor,
         child: Column(
           children: [
@@ -164,7 +164,7 @@ class _AuditTrailScreenState extends State<AuditTrailScreen> {
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          value: _selectedActionFilter,
+                          initialValue: _selectedActionFilter,
                           decoration: InputDecoration(
                             labelText: localizations.action,
                             border: OutlineInputBorder(
@@ -213,7 +213,7 @@ class _AuditTrailScreenState extends State<AuditTrailScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          value: _selectedUserFilter,
+                          initialValue: _selectedUserFilter,
                           decoration: InputDecoration(
                             labelText: localizations.user,
                             border: OutlineInputBorder(
@@ -435,19 +435,19 @@ class _AuditTrailScreenState extends State<AuditTrailScreen> {
                   }
 
                   if (provider.auditLogs.isEmpty) {
-                    return Center(
+                    return const Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.history_outlined,
                             size: 56,
                             color: Color(AppConstants.textSecondary),
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16),
                           Text(
                             'No audit logs found',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
                               color: Color(AppConstants.textColor),

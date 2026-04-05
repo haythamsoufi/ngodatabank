@@ -22,7 +22,6 @@ class NavigationHelper {
     final user = authProvider.user;
     final isAdmin = user != null &&
         (user.role == 'admin' || user.role == 'system_manager');
-    final isAuthenticated = authProvider.isAuthenticated;
     final isFocalPoint = user != null && user.role == 'focal_point';
 
     // Pop all routes until we reach MainNavigationScreen

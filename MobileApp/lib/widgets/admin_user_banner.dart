@@ -35,21 +35,21 @@ class AdminUserBanner extends StatelessWidget {
     }
 
     final primaryColor = profileColor;
-    final secondaryColor = primaryColor.withOpacity(0.7);
-    final accentColor = primaryColor.withOpacity(0.3);
+    final secondaryColor = primaryColor.withValues(alpha: 0.7);
+    final accentColor = primaryColor.withValues(alpha: 0.3);
     final onBanner = AccessibilityHelper.bannerHeroForeground(primaryColor);
     final lightForeground = onBanner.computeLuminance() > 0.5;
 
     final splash = lightForeground
-        ? Colors.white.withOpacity(0.22)
-        : Colors.black.withOpacity(0.1);
+        ? Colors.white.withValues(alpha: 0.22)
+        : Colors.black.withValues(alpha: 0.1);
     final highlight = lightForeground
-        ? Colors.white.withOpacity(0.12)
-        : Colors.black.withOpacity(0.06);
+        ? Colors.white.withValues(alpha: 0.12)
+        : Colors.black.withValues(alpha: 0.06);
     final decoStrong =
-        lightForeground ? Colors.white.withOpacity(0.12) : Colors.black.withOpacity(0.08);
+        lightForeground ? Colors.white.withValues(alpha: 0.12) : Colors.black.withValues(alpha: 0.08);
     final decoSoft =
-        lightForeground ? Colors.white.withOpacity(0.09) : Colors.black.withOpacity(0.06);
+        lightForeground ? Colors.white.withValues(alpha: 0.09) : Colors.black.withValues(alpha: 0.06);
 
     final initial = displayName.isNotEmpty
         ? displayName.substring(0, 1).toUpperCase()
@@ -76,10 +76,10 @@ class AdminUserBanner extends StatelessWidget {
       }
     }
 
-    final avatarRing = Colors.white.withOpacity(0.92);
+    final avatarRing = Colors.white.withValues(alpha: 0.92);
 
     return Container(
-      margin: EdgeInsets.only(bottom: IOSSpacing.sm),
+      margin: const EdgeInsets.only(bottom: IOSSpacing.sm),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -92,7 +92,7 @@ class AdminUserBanner extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: primaryColor.withOpacity(0.4),
+            color: primaryColor.withValues(alpha: 0.4),
             blurRadius: 20,
             spreadRadius: 2,
             offset: const Offset(0, 8),
@@ -141,7 +141,7 @@ class AdminUserBanner extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.all(IOSSpacing.lg),
+                padding: const EdgeInsets.all(IOSSpacing.lg),
                 child: Row(
                   children: [
                     Container(
@@ -169,7 +169,7 @@ class AdminUserBanner extends StatelessWidget {
                             end: Alignment.bottomRight,
                             colors: [
                               primaryColor,
-                              primaryColor.withOpacity(0.8),
+                              primaryColor.withValues(alpha: 0.8),
                             ],
                           ),
                         ),
@@ -185,7 +185,7 @@ class AdminUserBanner extends StatelessWidget {
                         ),
                       ),
                     ),
-                    SizedBox(width: IOSSpacing.md),
+                    const SizedBox(width: IOSSpacing.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,17 +208,17 @@ class AdminUserBanner extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                           if (title != null && title.isNotEmpty) ...[
-                            SizedBox(height: IOSSpacing.xs + 2),
+                            const SizedBox(height: IOSSpacing.xs + 2),
                             Container(
-                              padding: EdgeInsets.symmetric(
+                              padding: const EdgeInsets.symmetric(
                                 horizontal: IOSSpacing.sm + 2,
                                 vertical: IOSSpacing.xs,
                               ),
                               decoration: BoxDecoration(
-                                color: onBanner.withOpacity(0.2),
+                                color: onBanner.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: onBanner.withOpacity(0.35),
+                                  color: onBanner.withValues(alpha: 0.35),
                                   width: 1,
                                 ),
                               ),
@@ -228,15 +228,15 @@ class AdminUserBanner extends StatelessWidget {
                                   Icon(
                                     Icons.work_outline,
                                     size: 14,
-                                    color: onBanner.withOpacity(0.95),
+                                    color: onBanner.withValues(alpha: 0.95),
                                   ),
-                                  SizedBox(width: IOSSpacing.xs + 2),
+                                  const SizedBox(width: IOSSpacing.xs + 2),
                                   Flexible(
                                     child: Text(
                                       title,
                                       style: IOSTextStyle.caption1(context).copyWith(
                                         fontWeight: FontWeight.w600,
-                                        color: onBanner.withOpacity(0.98),
+                                        color: onBanner.withValues(alpha: 0.98),
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -246,17 +246,17 @@ class AdminUserBanner extends StatelessWidget {
                               ),
                             ),
                           ],
-                          SizedBox(height: IOSSpacing.sm),
+                          const SizedBox(height: IOSSpacing.sm),
                           Container(
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                               horizontal: IOSSpacing.sm + 2,
                               vertical: IOSSpacing.xs + 1,
                             ),
                             decoration: BoxDecoration(
-                              color: onBanner.withOpacity(0.2),
+                              color: onBanner.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: onBanner.withOpacity(0.35),
+                                color: onBanner.withValues(alpha: 0.35),
                                 width: 1,
                               ),
                             ),
@@ -266,14 +266,14 @@ class AdminUserBanner extends StatelessWidget {
                                 Icon(
                                   Icons.verified_user_outlined,
                                   size: 14,
-                                  color: onBanner.withOpacity(0.95),
+                                  color: onBanner.withValues(alpha: 0.95),
                                 ),
-                                SizedBox(width: IOSSpacing.xs + 2),
+                                const SizedBox(width: IOSSpacing.xs + 2),
                                 Text(
                                   getRoleDisplayName(role),
                                   style: IOSTextStyle.caption2(context).copyWith(
                                     fontWeight: FontWeight.w600,
-                                    color: onBanner.withOpacity(0.98),
+                                    color: onBanner.withValues(alpha: 0.98),
                                   ),
                                 ),
                               ],
@@ -292,12 +292,12 @@ class AdminUserBanner extends StatelessWidget {
                         splashColor: splash,
                         highlightColor: highlight,
                         child: Container(
-                          padding: EdgeInsets.all(IOSSpacing.sm),
+                          padding: const EdgeInsets.all(IOSSpacing.sm),
                           decoration: BoxDecoration(
-                            color: onBanner.withOpacity(0.18),
+                            color: onBanner.withValues(alpha: 0.18),
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: onBanner.withOpacity(0.32),
+                              color: onBanner.withValues(alpha: 0.32),
                               width: 1,
                             ),
                           ),

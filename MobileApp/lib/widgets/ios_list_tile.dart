@@ -38,7 +38,7 @@ class IOSListTile extends StatelessWidget {
 
     Widget content = Container(
       color: bgColor,
-      padding: contentPadding ?? EdgeInsets.symmetric(
+      padding: contentPadding ?? const EdgeInsets.symmetric(
         horizontal: IOSSpacing.md,
         vertical: IOSSpacing.sm,
       ),
@@ -46,7 +46,7 @@ class IOSListTile extends StatelessWidget {
         children: [
           if (leading != null) ...[
             leading!,
-            SizedBox(width: IOSSpacing.md),
+            const SizedBox(width: IOSSpacing.md),
           ],
           Expanded(
             child: Column(
@@ -55,14 +55,14 @@ class IOSListTile extends StatelessWidget {
               children: [
                 if (title != null) title!,
                 if (subtitle != null) ...[
-                  SizedBox(height: IOSSpacing.xs / 2),
+                  const SizedBox(height: IOSSpacing.xs / 2),
                   subtitle!,
                 ],
               ],
             ),
           ),
           if (trailing != null) ...[
-            SizedBox(width: IOSSpacing.sm),
+            const SizedBox(width: IOSSpacing.sm),
             trailing!,
           ],
         ],
@@ -72,9 +72,8 @@ class IOSListTile extends StatelessWidget {
     if (onTap != null) {
       content = cupertino.CupertinoButton(
         padding: EdgeInsets.zero,
-        minSize: 0,
         color: Colors.transparent,
-        onPressed: onTap,
+        onPressed: onTap, minimumSize: Size.zero,
         child: content,
       );
     }
@@ -135,13 +134,13 @@ class IOSGroupedList extends StatelessWidget {
     }
 
     return Container(
-      margin: margin ?? EdgeInsets.only(bottom: IOSSpacing.xl),
+      margin: margin ?? const EdgeInsets.only(bottom: IOSSpacing.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (header != null)
             Padding(
-              padding: EdgeInsets.only(
+              padding: const EdgeInsets.only(
                 left: IOSSpacing.xl,
                 right: IOSSpacing.xl,
                 bottom: IOSSpacing.sm,
@@ -152,7 +151,7 @@ class IOSGroupedList extends StatelessWidget {
                       header as String,
                       style: IOSTextStyle.footnote(context).copyWith(
                         fontWeight: FontWeight.w600,
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     )
                   : header!,
@@ -168,7 +167,7 @@ class IOSGroupedList extends StatelessWidget {
           ),
           if (footer != null)
             Padding(
-              padding: EdgeInsets.only(
+              padding: const EdgeInsets.only(
                 left: IOSSpacing.xl,
                 right: IOSSpacing.xl,
                 top: IOSSpacing.sm,

@@ -80,7 +80,7 @@ class AppSwitchListTile extends StatelessWidget {
                 ),
               )
             : null,
-        activeColor: theme.isDarkTheme
+        activeThumbColor: theme.isDarkTheme
             ? const Color(AppConstants.themeSwitchCheckboxActiveDark)
             : theme.colorScheme.primary,
         contentPadding: effectivePadding,

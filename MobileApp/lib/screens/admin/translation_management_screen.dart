@@ -149,7 +149,7 @@ class _TranslationManagementScreenState
       appBar: AppAppBar(
         title: localizations.translationManagement,
       ),
-      body: Container(
+      body: ColoredBox(
         color: theme.scaffoldBackgroundColor,
         child: Column(
           children: [
@@ -211,7 +211,7 @@ class _TranslationManagementScreenState
                       Expanded(
                         flex: 1,
                         child: DropdownButtonFormField<String>(
-                          value: _selectedLanguageFilter,
+                          initialValue: _selectedLanguageFilter,
                           isExpanded: true,
                           decoration: InputDecoration(
                             labelText: localizations.language,
@@ -224,7 +224,7 @@ class _TranslationManagementScreenState
                             ),
                             isDense: true,
                           ),
-                          items: [
+                          items: const [
                             DropdownMenuItem<String>(
                               value: null,
                               child: Text(
@@ -273,7 +273,7 @@ class _TranslationManagementScreenState
                       Expanded(
                         flex: 1,
                         child: DropdownButtonFormField<String>(
-                          value: _selectedStatusFilter,
+                          initialValue: _selectedStatusFilter,
                           isExpanded: true,
                           decoration: InputDecoration(
                             labelText: localizations.status,
@@ -294,7 +294,7 @@ class _TranslationManagementScreenState
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            DropdownMenuItem<String>(
+                            const DropdownMenuItem<String>(
                               value: 'pending',
                               child: Text(
                                 'Pending',
@@ -308,7 +308,7 @@ class _TranslationManagementScreenState
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            DropdownMenuItem<String>(
+                            const DropdownMenuItem<String>(
                               value: 'review',
                               child: Text(
                                 'Review',
@@ -363,10 +363,10 @@ class _TranslationManagementScreenState
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.error_outline,
                               size: 48,
-                              color: const Color(AppConstants.errorColor),
+                              color: Color(AppConstants.errorColor),
                             ),
                             const SizedBox(height: 16),
                             Text(

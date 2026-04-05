@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'dart:math' as math;
 import '../../providers/public/quiz_game_provider.dart';
-import '../../providers/public/indicator_bank_provider.dart';
-import '../../providers/shared/language_provider.dart';
-import '../../widgets/app_bar.dart';
 import '../../utils/theme_extensions.dart';
 import '../../utils/constants.dart';
 import '../../l10n/app_localizations.dart';
@@ -200,7 +196,7 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                 icon: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.surface.withOpacity(0.9),
+                    color: theme.colorScheme.surface.withValues(alpha: 0.9),
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
@@ -343,7 +339,7 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                 Text(
                   localizations.quizGameTestYourKnowledge,
                   style: theme.textTheme.titleMedium?.copyWith(
-                    color: theme.colorScheme.onPrimary.withOpacity(0.9),
+                    color: theme.colorScheme.onPrimary.withValues(alpha: 0.9),
                     shadows: [
                       Shadow(
                         color: theme.ambientShadow(
@@ -377,7 +373,7 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                           vertical: 14,
                         ),
                         backgroundColor:
-                            theme.colorScheme.onPrimary.withOpacity(0.2),
+                            theme.colorScheme.onPrimary.withValues(alpha: 0.2),
                         foregroundColor: theme.colorScheme.onPrimary,
                         side: BorderSide(
                           color: theme.colorScheme.onPrimary,
@@ -524,8 +520,8 @@ class _QuizGameScreenState extends State<QuizGameScreen>
           end: Alignment.bottomCenter,
           colors: [
             theme.scaffoldBackgroundColor,
-            theme.scaffoldBackgroundColor.withOpacity(0.95),
-            theme.colorScheme.primaryContainer.withOpacity(0.1),
+            theme.scaffoldBackgroundColor.withValues(alpha: 0.95),
+            theme.colorScheme.primaryContainer.withValues(alpha: 0.1),
           ],
           stops: const [0.0, 0.5, 1.0],
         ),
@@ -588,10 +584,10 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.surface.withOpacity(0.8),
+                          color: theme.colorScheme.surface.withValues(alpha: 0.8),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: theme.colorScheme.outline.withOpacity(0.2),
+                            color: theme.colorScheme.outline.withValues(alpha: 0.2),
                             width: 1,
                           ),
                           boxShadow: [
@@ -619,13 +615,13 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                       color: theme.colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: theme.colorScheme.outline.withOpacity(0.2),
+                        color: theme.colorScheme.outline.withValues(alpha: 0.2),
                         width: 1,
                       ),
                     ),
                     child: Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.star,
                           color: Color(AppConstants.warningColor),
                           size: 16,
@@ -702,7 +698,7 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                               ),
                             ],
                             border: Border.all(
-                              color: theme.colorScheme.outline.withOpacity(0.1),
+                              color: theme.colorScheme.outline.withValues(alpha: 0.1),
                               width: 1,
                             ),
                           ),
@@ -891,18 +887,18 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                     if (showResult && isCorrect)
                       ScaleTransition(
                         scale: _feedbackScaleAnimation,
-                        child: Icon(
+                        child: const Icon(
                           Icons.check_circle,
-                          color: const Color(AppConstants.successColor),
+                          color: Color(AppConstants.successColor),
                           size: 22,
                         ),
                       ),
                     if (showResult && isWrong)
                       ScaleTransition(
                         scale: _feedbackScaleAnimation,
-                        child: Icon(
+                        child: const Icon(
                           Icons.cancel,
-                          color: const Color(AppConstants.errorColor),
+                          color: Color(AppConstants.errorColor),
                           size: 22,
                         ),
                       ),
@@ -930,11 +926,11 @@ class _QuizGameScreenState extends State<QuizGameScreen>
       } else if (isWrong) {
         return theme.quizOptionResultWrongFill();
       } else {
-        return context.cardColor.withOpacity(0.5);
+        return context.cardColor.withValues(alpha: 0.5);
       }
     } else {
       return isSelected
-          ? theme.colorScheme.primaryContainer.withOpacity(0.7)
+          ? theme.colorScheme.primaryContainer.withValues(alpha: 0.7)
           : context.cardColor;
     }
   }
@@ -957,7 +953,7 @@ class _QuizGameScreenState extends State<QuizGameScreen>
     } else {
       return isSelected
           ? theme.colorScheme.primary
-          : theme.colorScheme.outline.withOpacity(0.2);
+          : theme.colorScheme.outline.withValues(alpha: 0.2);
     }
   }
 
@@ -975,7 +971,7 @@ class _QuizGameScreenState extends State<QuizGameScreen>
         return theme.quizOptionResultShadow(false, true);
       }
     } else if (isSelected) {
-      return theme.colorScheme.primary.withOpacity(0.4);
+      return theme.colorScheme.primary.withValues(alpha: 0.4);
     }
     return theme.ambientShadow(lightOpacity: 0.1, darkOpacity: 0.35);
   }
@@ -1044,7 +1040,7 @@ class _QuizGameScreenState extends State<QuizGameScreen>
       } else if (isWrong) {
         return theme.quizOptionResultWrongText();
       } else {
-        return context.textColor.withOpacity(0.5);
+        return context.textColor.withValues(alpha: 0.5);
       }
     }
     return context.textColor;
@@ -1083,10 +1079,10 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                 decoration: BoxDecoration(
                   color: quizProvider.isCorrect
                       ? (theme.isDarkTheme
-                          ? Colors.green.shade900.withOpacity(0.45)
+                          ? Colors.green.shade900.withValues(alpha: 0.45)
                           : Colors.green.shade50)
                       : (theme.isDarkTheme
-                          ? Colors.red.shade900.withOpacity(0.45)
+                          ? Colors.red.shade900.withValues(alpha: 0.45)
                           : Colors.red.shade50),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
@@ -1171,7 +1167,7 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: theme.colorScheme.primary.withOpacity(0.4),
+                            color: theme.colorScheme.primary.withValues(alpha: 0.4),
                             blurRadius: 12,
                             spreadRadius: 2,
                             offset: const Offset(0, 4),
@@ -1265,8 +1261,8 @@ class _QuizGameScreenState extends State<QuizGameScreen>
           end: Alignment.bottomRight,
           colors: [
             theme.scaffoldBackgroundColor,
-            gradientColors[0].withOpacity(0.1),
-            gradientColors[1].withOpacity(0.15),
+            gradientColors[0].withValues(alpha: 0.1),
+            gradientColors[1].withValues(alpha: 0.15),
           ],
         ),
       ),
@@ -1296,7 +1292,7 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: color.withOpacity(0.3),
+                          color: color.withValues(alpha: 0.3),
                           blurRadius: 12,
                           spreadRadius: 2,
                         ),
@@ -1345,7 +1341,7 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: theme.colorScheme.primary.withOpacity(0.2),
+                        color: theme.colorScheme.primary.withValues(alpha: 0.2),
                         blurRadius: 8,
                         spreadRadius: 1,
                       ),
@@ -1412,20 +1408,20 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                      colors: theme.isDarkTheme
                          ? [
                              theme.colorScheme.surfaceContainerHigh
-                                 .withOpacity(0.98),
+                                 .withValues(alpha: 0.98),
                              theme.colorScheme.surfaceContainer
-                                 .withOpacity(0.92),
+                                 .withValues(alpha: 0.92),
                            ]
                          : [
-                             theme.colorScheme.surface.withOpacity(0.98),
-                             theme.colorScheme.surface.withOpacity(0.88),
+                             theme.colorScheme.surface.withValues(alpha: 0.98),
+                             theme.colorScheme.surface.withValues(alpha: 0.88),
                            ],
                    ),
                    borderRadius: BorderRadius.circular(12),
                    border: Border.all(
                      color: theme.isDarkTheme
-                         ? theme.colorScheme.outline.withOpacity(0.35)
-                         : theme.colorScheme.outline.withOpacity(0.22),
+                         ? theme.colorScheme.outline.withValues(alpha: 0.35)
+                         : theme.colorScheme.outline.withValues(alpha: 0.22),
                      width: 1,
                    ),
                    boxShadow: [
@@ -1462,7 +1458,7 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                          Container(
                            width: 1,
                            height: 40,
-                           color: theme.colorScheme.outline.withOpacity(0.3),
+                           color: theme.colorScheme.outline.withValues(alpha: 0.3),
                          ),
                          _buildStatItem(
                            context,
@@ -1475,7 +1471,7 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                          Container(
                            width: 1,
                            height: 40,
-                           color: theme.colorScheme.outline.withOpacity(0.3),
+                           color: theme.colorScheme.outline.withValues(alpha: 0.3),
                          ),
                          _buildStatItem(
                            context,
@@ -1605,7 +1601,7 @@ class _QuizGameScreenState extends State<QuizGameScreen>
                            borderRadius: BorderRadius.circular(8),
                          ),
                          elevation: 3,
-                         shadowColor: theme.colorScheme.primary.withOpacity(0.3),
+                         shadowColor: theme.colorScheme.primary.withValues(alpha: 0.3),
                        ),
                      ),
                    ),
@@ -1631,10 +1627,10 @@ class _QuizGameScreenState extends State<QuizGameScreen>
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             shape: BoxShape.circle,
             border: Border.all(
-              color: color.withOpacity(0.3),
+              color: color.withValues(alpha: 0.3),
               width: 1.5,
             ),
           ),
@@ -1674,7 +1670,7 @@ class _BackgroundPatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = theme.colorScheme.primary.withOpacity(0.03)
+      ..color = theme.colorScheme.primary.withValues(alpha: 0.03)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
@@ -1701,7 +1697,7 @@ class _BackgroundPatternPainter extends CustomPainter {
 
     // Add subtle dots pattern
     final dotPaint = Paint()
-      ..color = theme.colorScheme.primary.withOpacity(0.02)
+      ..color = theme.colorScheme.primary.withValues(alpha: 0.02)
       ..style = PaintingStyle.fill;
 
     const dotSpacing = 50.0;

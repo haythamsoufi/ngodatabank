@@ -75,7 +75,6 @@ import 'services/organization_config_service.dart';
 import 'utils/constants.dart';
 import 'utils/theme.dart';
 import 'utils/responsive_typography.dart';
-import 'widgets/admin_drawer.dart';
 import 'widgets/bottom_navigation_bar.dart';
 import 'widgets/horizontal_swipe_page_view.dart';
 import 'widgets/offline_indicator.dart';
@@ -325,15 +324,18 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         ChangeNotifierProvider(create: (_) => LeaderboardProvider()),
         ChangeNotifierProvider(create: (_) => AiChatProvider()),
         ChangeNotifierProxyProvider<IndicatorBankProvider, QuizGameProvider>(
-          create: (_) {
-            final indicatorProvider = Provider.of<IndicatorBankProvider>(_, listen: false);
-            final languageProvider = Provider.of<LanguageProvider>(_, listen: false);
+          create: (context) {
+            final indicatorProvider =
+                Provider.of<IndicatorBankProvider>(context, listen: false);
+            final languageProvider =
+                Provider.of<LanguageProvider>(context, listen: false);
             final quizProvider = QuizGameProvider(indicatorProvider);
             quizProvider.updateLanguageProvider(languageProvider);
             return quizProvider;
           },
-          update: (_, indicatorProvider, previous) {
-            final languageProvider = Provider.of<LanguageProvider>(_, listen: false);
+          update: (context, indicatorProvider, previous) {
+            final languageProvider =
+                Provider.of<LanguageProvider>(context, listen: false);
             if (previous == null) {
               final quizProvider = QuizGameProvider(indicatorProvider);
               quizProvider.updateLanguageProvider(languageProvider);
@@ -580,10 +582,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
 
   // Screen caching configuration
   static const int _maxCachedScreens = 5; // Maximum screens to keep cached
-  static const int _keepAroundCurrent =
-      2; // Keep this many screens around current page
-  DateTime? _lastMemoryPressureWarning;
-  static const Duration _memoryPressureCooldown = Duration(minutes: 5);
 
   // Periodic memory cleanup timer (optional - can be enabled if needed)
   // Timer? _memoryCleanupTimer;
@@ -714,24 +712,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
     }
   }
 
-  void _handleMemoryPressure() {
-    final now = DateTime.now();
-
-    // Rate limit memory pressure handling (don't clear too frequently)
-    if (_lastMemoryPressureWarning != null &&
-        now.difference(_lastMemoryPressureWarning!) < _memoryPressureCooldown) {
-      return;
-    }
-
-    _lastMemoryPressureWarning = now;
-    DebugLogger.logWarn(
-        'NAV', 'Memory pressure detected - clearing cached screens');
-
-    // Clear screens that are far from current page
-    _clearDistantScreens();
-  }
-
-  void _clearDistantScreens({bool keepOnlyCurrent = false}) {
+  void _clearDistantScreens() {
     if (_cachedScreens == null || _cachedScreens!.isEmpty) return;
 
     // Clear cached screens to force recreation

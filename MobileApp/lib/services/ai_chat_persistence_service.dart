@@ -408,12 +408,13 @@ class AiChatPersistenceService {
       );
 
       return maps.map((map) {
-        DateTime? _dt(String? s) => s == null ? null : DateTime.tryParse(s);
+        DateTime? parseOptionalDateTime(String? s) =>
+            s == null ? null : DateTime.tryParse(s);
         return AiConversationSummary(
           id: map['id'] as String,
           title: map['title'] as String?,
-          updatedAt: _dt(map['updated_at'] as String?),
-          lastMessageAt: _dt(map['last_message_at'] as String?),
+          updatedAt: parseOptionalDateTime(map['updated_at'] as String?),
+          lastMessageAt: parseOptionalDateTime(map['last_message_at'] as String?),
         );
       }).toList();
     } catch (e, stackTrace) {

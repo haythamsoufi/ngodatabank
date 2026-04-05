@@ -7,11 +7,10 @@ class UrlHelper {
   static String buildFrontendUrlWithLanguage(String path, String language) {
     final baseUrl = AppConfig.frontendUrl;
     final uri = Uri.parse(baseUrl);
-    final pathSegments = List<String>.from(uri.pathSegments);
 
     // Parse the path to extract its segments
     final pathUri =
-        Uri.parse(path.startsWith('http') ? path : '${baseUrl}$path');
+        Uri.parse(path.startsWith('http') ? path : '$baseUrl$path');
     final pathSegmentsFromPath = pathUri.pathSegments;
 
     // Remove empty segments
@@ -34,7 +33,7 @@ class UrlHelper {
     }
 
     // Ensure trailing slash for Next.js routing
-    final newPath = '/' + finalSegments.join('/');
+    final newPath = '/${finalSegments.join('/')}';
     final finalPath = newPath.endsWith('/') ? newPath : '$newPath/';
 
     return uri.replace(path: finalPath).toString();

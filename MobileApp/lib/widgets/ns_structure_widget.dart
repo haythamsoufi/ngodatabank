@@ -4,7 +4,6 @@ import '../services/api_service.dart';
 import '../providers/shared/language_provider.dart';
 import '../utils/constants.dart';
 import '../utils/theme_extensions.dart';
-import '../config/app_config.dart';
 import 'dart:convert';
 
 class NSStructureWidget extends StatefulWidget {
@@ -57,13 +56,13 @@ class _NSStructureWidgetState extends State<NSStructureWidget> {
 
       if (branchesResponse.statusCode == 200) {
         final branchesData = jsonDecode(branchesResponse.body);
-        branches = (branchesData is List
-            ? branchesData
+        final rawBranches = branchesData is List
+            ? List<dynamic>.from(branchesData)
             : (branchesData is Map && branchesData['branches'] != null
-                ? branchesData['branches']
-                : [])) as List<dynamic>;
-        branches = branches
-            .map((item) => item as Map<String, dynamic>)
+                ? List<dynamic>.from(branchesData['branches'] as List)
+                : <dynamic>[]);
+        branches = rawBranches
+            .map((item) => Map<String, dynamic>.from(item as Map))
             .toList();
       }
 
@@ -79,13 +78,16 @@ class _NSStructureWidgetState extends State<NSStructureWidget> {
 
         if (subbranchesResponse.statusCode == 200) {
           final subbranchesData = jsonDecode(subbranchesResponse.body);
-          subbranches = (subbranchesData is List
-              ? subbranchesData
-              : (subbranchesData is Map && subbranchesData['subbranches'] != null
-                  ? subbranchesData['subbranches']
-                  : [])) as List<dynamic>;
-          subbranches = subbranches
-              .map((item) => item as Map<String, dynamic>)
+          final rawSubbranches = subbranchesData is List
+              ? List<dynamic>.from(subbranchesData)
+              : (subbranchesData is Map &&
+                      subbranchesData['subbranches'] != null
+                  ? List<dynamic>.from(
+                      subbranchesData['subbranches'] as List,
+                    )
+                  : <dynamic>[]);
+          subbranches = rawSubbranches
+              .map((item) => Map<String, dynamic>.from(item as Map))
               .toList();
         }
       } catch (e) {
@@ -174,7 +176,7 @@ class _NSStructureWidgetState extends State<NSStructureWidget> {
             Text(
               'Loading organizational structure...',
               style: TextStyle(
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 fontSize: 14,
               ),
             ),
@@ -255,7 +257,7 @@ class _NSStructureWidgetState extends State<NSStructureWidget> {
                 ),
               ),
               // Branches section with search
-              Container(
+              SizedBox(
                 height: 200,
                 child: Column(
                   children: [
@@ -408,7 +410,7 @@ class _NSStructureWidgetState extends State<NSStructureWidget> {
         child: Text(
           'No branches found',
           style: TextStyle(
-            color: theme.colorScheme.onSurface.withOpacity(0.6),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             fontSize: 14,
           ),
         ),
@@ -457,8 +459,8 @@ class _NSStructureWidgetState extends State<NSStructureWidget> {
                     style: TextStyle(
                       fontSize: 12,
                       color: isSelected
-                          ? theme.colorScheme.onSecondary.withOpacity(0.9)
-                          : theme.colorScheme.onSurface.withOpacity(0.6),
+                          ? theme.colorScheme.onSecondary.withValues(alpha: 0.9)
+                          : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
               ],
@@ -540,7 +542,7 @@ class _NSStructureWidgetState extends State<NSStructureWidget> {
                         ? 'Select a branch to view sub-branches'
                         : 'No sub-branches found',
                     style: TextStyle(
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       fontSize: 14,
                     ),
                   ),
@@ -569,7 +571,7 @@ class _NSStructureWidgetState extends State<NSStructureWidget> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(4),
                       border: Border.all(
-                        color: context.dividerColor.withOpacity(0.3),
+                        color: context.dividerColor.withValues(alpha: 0.3),
                         width: 0.5,
                       ),
                     ),

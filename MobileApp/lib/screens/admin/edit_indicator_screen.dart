@@ -5,7 +5,6 @@ import '../../models/shared/indicator.dart';
 import '../../utils/theme_extensions.dart';
 import '../../widgets/app_bar.dart';
 import '../../widgets/app_checkbox_list_tile.dart';
-import '../../config/routes.dart';
 import '../../utils/constants.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -163,7 +162,7 @@ class _EditIndicatorScreenState extends State<EditIndicatorScreen> {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppAppBar(
-        title: localizations.editIndicator ?? 'Edit Indicator',
+        title: localizations.editIndicator,
       ),
       body: _isLoading && _indicator == null
           ? Center(
@@ -198,7 +197,7 @@ class _EditIndicatorScreenState extends State<EditIndicatorScreen> {
                     ],
                   ),
                 )
-              : Container(
+              : ColoredBox(
                   color: theme.scaffoldBackgroundColor,
                   child: Form(
                     key: _formKey,
@@ -229,7 +228,7 @@ class _EditIndicatorScreenState extends State<EditIndicatorScreen> {
 
                         // Type Field (Dropdown)
                         DropdownButtonFormField<String>(
-                          value: _typeController.text.isEmpty
+                          initialValue: _typeController.text.isEmpty
                               ? null
                               : _typeController.text,
                           decoration: InputDecoration(

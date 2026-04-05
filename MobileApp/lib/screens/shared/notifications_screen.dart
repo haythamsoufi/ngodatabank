@@ -5,7 +5,6 @@ import '../../providers/shared/notification_provider.dart';
 import '../../providers/shared/auth_provider.dart';
 import '../../services/error_handler.dart';
 import '../../utils/debug_logger.dart';
-import '../../widgets/admin_drawer.dart';
 import '../../widgets/app_bar.dart';
 import '../../widgets/app_fade_in_up.dart';
 import '../../models/shared/notification.dart' as model;
@@ -40,10 +39,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
-        final user = authProvider.user;
-        final isAdmin = user != null &&
-            (user.role == 'admin' || user.role == 'system_manager');
-
         final localizations = AppLocalizations.of(context)!;
         final theme = Theme.of(context);
 
@@ -224,7 +219,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               ),
             ],
           ),
-          body: Container(
+          body: ColoredBox(
             color: theme.scaffoldBackgroundColor,
             child: Consumer<NotificationProvider>(
               builder: (context, provider, child) {
@@ -390,7 +385,7 @@ class _RestrictedSwipeDismissibleState
   }
 
   /// Navigate to a route (URL or app screen)
-  void _navigateToRoute(BuildContext context, String route) async {
+  Future<void> _navigateToRoute(BuildContext context, String route) async {
     try {
       // Check if this is a download URL
       final isDownloadUrl = route.contains('/api/download-app') ||
@@ -689,9 +684,9 @@ class _NotificationTile extends StatelessWidget {
       if (theme.isDarkTheme) {
         if (isUnread) {
           return isHighPriority
-              ? const Color(AppConstants.semanticNotificationOrange).withOpacity(0.15)
+              ? const Color(AppConstants.semanticNotificationOrange).withValues(alpha: 0.15)
               : const Color(AppConstants.themeSwitchCheckboxActiveDark)
-                  .withOpacity(0.25);
+                  .withValues(alpha: 0.25);
         }
         return theme.cardTheme.color ?? theme.colorScheme.surface;
       } else {
@@ -710,8 +705,8 @@ class _NotificationTile extends StatelessWidget {
         border: Border(
           left: isHighPriority
               ? (isUnread
-                  ? BorderSide(
-                      color: const Color(AppConstants.semanticNotificationOrange),
+                  ? const BorderSide(
+                      color: Color(AppConstants.semanticNotificationOrange),
                       width: 4,
                     )
                   : BorderSide.none)
@@ -742,13 +737,13 @@ class _NotificationTile extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isHighPriority
                         ? const Color(AppConstants.semanticNotificationOrange)
-                            .withOpacity(isUnread ? 0.1 : 0.05)
+                            .withValues(alpha: isUnread ? 0.1 : 0.05)
                         : theme.cardTheme.color,
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: isHighPriority
                           ? const Color(AppConstants.semanticNotificationOrange)
-                              .withOpacity(isUnread ? 1.0 : 0.5)
+                              .withValues(alpha: isUnread ? 1.0 : 0.5)
                           : theme.dividerColor,
                       width: isHighPriority ? (isUnread ? 1.5 : 1.0) : 0.5,
                     ),
@@ -761,7 +756,7 @@ class _NotificationTile extends StatelessWidget {
                       size: 20,
                       color: isHighPriority
                           ? const Color(AppConstants.semanticNotificationOrange)
-                              .withOpacity(isUnread ? 1.0 : 0.7)
+                              .withValues(alpha: isUnread ? 1.0 : 0.7)
                           : theme.textTheme.bodyLarge?.color,
                     ),
                   ),
@@ -820,10 +815,10 @@ class _NotificationTile extends StatelessWidget {
                                       color: theme.isDarkTheme
                                           ? const Color(AppConstants
                                                   .themeSwitchCheckboxActiveDark)
-                                              .withOpacity(
+                                              .withValues(alpha: 
                                                   isUnread ? 1.0 : 0.7)
                                           : theme.colorScheme.primary
-                                              .withOpacity(
+                                              .withValues(alpha: 
                                                   isUnread ? 1.0 : 0.7),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
@@ -845,10 +840,10 @@ class _NotificationTile extends StatelessWidget {
                                       color: theme.isDarkTheme
                                           ? const Color(AppConstants
                                                   .themeSwitchCheckboxActiveDark)
-                                              .withOpacity(
+                                              .withValues(alpha: 
                                                   isUnread ? 1.0 : 0.7)
                                           : theme.colorScheme.primary
-                                              .withOpacity(
+                                              .withValues(alpha: 
                                                   isUnread ? 1.0 : 0.7),
                                     ),
                                   ),
@@ -904,7 +899,7 @@ class _NotificationTile extends StatelessWidget {
                                   color: theme.isDarkTheme
                                       ? const Color(AppConstants
                                               .semanticNotificationSky)
-                                          .withOpacity(0.2)
+                                          .withValues(alpha: 0.2)
                                       : const Color(AppConstants
                                           .semanticEntityChipLightWash),
                                   borderRadius: BorderRadius.circular(4),
@@ -912,10 +907,10 @@ class _NotificationTile extends StatelessWidget {
                                     color: theme.isDarkTheme
                                         ? const Color(AppConstants
                                                 .semanticNotificationSky)
-                                            .withOpacity(0.5)
+                                            .withValues(alpha: 0.5)
                                         : const Color(AppConstants
                                                 .semanticNotificationSky)
-                                            .withOpacity(0.3),
+                                            .withValues(alpha: 0.3),
                                     width: 0.5,
                                   ),
                                 ),

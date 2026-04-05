@@ -10,9 +10,7 @@ linter:
     prefer_final_locals: true
     prefer_final_in_for_each: true
 
-    # Imports
-    unused_import: true
-    unused_shown_name: true
+    # Imports (unused_import / unused_shown_name are analyzer diagnostics, not linter rule IDs)
     sort_child_properties_last: true
 
     # Best Practices
@@ -27,7 +25,6 @@ linter:
     prefer_collection_literals: true
     prefer_conditional_assignment: true
     prefer_contains: true
-    prefer_equal_for_default_values: true
     prefer_for_elements_to_map_fromIterable: true
     prefer_if_null_operators: true
     prefer_inlined_adds: true
@@ -52,6 +49,7 @@ analyzer:
   exclude:
     - "**/*.g.dart"
     - "**/*.freezed.dart"
+    - "lib/l10n/app_localizations.dart"
   errors:
     invalid_annotation_target: ignore
   strong-mode:

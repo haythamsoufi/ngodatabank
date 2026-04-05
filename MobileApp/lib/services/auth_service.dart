@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import '../config/app_config.dart';
 import '../models/shared/user.dart';
 import 'api_service.dart';
@@ -839,6 +838,7 @@ class AuthService {
         DebugLogger.logAuth('Session is ${timeSinceLastActivity.inHours}h old, refreshing proactively...');
         refreshSession().catchError((e) {
           DebugLogger.logWarn('AUTH', 'Proactive refresh error: $e');
+          return false;
         });
       }
     }
@@ -1075,7 +1075,7 @@ class AuthService {
           if (setCookie != null) {
             DebugLogger.logAuth('Set-Cookie header: $setCookie');
             // Handle multiple Set-Cookie headers (they might be comma-separated or in a list)
-            String cookieString = setCookie;
+            final cookieString = setCookie;
             // If it's a list (from http package), join them
             if (setCookie.contains(',')) {
               // Split by comma and find the session cookie

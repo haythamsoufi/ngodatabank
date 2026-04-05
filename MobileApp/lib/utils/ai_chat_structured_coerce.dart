@@ -2,7 +2,7 @@
 
 Map<String, dynamic>? coerceStructuredPayload(dynamic payload) {
   if (payload == null || payload is! Map) return null;
-  final m = Map<String, dynamic>.from(payload as Map);
+  final m = Map<String, dynamic>.from(payload);
 
   final tp = m['table_payload'];
   if (tp is Map) {
@@ -120,7 +120,8 @@ Map<String, dynamic>? coerceStructuredPayload(dynamic payload) {
   final countries = <Map<String, dynamic>>[];
   for (final row in rowList) {
     if (row is! Map) continue;
-    var iso3 = (row['iso3'] ?? row['country_iso3'] ?? row['code'] ?? '').toString().trim().toUpperCase();
+    final iso3 =
+        (row['iso3'] ?? row['country_iso3'] ?? row['code'] ?? '').toString().trim().toUpperCase();
     if (iso3.length != 3) continue;
     var rawValue = row['value'];
     if (rawValue is String) rawValue = rawValue.replaceAll(',', '').trim();

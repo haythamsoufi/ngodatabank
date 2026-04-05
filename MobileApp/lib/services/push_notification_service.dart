@@ -82,7 +82,7 @@ class PushNotificationService {
       // Android: Full push notification setup
       // Request permission
       DebugLogger.logNotifications('Requesting notification permissions...');
-      NotificationSettings settings = await _messaging.requestPermission(
+      final NotificationSettings settings = await _messaging.requestPermission(
         alert: true,
         badge: true,
         sound: true,
@@ -108,7 +108,7 @@ class PushNotificationService {
       FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpened);
 
       // Handle notification when app is opened from terminated state
-      RemoteMessage? initialMessage = await _messaging.getInitialMessage();
+      final RemoteMessage? initialMessage = await _messaging.getInitialMessage();
       if (initialMessage != null) {
         _handleMessageOpened(initialMessage);
       }
@@ -323,7 +323,7 @@ class PushNotificationService {
   }
 
   /// Navigate to a route (URL or app screen)
-  void _navigateToRoute(String route) async {
+  Future<void> _navigateToRoute(String route) async {
     if (_navigatorKey?.currentState == null) {
       DebugLogger.logNotifications(
           'Navigator not available, queueing navigation: $route');
@@ -513,7 +513,7 @@ class PushNotificationService {
   Future<void> _registerToken() async {
     try {
       DebugLogger.logNotifications('Requesting FCM token from Firebase...');
-      String? token = await _messaging.getToken();
+      final String? token = await _messaging.getToken();
       if (token != null) {
         _currentToken = token;
         DebugLogger.logNotifications(

@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../providers/public/indicator_bank_provider.dart';
 import '../../providers/shared/language_provider.dart';
 import '../../providers/shared/auth_provider.dart';
-import '../../models/indicator_bank/indicator.dart';
 import '../../models/indicator_bank/sector.dart';
 import '../../utils/constants.dart';
 import '../../utils/theme_extensions.dart';
@@ -15,9 +14,7 @@ import '../../widgets/countries_widget.dart';
 import '../../widgets/ios_button.dart';
 import '../../widgets/modern_navigation_drawer.dart';
 import '../../config/routes.dart';
-import '../../config/app_config.dart';
 import '../../utils/url_helper.dart';
-import '../../services/webview_service.dart';
 import '../../l10n/app_localizations.dart';
 
 class IndicatorBankScreen extends StatefulWidget {
@@ -30,7 +27,6 @@ class IndicatorBankScreen extends StatefulWidget {
 class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
   final TextEditingController _searchController = TextEditingController();
   bool _showFilters = false;
-  bool _showProposeModal = false;
   String? _lastLanguage;
 
   // Propose form controllers
@@ -133,7 +129,7 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
                 children: [
                   ModernDrawerTile(
                     icon: Icons.home_rounded,
-                    title: localizations.home ?? 'Global Overview',
+                    title: localizations.home,
                     onTap: () {
                       Navigator.pop(context);
                       Navigator.of(context).popUntil((route) {
@@ -170,7 +166,7 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
                   if (isFocalPoint)
                     ModernDrawerTile(
                       icon: Icons.notifications_rounded,
-                      title: localizations.notifications ?? 'Notifications',
+                      title: localizations.notifications,
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.of(context).pop();
@@ -180,7 +176,7 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
                   else
                     ModernDrawerTile(
                       icon: Icons.folder_rounded,
-                      title: localizations.resources ?? 'Resources',
+                      title: localizations.resources,
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.of(context).pop();
@@ -280,16 +276,16 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
                       IOSIconButton(
                         icon: Icons.close,
                         onPressed: () => Navigator.pop(bottomSheetContext),
-                        tooltip: localizations.close ?? 'Close',
-                        semanticLabel: localizations.close ?? 'Close',
+                        tooltip: localizations.close,
+                        semanticLabel: localizations.close,
                       ),
                     ],
                   ),
                 ),
                 const Divider(height: 1),
                 // Countries widget
-                Expanded(
-                  child: const CountriesWidget(),
+                const Expanded(
+                  child: CountriesWidget(),
                 ),
               ],
             ),
@@ -388,7 +384,7 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
             ),
           ),
           drawer: _buildNavigationDrawer(context, languageProvider, theme, localizations),
-          body: Container(
+          body: ColoredBox(
             color: theme.scaffoldBackgroundColor,
             child: SafeArea(
               top: false,
@@ -550,8 +546,8 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
                     _showProposeIndicatorModal();
                   },
                   backgroundColor: Color(AppConstants.ifrcRed),
-                  child: Icon(Icons.add, color: theme.colorScheme.onPrimary),
                   tooltip: localizations.indicatorBankProposeNew,
+                  child: Icon(Icons.add, color: theme.colorScheme.onPrimary),
                 );
               }
             },
@@ -622,7 +618,7 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
             Container(
               decoration: BoxDecoration(
                 color: theme.colorScheme.surfaceContainerHighest
-                    .withOpacity(context.isDarkTheme ? 0.55 : 0.75),
+                    .withValues(alpha: context.isDarkTheme ? 0.55 : 0.75),
                 borderRadius: BorderRadius.circular(10),
               ),
               padding: const EdgeInsets.all(3),
@@ -663,7 +659,7 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
                       color: theme.colorScheme.surfaceContainerHigh,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                        color: theme.colorScheme.outline.withOpacity(
+                        color: theme.colorScheme.outline.withValues(alpha: 
                             context.isDarkTheme ? 0.4 : 0.28),
                         width: 0.5,
                       ),
@@ -728,7 +724,7 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
       decoration: BoxDecoration(
         color: isSelected
             ? (isDark
-                ? theme.colorScheme.onSurface.withOpacity(0.12)
+                ? theme.colorScheme.onSurface.withValues(alpha: 0.12)
                 : theme.colorScheme.surfaceContainerHighest)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
@@ -756,7 +752,7 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
                 ? (isDark
                     ? theme.colorScheme.onSurface
                     : Color(AppConstants.ifrcRed))
-                : theme.colorScheme.onSurface.withOpacity(
+                : theme.colorScheme.onSurface.withValues(alpha: 
                     isDark ? 0.55 : 0.62),
             size: 20,
           ),
@@ -784,10 +780,10 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               border: Border(
                 bottom: BorderSide(
-                  color: const Color(AppConstants.borderColor),
+                  color: Color(AppConstants.borderColor),
                   width: 0.5,
                 ),
               ),
@@ -827,7 +823,7 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
               children: [
                 // Type filter
                 DropdownButtonFormField<String>(
-                  value: provider.selectedType.isEmpty
+                  initialValue: provider.selectedType.isEmpty
                       ? null
                       : provider.selectedType,
                   decoration: InputDecoration(
@@ -881,7 +877,7 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
                     final sectorList = uniqueSectors.values.toList();
 
                     return DropdownButtonFormField<String>(
-                      value: provider.selectedSector.isEmpty
+                      initialValue: provider.selectedSector.isEmpty
                           ? null
                           : (sectorList
                                   .any((s) => s.name == provider.selectedSector)
@@ -957,7 +953,7 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
                     final subsectorList = uniqueSubsectors.values.toList();
 
                     return DropdownButtonFormField<String>(
-                      value: provider.selectedSubSector.isEmpty
+                      initialValue: provider.selectedSubSector.isEmpty
                           ? null
                           : (subsectorList.any(
                                   (s) => s.name == provider.selectedSubSector)
@@ -1010,7 +1006,7 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
                 const SizedBox(height: 16),
                 // Archived filter
                 DropdownButtonFormField<String>(
-                  value: provider.archived ? 'all' : 'active',
+                  initialValue: provider.archived ? 'all' : 'active',
                   decoration: InputDecoration(
                     labelText: localizations.indicatorBankFilterStatus,
                     border: OutlineInputBorder(
@@ -1146,9 +1142,6 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final crossAxisCount = constraints.maxWidth > 600 ? 3 : 2;
-            final cardWidth =
-                (constraints.maxWidth - (crossAxisCount - 1) * 16) /
-                    crossAxisCount;
 
             // Group sectors into rows
             final rows = <List<dynamic>>[];
@@ -1309,7 +1302,9 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
                                                           .allIndicators
                                                           .where((ind) {
                                                         if (ind.subSector ==
-                                                            null) return false;
+                                                            null) {
+                                                          return false;
+                                                        }
                                                         if (ind.subSector
                                                             is String) {
                                                           return (ind.subSector
@@ -1594,7 +1589,7 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Color(AppConstants.ifrcNavy),
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(AppConstants.radiusLarge),
                       topRight: Radius.circular(AppConstants.radiusLarge),
                     ),

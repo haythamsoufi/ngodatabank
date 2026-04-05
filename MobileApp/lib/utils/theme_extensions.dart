@@ -8,32 +8,32 @@ extension AppThemeDataX on ThemeData {
   /// Card/list ambient shadow (theme-relative opacity).
   Color ambientShadow({double lightOpacity = 0.05, double darkOpacity = 0.32}) =>
       isDarkTheme
-          ? Colors.black.withOpacity(darkOpacity)
-          : Colors.black.withOpacity(lightOpacity);
+          ? Colors.black.withValues(alpha: darkOpacity)
+          : Colors.black.withValues(alpha: lightOpacity);
 
   // --- Quiz: option / result surfaces (success + error from [AppConstants]) ---
 
   Color quizOptionResultCorrectFill() => isDarkTheme
-      ? const Color(AppConstants.successColor).withOpacity(0.30)
-      : const Color(AppConstants.successColor).withOpacity(0.12);
+      ? const Color(AppConstants.successColor).withValues(alpha: 0.30)
+      : const Color(AppConstants.successColor).withValues(alpha: 0.12);
 
   Color quizOptionResultWrongFill() => isDarkTheme
-      ? const Color(AppConstants.errorColor).withOpacity(0.28)
-      : const Color(AppConstants.errorColor).withOpacity(0.12);
+      ? const Color(AppConstants.errorColor).withValues(alpha: 0.28)
+      : const Color(AppConstants.errorColor).withValues(alpha: 0.12);
 
   Color quizOptionResultCorrectBorder() => const Color(AppConstants.successColor)
-      .withOpacity(isDarkTheme ? 0.95 : 0.85);
+      .withValues(alpha: isDarkTheme ? 0.95 : 0.85);
 
   Color quizOptionResultWrongBorder() => const Color(AppConstants.errorColor)
-      .withOpacity(isDarkTheme ? 0.95 : 0.85);
+      .withValues(alpha: isDarkTheme ? 0.95 : 0.85);
 
   Color quizOptionResultCorrectIconBg() => isDarkTheme
-      ? const Color(AppConstants.successColor).withOpacity(0.45)
-      : const Color(AppConstants.successColor).withOpacity(0.22);
+      ? const Color(AppConstants.successColor).withValues(alpha: 0.45)
+      : const Color(AppConstants.successColor).withValues(alpha: 0.22);
 
   Color quizOptionResultWrongIconBg() => isDarkTheme
-      ? const Color(AppConstants.errorColor).withOpacity(0.45)
-      : const Color(AppConstants.errorColor).withOpacity(0.22);
+      ? const Color(AppConstants.errorColor).withValues(alpha: 0.45)
+      : const Color(AppConstants.errorColor).withValues(alpha: 0.22);
 
   Color quizOptionResultCorrectIconFg() => isDarkTheme
       ? const Color(0xFFDCFCE7)
@@ -53,10 +53,10 @@ extension AppThemeDataX on ThemeData {
 
   Color quizOptionResultShadow(bool isCorrect, bool isWrong) {
     if (isCorrect) {
-      return const Color(AppConstants.successColor).withOpacity(0.3);
+      return const Color(AppConstants.successColor).withValues(alpha: 0.3);
     }
     if (isWrong) {
-      return const Color(AppConstants.errorColor).withOpacity(0.3);
+      return const Color(AppConstants.errorColor).withValues(alpha: 0.3);
     }
     return ambientShadow(lightOpacity: 0.1, darkOpacity: 0.35);
   }
@@ -72,7 +72,7 @@ extension ThemeColors on BuildContext {
 
   /// Gets the appropriate secondary text color for the current theme
   Color get textSecondaryColor => isDarkTheme
-      ? Colors.white.withOpacity(0.6)
+      ? Colors.white.withValues(alpha: 0.6)
       : const Color(AppConstants.textSecondary);
 
   /// Gets the appropriate surface/background color for the current theme
@@ -83,7 +83,7 @@ extension ThemeColors on BuildContext {
 
   /// Gets the appropriate border color for the current theme
   Color get borderColor => isDarkTheme
-      ? Colors.white.withOpacity(0.12)
+      ? Colors.white.withValues(alpha: 0.12)
       : const Color(AppConstants.borderColor);
 
   /// Gets the appropriate scaffold background color for the current theme
@@ -109,8 +109,8 @@ extension ThemeColors on BuildContext {
 
   /// Gets disabled text color
   Color get disabledTextColor => isDarkTheme
-      ? Colors.white.withOpacity(0.38)
-      : Colors.black.withOpacity(0.38);
+      ? Colors.white.withValues(alpha: 0.38)
+      : Colors.black.withValues(alpha: 0.38);
 
   /// Gets theme-aware navy color for text and icons
   /// In dark theme, returns light text color for better contrast
@@ -138,21 +138,21 @@ extension ThemeColors on BuildContext {
   Color get linkOnSurfaceColor {
     final cs = Theme.of(this).colorScheme;
     if (!isDarkTheme) return cs.primary;
-    return Color.alphaBlend(Colors.white.withOpacity(0.58), cs.primary);
+    return Color.alphaBlend(Colors.white.withValues(alpha: 0.58), cs.primary);
   }
 
   /// Gets theme-aware navy background color with opacity
   /// In dark theme, uses white with opacity for subtle backgrounds
   /// In light theme, uses navy with opacity
   Color navyBackgroundColor({double opacity = 0.1}) => isDarkTheme
-      ? Colors.white.withOpacity(opacity)
-      : Color(AppConstants.ifrcNavy).withOpacity(opacity);
+      ? Colors.white.withValues(alpha: opacity)
+      : Color(AppConstants.ifrcNavy).withValues(alpha: opacity);
 }
 
 /// Offline / sync strip colors (compact indicator row).
 extension OfflineStatusColors on BuildContext {
   Color get offlineQueuedBackground => isDarkTheme
-      ? Colors.orange.shade900.withOpacity(0.45)
+      ? Colors.orange.shade900.withValues(alpha: 0.45)
       : Colors.orange.shade100;
 
   Color get offlineQueuedForeground => isDarkTheme
@@ -160,15 +160,15 @@ extension OfflineStatusColors on BuildContext {
       : Colors.orange.shade900;
 
   Color get offlineSyncedBackground => isDarkTheme
-      ? const Color(AppConstants.successColor).withOpacity(0.24)
-      : const Color(AppConstants.successColor).withOpacity(0.12);
+      ? const Color(AppConstants.successColor).withValues(alpha: 0.24)
+      : const Color(AppConstants.successColor).withValues(alpha: 0.12);
 
   Color get offlineSyncedForeground => isDarkTheme
       ? Colors.green.shade200
       : Colors.green.shade800;
 
   Color get offlineDisconnectedInlineBackground => isDarkTheme
-      ? const Color(AppConstants.errorColor).withOpacity(0.30)
+      ? const Color(AppConstants.errorColor).withValues(alpha: 0.30)
       : Colors.red.shade100;
 
   Color get offlineDisconnectedInlineForeground => isDarkTheme
@@ -181,22 +181,22 @@ extension AppThemeColors on ThemeData {
   /// Gets text color with proper contrast
   Color getTextColor({double opacity = 1.0}) {
     return isDarkTheme
-        ? Colors.white.withOpacity(opacity)
-        : const Color(AppConstants.textColor).withOpacity(opacity);
+        ? Colors.white.withValues(alpha: opacity)
+        : const Color(AppConstants.textColor).withValues(alpha: opacity);
   }
 
   /// Gets secondary text color with proper contrast
   Color getSecondaryTextColor({double opacity = 1.0}) {
     return isDarkTheme
-        ? Colors.white.withOpacity(0.6 * opacity)
-        : const Color(AppConstants.textSecondary).withOpacity(opacity);
+        ? Colors.white.withValues(alpha: 0.6 * opacity)
+        : const Color(AppConstants.textSecondary).withValues(alpha: opacity);
   }
 
   /// Gets border color appropriate for the theme
   Color getBorderColor({double opacity = 1.0}) {
     return isDarkTheme
-        ? Colors.white.withOpacity(0.12 * opacity)
-        : const Color(AppConstants.borderColor).withOpacity(opacity);
+        ? Colors.white.withValues(alpha: 0.12 * opacity)
+        : const Color(AppConstants.borderColor).withValues(alpha: opacity);
   }
 
   /// Gets a surface color for input fields
@@ -222,14 +222,14 @@ class ThemeAwareColors {
       final luminance = color.computeLuminance();
       if (luminance < 0.4) {
         // Too dark, lighten it
-        return color.withOpacity(1.0);
+        return color.withValues(alpha: 1.0);
       }
     } else {
       // Ensure color is dark enough for light background
       final luminance = color.computeLuminance();
       if (luminance > 0.6) {
         // Too light, darken it
-        return color.withOpacity(1.0);
+        return color.withValues(alpha: 1.0);
       }
     }
     return color;

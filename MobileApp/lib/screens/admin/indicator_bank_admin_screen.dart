@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/admin/indicator_bank_admin_provider.dart';
-import '../../models/shared/indicator.dart';
 import '../../widgets/app_bar.dart';
 import '../../widgets/bottom_navigation_bar.dart';
 import '../../config/routes.dart';
@@ -56,7 +55,7 @@ class _IndicatorBankAdminScreenState extends State<IndicatorBankAdminScreen> {
       appBar: AppAppBar(
         title: localizations.indicatorBankTitle,
       ),
-      body: Container(
+      body: ColoredBox(
         color: theme.scaffoldBackgroundColor,
         child: Column(
           children: [
@@ -107,7 +106,7 @@ class _IndicatorBankAdminScreenState extends State<IndicatorBankAdminScreen> {
                           children: [
                             Expanded(
                               child: DropdownButtonFormField<String>(
-                                value: _selectedCategoryFilter,
+                                initialValue: _selectedCategoryFilter,
                                 decoration: InputDecoration(
                                   labelText: localizations.category,
                                   border: OutlineInputBorder(
@@ -148,7 +147,7 @@ class _IndicatorBankAdminScreenState extends State<IndicatorBankAdminScreen> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: DropdownButtonFormField<String>(
-                                value: _selectedSectorFilter,
+                                initialValue: _selectedSectorFilter,
                                 decoration: InputDecoration(
                                   labelText: localizations.sector,
                                   border: OutlineInputBorder(
@@ -197,7 +196,7 @@ class _IndicatorBankAdminScreenState extends State<IndicatorBankAdminScreen> {
                         return Column(
                           children: [
                             DropdownButtonFormField<String>(
-                              value: _selectedCategoryFilter,
+                              initialValue: _selectedCategoryFilter,
                               decoration: InputDecoration(
                                 labelText: localizations.category,
                                 border: OutlineInputBorder(
@@ -236,7 +235,7 @@ class _IndicatorBankAdminScreenState extends State<IndicatorBankAdminScreen> {
                             ),
                             const SizedBox(height: 12),
                             DropdownButtonFormField<String>(
-                              value: _selectedSectorFilter,
+                              initialValue: _selectedSectorFilter,
                               decoration: InputDecoration(
                                 labelText: localizations.sector,
                                 border: OutlineInputBorder(
@@ -306,7 +305,7 @@ class _IndicatorBankAdminScreenState extends State<IndicatorBankAdminScreen> {
                               color: Theme.of(context)
                                   .colorScheme
                                   .onSurface
-                                  .withOpacity(0.6),
+                                  .withValues(alpha: 0.6),
                               fontSize: 14,
                             ),
                           ),
@@ -334,7 +333,7 @@ class _IndicatorBankAdminScreenState extends State<IndicatorBankAdminScreen> {
                                 color: Theme.of(context)
                                     .colorScheme
                                     .onSurface
-                                    .withOpacity(0.6),
+                                    .withValues(alpha: 0.6),
                                 fontSize: 14,
                               ),
                               textAlign: TextAlign.center,
@@ -372,7 +371,7 @@ class _IndicatorBankAdminScreenState extends State<IndicatorBankAdminScreen> {
                             color: Theme.of(context)
                                 .colorScheme
                                 .onSurface
-                                .withOpacity(0.5),
+                                .withValues(alpha: 0.5),
                           ),
                           const SizedBox(height: 16),
                           Text(
@@ -439,7 +438,7 @@ class _IndicatorBankAdminScreenState extends State<IndicatorBankAdminScreen> {
                                         color: Theme.of(context)
                                             .colorScheme
                                             .onSurface
-                                            .withOpacity(0.6),
+                                            .withValues(alpha: 0.6),
                                         size: 20,
                                       ),
                                     ],
@@ -453,7 +452,7 @@ class _IndicatorBankAdminScreenState extends State<IndicatorBankAdminScreen> {
                                         color: Theme.of(context)
                                             .colorScheme
                                             .onSurface
-                                            .withOpacity(0.6),
+                                            .withValues(alpha: 0.6),
                                       ),
                                     ),
                                   ],
@@ -466,7 +465,7 @@ class _IndicatorBankAdminScreenState extends State<IndicatorBankAdminScreen> {
                                         color: Theme.of(context)
                                             .colorScheme
                                             .onSurface
-                                            .withOpacity(0.6),
+                                            .withValues(alpha: 0.6),
                                       ),
                                     ),
                                   ],
@@ -479,7 +478,7 @@ class _IndicatorBankAdminScreenState extends State<IndicatorBankAdminScreen> {
                                         color: Theme.of(context)
                                             .colorScheme
                                             .onSurface
-                                            .withOpacity(0.6),
+                                            .withValues(alpha: 0.6),
                                       ),
                                     ),
                                   ],
@@ -493,7 +492,7 @@ class _IndicatorBankAdminScreenState extends State<IndicatorBankAdminScreen> {
                                         color: Theme.of(context)
                                             .colorScheme
                                             .onSurface
-                                            .withOpacity(0.6),
+                                            .withValues(alpha: 0.6),
                                       ),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,

@@ -63,7 +63,7 @@ class _SessionExpirationWarningState extends State<SessionExpirationWarning> {
       // Show warning if within 15 minutes of expiration
       // Use shorter check interval when close to expiration (within 5 minutes)
       if (timeUntilExpiration <= const Duration(minutes: 15) &&
-          timeUntilExpiration > const Duration(minutes: 0)) {
+          timeUntilExpiration > Duration.zero) {
         if (mounted && !_isDialogShowing) {
           _isDialogShowing = true;
           _showExpirationWarning(timeUntilExpiration);
@@ -72,7 +72,7 @@ class _SessionExpirationWarningState extends State<SessionExpirationWarning> {
 
       // If very close to expiration (within 5 minutes), check more frequently
       if (timeUntilExpiration <= const Duration(minutes: 5) &&
-          timeUntilExpiration > const Duration(minutes: 0)) {
+          timeUntilExpiration > Duration.zero) {
         // Cancel current timer and restart with shorter interval
         _checkTimer?.cancel();
         _checkTimer = Timer.periodic(const Duration(seconds: 30), (_) {

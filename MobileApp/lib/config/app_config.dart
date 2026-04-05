@@ -349,15 +349,15 @@ class AppConfig {
     // font-src: allow same-origin and Google Fonts
     // img-src: allow data URLs and same-origin
     // connect-src: allow same-origin and backend API
-    return "default-src 'self' ${backendUrl} ${frontendUrl}; "
+    return "default-src 'self' $backendUrl $frontendUrl; "
         "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         "font-src 'self' https://fonts.gstatic.com data:; "
-        "img-src 'self' data: blob: ${backendUrl} ${frontendUrl}; "
-        "connect-src 'self' ${backendUrl} ${frontendUrl}; "
-        "frame-src 'self' ${backendUrl} ${frontendUrl}; "
+        "img-src 'self' data: blob: $backendUrl $frontendUrl; "
+        "connect-src 'self' $backendUrl $frontendUrl; "
+        "frame-src 'self' $backendUrl $frontendUrl; "
         "object-src 'none'; "
         "base-uri 'self'; "
-        "form-action 'self' ${backendUrl} ${frontendUrl};";
+        "form-action 'self' $backendUrl $frontendUrl;";
   }
 }

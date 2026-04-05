@@ -138,7 +138,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: theme.colorScheme.primary.withOpacity(0.3),
+                          color: theme.colorScheme.primary.withValues(alpha: 0.3),
                           blurRadius: 8,
                           spreadRadius: 2,
                         ),
@@ -217,13 +217,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isCurrentUser
-            ? theme.colorScheme.primaryContainer.withOpacity(0.3)
+            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
             : theme.cardColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isCurrentUser
               ? theme.colorScheme.primary
-              : theme.colorScheme.outline.withOpacity(0.2),
+              : theme.colorScheme.outline.withValues(alpha: 0.2),
           width: isCurrentUser ? 2 : 1,
         ),
         boxShadow: [
@@ -243,7 +243,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             height: 50,
             decoration: BoxDecoration(
               color: isTopThree
-                  ? medalColor?.withOpacity(0.2)
+                  ? medalColor?.withValues(alpha: 0.2)
                   : theme.colorScheme.surfaceContainerHighest,
               shape: BoxShape.circle,
             ),
@@ -336,7 +336,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 Text(
                   localizations.quizGamePoints,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onPrimaryContainer.withOpacity(0.7),
+                    color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
                   ),
                 ),
               ],

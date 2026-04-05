@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../services/error_handler.dart';
-import '../utils/debug_logger.dart';
 
 /// Error boundary widget that catches errors and displays them gracefully
 class ErrorBoundary extends StatefulWidget {
@@ -9,11 +8,11 @@ class ErrorBoundary extends StatefulWidget {
   final String? context;
 
   const ErrorBoundary({
-    Key? key,
+    super.key,
     required this.child,
     this.errorBuilder,
     this.context,
-  }) : super(key: key);
+  });
 
   @override
   State<ErrorBoundary> createState() => _ErrorBoundaryState();

@@ -27,30 +27,6 @@ class _AzureLoginScreenState extends State<AzureLoginScreen> {
     return '${AppConfig.baseApiUrl}${AppConfig.azureLoginEndpoint}';
   }
 
-  bool _isSuccessUrl(String? url) {
-    if (url == null) return false;
-
-    final uri = Uri.tryParse(url);
-    if (uri == null) return false;
-
-    final backendHost = Uri.parse(AppConfig.baseApiUrl).host;
-
-    // Must be on the backend domain
-    if (uri.host != backendHost && uri.host != '') return false;
-
-    // Success indicators:
-    // 1. Dashboard endpoint
-    // 2. Azure callback endpoint (processing, will redirect)
-    // 3. Any backend URL that's not a login page
-    return uri.path == AppConfig.dashboardEndpoint ||
-        uri.path == '/dashboard' ||
-        uri.path == AppConfig.azureCallbackEndpoint ||
-        uri.path == '/auth/azure/callback' ||
-        (uri.host == backendHost &&
-            !uri.path.contains('/login') &&
-            !uri.path.contains('/auth/login'));
-  }
-
   bool _isDashboardUrl(String? url) {
     if (url == null) return false;
 
@@ -70,7 +46,6 @@ class _AzureLoginScreenState extends State<AzureLoginScreen> {
     try {
       if (_webViewController == null) return;
 
-      final backendUri = Uri.parse(AppConfig.backendUrl);
       final backendUrl = AppConfig.backendUrl;
 
       // Get cookies from WebView for the backend domain
@@ -83,7 +58,7 @@ class _AzureLoginScreenState extends State<AzureLoginScreen> {
 
       // Find session cookie (Flask session cookie is usually named 'session')
       Cookie? sessionCookie;
-      for (var cookie in cookies) {
+      for (final cookie in cookies) {
         final cookieName = cookie.name.toLowerCase();
         print('[AZURE LOGIN] Cookie: $cookieName');
         if (cookieName == 'session') {
@@ -110,7 +85,7 @@ class _AzureLoginScreenState extends State<AzureLoginScreen> {
         await Future.delayed(const Duration(milliseconds: 500));
         final retryCookies =
             await cookieManager.getCookies(url: WebUri(backendUrl));
-        for (var cookie in retryCookies) {
+        for (final cookie in retryCookies) {
           if (cookie.name.toLowerCase() == 'session') {
             final cookieString = '${cookie.name}=${cookie.value}';
             await _sessionService.saveSessionCookie(cookieString);
@@ -234,7 +209,7 @@ class _AzureLoginScreenState extends State<AzureLoginScreen> {
                     // Still loading after delay, show error
                     setState(() {
                       _isLoading = false;
-                      _error = error.description ?? 'Failed to load page';
+                      _error = error.description;
                     });
                   }
                 });
@@ -298,8 +273,8 @@ class _AzureLoginScreenState extends State<AzureLoginScreen> {
           ),
           // Loading indicator
           if (_isLoading && _error == null)
-            Container(
-              color: theme.scaffoldBackgroundColor.withOpacity(0.8),
+            ColoredBox(
+              color: theme.scaffoldBackgroundColor.withValues(alpha: 0.8),
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
