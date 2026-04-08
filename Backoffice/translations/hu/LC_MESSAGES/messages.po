@@ -1,0 +1,957 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NGO Databank 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-06 04:30+0200\n"
+"PO-Revision-Date: 2024-01-01 12:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: en <LL@li.org>\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Generated-By: Babel 2.17.0\n"
+
+msgid "(and %(count)d more)"
+msgstr "(és %(count)d többet)"
+
+msgid ""
+"\"All Indicators\" exports the complete indicator bank. \"Selected "
+"Indicators\" exports only the indicators you have selected."
+msgstr ""
+"Az \"All Indicators\" exportálja a teljes indikátorbankot. A \"Kiválasztott "
+"mutatók\" csak azokat exportálja, amelyeket kiválasztottad."
+
+msgid "%(active)s active sessions"
+msgstr "%(active)s aktív ülések"
+
+msgid "%(count)s shared"
+msgstr "%(count)s shared"
+
+msgid "%(field)s: %(new)s"
+msgstr "%(field)s: %(new)s"
+
+msgid "%(field)s: %(old)s"
+msgstr "%(field)s: %(old)s"
+
+msgid "%(field)s: %(old)s → %(new)s"
+msgstr "%(field)s: %(old)s → %(new)s"
+
+msgid "%(user_name)s requested access to %(country_name)s."
+msgstr "Az %(user_name)s hozzáférést kért az %(country_name)s-hez."
+
+msgid ""
+"'%(document)s' (%(document_type)s) has been uploaded and requires approval."
+msgstr ""
+"A '%(document)s' (%(document_type)s) feltöltötték, és jóváhagyásra van "
+"szükség."
+
+msgid "'%(document)s' (%(document_type)s) was uploaded."
+msgstr "Feltöltötték az '%(document)s' (%(document_type)s)."
+
+msgid "'%(template)s' has been updated."
+msgstr "Az '%(template)s' frissítve lett."
+
+msgid "(Offline)"
+msgstr "(Offline)"
+
+msgid "(The item will be archived and hidden from the template)"
+msgstr "(Az elem archiválva és elrejtve lesz a sablonból)"
+
+msgid ""
+"(The section and its items will be archived and hidden from the template)"
+msgstr "(A szekciót és elemeit archiválnak és elrejtik a sablon elől)"
+
+msgid "(Uses HTTP Basic Auth or session cookie)"
+msgstr "(HTTP Basic hitelesítést vagy session cookie-t használ)"
+
+msgid "(filtered from _MAX_ total translations)"
+msgstr "(szűrve a _MAX_ összes fordításból)"
+
+msgid "-- none --"
+msgstr "-- Nincs --"
+
+msgid ".xlsx or .xls"
+msgstr ".xlsx vagy .xls"
+
+msgid "1. Date Range Filtering"
+msgstr "1. Dátumtartomány szűrése"
+
+msgid "2. Sorting Options"
+msgstr "2. Rendezési lehetőségek"
+
+msgid "3. Response Compression"
+msgstr "3. Válaszkompresszió"
+
+msgid ""
+"<strong>Check similarity</strong> — click any dot to see its top "
+"semantically similar indicators with similarity scores"
+msgstr ""
+"<strong>Ellenőrizd a hasonlóságot</strong> — kattints bármelyik pontra, hogy"
+" lásd a legjelentősebb szemantikailag hasonló mutatókat hasonlósági "
+"pontszámokkal"
+
+msgid ""
+"<strong>Discover duplicates</strong> — indicators clustered tightly may "
+"overlap in meaning"
+msgstr ""
+"<strong>Ismerd meg a duplikátumokat</strong> — a szorosan csoportosított "
+"indikátorok jelentésük átfedhet"
+
+msgid ""
+"<strong>Explore clusters</strong> — colour by sector, programme, or type to "
+"see how indicators group"
+msgstr ""
+"<strong>Fedezze fel a klasztereket</strong> — szín szektor, program vagy "
+"típus szerint, hogy megnézze, hogyan csoportosulnak a mutatók"
+
+msgid ""
+"<strong>Find gaps</strong> — sparse areas may indicate missing coverage"
+msgstr ""
+"<strong>Találj rések</strong> — a ritka területek hiányzó lefedettséget "
+"jelezhetnek"
+
+msgid ""
+"<strong>Tip:</strong> Switch to <em>t-SNE</em> for better local grouping — "
+"it specifically optimises for keeping neighbours together, reducing the "
+"\"distant but similar\" effect."
+msgstr ""
+"<strong>Tipp:</strong> Válts <em>át t-SNE-re</em> a jobb helyi csoportosítás"
+" érdekében — kifejezetten optimalizálja a szomszédok összetartását, "
+"csökkentve a \"távoli, de hasonló\" hatást."
+
+msgid "?"
+msgstr "?"
+
+msgid "A descriptive name for this campaign"
+msgstr "A hadjárat leíró elnevezése"
+
+msgid "A new draft version will be created automatically for this import."
+msgstr "Ehhez az importhoz automatikusan új vázlatverzió készül."
+
+msgid "A new self-report has been created."
+msgstr "Egy új önbeszámoló készült."
+
+msgid "A quick tour will help you get the most out of the admin tools."
+msgstr ""
+"Egy gyors körbevezető segít a legtöbbet hozni az adminisztrációs "
+"eszközökből."
+
+msgid ""
+"A quick tour will help you navigate the platform and submit reports "
+"effectively."
+msgstr ""
+"Egy gyors túra segít eligazodni a platformon és hatékonyan beküldeni a "
+"jelentéseket."
+
+msgid "A server error occurred. Please try again later."
+msgstr "Szerverhiba történt. Kérlek, próbáld meg később újra."
+
+msgid "AI"
+msgstr "MI"
+
+msgid "AI Agent"
+msgstr "AI ügynök"
+
+msgid "AI Answer"
+msgstr "MI válasz"
+
+msgid "AI Assistant"
+msgstr "AI asszisztens"
+
+msgid "AI Beta Access"
+msgstr "AI béta hozzáférés"
+
+msgid "AI Dashboard"
+msgstr "AI Dashboard"
+
+msgid "AI Knowledge Base"
+msgstr "MI Tudásbázis"
+
+msgid "AI Query Assistant"
+msgstr "AI lekérdezési asszisztens"
+
+msgid "AI Reasoning Traces"
+msgstr "AI érvelési nyomok"
+
+msgid "AI Review Queue"
+msgstr "AI Review Queue"
+
+msgid "AI System"
+msgstr "MI rendszer"
+
+msgid "AI System Dashboard"
+msgstr "AI System Dashboard"
+
+msgid "AI Use Policy"
+msgstr "MI használati szabályzat"
+
+msgid "AI can make mistakes. Check important information."
+msgstr "Az MI hibázhat. Ellenőrizd a fontos információkat."
+
+msgid ""
+"AI can make mistakes. The assistant may hallucinate or misinterpret data. "
+"Always verify important information against the source data or documents "
+"before using it for decisions or reporting."
+msgstr ""
+"Az MI hibázhat. Az asszisztens hallucinálhat vagy félreértelmezheti az "
+"adatokat. Mindig ellenőrizd a fontos információkat a forrásadatokhoz vagy "
+"dokumentumokhoz, mielőtt döntésekhez vagy jelentéshez használnád."
+
+msgid "AI chat deleted"
+msgstr "AI chat törölve"
+
+msgid "AI is currently in beta and available only to selected users."
+msgstr ""
+"Az AI jelenleg béta állapotban van, és csak kiválasztott felhasználók "
+"számára érhető el."
+
+msgid "AI notice"
+msgstr "MI értesítés"
+
+msgid "AI opinion"
+msgstr "MI vélemény"
+
+msgid "AI validation"
+msgstr "AI validáció"
+
+msgid "AND"
+msgstr "ÉS"
+
+msgid "API"
+msgstr "API"
+
+msgid "API Documentation"
+msgstr "API dokumentáció"
+
+msgid "API Key"
+msgstr "API kulcs"
+
+msgid "API Key - Paginated with date range and sorting"
+msgstr "API kulcs – Dátumtartománysal és rendezéssel pogírozva"
+
+msgid "API Key Created"
+msgstr "API kulcs létrehozása"
+
+msgid "API Key Created Successfully"
+msgstr "API kulcs sikeresen létrehozva"
+
+msgid "API Key Details"
+msgstr "API kulcs részletei"
+
+msgid "API Key Information"
+msgstr "API kulcsinformációk"
+
+msgid "API Key Management"
+msgstr "API kulcskezelés"
+
+msgid "API Key Revoked"
+msgstr "API kulcs visszavonva"
+
+msgid "API Key auth: Pagination enabled. Use"
+msgstr "API kulcs hitelesítés: Lapozás engedélyezve. Használat"
+
+msgid "API Key:"
+msgstr "API kulcs:"
+
+msgid "API Management"
+msgstr "API menedzsment"
+
+msgid "API URL Builder"
+msgstr "API URL Builder"
+
+msgid "API key for URL builder"
+msgstr "API kulcs URL builderhez"
+
+msgid "About"
+msgstr "Róla"
+
+msgid "About 1 minute"
+msgstr "Kb. 1 perc"
+
+msgid "Acceptable Use"
+msgstr "Elfogadható felhasználás"
+
+msgid "Access Approved"
+msgstr "Hozzáférés jóváhagyott"
+
+msgid "Access Rejected"
+msgstr "Hozzáférés elutasítva"
+
+msgid "Access Request Received"
+msgstr "Hozzáférési kérelem megérkezett"
+
+msgid "Access Revoked"
+msgstr "Hozzáférés visszavonva"
+
+msgid "Access Rules"
+msgstr "Hozzáférési szabályok"
+
+msgid "Access denied."
+msgstr "Hozzáférés megtagadva."
+
+msgid "Access denied. You do not have permission to access this resource."
+msgstr ""
+"Hozzáférés megtagadva. Nincs engedélyed ehhez a forráshoz való hozzáférésre."
+
+msgid "Access management sections"
+msgstr "Hozzáférési menedzsment szekciók"
+
+msgid ""
+"Access rules let you allow or deny specific permissions for a user or role, "
+"optionally scoped (e.g., only for one template or assignment)."
+msgstr ""
+"A hozzáférési szabályok lehetővé teszik, hogy engedélyezd vagy elutasítsd a "
+"konkrét jogosultságokat egy felhasználóhoz vagy szerephez, opcionálisan "
+"korlátozott (például csak egy sablonra vagy hozzárendelésre)."
+
+msgid "Access user management, form templates, and assignment tools"
+msgstr ""
+"Hozzáférés felhasználókezeléshez, űrlapsablonokhoz és hozzárendelési "
+"eszközökhöz"
+
+msgid ""
+"Access your main dashboard to view assignments, metrics, and recent "
+"activities for your country."
+msgstr ""
+"Lépj el a fő irányítópultodra, hogy megtekinthesd a feladatokat, mutatókat "
+"és a legutóbbi tevékenységeket az országodban."
+
+msgid "Account Created"
+msgstr "Fiók létrehozása"
+
+msgid "Account Status"
+msgstr "Számla állapota"
+
+msgid "Account settings"
+msgstr "Fiókbeállítások"
+
+msgid "Account settings sections"
+msgstr "Fiókbeállítások szekciók"
+
+msgid "Accuracy and Verification"
+msgstr "Pontosság és ellenőrzés"
+
+msgid "Action Type"
+msgstr "Akciótípus"
+
+msgid "Actions"
+msgstr "Akciók"
+
+msgid "Active Alerts"
+msgstr "Aktív riasztások"
+
+msgid "Active Sessions"
+msgstr "Aktív szekciók"
+
+msgid "Active assignments"
+msgstr "Aktív beosztások"
+
+msgid "Activities from other focal points in"
+msgstr "Egyéb fókuszpontok tevékenységei"
+
+msgid "Add User"
+msgstr "Felhasználó hozzáadása"
+
+msgid "Admin Notes"
+msgstr "Admin megjegyzések"
+
+msgid "Admins"
+msgstr "Adminok"
+
+msgid "Agent Queries"
+msgstr "Ügynöki lekérdezések"
+
+msgid "All Clear"
+msgstr "Minden tiszta"
+
+msgid "All Users"
+msgstr "Minden felhasználó"
+
+msgid "All clear! No active assignments for"
+msgstr "Minden tiszta! Nincsenek aktív beosztások"
+
+msgid "Analytics Dashboard"
+msgstr "Analitikai irányítópult"
+
+msgid "Are you sure you want to approve this assignment?"
+msgstr "Biztos vagy benne, hogy jóváhagyod ezt a feladatot?"
+
+msgid "Are you sure you want to delete this self-reported assignment?"
+msgstr "Biztos vagy benne, hogy törölni akarod ezt az önbevallásos feladatot?"
+
+msgid "Are you sure you want to reopen this assignment?"
+msgstr "Biztos vagy benne, hogy újra meg akarod nyitni ezt a feladatot?"
+
+msgid "Assignments"
+msgstr "Beosztások"
+
+msgid "Assignments for"
+msgstr "Feladatok"
+
+msgid "Attribution"
+msgstr "Forrás"
+
+msgid "Average Completion Rate (Past 3 Periods)"
+msgstr "Átlagos befejezési arány (az elmúlt 3 időszak)"
+
+msgid "Average Submission Timeliness (Days Early/Late)"
+msgstr "Átlagos határidős beküldés (napokkal korábban/későn)"
+
+msgid "Click to expand"
+msgstr "Kattintson a bővítéshez"
+
+msgid "Coming Soon"
+msgstr "Hamarosan"
+
+msgid "Completion"
+msgstr "Befejezés"
+
+msgid "Completion Rate Over Time"
+msgstr "Teljesítési arány idővel"
+
+msgid "Configured"
+msgstr "Konfigurálás"
+
+msgid "Contributors"
+msgstr "Közreműködők"
+
+msgid "Country focal points"
+msgstr "Országos központok"
+
+msgid "Create a Report"
+msgstr "Jelentés készítése"
+
+msgid "Critical Events"
+msgstr "Kritikus események"
+
+msgid "Data Import Tools"
+msgstr "Adatimportáló eszközök"
+
+msgid "Data Quality Index"
+msgstr "Adatminőségi Index"
+
+msgid "Data Quality Index (Fake Metric)"
+msgstr "Adatminőségi index (hamis metrika)"
+
+msgid "Data Quality Index Trend"
+msgstr "Adatminőségi Index trend"
+
+msgid "Delete Self-Reported Assignment"
+msgstr "Töröld az önbevallásos feladatot"
+
+msgid "Device Distribution"
+msgstr "Eszközelosztás"
+
+msgid "Disabled"
+msgstr "Mozgáskorlátozott"
+
+msgid "Documents"
+msgstr "Dokumentumok"
+
+msgid "Embeddings"
+msgstr "Beágyazások"
+
+msgid "Enabled"
+msgstr "Engedélyezve"
+
+msgid "Enter Data"
+msgstr "Adat beírása"
+
+msgid "Events by Severity"
+msgstr "Események súlyosság szerint"
+
+msgid "Events by Type"
+msgstr "Események típus szerint"
+
+msgid "Filter by Template - Period"
+msgstr "Szűrő sablon szerint - Pont"
+
+msgid "Filter by User"
+msgstr "Felhasználó szerint szűrő"
+
+msgid "Flagged for review"
+msgstr "Felülvizsgálatra jelölve"
+
+msgid "Focal Points"
+msgstr "Fókuszpontok"
+
+msgid "Focal Points for"
+msgstr "Fókuszpontok"
+
+msgid "Form"
+msgstr "Forma"
+
+msgid "Form templates"
+msgstr "Űrlapsablonok"
+
+msgid "Governance"
+msgstr "Kormányzás"
+
+msgid "Governance Dashboard"
+msgstr "Governance Dashboard"
+
+msgid "High Priority Security Events"
+msgstr "Magas prioritású biztonsági események"
+
+msgid "High Severity"
+msgstr "Magas súlyosság"
+
+msgid "Highest priority"
+msgstr "Legmagasabb prioritás"
+
+msgid "Import KoBo Data"
+msgstr "Import KoBo Data"
+
+msgid "Import submission data from a KoBo Toolbox data export"
+msgstr "Adatátvitel KoBo Toolbox adatexportból"
+
+msgid "In review"
+msgstr "Áttekintés alatt"
+
+msgid "Items Requiring Attention"
+msgstr "Figyelemre szoruló tárgyak"
+
+msgid "Judged traces"
+msgstr "Megítélt nyomok"
+
+msgid "LLM Judge"
+msgstr "LLM bíró"
+
+msgid "LLM Quality and Reviews"
+msgstr "LLM minősége és értékelései"
+
+msgid "Last 30 days"
+msgstr "Utolsó 30 nap"
+
+msgid "Last modified"
+msgstr "Utoljára módosítva"
+
+msgid "Last modified by"
+msgstr "Utolnyomként módosította:"
+
+msgid "Last month"
+msgstr "Múlt hónap"
+
+msgid "Last year"
+msgstr "Tavaly"
+
+msgid "Latest Submission"
+msgstr "Legutóbbi beküldés"
+
+msgid "Latest: %(datetime)s"
+msgstr "Legfrissebb: %(datetime)s"
+
+msgid "Load More"
+msgstr "Töltsd be többet"
+
+msgid "Login Activity Over Time"
+msgstr "Bejelentkezési aktivitás idővel"
+
+msgid "Login Logs"
+msgstr "Bejelentkezési naplók"
+
+msgid "Low-quality traces needing review"
+msgstr "Alacsony minőségű nyomok felülvizsgálatra szorulnak"
+
+msgid "Message to admins"
+msgstr "Üzenet adminoknak"
+
+msgid "Most Active Users"
+msgstr "Legaktív felhasználók"
+
+msgid "Most Active Users (30 days)"
+msgstr "Legaktívabb felhasználók (30 nap)"
+
+msgid "National Society Focal Points"
+msgstr "Nemzeti Társaság Központi Elemei"
+
+msgid ""
+"Need access to more countries? You can select multiple countries in a single"
+" request below."
+msgstr ""
+"Több országhoz kell hozzáférés? Az alábbiakban egyetlen kérésben több "
+"országot is választhatsz."
+
+msgid "Needs review"
+msgstr "Felülvizsgálatra van szükség"
+
+msgid "New Assignment"
+msgstr "Új beosztás"
+
+msgid "New Template"
+msgstr "Új sablon"
+
+msgid "New assignments will appear here when available."
+msgstr "Új feladatok itt jelennek meg, amikor elérhetők."
+
+msgid "No actions available"
+msgstr "Nincsenek akciók"
+
+msgid "No activities match the selected filters"
+msgstr "Nincs olyan tevékenység, amely a kiválasztott szűrőkkel egyezik meg"
+
+msgid "No agent queries yet."
+msgstr "Még nincs ügynöki kérdés."
+
+msgid "No focal points assigned to"
+msgstr "Nincs fókuszpont"
+
+msgid "No past assignments for"
+msgstr "Nincsenek korábbi beosztásokon"
+
+msgid "No recent activities"
+msgstr "Nincsenek friss tevékenységek"
+
+msgid "No tool usage data yet."
+msgstr "Még nincs eszközhasználati adat."
+
+msgid "No user activity data available for the selected time period."
+msgstr ""
+"A kiválasztott időszakra vonatkozóan nem állnak rendelkezésre felhasználói "
+"aktivitásadatok."
+
+msgid "Not Set"
+msgstr "Nem beállítva"
+
+msgid "Number of Revisions Requested (Past Year)"
+msgstr "A kért módosítások száma (az elmúlt évben)"
+
+msgid "Open Form"
+msgstr "Nyílt forma"
+
+msgid "OpenAI API"
+msgstr "OpenAI API"
+
+msgid "Overall Performance"
+msgstr "Általános teljesítmény"
+
+msgid "Overdue"
+msgstr "Régóta esedékes"
+
+msgid "Overdue Assignments"
+msgstr "Késésszerű feladatok"
+
+msgid "Past Assignments for"
+msgstr "Korábbi beosztások"
+
+msgid "Pending + in-review items"
+msgstr "Függőben lévő + felülvizsgálati pontok"
+
+msgid "Pending Reviews"
+msgstr "Várakozós értékelések"
+
+msgid "Pending Submissions"
+msgstr "Váratlan beküldések"
+
+msgid "Provide additional context to help admins process your request faster."
+msgstr ""
+"Adj további kontextust, hogy az adminok gyorsabban dolgozzák fel a "
+"kérésedet."
+
+msgid "Quality Index"
+msgstr "Minőségi Index"
+
+msgid "Queue backlog"
+msgstr "Queue backlog"
+
+msgid "Quick Access"
+msgstr "Gyors hozzáférés"
+
+msgid "Reasoning Traces"
+msgstr "Érvelési nyomok"
+
+msgid "Received %(count)d submissions using the public link"
+msgstr "%(count)d beküldéseket vettem be a nyilvános linken keresztül"
+
+msgid "Received 1 submission using the public link"
+msgstr "1 beküldést kaptam a nyilvános linken keresztül"
+
+msgid "Recent Activities"
+msgstr "Legutóbbi tevékenységek"
+
+msgid "Recent Activity (7 days)"
+msgstr "Legutóbbi tevékenységek (7 nap)"
+
+msgid "Recent High Priority Security Events"
+msgstr "Legutóbbi kiemelt prioritású biztonsági események"
+
+msgid "Recent High Risk Admin Actions"
+msgstr "Legutóbbi magas kockázatú adminisztratív intézkedések"
+
+msgid "Recent Queries"
+msgstr "Legutóbbi kérdések"
+
+msgid "Request Access"
+msgstr "Hozzáférés kérése"
+
+msgid "Request Access to Additional Countries"
+msgstr "Hozzáférés kérése további országokhoz"
+
+msgid ""
+"Request access to one country below. You can only request one country in "
+"total."
+msgstr ""
+"Kérj hozzáférést egy országhoz lentebb. Összesen csak egy országot kérhetsz."
+
+msgid ""
+"Request access to one or more countries below. You can select multiple "
+"countries in a single request."
+msgstr ""
+"Kérj hozzáférést egy vagy több országhoz az alábbiakban. Egyetlen kérésben "
+"több országot is választhatsz."
+
+msgid "Requires Attention"
+msgstr "Figyelem szükséges"
+
+msgid "Resolved"
+msgstr "Megoldva"
+
+msgid "Resources"
+msgstr "Források"
+
+msgid "Review Queue"
+msgstr "Értékelési sor"
+
+msgid "Review needed"
+msgstr "Felülvizsgálat szükséges"
+
+msgid "Role"
+msgstr "Szerep"
+
+msgid "Security Alerts"
+msgstr "Biztonsági riasztások"
+
+msgid "Security Dashboard"
+msgstr "Biztonsági irányítópult"
+
+msgid "Security Events"
+msgstr "Biztonsági események"
+
+msgid "Select one country"
+msgstr "Válasszon egy országot"
+
+msgid ""
+"Select one country. An admin will review your request. Countries you already"
+" have access to are greyed out and cannot be selected."
+msgstr ""
+"Válassz ki egy országot. Egy adminisztrátor felülvizsgálja a kérésedet. Azok"
+" az országok, amelyekhez már hozzáférsz, szürkék és nem választhatók ki."
+
+msgid ""
+"Select one country. An admin will review your request. You can only request "
+"one country in total."
+msgstr ""
+"Válassz ki egy országot. Egy adminisztrátor felülvizsgálja a kérésedet. "
+"Összesen csak egy országot kérhetsz."
+
+msgid "Select one or more countries"
+msgstr "Válassz ki egy vagy több országot"
+
+msgid ""
+"Select one or more countries. An admin will review your request(s). "
+"Countries you already have access to are greyed out and cannot be selected."
+msgstr ""
+"Válasszon ki egy vagy több országot. Egy adminisztrátor felülvizsgálja a "
+"kéréseidet. Azok az országok, amelyekhez már hozzáférsz, szürkék és nem "
+"választhatók ki."
+
+msgid "Self-Reported"
+msgstr "Önbevallásos"
+
+msgid "Session Logs"
+msgstr "Játékmenetnaplók"
+
+msgid "Settings"
+msgstr "Helyszínek"
+
+msgid "Show past assignments"
+msgstr "Korábbi beosztások megjelenítése"
+
+msgid "Status Updated"
+msgstr "Állapot frissítve"
+
+msgid "Submission History and Data Quality for"
+msgstr "Benyújtási előzmények és adatminőség"
+
+msgid "Submitted by"
+msgstr "Beküldte"
+
+msgid "Submitted through public link"
+msgstr "Nyilvános linken keresztül küldve"
+
+msgid "Successful"
+msgstr "Sikeresek"
+
+msgid "Successful Logins"
+msgstr "Sikeres bejelentkezések"
+
+msgid "Successful logins today"
+msgstr "Sikeres bejelentkezések ma"
+
+msgid "System Manager"
+msgstr "Rendszermenedzser"
+
+msgid "System administrators"
+msgstr "Rendszergazdák"
+
+msgid "Target"
+msgstr "Cél"
+
+msgid "Test Alert"
+msgstr "Tesztriasztás"
+
+msgid "That's all"
+msgstr "Ennyi az egész"
+
+msgid "This feature is under development"
+msgstr "Ez a funkció fejlesztés alatt áll"
+
+msgid ""
+"This request was approved, but your access to this country has since been "
+"removed by an administrator."
+msgstr ""
+"Ezt a kérést jóváhagyták, de azóta egy adminisztrátor eltávolította az "
+"országhoz való hozzáférésedet."
+
+msgid "Time Range:"
+msgstr "Időtartomány:"
+
+msgid "Today's Logins"
+msgstr "A mai bejelentkezések"
+
+msgid "Top Tools Used"
+msgstr "A legjobb használt szerszámok"
+
+msgid "Total Events"
+msgstr "Összesen az események"
+
+msgid "Total Logins"
+msgstr "Összes bejelentkezés"
+
+msgid "Total Users"
+msgstr "Összes felhasználó"
+
+msgid "Traces with LLM quality score"
+msgstr "Traces LLM minőségi pontszámmal"
+
+msgid "Trend Analysis"
+msgstr "Trendelemzés"
+
+msgid "Unresolved Events"
+msgstr "Megoldatlan események"
+
+msgid "Unresolved Only"
+msgstr "Csak megoldatlan"
+
+msgid "User Activities"
+msgstr "Felhasználói tevékenységek"
+
+msgid "User Analytics Dashboard"
+msgstr "Felhasználói elemzési irányítópult"
+
+msgid "Vector chunks"
+msgstr "Vektordarabok"
+
+msgid "View All"
+msgstr "Nézz meg mindet"
+
+msgid "View All Events"
+msgstr "Minden esemény megtekintése"
+
+msgid "View Detailed Logs"
+msgstr "Részletes naplók megtekintése"
+
+msgid "View Public Submissions"
+msgstr "Tekintse meg a nyilvános beküldéseket"
+
+msgid "View Submission"
+msgstr "Megtekintés beküldése"
+
+msgid "View all"
+msgstr "Mindet nézd meg"
+
+msgid "You already have access"
+msgstr "Már van hozzáférésed"
+
+msgid "You can only request one country in total."
+msgstr "Összesen csak egy országot kérhetsz."
+
+msgid "You can request one country at a time."
+msgstr "Egyszerre kérhetsz országot."
+
+msgid "You can select multiple countries and submit all requests at once."
+msgstr ""
+"Több országot is választhatsz, és egyszerre beküldheted az összes kérelmet."
+
+msgid ""
+"You have %(count)d pending access request(s). An admin will review them "
+"shortly."
+msgstr ""
+"Van %(count)d váragóban lévő hozzáférési kérelm(ek). Egy adminisztrátor "
+"hamarosan átnézi őket."
+
+msgid "Your Access Requests"
+msgstr "Hozzáférési kérések"
+
+msgid "Your note"
+msgstr "A jegyzeted"
+
+msgid "Your user account is not associated with any countries."
+msgstr "A felhasználói fiókod nincs összekapcsolva egyetlen országgal sem."
+
+msgid "activities"
+msgstr "Tevékenységek"
+
+msgid "at"
+msgstr "a"
+
+msgid "at this time."
+msgstr "Jelenleg is."
+
+msgid "at: %(datetime)s"
+msgstr "címen: %(datetime)s"
+
+msgid "by"
+msgstr "szerző"
+
+msgid "completed"
+msgstr "befejezve"
+
+msgid "days"
+msgstr "Napok"
+
+msgid "errors"
+msgstr "Hibák"
+
+msgid "indexed"
+msgstr "indexelt"
+
+msgid "m avg duration"
+msgstr "m átlag időtartama"
+
+msgid "more change"
+msgstr "Több változás"
+
+msgid "optional"
+msgstr "Opcionális"
+
+msgid "page views"
+msgstr "Oldalmegtekintések"
+
+msgid "submission"
+msgstr "Aláadás"
+
+msgid "suspicious"
+msgstr "gyanús"
+
+msgid "total queue items"
+msgstr "Összesen sorban álló elemek"
+
+msgid "will appear here"
+msgstr "itt jelenik meg"
+
+msgid "yet."
+msgstr "Még nem."

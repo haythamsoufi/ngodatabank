@@ -1,0 +1,395 @@
+import 'package:flutter/foundation.dart'
+    show kIsWeb, kDebugMode, defaultTargetPlatform, TargetPlatform;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../services/organization_config_service.dart';
+
+class AppConfig {
+  static bool _envFlag(String key, {bool defaultValue = false}) {
+    final envValue = dotenv.env[key];
+    if (envValue != null) {
+      return envValue.toLowerCase() == 'true';
+    }
+    return bool.fromEnvironment(key, defaultValue: defaultValue);
+  }
+
+  // Environment Configuration (see productionBackendUrl / productionFrontendUrl below).
+  // PRODUCTION=true → Backoffice: IFRC (databank.ifrc.org); public website: Fly.io.
+  // STAGING=true → Backoffice: databank-stage.ifrc.org; public website: Fly.io when flags set.
+  // DEVELOPMENT=true → localhost / emulator hosts. Omit all three for ad-hoc defaults in _backendUrlRaw.
+  static final bool isProduction =
+      _envFlag('PRODUCTION', defaultValue: false);
+  static final bool isStaging =
+      _envFlag('STAGING', defaultValue: false);
+  static final bool isDevelopment =
+      _envFlag('DEVELOPMENT', defaultValue: false);
+
+  /// True when the resolved backoffice URL is loopback or the Android emulator host.
+  static bool get isLocalBackendHost {
+    try {
+      final uri = Uri.parse(backendUrl);
+      final host = uri.host.toLowerCase();
+      return host == 'localhost' ||
+          host == '127.0.0.1' ||
+          host == '10.0.2.2' ||
+          host == '[::1]' ||
+          host == '::1';
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Test quick-login buttons: debug builds only, with a local backoffice (excludes release/CI).
+  static bool get isQuickLoginEnabled => kDebugMode && isLocalBackendHost;
+
+  /// IFRC-hosted backoffice (e.g. databank.ifrc.org, databank-stage.ifrc.org).
+  static bool get isIfrcBackendHost {
+    try {
+      final host = Uri.parse(backendUrl).host.toLowerCase();
+      return host == 'ifrc.org' || host.endsWith('.ifrc.org');
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Fly.io app host (*.fly.dev).
+  static bool get isFlyDevBackend {
+    try {
+      return Uri.parse(backendUrl).host.toLowerCase().contains('fly.dev');
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Email/password login in the app: Fly preview or local backoffice only (not IFRC-hosted).
+  static bool get isManualCredentialLoginEnabled =>
+      isFlyDevBackend || isLocalBackendHost;
+
+  // Production — backoffice is IFRC-hosted (not *.fly.dev). Public website is on Fly.io.
+  static const String productionBackendUrl = 'https://databank.ifrc.org';
+  static const String productionFrontendUrl =
+      'https://website-databank.fly.dev';
+
+  // Staging — IFRC-hosted backoffice only (website URL still resolved via flags / .env)
+  static const String stagingBackendUrl = 'https://databank-stage.ifrc.org';
+
+  // Development URLs (localhost)
+  static const String devBackendUrlWeb = 'http://localhost:5000';
+  static const String devBackendUrlAndroid = 'http://10.0.2.2:5000';
+  static const String devBackendUrlOther = 'http://localhost:5000';
+  static const String devFrontendUrlWeb = 'http://localhost:3000';
+  static const String devFrontendUrlAndroid = 'http://10.0.2.2:3000';
+  static const String devFrontendUrlOther = 'http://localhost:3000';
+
+  // Backoffice Configuration
+  // Priority: BACKEND_URL (--dart-define, highest) > .env BACKEND_URL >
+  // Staging > Production > Development
+  //
+  // Local dev without touching .env:
+  //   Android emulator → host machine: --dart-define=BACKEND_URL=http://10.0.2.2:5000
+  //   Physical device + adb reverse tcp:5000 tcp:5000:
+  //     --dart-define=BACKEND_URL=http://localhost:5000
+  //
+  // Or set BACKEND_URL in .env:
+  //   BACKEND_URL=http://localhost:5000                 (local Flask)
+  //   BACKEND_URL=https://databank.ifrc.org             (IFRC production backoffice)
+  //   BACKEND_URL=https://databank-stage.ifrc.org       (IFRC staging)
+  //   BACKEND_URL=https://backoffice-databank.fly.dev   (Fly preview only — not the same host as IFRC prod)
+  //
+  // If BACKEND_URL is not set, flag-based defaults apply:
+  //   STAGING=true → databank-stage.ifrc.org
+  //   PRODUCTION=true → databank.ifrc.org (IFRC)
+  //   DEVELOPMENT=true → localhost (10.0.2.2 for Android emulator)
+  //   no flags → same default as PRODUCTION (databank.ifrc.org); see _backendUrlRaw
+  static String get backendUrl => _normalizeLoopbackToLocalhost(_backendUrlRaw);
+
+  /// Prefer `localhost` over `127.0.0.1` in URLs (same loopback; matches typical Flask copy).
+  static String _normalizeLoopbackToLocalhost(String url) {
+    try {
+      final u = Uri.parse(url);
+      if (u.host == '127.0.0.1') {
+        return u.replace(host: 'localhost').toString();
+      }
+    } catch (_) {}
+    return url;
+  }
+
+  static String get _backendUrlRaw {
+    const fromDefine = String.fromEnvironment('BACKEND_URL', defaultValue: '');
+    final trimmedDefine = fromDefine.trim();
+    if (trimmedDefine.isNotEmpty) {
+      return trimmedDefine.endsWith('/')
+          ? trimmedDefine.substring(0, trimmedDefine.length - 1)
+          : trimmedDefine;
+    }
+
+    final customBackendUrl = dotenv.env['BACKEND_URL']?.trim();
+    if (customBackendUrl != null && customBackendUrl.isNotEmpty) {
+      return customBackendUrl.endsWith('/')
+          ? customBackendUrl.substring(0, customBackendUrl.length - 1)
+          : customBackendUrl;
+    }
+
+    // Fall back to flag-based selection
+    if (isStaging) {
+      return stagingBackendUrl;
+    }
+    if (isProduction) {
+      return productionBackendUrl;
+    }
+    if (isDevelopment) {
+      if (kIsWeb) {
+        return devBackendUrlWeb;
+      }
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        return devBackendUrlAndroid;
+      }
+      return devBackendUrlOther;
+    }
+
+    // Default to production when no flags are set
+    return productionBackendUrl;
+  }
+
+  static String get baseApiUrl => backendUrl;
+
+  // Website Configuration
+  // Priority: FRONTEND_URL (from .env) > Staging/Production > Development
+  //
+  // To override the frontend URL, set FRONTEND_URL in your .env file:
+  //   FRONTEND_URL=http://localhost:3000               (local Website)
+  //   FRONTEND_URL=https://website-databank.fly.dev    (public site; Fly.io — not the backoffice host)
+  //
+  // If FRONTEND_URL is not set:
+  //   STAGING=true or PRODUCTION=true → website-databank.fly.dev
+  //   DEVELOPMENT=true → localhost (10.0.2.2:3000 on Android emulator)
+  //   no flags → dev localhost defaults (see frontendUrl)
+  static String get frontendUrl {
+    // First, check if FRONTEND_URL is explicitly set in .env file
+    final customFrontendUrl = dotenv.env['FRONTEND_URL']?.trim();
+    if (customFrontendUrl != null && customFrontendUrl.isNotEmpty) {
+      // Remove trailing slash if present
+      return customFrontendUrl.endsWith('/')
+          ? customFrontendUrl.substring(0, customFrontendUrl.length - 1)
+          : customFrontendUrl;
+    }
+
+    // Fall back to flag-based selection
+    if (isStaging || isProduction) {
+      return productionFrontendUrl;
+    }
+    if (isDevelopment) {
+      if (kIsWeb) {
+        return devFrontendUrlWeb;
+      }
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        return devFrontendUrlAndroid;
+      }
+      return devFrontendUrlOther;
+    }
+
+    // Default to development URLs if no flags are set
+    if (kIsWeb) {
+      return devFrontendUrlWeb;
+    }
+    // Check if running on Android
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return devFrontendUrlAndroid;
+    }
+    return devFrontendUrlOther;
+  }
+
+  // Azure AD B2C Configuration (dynamic, loaded from organization config)
+  static String get azureB2CTenant {
+    try {
+      if (OrganizationConfigService().isInitialized) {
+        final tenant = OrganizationConfigService().config.azure.b2cTenant;
+        if (tenant.isNotEmpty) return tenant;
+      }
+    } catch (e) {
+      // Fallback if config not loaded
+    }
+    return ''; // Default: empty (Azure B2C disabled)
+  }
+
+  static String get azureB2CPolicy {
+    try {
+      if (OrganizationConfigService().isInitialized) {
+        final policy = OrganizationConfigService().config.azure.b2cPolicy;
+        if (policy.isNotEmpty) return policy;
+      }
+    } catch (e) {
+      // Fallback if config not loaded
+    }
+    return ''; // Default: empty (Azure B2C disabled)
+  }
+
+  static String get azureB2CRedirectScheme {
+    try {
+      if (OrganizationConfigService().isInitialized) {
+        return OrganizationConfigService().config.azure.redirectScheme;
+      }
+    } catch (e) {
+      // Fallback if config not loaded
+    }
+    return 'ngodatabank'; // Default fallback
+  }
+
+  // API Endpoints
+  static const String loginEndpoint = '/login';
+  static const String azureLoginEndpoint = '/login/azure';
+  static const String azureCallbackEndpoint = '/auth/azure/callback';
+  static const String dashboardEndpoint = '/';
+  static const String accountSettingsEndpoint = '/account-settings';
+
+  // Dashboard API Endpoint
+  static const String dashboardApiEndpoint = '/api/v1/dashboard';
+
+  // Mobile API surface -- all mobile routes use JWT Bearer auth
+  static const String mobileApiPrefix = '/api/mobile/v1';
+
+  // Auth
+  static const String mobileTokenEndpoint = '$mobileApiPrefix/auth/token';
+  static const String mobileRefreshEndpoint = '$mobileApiPrefix/auth/refresh';
+  static const String mobileSessionCheckEndpoint = '$mobileApiPrefix/auth/session';
+  static const String mobileExchangeSessionEndpoint = '$mobileApiPrefix/auth/exchange-session';
+  static const String logoutEndpoint = '$mobileApiPrefix/auth/logout';
+  static const String jsonLoginEndpoint = '$mobileApiPrefix/auth/token';
+  static const String jsonChangePasswordEndpoint = '$mobileApiPrefix/auth/change-password';
+  static const String jsonProfileEndpoint = '$mobileApiPrefix/auth/profile';
+  static const String userProfileApiEndpoint = '$mobileApiPrefix/auth/profile';
+  static const String userProfileUpdateApiEndpoint = '$mobileApiPrefix/auth/profile';
+
+  // Notifications
+  static const String notificationsEndpoint = '$mobileApiPrefix/notifications';
+  static const String notificationsCountEndpoint = '$mobileApiPrefix/notifications/count';
+  static const String markNotificationsReadEndpoint = '$mobileApiPrefix/notifications/mark-read';
+  static const String markNotificationsUnreadEndpoint = '$mobileApiPrefix/notifications/mark-unread';
+  static const String notificationPreferencesEndpoint = '$mobileApiPrefix/notifications/preferences';
+
+  // Devices
+  static const String deviceRegisterEndpoint = '$mobileApiPrefix/devices/register';
+  static const String deviceUnregisterEndpoint = '$mobileApiPrefix/devices/unregister';
+  static const String deviceHeartbeatEndpoint = '$mobileApiPrefix/devices/heartbeat';
+  static const String mobileDeviceRegisterEndpoint = deviceRegisterEndpoint;
+  static const String mobileDeviceUnregisterEndpoint = deviceUnregisterEndpoint;
+  static const String mobileDeviceHeartbeatEndpoint = deviceHeartbeatEndpoint;
+
+  // Admin
+  static const String mobileAdminUsersEndpoint = '$mobileApiPrefix/admin/users';
+  static const String mobileAccessRequestsEndpoint = '$mobileApiPrefix/admin/access-requests';
+  static const String mobileAdminSendNotificationEndpoint = '$mobileApiPrefix/admin/notifications/send';
+  static const String mobileAdminEndSessionEndpoint = '$mobileApiPrefix/admin/sessions';
+
+  // Storage Keys
+  static const String sessionCookieKey = 'session_cookie';
+  static const String userEmailKey = 'user_email';
+  static const String rememberMeKey = 'remember_me';
+  static const String selectedEntityTypeKey = 'selected_entity_type';
+  static const String selectedEntityIdKey = 'selected_entity_id';
+  /// Survives logout (`StorageService.clear()` wipes SharedPreferences only).
+  static const String persistentDeviceInstallIdKey =
+      'persistent_device_install_id';
+
+  // Cache Keys
+  static const String cachedDashboardKey = 'cached_dashboard';
+  static const String cachedUserProfileKey = 'cached_user_profile';
+  static const String cachedEntitiesKey = 'cached_entities';
+
+  // App Configuration (dynamic, loaded from organization config)
+  static String get appName {
+    try {
+      if (OrganizationConfigService().isInitialized) {
+        return OrganizationConfigService().config.app.name;
+      }
+    } catch (e) {
+      // Fallback if config not loaded
+    }
+    return 'NGO Databank'; // Default fallback
+  }
+  static const Duration cacheExpiration = Duration(hours: 1);
+  // Must match the server's PERMANENT_SESSION_LIFETIME (7 days).
+  // With SESSION_REFRESH_EACH_REQUEST=True on the server, each authenticated
+  // request rolls this window forward — so staying logged in across weeks works
+  // as long as the app is opened at least once per week.
+  static const Duration sessionTimeout = Duration(days: 7);
+
+  // Feature Flags
+  static const bool loginEnabled = true;
+
+  // Sentry Configuration (Error Tracking)
+  // Set via environment variable or compile-time constant
+  // Leave empty to disable Sentry
+  static const String sentryDsn =
+      String.fromEnvironment('SENTRY_DSN', defaultValue: '');
+
+  // API Key for public endpoints (DB-managed key, sent as Authorization: Bearer)
+  // Priority: MOBILE_APP_API_KEY (new) -> API_KEY (legacy alias) -> compile-time define -> empty string
+  static String get apiKey {
+    final envValue = dotenv.env['MOBILE_APP_API_KEY'] ?? dotenv.env['API_KEY'];
+    if (envValue != null && envValue.isNotEmpty) {
+      return envValue.trim();
+    }
+
+    const defineValue = String.fromEnvironment('MOBILE_APP_API_KEY', defaultValue: '');
+    if (defineValue.isNotEmpty) {
+      return defineValue.trim();
+    }
+
+    // Legacy compile-time alias
+    const legacyDefine = String.fromEnvironment('API_KEY', defaultValue: '');
+    if (legacyDefine.isNotEmpty) {
+      return legacyDefine.trim();
+    }
+
+    return '';
+  }
+
+  // Security Note: Authentication bypass removed for security.
+  // If needed for development, use environment variables with kDebugMode checks
+  // and ensure it can NEVER be enabled in release builds.
+
+  // WebView Security - Allowed URL patterns
+  // Only URLs matching these patterns will be allowed to load in WebView
+  static List<String> getAllowedUrlPatterns() {
+    return [
+      backendUrl,
+      frontendUrl,
+      // Allow staging URLs
+      if (isStaging) ...[
+        'https://databank-stage.ifrc.org',
+        'https://*.databank-stage.ifrc.org',
+      ],
+      // Production WebView: IFRC backoffice is in `backendUrl`; allow Fly.io for public website embeds/previews.
+      if (isProduction) ...[
+        'https://*.fly.dev',
+        'https://*.databank.fly.dev',
+      ],
+      // Allow localhost for development
+      if (!isProduction && !isStaging) ...[
+        'http://localhost:*',
+        'http://127.0.0.1:*',
+        'http://10.0.2.2:*', // Android emulator
+      ],
+    ];
+  }
+
+  // Content Security Policy for WebView
+  static String get contentSecurityPolicy {
+    // Default-src: allow same-origin and backend API
+    // script-src: allow same-origin and inline scripts (required for some pages)
+    // style-src: allow same-origin, inline styles, and Google Fonts (for Tajawal)
+    // font-src: allow same-origin and Google Fonts
+    // img-src: allow data URLs and same-origin
+    // connect-src: allow same-origin and backend API
+    return "default-src 'self' $backendUrl $frontendUrl; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com data:; "
+        "img-src 'self' data: blob: $backendUrl $frontendUrl; "
+        "connect-src 'self' $backendUrl $frontendUrl; "
+        "frame-src 'self' $backendUrl $frontendUrl; "
+        "object-src 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self' $backendUrl $frontendUrl;";
+  }
+}

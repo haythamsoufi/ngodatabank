@@ -1,0 +1,203 @@
+import 'package:flutter/material.dart';
+import 'routes.dart';
+import '../utils/constants.dart';
+// Shared screens
+import '../screens/shared/splash_screen.dart';
+import '../screens/shared/login_screen.dart';
+import '../screens/shared/azure_login_screen.dart';
+import '../screens/shared/settings_screen.dart';
+import '../screens/shared/ai_chat_screen.dart';
+import '../screens/shared/main_navigation_screen.dart';
+// Public screens
+import '../screens/public/webview_screen.dart';
+import '../screens/public/indicator_bank_screen.dart';
+import '../screens/public/indicator_detail_screen.dart';
+import '../screens/public/resources_screen.dart';
+import '../screens/public/disaggregation_analysis_screen.dart';
+import '../screens/public/countries_screen.dart';
+import '../screens/public/ns_structure_screen.dart';
+import '../screens/public/quiz_game_screen.dart';
+import '../screens/public/leaderboard_screen.dart';
+// Admin screens
+import '../screens/admin/templates_screen.dart';
+import '../screens/admin/assignments_screen.dart';
+import '../screens/admin/admin_screen.dart';
+import '../screens/admin/admin_dashboard_screen.dart';
+import '../screens/admin/document_management_screen.dart';
+import '../screens/admin/translation_management_screen.dart';
+import '../screens/admin/resources_management_screen.dart';
+import '../screens/admin/organizational_structure_screen.dart';
+import '../screens/admin/indicator_bank_admin_screen.dart';
+import '../screens/admin/edit_indicator_screen.dart';
+import '../screens/admin/edit_entity_screen.dart';
+import '../screens/admin/user_analytics_screen.dart';
+import '../screens/admin/audit_trail_screen.dart';
+import '../screens/admin/manage_users_screen.dart';
+import '../screens/admin/access_requests_screen.dart';
+
+/// Legacy Navigator 1.0 router — routes and onGenerateRoute.
+///
+/// **Migration**: New screens should be added to [AppGoRouter] in
+/// `go_router_config.dart` instead. This file is retained for backward
+/// compatibility while the migration is in progress.
+///
+/// To switch the app to go_router, change [MaterialApp] in `main.dart` to
+/// [MaterialApp.router] and pass [AppGoRouter.createRouter] as the
+/// `routerConfig`. The legacy [routes] and [onGenerateRoute] can then be
+/// removed.
+class AppRouter {
+  static Map<String, WidgetBuilder> get routes => {
+        AppRoutes.splash: (context) => const SplashScreen(),
+        AppRoutes.login: (context) => const LoginScreen(),
+        AppRoutes.azureLogin: (context) => const AzureLoginScreen(),
+        AppRoutes.dashboard: (context) {
+          final args = ModalRoute.of(context)?.settings.arguments;
+          // Pass null when no argument is provided so MainNavigationScreen
+          // defaults to the home tab (index 2 via `widget.initialTabIndex ?? 2`).
+          // Explicit int arguments (e.g. from navigateToMainTab) are still honoured.
+          final tabIndex = args is int ? args : null;
+          return MainNavigationScreen(initialTabIndex: tabIndex);
+        },
+        AppRoutes.settings: (context) => const SettingsScreen(),
+        AppRoutes.notifications: (context) {
+          final args = ModalRoute.of(context)?.settings.arguments;
+          final tabIndex = args is int ? args : 0;
+          return MainNavigationScreen(initialTabIndex: tabIndex);
+        },
+        AppRoutes.admin: (context) => const AdminScreen(showBottomNav: true),
+        AppRoutes.adminDashboard: (context) =>
+            const AdminDashboardScreen(showBottomNav: true),
+        AppRoutes.templates: (context) => const TemplatesScreen(),
+        AppRoutes.assignments: (context) => const AssignmentsScreen(),
+        AppRoutes.users: (context) => const ManageUsersScreen(),
+        AppRoutes.accessRequests: (context) => const AccessRequestsScreen(),
+        AppRoutes.documentManagement: (context) =>
+            const DocumentManagementScreen(),
+        AppRoutes.translationManagement: (context) =>
+            const TranslationManagementScreen(),
+        AppRoutes.resourcesManagement: (context) =>
+            const ResourcesManagementScreen(),
+        AppRoutes.organizationalStructure: (context) =>
+            const OrganizationalStructureScreen(),
+        AppRoutes.indicatorBankAdmin: (context) =>
+            const IndicatorBankAdminScreen(),
+        AppRoutes.userAnalytics: (context) => const UserAnalyticsScreen(),
+        AppRoutes.auditTrail: (context) => const AuditTrailScreen(),
+        AppRoutes.countries: (context) => const CountriesScreen(),
+        AppRoutes.nsStructure: (context) => const NSStructureScreen(),
+        AppRoutes.indicatorBank: (context) => const IndicatorBankScreen(),
+        AppRoutes.resources: (context) => const ResourcesScreen(),
+        AppRoutes.disaggregationAnalysis: (context) =>
+            const DisaggregationAnalysisScreen(),
+        AppRoutes.quizGame: (context) => const QuizGameScreen(),
+        AppRoutes.leaderboard: (context) => const LeaderboardScreen(),
+      };
+
+  static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
+    if (settings.name == AppRoutes.aiChat) {
+      return PageRouteBuilder<void>(
+        settings: settings,
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const AiChatScreenWithBottomNav(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          final slideTween = Tween<Offset>(
+            begin: const Offset(1.0, 0.0),
+            end: Offset.zero,
+          ).chain(CurveTween(curve: Curves.easeOutCubic));
+          return SlideTransition(
+            position: animation.drive(slideTween),
+            child: child,
+          );
+        },
+        transitionDuration: AppConstants.animationMedium,
+        reverseTransitionDuration: AppConstants.animationMedium,
+      );
+    }
+
+    if (settings.name == AppRoutes.webview) {
+      final url = settings.arguments as String;
+      return MaterialPageRoute(
+        builder: (context) => WebViewScreen(initialUrl: url),
+      );
+    }
+
+    // NS structure with country ID: /ns-structure/{id}
+    if (settings.name != null &&
+        settings.name!.startsWith('/ns-structure/')) {
+      final idString = settings.name!.split('/').last;
+      final countryId = int.tryParse(idString);
+      if (countryId != null) {
+        return MaterialPageRoute(
+          builder: (context) => NSStructureScreen(countryId: countryId),
+        );
+      }
+    }
+
+    // Indicator detail: /indicator-bank/{id}
+    if (settings.name != null &&
+        settings.name!.startsWith('/indicator-bank/')) {
+      final idString = settings.name!.split('/').last;
+      final id = int.tryParse(idString);
+      if (id != null) {
+        return MaterialPageRoute(
+          builder: (context) => IndicatorDetailScreen(indicatorId: id),
+        );
+      }
+    }
+
+    // Edit indicator: /admin/indicator_bank/edit/{id}
+    if (settings.name != null &&
+        settings.name!.startsWith('/admin/indicator_bank/edit/')) {
+      final idString = settings.name!.split('/').last;
+      final id = int.tryParse(idString);
+      if (id != null) {
+        return MaterialPageRoute(
+          builder: (context) => EditIndicatorScreen(indicatorId: id),
+        );
+      }
+    }
+
+    // Edit entity: /admin/organization/edit/{entityType}/{id}
+    //           or /admin/organization/edit/{id}
+    if (settings.name != null &&
+        settings.name!.startsWith('/admin/organization/edit/')) {
+      final parts = settings.name!.split('/');
+      if (parts.length == 6) {
+        final entityType = parts[4];
+        final idString = parts[5];
+        final id = int.tryParse(idString);
+        if (id != null) {
+          final args = settings.arguments;
+          final entityName =
+              args is Map ? args['entityName'] as String? : null;
+          return MaterialPageRoute(
+            builder: (context) => EditEntityScreen(
+              entityId: id,
+              entityType: entityType,
+              entityName: entityName,
+            ),
+          );
+        }
+      } else if (parts.length == 5) {
+        final idString = parts[4];
+        final id = int.tryParse(idString);
+        if (id != null) {
+          final args = settings.arguments;
+          final entityName =
+              args is Map ? args['entityName'] as String? : null;
+          final entityType =
+              args is Map ? args['entityType'] as String? : null;
+          return MaterialPageRoute(
+            builder: (context) => EditEntityScreen(
+              entityId: id,
+              entityType: entityType,
+              entityName: entityName,
+            ),
+          );
+        }
+      }
+    }
+
+    return null;
+  }
+}
