@@ -298,17 +298,22 @@ class Config:
     # We intentionally do not expose an env/config knob for it.
 
     # More robust connection handling (esp. for Postgres)
+    # IMPORTANT — multi-worker arithmetic: total max DB connections =
+    #   GUNICORN_WORKERS × (SQLALCHEMY_POOL_SIZE + SQLALCHEMY_MAX_OVERFLOW)
+    # Keep this well below PostgreSQL's max_connections.
+    # Azure PostgreSQL Flexible Server max_connections varies by tier
+    # (e.g. 50 for B1ms, 100 for B2s, 200 for GP-2vCore).
+    # Default here: 5 workers × (5 + 10) = 75 connections — safe for most tiers.
+    # Override via env vars to tune per environment.
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_pre_ping": True,
         # recycle connections periodically to avoid stale connections on some providers
         "pool_recycle": int(os.environ.get("SQLALCHEMY_POOL_RECYCLE", "300")),
-        # Increase pool size for build-time load
-        "pool_size": int(os.environ.get("SQLALCHEMY_POOL_SIZE", "20")),
-        "max_overflow": int(os.environ.get("SQLALCHEMY_MAX_OVERFLOW", "30")),
+        "pool_size": int(os.environ.get("SQLALCHEMY_POOL_SIZE", "5")),
+        "max_overflow": int(os.environ.get("SQLALCHEMY_MAX_OVERFLOW", "10")),
         # Connection timeout settings
-        "pool_timeout": int(os.environ.get("SQLALCHEMY_POOL_TIMEOUT", "60")),
-        # Echo SQL queries in development - force false to reduce logging
-        "echo": False,  # Always disable SQL echo to reduce log noise
+        "pool_timeout": int(os.environ.get("SQLALCHEMY_POOL_TIMEOUT", "30")),
+        "echo": False,
     }
     # List of supported language codes (order matters: first is fallback)
     # Note: Runtime settings are stored in the database (system_settings table).
@@ -1018,13 +1023,15 @@ class ProductionConfig(Config):
     WTF_CSRF_ENABLED = True
     WTF_CSRF_SSL_STRICT = True
 
-    # Connection pool settings aligned with expected concurrency; override via env in production
+    # Connection pool — keep totals below PostgreSQL max_connections.
+    # total max = GUNICORN_WORKERS × (SQLALCHEMY_POOL_SIZE + SQLALCHEMY_MAX_OVERFLOW)
+    # With 5 workers and defaults below: 5 × (5 + 10) = 75 connections.
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_pre_ping": True,
         "pool_recycle": int(os.environ.get("SQLALCHEMY_POOL_RECYCLE", "300")),
-        "pool_size": int(os.environ.get("SQLALCHEMY_POOL_SIZE", "20")),
-        "max_overflow": int(os.environ.get("SQLALCHEMY_MAX_OVERFLOW", "30")),
-        "pool_timeout": int(os.environ.get("SQLALCHEMY_POOL_TIMEOUT", "60")),
+        "pool_size": int(os.environ.get("SQLALCHEMY_POOL_SIZE", "5")),
+        "max_overflow": int(os.environ.get("SQLALCHEMY_MAX_OVERFLOW", "10")),
+        "pool_timeout": int(os.environ.get("SQLALCHEMY_POOL_TIMEOUT", "30")),
     }
 
     # Set logging level to INFO for better visibility

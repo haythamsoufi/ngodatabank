@@ -378,13 +378,20 @@ class User(UserMixin, db.Model):
         return self.profile_color
 
 
+# Checked once per worker process; avoids calling inspect(db.engine) on every
+# request (which opens an extra DB connection outside the pool each time).
+_user_table_exists: bool = False
+
+
 @login.user_loader
 def load_user(id):
-    # Check if the user table exists before querying
-    # This prevents errors during database initialization
-    inspector = inspect(db.engine)
-    if 'user' not in inspector.get_table_names():
-        return None
+    global _user_table_exists
+    if not _user_table_exists:
+        # Only runs on the very first authenticated request per worker, not on
+        # every request. Prevents connection exhaustion under load.
+        if 'user' not in inspect(db.engine).get_table_names():
+            return None
+        _user_table_exists = True
     return User.query.get(int(id))
 
 
