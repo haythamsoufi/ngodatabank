@@ -121,7 +121,7 @@ class ScreenViewTracker {
     try {
       final body = <String, dynamic>{
         'screen_name': screenName,
-        if (screenClass != null) 'screen_class': screenClass,
+        'screen_class': screenClass,
       };
       await _api.post(
         '/api/mobile/v1/analytics/screen-view',
