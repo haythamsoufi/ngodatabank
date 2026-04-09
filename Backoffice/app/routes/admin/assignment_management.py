@@ -141,8 +141,21 @@ def assignments_gantt():
     """Display assignments in a Gantt chart timeline view grouped by template."""
     assignments = AssignedForm.query.options(
         db.joinedload(AssignedForm.template),
-        db.selectinload(AssignedForm.country_statuses),
     ).order_by(AssignedForm.assigned_at.asc()).all()
+
+    # Pre-load all country-type statuses in one query to avoid N+1
+    assignment_ids = [a.id for a in assignments]
+    all_statuses = (
+        AssignmentEntityStatus.query
+        .filter(
+            AssignmentEntityStatus.assigned_form_id.in_(assignment_ids),
+            AssignmentEntityStatus.entity_type == 'country',
+        )
+        .all()
+    ) if assignment_ids else []
+    statuses_by_assignment = defaultdict(list)
+    for aes in all_statuses:
+        statuses_by_assignment[aes.assigned_form_id].append(aes)
 
     # Group assignments by template
     template_groups = {}
@@ -159,9 +172,9 @@ def assignments_gantt():
                 'active_count': 0
             }
 
-        # Get the earliest due date from country statuses (already loaded)
+        # Get the earliest due date from country statuses (pre-loaded)
         earliest_due_date = None
-        statuses = assignment.country_statuses
+        statuses = statuses_by_assignment[assignment.id]
         if statuses:
             due_dates = [aes.due_date for aes in statuses if aes.due_date]
             if due_dates:

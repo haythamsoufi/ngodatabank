@@ -186,9 +186,11 @@ class _LandingGetStartedSectionState extends State<LandingGetStartedSection> {
                   if (dsSnap.hasError) {
                     return _ErrorBlock(
                       message: l10n.homeLandingGlobalLoadError,
-                      onRetry: () => setState(
-                        () => _datasetFuture = _loadPeriodsThenData(),
-                      ),
+                      onRetry: () {
+                        setState(() {
+                          _datasetFuture = _loadPeriodsThenData();
+                        });
+                      },
                     );
                   }
                   final data = dsSnap.data!;

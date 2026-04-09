@@ -83,6 +83,22 @@ class _LandingAiEntryCardState extends State<LandingAiEntryCard>
     if (widget.isExpanded != old.isExpanded) {
       if (widget.isExpanded) {
         _morphAnim.forward();
+        // Focus the chat field after the pill→field morph finishes so the
+        // keyboard appears and Tab order continues to send + quick prompts.
+        Future<void>(() async {
+          await Future<void>.delayed(const Duration(milliseconds: 280));
+          if (!mounted || !widget.isExpanded) return;
+          void request() {
+            if (!mounted || !widget.isExpanded) return;
+            _focusNode.requestFocus();
+          }
+
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            request();
+            // Some platforms apply focus/IME one frame late.
+            WidgetsBinding.instance.addPostFrameCallback((_) => request());
+          });
+        });
       } else {
         _morphAnim.reverse();
         _focusNode.unfocus();
@@ -298,51 +314,55 @@ class _ActiveField extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Expanded(
-            child: TextField(
-              controller: controller,
-              focusNode: focusNode,
-              minLines: 1,
-              maxLines: 3,
-              keyboardType: TextInputType.text,
-              textInputAction: TextInputAction.send,
-              onSubmitted: (_) => onSubmit(),
-              style: TextStyle(
-                color: Colors.grey.shade800,
-                fontSize: 14,
-                height: 1.35,
-              ),
-              cursorColor: accent,
-              decoration: InputDecoration(
-                hintText: placeholder,
-                hintStyle: TextStyle(
-                  color: Colors.grey.shade500,
+            child: FocusTraversalOrder(
+              order: NumericFocusOrder(0),
+              child: TextField(
+                controller: controller,
+                focusNode: focusNode,
+                minLines: 1,
+                maxLines: 3,
+                keyboardType: TextInputType.text,
+                textInputAction: TextInputAction.send,
+                onSubmitted: (_) => onSubmit(),
+                style: TextStyle(
+                  color: Colors.grey.shade800,
                   fontSize: 14,
+                  height: 1.35,
                 ),
-                filled: true,
-                fillColor: Colors.transparent,
-                isDense: true,
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                disabledBorder: InputBorder.none,
-                errorBorder: InputBorder.none,
-                focusedErrorBorder: InputBorder.none,
-                contentPadding: const EdgeInsets.fromLTRB(12, 9, 4, 9),
+                cursorColor: accent,
+                decoration: InputDecoration(
+                  hintText: placeholder,
+                  hintStyle: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 14,
+                  ),
+                  filled: true,
+                  fillColor: Colors.transparent,
+                  isDense: true,
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none,
+                  errorBorder: InputBorder.none,
+                  focusedErrorBorder: InputBorder.none,
+                  contentPadding: const EdgeInsets.fromLTRB(12, 9, 4, 9),
+                ),
               ),
             ),
           ),
-          GestureDetector(
-            onTap: onSubmit,
-            child: Container(
-              width: 40,
-              height: 40,
-              margin: EdgeInsets.zero,
-              decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
-              child: const Icon(
-                Icons.arrow_forward_rounded,
-                color: Colors.white,
-                size: 20,
+          FocusTraversalOrder(
+            order: NumericFocusOrder(1),
+            child: IconButton(
+              onPressed: onSubmit,
+              style: IconButton.styleFrom(
+                backgroundColor: accent,
+                foregroundColor: Colors.white,
+                fixedSize: const Size(40, 40),
+                padding: EdgeInsets.zero,
+                shape: const CircleBorder(),
               ),
+              icon: const Icon(Icons.arrow_forward_rounded, size: 20),
+              tooltip: 'Send',
             ),
           ),
         ],

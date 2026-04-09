@@ -12,7 +12,7 @@ from app.routes.api.mobile import mobile_bp
 @mobile_auth_required
 def list_branches(country_id):
     """List NS branches for a country."""
-    from app.models.core import NSBranch
+    from app.models import NSBranch
 
     branches = NSBranch.query.filter_by(country_id=country_id).order_by(NSBranch.name.asc()).all()
     return mobile_ok(data={
@@ -27,7 +27,7 @@ def list_branches(country_id):
 @mobile_auth_required
 def list_subbranches(branch_id):
     """List NS sub-branches for a branch."""
-    from app.models.core import NSSubBranch
+    from app.models import NSSubBranch
 
     subbranches = NSSubBranch.query.filter_by(branch_id=branch_id).order_by(NSSubBranch.name.asc()).all()
     return mobile_ok(data={
@@ -41,39 +41,42 @@ def list_subbranches(branch_id):
 @mobile_bp.route('/admin/org/structure', methods=['GET'])
 @mobile_auth_required(permission='admin.organization.manage')
 def org_structure():
-    """Full organization entity tree."""
-    from app.models import Country
-    from app.models.core import NSBranch, NSSubBranch
+    """Organization entities as flat lists per type (countries, branches, subbranches)."""
+    from app.models import Country, NSBranch, NSSubBranch
 
     try:
         countries_q = Country.query.order_by(Country.name.asc()).all()
-        branches_q = NSBranch.query.all()
-        subbranches_q = NSSubBranch.query.all()
+        branches_q = NSBranch.query.order_by(NSBranch.name.asc()).all()
+        subbranches_q = NSSubBranch.query.order_by(NSSubBranch.name.asc()).all()
 
-        branches_by_country = {}
-        for b in branches_q:
-            branches_by_country.setdefault(b.country_id, []).append({
+        country_names = {c.id: c.name for c in countries_q}
+
+        countries = [
+            {'id': c.id, 'name': c.name, 'code': getattr(c, 'iso3', None)}
+            for c in countries_q
+        ]
+        branches = [
+            {
                 'id': b.id, 'name': b.name, 'code': getattr(b, 'code', None),
-            })
-
-        subbranches_by_branch = {}
-        for s in subbranches_q:
-            subbranches_by_branch.setdefault(s.branch_id, []).append({
+                'country_id': b.country_id,
+                'country_name': country_names.get(b.country_id, ''),
+            }
+            for b in branches_q
+        ]
+        subbranches = [
+            {
                 'id': s.id, 'name': s.name, 'code': getattr(s, 'code', None),
-            })
+                'branch_id': s.branch_id,
+            }
+            for s in subbranches_q
+        ]
 
-        structure = []
-        for c in countries_q:
-            country_branches = branches_by_country.get(c.id, [])
-            for branch in country_branches:
-                branch['subbranches'] = subbranches_by_branch.get(branch['id'], [])
-            structure.append({
-                'id': c.id,
-                'name': c.name,
-                'branches': country_branches,
-            })
-
-        return mobile_ok(data={'structure': structure}, meta={'total_countries': len(structure)})
+        return mobile_ok(data={
+            'countries': countries,
+            'branches': branches,
+            'subbranches': subbranches,
+            'active_tab': 'countries',
+        })
     except Exception as e:
         current_app.logger.error("org_structure: %s", e, exc_info=True)
         return mobile_server_error()

@@ -96,10 +96,6 @@ class ApiService {
     await _cacheCsrfToken(token);
   }
 
-  bool _shouldAttachPublicApiKey(String endpoint) {
-    return false;
-  }
-
   bool _isUnsafeMethod(String method) {
     final m = method.toUpperCase().trim();
     return m == 'POST' || m == 'PUT' || m == 'PATCH' || m == 'DELETE';
@@ -150,7 +146,8 @@ class ApiService {
   }
 
   /// Throws [AuthenticationException] when the auth context has fully expired
-  /// (no valid session timestamps AND no usable JWT access token).
+  /// (no valid session timestamps AND no usable JWT access token AND no
+  /// refresh token available to silently recover).
   Future<void> _guardSessionExpiry() async {
     final isExpired = await _session.isSessionExpired();
     if (!isExpired) return;
@@ -159,8 +156,28 @@ class ApiService {
     // by _getHeaders and the server will accept it).
     final jwtExpired = await _jwtService.isAccessTokenExpired();
     if (!jwtExpired) return;
-    DebugLogger.logApi(
-        'Session expired and no valid JWT - throwing AuthenticationException');
+    // Both the session timestamps and the JWT access token are expired.
+    // Before giving up, attempt a proactive silent refresh if we have a
+    // refresh token. This prevents the user being forced to log in again
+    // when the access token simply aged out (e.g. app in background) but a
+    // valid refresh token is still available.
+    final hasRefresh = await _jwtService.hasRefreshToken();
+    if (hasRefresh && _tokenRefreshCallback != null) {
+      DebugLogger.logApi(
+          'Session/JWT expired — attempting proactive silent token refresh');
+      final refreshed = await _tokenRefreshCallback!();
+      if (refreshed) {
+        DebugLogger.logApi('Proactive refresh succeeded — proceeding with request');
+        return;
+      }
+      // Refresh failed (refresh token itself is expired or server rejected it).
+      DebugLogger.logApi('Proactive refresh failed — clearing auth state');
+      await _jwtService.clearTokens();
+      await _session.clearSession();
+    } else {
+      DebugLogger.logApi(
+          'Session expired and no valid JWT or refresh token — throwing AuthenticationException');
+    }
     throw AuthenticationException('Session expired. Please log in again.');
   }
 
@@ -217,10 +234,8 @@ class ApiService {
       // Silently ignore - device token is optional
     }
 
-    // JWT Bearer token for authenticated requests.  The JWT carries the
-    // user identity and is accepted by @mobile_auth_required and (via the global
-    // before_request hook) by @login_required routes on /api/v1/ too.
-    // Fall back to the DB API key Bearer only for unauthenticated public reads.
+    // JWT Bearer token for all authenticated mobile API requests.
+    // All mobile endpoints use @mobile_auth_required which accepts this token.
     bool jwtAttached = false;
     if (includeAuth &&
         (additionalHeaders == null ||
@@ -230,18 +245,6 @@ class ApiService {
         headers['Authorization'] = 'Bearer $accessToken';
         jwtAttached = true;
       }
-    }
-
-    // Attach DB-managed public API key for /api/v1 public (unauthenticated) reads
-    // only when no JWT was attached and no caller-supplied Authorization exists.
-    if (!jwtAttached &&
-        endpoint != null &&
-        _shouldAttachPublicApiKey(endpoint) &&
-        AppConfig.apiKey.isNotEmpty &&
-        !headers.containsKey('Authorization') &&
-        (additionalHeaders == null ||
-            !additionalHeaders.containsKey('Authorization'))) {
-      headers['Authorization'] = 'Bearer ${AppConfig.apiKey}';
     }
 
     // CSRF token for session-authenticated unsafe requests (legacy / WebView flows

@@ -43,11 +43,14 @@ class _AiChatAgentProgressPanelState extends State<AiChatAgentProgressPanel> {
             children: [
               Text(
                 'Steps in progress',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: muted,
-                ),
+                style: theme.textTheme.titleSmall?.copyWith(
+                      color: muted,
+                    ) ??
+                    TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: muted,
+                    ),
               ),
               const SizedBox(height: 6),
               ...List.generate(widget.steps.length, (i) {
@@ -94,17 +97,23 @@ class _AiChatAgentProgressPanelState extends State<AiChatAgentProgressPanel> {
                                         ),
                                       ),
                                     )
-                                  : Icon(Icons.check, size: 14, color: doneIconColor),
+                                  : Icon(Icons.check, size: 16, color: doneIconColor),
                             ),
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
                                 step.message,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  height: 1.35,
-                                  color: muted,
-                                ),
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                      height: 1.35,
+                                      letterSpacing: -0.2,
+                                      color: muted,
+                                    ) ??
+                                    TextStyle(
+                                      fontSize: 16,
+                                      height: 1.35,
+                                      letterSpacing: -0.2,
+                                      color: muted,
+                                    ),
                               ),
                             ),
                             if (hasDetail)
@@ -121,11 +130,15 @@ class _AiChatAgentProgressPanelState extends State<AiChatAgentProgressPanel> {
                           padding: const EdgeInsets.only(left: 24, top: 2, right: 8),
                           child: Text(
                             detailText,
-                            style: TextStyle(
-                              fontSize: 11,
-                              height: 1.35,
-                              color: subtle,
-                            ),
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                                  height: 1.4,
+                                  color: subtle,
+                                ) ??
+                                TextStyle(
+                                  fontSize: 14,
+                                  height: 1.4,
+                                  color: subtle,
+                                ),
                           ),
                         ),
                     ],

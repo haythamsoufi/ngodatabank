@@ -60,7 +60,10 @@ class ResourcesManagementProvider with ChangeNotifier {
       try {
         final jsonData = jsonDecode(response.body) as Map<String, dynamic>;
         if (jsonData['success'] == true) {
-          final resourcesList = jsonData['resources'] as List<dynamic>?;
+          final rawData = jsonData['data'];
+          final List<dynamic>? resourcesList = rawData is List
+              ? rawData
+              : rawData is Map ? (rawData['resources'] as List<dynamic>?) : (jsonData['resources'] as List<dynamic>?);
           if (resourcesList != null) {
             _resources = resourcesList
                 .map((json) => Resource.fromJson(json as Map<String, dynamic>))

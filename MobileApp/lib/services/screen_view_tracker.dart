@@ -1,5 +1,6 @@
 import '../services/api_service.dart';
 import '../services/analytics_service.dart';
+import '../services/jwt_token_service.dart';
 import '../utils/debug_logger.dart';
 
 /// Tracks mobile screen views on both Firebase Analytics and the Backoffice
@@ -14,6 +15,7 @@ class ScreenViewTracker {
 
   final ApiService _api = ApiService();
   final AnalyticsService _analytics = AnalyticsService();
+  final JwtTokenService _jwtService = JwtTokenService();
 
   String? _lastScreenName;
   DateTime? _lastTrackedAt;
@@ -119,6 +121,12 @@ class ScreenViewTracker {
 
   Future<void> _postScreenView(String screenName, String? screenClass) async {
     try {
+      // Skip the Backoffice POST when the user has no stored tokens — this
+      // happens at app startup before auth is established and would always
+      // produce an auth error, generating noisy [ERROR] log lines.
+      final hasTokens = await _jwtService.hasTokens();
+      if (!hasTokens) return;
+
       final body = <String, dynamic>{
         'screen_name': screenName,
         'screen_class': screenClass,
@@ -129,7 +137,9 @@ class ScreenViewTracker {
         queueOnOffline: false,
       );
     } catch (e) {
-      DebugLogger.logError('screen_view tracking failed: $e');
+      // Fire-and-forget: auth expiry or network errors during tracking are
+      // expected and non-fatal — log as warning, not error.
+      DebugLogger.logWarn('SCREEN_VIEW', 'screen_view tracking failed: $e');
     }
   }
 }

@@ -35,9 +35,13 @@ class NotificationProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      DebugLogger.logNotifications('loadNotifications() starting');
       // Language will be automatically retrieved from storage by notification service
       _notifications = await _notificationService.getNotifications();
       _unreadCount = _notifications.where((n) => !n.isRead).length;
+      DebugLogger.logNotifications(
+        'loadNotifications() done: ${_notifications.length} items, unread=$_unreadCount',
+      );
       _error = null;
     } catch (e, stackTrace) {
       final error = _errorHandler.parseError(

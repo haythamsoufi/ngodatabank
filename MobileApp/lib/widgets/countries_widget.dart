@@ -50,7 +50,17 @@ class _CountriesWidgetState extends State<CountriesWidget> {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
+        final decoded = jsonDecode(response.body);
+        final List<dynamic> data;
+        if (decoded is List) {
+          data = decoded;
+        } else if (decoded is Map<String, dynamic> && decoded['data'] is Map) {
+          data = (decoded['data'] as Map)['countries'] as List<dynamic>? ?? [];
+        } else if (decoded is Map<String, dynamic> && decoded['data'] is List) {
+          data = decoded['data'] as List<dynamic>;
+        } else {
+          data = [];
+        }
         final List<Map<String, dynamic>> countries = data
             .map((item) => item as Map<String, dynamic>)
             .toList();

@@ -58,6 +58,16 @@ if errorlevel 1 (
 
 echo  Updated .env
 echo.
+
+if "!BO_CHOICE!"=="5" (
+  echo  USB phone: adb reverse tcp:5000 tcp:5000
+  adb reverse tcp:5000 tcp:5000
+  if errorlevel 1 (
+    echo  Warning: adb reverse failed. Connect one device with USB debugging, or ensure adb is on PATH.
+  )
+  echo.
+)
+
 echo  Starting Flutter (default org profile: IFRC). Extra args: %*
 echo.
 

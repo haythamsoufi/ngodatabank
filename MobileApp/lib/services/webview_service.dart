@@ -324,8 +324,8 @@ class WebViewService {
               }
             }
 
-            if (url.includes('/api/v1/') && !url.startsWith(correctBackendUrl)) {
-              const apiIndex = url.indexOf('/api/v1/');
+            if (url.includes('/api/') && !url.startsWith(correctBackendUrl)) {
+              const apiIndex = url.indexOf('/api/');
               if (apiIndex !== -1) {
                 const apiPath = url.substring(apiIndex);
                 url = correctBackendUrl + apiPath;

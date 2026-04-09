@@ -108,9 +108,6 @@ class _AuthInterceptor extends Interceptor {
     final accessToken = await _jwtService.getAccessToken();
     if (accessToken != null && accessToken.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $accessToken';
-    } else if (options.path.startsWith('/api/v1/') &&
-        AppConfig.apiKey.isNotEmpty) {
-      options.headers['Authorization'] = 'Bearer ${AppConfig.apiKey}';
     }
 
     final cookie = await _storage.getSecure(AppConfig.sessionCookieKey);

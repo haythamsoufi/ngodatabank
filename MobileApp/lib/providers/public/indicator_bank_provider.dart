@@ -123,9 +123,22 @@ class IndicatorBankProvider with ChangeNotifier {
       return;
     }
 
+    // If the most recent load already failed, don't fire another identical
+    // request.  Staggered callers that arrive after the failing load completes
+    // (so _ongoingLoad is null again) would otherwise bypass the in-flight
+    // dedup check below and each start their own load, producing cascading
+    // identical errors (e.g. 3× "Session expired" when 3 screens call us).
+    // A forceRefresh (user-triggered retry) or a successful login clears
+    // _error via _performFullLoad, so explicit retries still work.
+    if (!forceRefresh && _error != null) return;
+
     // Wait for any in-flight load to finish before deciding if we still need to fetch
     if (_ongoingLoad != null) {
       await _ongoingLoad;
+      // If the concurrent load failed (e.g. auth error), don't fire another
+      // identical request — the error state is already set and notified.
+      // A manual forceRefresh can still override this to allow explicit retry.
+      if (!forceRefresh && _error != null) return;
       if (!forceRefresh && _hasFreshDataForLocale(locale)) {
         _error = null;
         _applyFilters();
@@ -202,11 +215,14 @@ class IndicatorBankProvider with ChangeNotifier {
     try {
       final response = await _api.get(
         AppConfig.mobileSectorsSubsectorsEndpoint,
+        includeAuth: false,
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        final sectorsRaw = (data['sectors'] as List<dynamic>?) ?? [];
+        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        // Mobile API envelope: { success, data: { sectors: [...] }, meta } — each sector includes nested subsectors
+        final payload = (body['data'] as Map<String, dynamic>?) ?? {};
+        final sectorsRaw = (payload['sectors'] as List<dynamic>?) ?? [];
 
         // Process localized names based on locale from raw JSON
         _sectors = sectorsRaw.map((sectorJson) {
@@ -603,6 +619,8 @@ class IndicatorBankProvider with ChangeNotifier {
   }) async {
     try {
       final queryParams = <String, String>{
+        'page': '1',
+        'per_page': AppConfig.mobilePublicIndicatorBankPerPage.toString(),
         'archived': archived.toString(),
         'locale': locale, // Pass locale for localized type and unit
       };
@@ -626,12 +644,14 @@ class IndicatorBankProvider with ChangeNotifier {
       final response = await _api.get(
         AppConfig.mobilePublicIndicatorBankEndpoint,
         queryParams: queryParams,
-        timeout: const Duration(seconds: 30), // Increased timeout for large indicator datasets
+        includeAuth: false,
+        timeout: const Duration(seconds: 30),
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        final indicatorsRaw = (data['indicators'] as List<dynamic>?) ?? [];
+        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        // Mobile API envelope: { ok, data: [...items...], meta: { total, page, ... } }
+        final indicatorsRaw = (body['data'] as List<dynamic>?) ?? [];
 
         // Process indicators to extract localized names and definitions
         final indicatorsList = indicatorsRaw.map((indicatorJson) {
@@ -973,6 +993,7 @@ class IndicatorBankProvider with ChangeNotifier {
         body: {
           ...proposalData,
         },
+        includeAuth: false,
       );
 
       return response.statusCode == 200 || response.statusCode == 201;

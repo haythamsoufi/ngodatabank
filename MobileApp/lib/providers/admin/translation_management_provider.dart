@@ -46,7 +46,10 @@ class TranslationManagementProvider with ChangeNotifier {
         try {
           final jsonData = jsonDecode(response.body) as Map<String, dynamic>;
           if (jsonData['success'] == true) {
-            final translationsList = jsonData['translations'] as List<dynamic>?;
+            final rawData = jsonData['data'];
+            final List<dynamic>? translationsList = rawData is List
+                ? rawData
+                : rawData is Map ? (rawData['translations'] as List<dynamic>?) : (jsonData['translations'] as List<dynamic>?);
             if (translationsList != null) {
               _translations = translationsList
                   .map((t) => t as Map<String, dynamic>)

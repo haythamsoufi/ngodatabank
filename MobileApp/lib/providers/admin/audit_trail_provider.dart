@@ -57,7 +57,10 @@ class AuditTrailProvider with ChangeNotifier {
           try {
             final jsonData = jsonDecode(response.body) as Map<String, dynamic>;
             if (jsonData['success'] == true) {
-              final entriesList = jsonData['entries'] as List<dynamic>?;
+              final rawData = jsonData['data'];
+              final List<dynamic>? entriesList = rawData is List
+                  ? rawData
+                  : rawData is Map ? (rawData['entries'] as List<dynamic>?) : (jsonData['entries'] as List<dynamic>?);
               if (entriesList != null) {
                 _auditLogs = entriesList
                     .map((entry) => entry as Map<String, dynamic>)

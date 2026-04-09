@@ -35,7 +35,10 @@ class LeaderboardProvider with ChangeNotifier {
         final jsonData = jsonDecode(data) as Map<String, dynamic>;
 
         if (jsonData['success'] == true) {
-          final leaderboardList = (jsonData['leaderboard'] as List<dynamic>)
+          final rawData = jsonData['data'] is Map<String, dynamic>
+              ? jsonData['data'] as Map<String, dynamic>
+              : jsonData;
+          final leaderboardList = (rawData['leaderboard'] as List<dynamic>)
               .map((entry) => LeaderboardEntry.fromJson(entry as Map<String, dynamic>))
               .toList();
 

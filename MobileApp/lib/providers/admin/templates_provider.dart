@@ -47,7 +47,10 @@ class TemplatesProvider with ChangeNotifier {
         try {
           final jsonData = jsonDecode(response.body) as Map<String, dynamic>;
           if (jsonData['success'] == true) {
-            final templatesList = jsonData['templates'] as List<dynamic>?;
+            final rawData = jsonData['data'];
+            final List<dynamic>? templatesList = rawData is List
+                ? rawData
+                : rawData is Map ? (rawData['templates'] as List<dynamic>?) : (jsonData['templates'] as List<dynamic>?);
             if (templatesList != null) {
               _templates = templatesList
                   .map((json) => Template.fromJson(json as Map<String, dynamic>))

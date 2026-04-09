@@ -2,17 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-/// Border color for [ElevatedListCard] (outline blended onto surface).
-Color elevatedListCardBorderColor(ColorScheme scheme, Color surfaceBlend) {
-  return Color.alphaBlend(
-    scheme.outline.withValues(alpha: 0.35),
-    surfaceBlend,
-  );
-}
-
 /// Surface fill for bordered list cards: white in light theme, elevated
-/// container tint in dark. Use with [elevatedListCardBorderColor] when building
-/// custom [Material] / [DecoratedBox] shells that match [ElevatedListCard].
+/// container tint in dark.
 Color elevatedListCardSurfaceColor(ThemeData theme) {
   final scheme = theme.colorScheme;
   return theme.brightness == Brightness.light
@@ -20,7 +11,7 @@ Color elevatedListCardSurfaceColor(ThemeData theme) {
       : scheme.surfaceContainerHighest.withValues(alpha: 0.65);
 }
 
-/// Bordered, lightly filled list row (grouped-card look).
+/// Lightly filled list row (grouped-card look).
 class ElevatedListCard extends StatelessWidget {
   const ElevatedListCard({
     super.key,
@@ -36,9 +27,7 @@ class ElevatedListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     final surfaceColor = elevatedListCardSurfaceColor(theme);
-    final borderColor = elevatedListCardBorderColor(scheme, surfaceColor);
 
     return Padding(
       padding: EdgeInsets.only(bottom: marginBottom),
@@ -48,7 +37,6 @@ class ElevatedListCard extends StatelessWidget {
         shadowColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: borderColor, width: 1),
         ),
         clipBehavior: Clip.antiAlias,
         child: Padding(

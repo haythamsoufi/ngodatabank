@@ -135,19 +135,10 @@ class AssignmentCard extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: scheme.surfaceContainerHigh.withValues(alpha: 0.9),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(6),
-                child: Icon(
-                  Icons.assignment_rounded,
-                  size: 18,
-                  color: scheme.onSurfaceVariant,
-                ),
-              ),
+            Icon(
+              Icons.assignment_rounded,
+              size: 18,
+              color: scheme.onSurfaceVariant,
             ),
             const SizedBox(width: 10),
             Expanded(

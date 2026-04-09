@@ -70,7 +70,10 @@ class DocumentManagementProvider with ChangeNotifier {
           try {
             final jsonData = jsonDecode(response.body) as Map<String, dynamic>;
             if (jsonData['success'] == true) {
-              final documentsList = jsonData['documents'] as List<dynamic>?;
+              final rawData = jsonData['data'];
+              final List<dynamic>? documentsList = rawData is List
+                  ? rawData
+                  : rawData is Map ? (rawData['documents'] as List<dynamic>?) : (jsonData['documents'] as List<dynamic>?);
               if (documentsList != null) {
                 _documents = documentsList
                     .map((json) => Document.fromJson(json as Map<String, dynamic>))

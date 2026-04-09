@@ -43,6 +43,18 @@ class LandingHeroSliver extends StatefulWidget {
   /// Extra flex height when [quickPrompts] is non-null (list + padding).
   static const double quickPromptsSlotHeight = 58;
 
+  /// Pixel height of the hero region in the scroll body (matches [SliverAppBar.expandedHeight]
+  /// when a footer is present). Use to align focus-mode scrims above/below the hero.
+  static double bodyHeroExtent(
+    BuildContext context, {
+    double expandedHeight = 188,
+    bool hasFooter = true,
+  }) {
+    final top = MediaQuery.paddingOf(context).top;
+    final footerExtra = hasFooter ? footerPreferredHeight : 0.0;
+    return expandedHeight + top + footerExtra;
+  }
+
   @override
   State<LandingHeroSliver> createState() => _LandingHeroSliverState();
 }
@@ -149,9 +161,7 @@ class _LandingHeroSliverState extends State<LandingHeroSliver>
     // in the space freed by the collapsing title area (expandedHeight - 12 px).
     final h = widget.expandedHeight + top + footerExtra;
 
-    // The title area occupies exactly (expandedHeight - 12) px when visible.
-    // The 12 comes from the SizedBox(height: top + 12) offset at the top,
-    // which means: h - (top + 12) - footerExtra = expandedHeight - 12.
+    // Title region height (see comment below: chat card is bottom-weighted via Spacer).
     final titleAreaHeight = widget.expandedHeight - 12.0;
 
     return SliverAppBar(
@@ -186,109 +196,121 @@ class _LandingHeroSliverState extends State<LandingHeroSliver>
             ),
 
             // ── Content column ───────────────────────────────────────────────
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                SizedBox(height: top + 12),
+            // Bottom-weight the chat card: [Spacer] eats space between the title
+            // and footer so the card sits lower in the hero (same expandedHeight).
+            // Single traversal scope so Tab moves: chat field → send → prompts.
+            FocusTraversalGroup(
+              policy: OrderedTraversalPolicy(),
+              child: Builder(
+                builder: (context) {
+                  final children = <Widget>[
+                    SizedBox(height: top + 12),
 
-                // Title + description — collapses when chatExpanded.
-                AnimatedBuilder(
-                  animation: _chatCtrl,
-                  builder: (context, _) {
-                    return ClipRect(
-                      child: SizeTransition(
-                        sizeFactor: _titleShrink,
-                        axisAlignment: -1,
-                        child: SizedBox(
-                          height: titleAreaHeight,
-                          child: FadeTransition(
-                            opacity: _titleFade,
-                            child: Center(
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 20),
-                                child: FadeTransition(
-                                  opacity: _fadeIn,
-                                  child: SlideTransition(
-                                    position: _slide,
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.stretch,
-                                      children: [
-                                        Text(
-                                          widget.title,
-                                          textAlign: TextAlign.center,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .headlineSmall
-                                              ?.copyWith(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w800,
-                                                height: 1.2,
-                                                letterSpacing: -0.4,
-                                              ),
+                    // Title + description — collapses when chatExpanded.
+                    AnimatedBuilder(
+                      animation: _chatCtrl,
+                      builder: (context, _) {
+                        return ClipRect(
+                          child: SizeTransition(
+                            sizeFactor: _titleShrink,
+                            axisAlignment: -1,
+                            child: SizedBox(
+                              height: titleAreaHeight,
+                              child: FadeTransition(
+                                opacity: _titleFade,
+                                child: Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                    ),
+                                    child: FadeTransition(
+                                      opacity: _fadeIn,
+                                      child: SlideTransition(
+                                        position: _slide,
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: [
+                                            Text(
+                                              widget.title,
+                                              textAlign: TextAlign.center,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .headlineSmall
+                                                  ?.copyWith(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w800,
+                                                    height: 1.2,
+                                                    letterSpacing: -0.4,
+                                                  ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              widget.description,
+                                              textAlign: TextAlign.center,
+                                              maxLines: 4,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyMedium
+                                                  ?.copyWith(
+                                                    color: Colors.white
+                                                        .withValues(
+                                                            alpha: 0.9),
+                                                    height: 1.35,
+                                                  ),
+                                            ),
+                                          ],
                                         ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          widget.description,
-                                          textAlign: TextAlign.center,
-                                          maxLines: 4,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyMedium
-                                              ?.copyWith(
-                                                color: Colors.white
-                                                    .withValues(alpha: 0.9),
-                                                height: 1.35,
-                                              ),
-                                        ),
-                                      ],
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
+                        );
+                      },
+                    ),
+
+                    if (widget.footer != null) ...[
+                      const SizedBox(height: 20),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: widget.footer!,
                       ),
-                    );
-                  },
-                ),
-
-                // Footer (AI entry card) — always visible, slides upward as
-                // the title area above it collapses.
-                if (widget.footer != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: widget.footer!,
-                  ),
-
-                // Quick prompts — expand below the card when chatExpanded.
-                if (widget.quickPrompts != null)
-                  AnimatedBuilder(
-                    animation: _chatCtrl,
-                    builder: (context, _) {
-                      return ClipRect(
-                        child: SizeTransition(
-                          sizeFactor: _promptsGrow,
-                          axisAlignment: -1,
-                          child: FadeTransition(
-                            opacity: _promptsFade,
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.fromLTRB(0, 6, 0, 8),
-                              child: widget.quickPrompts!,
-                            ),
-                          ),
+                      if (widget.quickPrompts != null)
+                        AnimatedBuilder(
+                          animation: _chatCtrl,
+                          builder: (context, _) {
+                            return ClipRect(
+                              child: SizeTransition(
+                                sizeFactor: _promptsGrow,
+                                axisAlignment: -1,
+                                child: FadeTransition(
+                                  opacity: _promptsFade,
+                                  child: Padding(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(0, 6, 0, 8),
+                                    child: widget.quickPrompts!,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
-              ],
+                    ],
+                  ];
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: children,
+                  );
+                },
+              ),
             ),
           ],
         ),

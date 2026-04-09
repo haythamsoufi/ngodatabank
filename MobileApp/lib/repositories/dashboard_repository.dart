@@ -21,7 +21,9 @@ class DashboardRepository {
   /// Optionally accepts entity selection to pass as query parameter.
   /// Returns null if the request fails (error is handled by ErrorHandler).
   Future<DashboardData?> loadDashboardFromApi({Entity? entity}) async {
-    DebugLogger.logDashboard('Loading dashboard from API...');
+    DebugLogger.logDashboard(
+      'Loading user dashboard from API (${AppConfig.dashboardApiEndpoint})...',
+    );
 
     // Build endpoint with optional entity query parameter
     String endpoint = AppConfig.dashboardApiEndpoint;
@@ -45,7 +47,11 @@ class DashboardRepository {
     );
 
     if (response == null || response.statusCode != 200) {
-      DebugLogger.logWarn('DASHBOARD', 'Failed to load dashboard from API');
+      DebugLogger.logWarn(
+        'DASHBOARD',
+        'Failed to load dashboard: status=${response?.statusCode}, '
+        'endpoint=$endpoint',
+      );
       return null;
     }
 
@@ -79,34 +85,57 @@ class DashboardRepository {
   DashboardData _parseJsonDashboard(Map<String, dynamic> json) {
     DebugLogger.logDashboard('Parsing JSON dashboard data');
 
+    // Mobile envelope: { success, data: { current_assignments, ... } } — unwrap if present.
+    Map<String, dynamic> root = json;
+    final inner = json['data'];
+    if (inner is Map<String, dynamic> &&
+        (inner.containsKey('current_assignments') ||
+            inner.containsKey('past_assignments') ||
+            inner.containsKey('entities'))) {
+      root = inner;
+      DebugLogger.logDashboard('Unwrapped mobile_ok `data` envelope for dashboard payload');
+    }
+
+    final topKeys = root.keys.toList()..sort();
+    DebugLogger.logDashboard('Dashboard JSON keys (after unwrap): $topKeys');
+    if (root.containsKey('user_count') &&
+        !root.containsKey('current_assignments')) {
+      DebugLogger.logWarn(
+        'DASHBOARD',
+        'Response looks like admin platform stats (user_count) — not assignment lists. '
+        'AppConfig.dashboardApiEndpoint must be mobileUserDashboardEndpoint '
+        '(/user/dashboard), not admin analytics dashboard-stats.',
+      );
+    }
+
     final currentAssignments = <Assignment>[];
     final pastAssignments = <Assignment>[];
     final entities = <Entity>[];
     Entity? selectedEntity;
 
-    if (json.containsKey('current_assignments')) {
-      currentAssignments.addAll((json['current_assignments'] as List)
+    if (root.containsKey('current_assignments')) {
+      currentAssignments.addAll((root['current_assignments'] as List)
           .map((item) => Assignment.fromJson(item as Map<String, dynamic>))
           .toList());
     }
 
-    if (json.containsKey('past_assignments')) {
-      pastAssignments.addAll((json['past_assignments'] as List)
+    if (root.containsKey('past_assignments')) {
+      pastAssignments.addAll((root['past_assignments'] as List)
           .map((item) => Assignment.fromJson(item as Map<String, dynamic>))
           .toList());
     }
 
-    if (json.containsKey('entities')) {
-      entities.addAll((json['entities'] as List)
+    if (root.containsKey('entities')) {
+      entities.addAll((root['entities'] as List)
           .map((item) => Entity.fromJson(item as Map<String, dynamic>))
           .toList());
     }
 
     // Handle selected_entity from API response
-    if (json.containsKey('selected_entity') &&
-        json['selected_entity'] != null) {
+    if (root.containsKey('selected_entity') &&
+        root['selected_entity'] != null) {
       final selectedEntityJson =
-          json['selected_entity'] as Map<String, dynamic>;
+          root['selected_entity'] as Map<String, dynamic>;
       selectedEntity = Entity.fromJson(selectedEntityJson);
       // Save selected entity to storage
       _storage.setString(

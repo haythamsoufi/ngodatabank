@@ -439,10 +439,10 @@ def audit_trail():
                     'user_email': log.user.email if log.user else None,
                     'user_name': log.user.name if log.user else None,
                     'activity_type': log.activity_type,
-                    'description': log.description,
-                    'endpoint': getattr(log, 'endpoint', None),
-                    'ip_address': getattr(log, 'ip_address', None),
-                    'details': getattr(log, 'details', None),
+                    'description': log.activity_description,
+                    'endpoint': log.endpoint,
+                    'ip_address': log.ip_address,
+                    'details': log.context_data,
                 })
 
             return mobile_paginated(

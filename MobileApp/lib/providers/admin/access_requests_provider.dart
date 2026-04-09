@@ -69,8 +69,11 @@ class AccessRequestsProvider with ChangeNotifier {
       try {
         final decoded = jsonDecode(response.body);
         if (decoded is Map<String, dynamic> && decoded['success'] == true) {
-          final p = decoded['pending'];
-          final r = decoded['processed'];
+          final rawData = decoded['data'] is Map<String, dynamic>
+              ? decoded['data'] as Map<String, dynamic>
+              : decoded;
+          final p = rawData['pending'];
+          final r = rawData['processed'];
           _pending = p is List
               ? p
                   .whereType<Map<String, dynamic>>()
@@ -84,7 +87,7 @@ class AccessRequestsProvider with ChangeNotifier {
                   .toList()
               : [];
           _sortAccessRequestsNewestFirst();
-          _autoApproveEnabled = decoded['auto_approve_enabled'] == true;
+          _autoApproveEnabled = (rawData['auto_approve_enabled'] ?? decoded['auto_approve_enabled']) == true;
           _error = null;
         } else {
           _error = 'Unexpected response from server.';

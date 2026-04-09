@@ -15,19 +15,14 @@ from app.routes.api.mobile import mobile_bp
 @mobile_bp.route('/admin/access-requests', methods=['GET'])
 @mobile_auth_required(permission='admin.access_requests.view')
 def list_access_requests():
-    """List country access requests (admin)."""
-    from app.models.core import CountryAccessRequest, Country
+    """List country access requests (admin). Returns both pending and processed."""
+    from app.models import CountryAccessRequest, Country
     from app.models import User as UserModel
 
-    status = request.args.get('status', 'pending')
-    requests_q = CountryAccessRequest.query.filter_by(status=status).order_by(
-        CountryAccessRequest.created_at.desc()
-    )
-    items = []
-    for req in requests_q.all():
+    def _serialize(req):
         user = UserModel.query.get(req.user_id)
         country = Country.query.get(req.country_id)
-        items.append({
+        return {
             'id': req.id,
             'user_id': req.user_id,
             'user_email': user.email if user else None,
@@ -36,15 +31,29 @@ def list_access_requests():
             'country_name': country.name if country else None,
             'status': req.status,
             'created_at': req.created_at.isoformat() if req.created_at else None,
-        })
-    return mobile_ok(data={'access_requests': items}, meta={'total': len(items)})
+        }
+
+    pending_q = CountryAccessRequest.query.filter_by(status='pending').order_by(
+        CountryAccessRequest.created_at.desc()
+    )
+    processed_q = CountryAccessRequest.query.filter(
+        CountryAccessRequest.status.in_(['approved', 'rejected'])
+    ).order_by(CountryAccessRequest.created_at.desc()).limit(100)
+
+    pending = [_serialize(r) for r in pending_q.all()]
+    processed = [_serialize(r) for r in processed_q.all()]
+
+    return mobile_ok(data={
+        'pending': pending,
+        'processed': processed,
+    })
 
 
 @mobile_bp.route('/admin/access-requests/<int:request_id>/approve', methods=['POST'])
 @mobile_auth_required(permission='admin.access_requests.approve')
 def approve_access_request(request_id):
     """Approve a country access request (admin)."""
-    from app.models.core import CountryAccessRequest, Country
+    from app.models import CountryAccessRequest, Country
     from app.models import User as UserModel
 
     req = CountryAccessRequest.query.get(request_id)
@@ -75,7 +84,7 @@ def approve_access_request(request_id):
 @mobile_auth_required(permission='admin.access_requests.reject')
 def reject_access_request(request_id):
     """Reject a country access request (admin)."""
-    from app.models.core import CountryAccessRequest
+    from app.models import CountryAccessRequest
 
     req = CountryAccessRequest.query.get(request_id)
     if not req:
@@ -100,7 +109,7 @@ def reject_access_request(request_id):
 @mobile_auth_required(permission='admin.access_requests.approve')
 def approve_all_access_requests():
     """Bulk-approve all pending access requests."""
-    from app.models.core import CountryAccessRequest, Country
+    from app.models import CountryAccessRequest, Country
     from app.models import User as UserModel
 
     pending = CountryAccessRequest.query.filter_by(status='pending').all()

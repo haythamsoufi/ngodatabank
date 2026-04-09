@@ -4,16 +4,24 @@ import '../models/shared/user.dart';
 import 'api_service.dart';
 import '../utils/debug_logger.dart';
 
-/// Service for fetching user profile data.
+/// Service for fetching and updating the authenticated user's profile.
 ///
-/// This service fetches user profile from the JSON API endpoint `/api/v1/user/profile`.
-/// The backend API endpoint must be available for this service to work.
+/// Uses the mobile API endpoint (`/api/mobile/v1/auth/profile`) with JWT Bearer auth.
 class UserProfileService {
   static final UserProfileService _instance = UserProfileService._internal();
   factory UserProfileService() => _instance;
   UserProfileService._internal();
 
   final ApiService _api = ApiService();
+
+  /// Mobile routes wrap payloads in `{ "success": true, "data": { ... } }`.
+  Map<String, dynamic> _unwrapMobileEnvelope(Map<String, dynamic> body) {
+    final data = body['data'];
+    if (data is Map<String, dynamic>) {
+      return data;
+    }
+    return body;
+  }
 
   /// Fetch user profile from the JSON API endpoint.
   ///
@@ -51,12 +59,12 @@ class UserProfileService {
         try {
           final jsonData = jsonDecode(response.body) as Map<String, dynamic>;
 
-          // The mobile profile endpoint wraps the user under a "user" key:
-          // { "success": true, "user": { "email": "...", ... } }
-          // Fall back to the flat shape for forward-compatibility.
-          final userData = (jsonData['user'] is Map<String, dynamic>
-                  ? jsonData['user']
-                  : jsonData)
+          // Mobile: { "success": true, "data": { "user": { "email": "...", ... } } }
+          // Legacy / flat: { "user": { ... } } or user fields at top level.
+          final payload = _unwrapMobileEnvelope(jsonData);
+          final userData = (payload['user'] is Map<String, dynamic>
+                  ? payload['user']
+                  : payload)
               as Map<String, dynamic>;
 
           final email = userData['email'];
@@ -244,32 +252,40 @@ class UserProfileService {
       if (response.statusCode == 200) {
         try {
           final jsonData = jsonDecode(response.body) as Map<String, dynamic>;
+          final payload = _unwrapMobileEnvelope(jsonData);
 
-          // Unwrap the "user" envelope if present (same as fetchUserProfile).
-          final userData = (jsonData['user'] is Map<String, dynamic>
-                  ? jsonData['user']
-                  : jsonData)
-              as Map<String, dynamic>;
-
-          final email = userData['email'];
-          if (email is! String || email.isEmpty) {
-            DebugLogger.logAuth('API response missing email');
-            return null;
+          Map<String, dynamic>? userMap;
+          if (payload['user'] is Map<String, dynamic>) {
+            userMap = payload['user'] as Map<String, dynamic>;
+          } else if (payload.containsKey('email')) {
+            userMap = payload;
           }
 
-          final derivedRole = _deriveRoleFromJson(userData);
+          if (userMap == null) {
+            DebugLogger.logAuth(
+              'Profile update returned no user payload — refetching profile',
+            );
+            return await fetchUserProfile();
+          }
 
-          // Map API response to User model
+          final email = userMap['email'];
+          if (email is! String || email.isEmpty) {
+            DebugLogger.logAuth('API response missing email');
+            return await fetchUserProfile();
+          }
+
+          final derivedRole = _deriveRoleFromJson(userMap);
+
           final user = User(
-            id: _parseUserId(userData['id']),
+            id: _parseUserId(userMap['id']),
             email: email,
-            name: userData['name'] as String?,
-            title: userData['title'] as String?,
+            name: userMap['name'] as String?,
+            title: userMap['title'] as String?,
             role: derivedRole,
-            chatbotEnabled: userData['chatbot_enabled'] as bool? ?? false,
-            profileColor: userData['profile_color'] as String?,
-            countryIds: _extractCountryIds(userData),
-            aiBetaTester: userData['ai_beta_tester'] == true,
+            chatbotEnabled: userMap['chatbot_enabled'] as bool? ?? false,
+            profileColor: userMap['profile_color'] as String?,
+            countryIds: _extractCountryIds(userMap),
+            aiBetaTester: userMap['ai_beta_tester'] == true,
           );
 
           DebugLogger.logAuth(

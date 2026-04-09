@@ -233,13 +233,19 @@ class AuthService {
   }
 
   /// Parse and persist JWT tokens from a server response body.
+  ///
+  /// Supports the mobile envelope `{ "success": true, "data": { "access_token": ... } }`
+  /// and a flat map for compatibility.
   Future<void> _saveJwtTokensFromResponse(Map<String, dynamic> data) async {
-    final accessToken = data['access_token']?.toString();
-    final refreshToken = data['refresh_token']?.toString();
-    final expiresIn = data['expires_in'] as int? ?? 1800;
+    final root = _unwrapMobileTokenPayload(data);
+    final accessToken = root['access_token']?.toString();
+    final refreshToken = root['refresh_token']?.toString();
+    final expiresIn = _parseExpiresInSeconds(root['expires_in']);
 
-    if (accessToken != null && accessToken.isNotEmpty &&
-        refreshToken != null && refreshToken.isNotEmpty) {
+    if (accessToken != null &&
+        accessToken.isNotEmpty &&
+        refreshToken != null &&
+        refreshToken.isNotEmpty) {
       await _jwtService.saveTokens(
         accessToken: accessToken,
         refreshToken: refreshToken,
@@ -249,7 +255,29 @@ class AuthService {
       // isSessionExpired() guard (which checks these timestamps)
       // does not reject follow-up authenticated requests.
       await _session.updateLastValidation();
+    } else {
+      DebugLogger.logWarn(
+        'AUTH',
+        'Token response missing access_token/refresh_token after unwrapping '
+        '(keys: ${root.keys.join(", ")})',
+      );
     }
+  }
+
+  /// Mobile routes return tokens inside `data`; unwrap when present.
+  Map<String, dynamic> _unwrapMobileTokenPayload(Map<String, dynamic> body) {
+    final inner = body['data'];
+    if (inner is Map<String, dynamic>) {
+      return inner;
+    }
+    return body;
+  }
+
+  int _parseExpiresInSeconds(dynamic raw) {
+    if (raw is int) return raw;
+    if (raw is double) return raw.round();
+    if (raw is num) return raw.toInt();
+    return 1800;
   }
 
   /// Quick login for testing purposes

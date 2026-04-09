@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 
+import '../config/app_config.dart';
 import '../config/fdrs_constants.dart';
 import 'api_service.dart';
 
@@ -54,125 +56,40 @@ class GlobalOverviewDataService {
 
   final ApiService _api;
 
-  static double? _parseNumeric(dynamic v) {
-    if (v == null) return null;
-    if (v is num) return v.toDouble();
-    if (v is String) {
-      final s = v.trim().replaceAll(',', '').replaceAll(' ', '');
-      if (s.isEmpty || s.toLowerCase() == 'null') return null;
-      return double.tryParse(s) ?? int.tryParse(s)?.toDouble();
-    }
-    if (v is Map<String, dynamic>) {
-      for (final k in ['value', 'total', 'amount', 'count', 'number']) {
-        if (v.containsKey(k)) return _parseNumeric(v[k]);
-      }
-    }
-    if (v is List && v.isNotEmpty) return _parseNumeric(v.first);
-    return null;
-  }
-
-  /// Distinct FDRS period names, newest first (same order as Backoffice `/periods`).
+  /// Distinct FDRS period names, newest first.
+  ///
+  /// Public endpoint — no authentication required.
   Future<List<String>> listFdrsPeriods() async {
     final resp = await _api.get(
-      '/api/v1/periods',
+      AppConfig.mobileFdrsPeriodsEndpoint,
       queryParams: {'template_id': '${FdrsConstants.templateId}'},
       includeAuth: false,
       useCache: false,
     );
     if (resp.statusCode != 200) return [];
-    final decoded = jsonDecode(resp.body);
-    if (decoded is! List<dynamic>) return [];
-    return decoded
+    final body = jsonDecode(resp.body);
+    if (body is! Map<String, dynamic>) return [];
+    final data = body['data'];
+    if (data is! Map<String, dynamic>) return [];
+    final periods = data['periods'];
+    if (periods is! List<dynamic>) return [];
+    return periods
         .map((e) => e?.toString() ?? '')
         .where((s) => s.isNotEmpty)
         .toList();
   }
 
-  Future<({Map<int, String> names, Map<int, String> iso2})> _loadCountryMaps(
-    String locale,
-  ) async {
-    final resp = await _api.get(
-      '/api/v1/countrymap',
-      queryParams: {'locale': locale},
-      includeAuth: false,
-      useCache: false,
-    );
-    if (resp.statusCode != 200) {
-      return (names: <int, String>{}, iso2: <int, String>{});
-    }
-    final decoded = jsonDecode(resp.body);
-    if (decoded is! List<dynamic>) {
-      return (names: <int, String>{}, iso2: <int, String>{});
-    }
-    final names = <int, String>{};
-    final iso2 = <int, String>{};
-    for (final e in decoded) {
-      if (e is! Map<String, dynamic>) continue;
-      final id = e['id'];
-      final idInt = id is int ? id : int.tryParse(id?.toString() ?? '');
-      if (idInt == null) continue;
-      final label = (e['localized_name'] ?? e['name'])?.toString();
-      if (label != null && label.isNotEmpty) {
-        names[idInt] = label;
-      }
-      final iso = e['iso2']?.toString();
-      if (iso != null && iso.isNotEmpty) {
-        iso2[idInt] = iso.toUpperCase();
-      }
-    }
-    return (names: names, iso2: iso2);
-  }
-
-  Future<List<Map<String, dynamic>>> _fetchAllTableRows({
-    required int indicatorBankId,
-    String? periodName,
-  }) async {
-    final merged = <Map<String, dynamic>>[];
-    var page = 1;
-    const perPage = 20000;
-    while (true) {
-      final qp = <String, String>{
-        'template_id': '${FdrsConstants.templateId}',
-        'indicator_bank_id': '$indicatorBankId',
-        'disagg': 'true',
-        'related': 'all',
-        'per_page': '$perPage',
-        'page': '$page',
-      };
-      if (periodName != null && periodName.isNotEmpty) {
-        qp['period_name'] = periodName;
-      }
-      final resp = await _api.get(
-        '/api/v1/data/tables',
-        queryParams: qp,
-        includeAuth: false,
-        useCache: false,
-      );
-      if (resp.statusCode != 200) {
-        throw OverviewLoadException(
-          'HTTP ${resp.statusCode} loading /data/tables',
-        );
-      }
-      final body = jsonDecode(resp.body);
-      if (body is! Map<String, dynamic>) break;
-      final data = body['data'];
-      if (data is List<dynamic>) {
-        for (final row in data) {
-          if (row is Map<String, dynamic>) merged.add(row);
-        }
-      }
-      final totalPages = (body['total_pages'] as num?)?.toInt() ?? 1;
-      if (page >= totalPages) break;
-      page++;
-      if (page > 80) break;
-    }
-    return merged;
-  }
-
   /// Loads totals per country for one indicator and [periodName].
   ///
-  /// When [periodName] is null or empty, uses the first period from [listFdrsPeriods]
-  /// (latest reporting period).
+  /// When [periodName] is null or empty, uses the first period from
+  /// [listFdrsPeriods] (latest reporting period).
+  ///
+  /// This single call replaces the previous pattern of separately fetching
+  /// /countrymap + paginated /data/tables and aggregating on the client.
+  /// Loads totals per country for one indicator and [periodName].
+  ///
+  /// Both the period lookup and the overview fetch use public endpoints —
+  /// no authentication required.
   Future<GlobalOverviewDataset> loadOverview({
     required int indicatorBankId,
     required String locale,
@@ -181,29 +98,74 @@ class GlobalOverviewDataService {
     var period = periodName;
     if (period == null || period.isEmpty) {
       final list = await listFdrsPeriods();
-      period = list.isNotEmpty ? list.first : null;
+      if (list.isEmpty) {
+        return GlobalOverviewDataset(
+          periodName: null,
+          byCountryId: {},
+          countryNames: {},
+          countryIso2: {},
+        );
+      }
+      period = list.first;
     }
-    final maps = await _loadCountryMaps(locale);
-    final rows = await _fetchAllTableRows(
-      indicatorBankId: indicatorBankId,
-      periodName: period,
+
+    final qp = <String, String>{
+      'indicator_bank_id': '$indicatorBankId',
+      'template_id': '${FdrsConstants.templateId}',
+      'locale': locale,
+    };
+    if (period != null && period.isNotEmpty) {
+      qp['period_name'] = period;
+    }
+
+    final http.Response resp = await _api.get(
+      AppConfig.mobileFdrsOverviewEndpoint,
+      queryParams: qp,
+      includeAuth: false,
+      timeout: const Duration(seconds: 30),
+      useCache: false,
     );
 
-    final byCountry = <int, double>{};
-    for (final row in rows) {
-      final cidRaw = row['country_id'];
-      final cid = cidRaw is int ? cidRaw : int.tryParse(cidRaw?.toString() ?? '');
-      if (cid == null) continue;
-      final n = _parseNumeric(row['num_value']) ?? _parseNumeric(row['value']);
-      if (n == null || n <= 0) continue;
-      byCountry.update(cid, (v) => v + n, ifAbsent: () => n);
+    if (resp.statusCode != 200) {
+      throw OverviewLoadException('HTTP ${resp.statusCode} loading fdrs-overview');
     }
 
+    final body = jsonDecode(resp.body);
+    if (body is! Map<String, dynamic>) {
+      throw OverviewLoadException('Unexpected response shape from fdrs-overview');
+    }
+    final data = (body['data'] as Map<String, dynamic>?) ?? {};
+
+    final byCountryRaw = (data['by_country'] as Map<String, dynamic>?) ?? {};
+    final countryNamesRaw = (data['country_names'] as Map<String, dynamic>?) ?? {};
+    final countryIso2Raw = (data['country_iso2'] as Map<String, dynamic>?) ?? {};
+    final returnedPeriod = data['period_name'] as String? ?? period;
+
+    final byCountry = <int, double>{};
+    byCountryRaw.forEach((k, v) {
+      final id = int.tryParse(k);
+      if (id == null) return;
+      final n = v is num ? v.toDouble() : double.tryParse(v?.toString() ?? '');
+      if (n != null && n > 0) byCountry[id] = n;
+    });
+
+    final countryNames = <int, String>{};
+    countryNamesRaw.forEach((k, v) {
+      final id = int.tryParse(k);
+      if (id != null && v != null) countryNames[id] = v.toString();
+    });
+
+    final countryIso2 = <int, String>{};
+    countryIso2Raw.forEach((k, v) {
+      final id = int.tryParse(k);
+      if (id != null && v != null) countryIso2[id] = v.toString().toUpperCase();
+    });
+
     return GlobalOverviewDataset(
-      periodName: period,
+      periodName: returnedPeriod,
       byCountryId: byCountry,
-      countryNames: maps.names,
-      countryIso2: maps.iso2,
+      countryNames: countryNames,
+      countryIso2: countryIso2,
     );
   }
 }

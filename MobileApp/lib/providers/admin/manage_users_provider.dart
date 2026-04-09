@@ -134,10 +134,11 @@ class ManageUsersProvider with ChangeNotifier {
     try {
       final decoded = jsonDecode(response.body);
       if (decoded is! Map<String, dynamic>) return null;
-      // Wrapped { success, data: user } or flat merged user JSON at root (production).
       final raw = decoded['data'];
       final Map<String, dynamic> userMap;
-      if (raw is Map<String, dynamic>) {
+      if (raw is Map<String, dynamic> && raw.containsKey('user') && raw['user'] is Map<String, dynamic>) {
+        userMap = raw['user'] as Map<String, dynamic>;
+      } else if (raw is Map<String, dynamic>) {
         userMap = raw;
       } else if (decoded['id'] != null && decoded['email'] != null) {
         userMap = decoded;
@@ -167,7 +168,7 @@ class ManageUsersProvider with ChangeNotifier {
     }
   }
 
-  /// Loads id → region from [GET /api/v1/countrymap] (session auth). Cached per UI locale.
+  /// Loads id → region from [GET /api/mobile/v1/data/countrymap]. Cached per UI locale.
   Future<Map<int, String>> _loadCountryRegionLookup() async {
     final localeTag = _uiLocaleTag();
     if (_countryIdToRegionCache != null &&
@@ -187,9 +188,15 @@ class ManageUsersProvider with ChangeNotifier {
       final List<dynamic> list;
       if (decoded is List) {
         list = decoded;
-      } else if (decoded is Map<String, dynamic> &&
-          decoded['countries'] is List) {
-        list = decoded['countries'] as List<dynamic>;
+      } else if (decoded is Map<String, dynamic>) {
+        final rawData = decoded['data'];
+        if (rawData is Map<String, dynamic> && rawData['countries'] is List) {
+          list = rawData['countries'] as List<dynamic>;
+        } else if (decoded['countries'] is List) {
+          list = decoded['countries'] as List<dynamic>;
+        } else {
+          return {};
+        }
       } else {
         return {};
       }

@@ -32,12 +32,23 @@ class DashboardProvider with ChangeNotifier {
     bool preserveSelectedEntity = false,
     Entity? entity,
   }) async {
+    DebugLogger.logDashboard(
+      'loadDashboard(forceRefresh=$forceRefresh, preserveEntity=$preserveSelectedEntity, '
+      'entity=${entity?.selectionKey ?? "null"})',
+    );
+
     // Load from cache first if available and not forcing refresh
     if (!forceRefresh) {
       final cachedData = await _repository.loadDashboardFromCache();
       if (cachedData != null) {
+        DebugLogger.logDashboard(
+          'Applied cached dashboard: current=${cachedData.currentAssignments.length}, '
+          'past=${cachedData.pastAssignments.length}, entities=${cachedData.entities.length}',
+        );
         _updateStateFromData(cachedData, preserveSelectedEntity: preserveSelectedEntity);
         notifyListeners();
+      } else {
+        DebugLogger.logDashboard('No valid cached dashboard (miss or expired)');
       }
     }
 
@@ -53,6 +64,11 @@ class DashboardProvider with ChangeNotifier {
     );
 
     if (data == null) {
+      DebugLogger.logWarn(
+        'DASHBOARD',
+        'API returned null — keeping prior state (current=${_currentAssignments.length}, '
+        'past=${_pastAssignments.length})',
+      );
       // API call failed - check if we have cached data to display
       if (_currentAssignments.isEmpty && _pastAssignments.isEmpty) {
         _error =
@@ -66,6 +82,11 @@ class DashboardProvider with ChangeNotifier {
     }
 
     // Update state with new data
+    DebugLogger.logDashboard(
+      'Dashboard API OK: current=${data.currentAssignments.length}, '
+      'past=${data.pastAssignments.length}, entities=${data.entities.length}, '
+      'selected=${data.selectedEntity?.selectionKey ?? "null"}',
+    );
     _updateStateFromData(data, preserveSelectedEntity: preserveSelectedEntity);
     await _repository.saveDashboardToCache(data);
     _error = null;

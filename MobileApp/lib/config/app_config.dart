@@ -274,6 +274,9 @@ class AppConfig {
 
   // Admin -- Analytics
   static const String mobileDashboardStatsEndpoint = '$mobileApiPrefix/admin/analytics/dashboard-stats';
+
+  /// Focal-point home: assignments + entities (same payload as legacy GET /api/v1/dashboard).
+  static const String mobileUserDashboardEndpoint = '$mobileApiPrefix/user/dashboard';
   static const String mobileDashboardActivityEndpoint = '$mobileApiPrefix/admin/analytics/dashboard-activity';
   static const String mobileLoginLogsEndpoint = '$mobileApiPrefix/admin/analytics/login-logs';
   static const String mobileSessionLogsEndpoint = '$mobileApiPrefix/admin/analytics/session-logs';
@@ -300,12 +303,18 @@ class AppConfig {
   static const String mobileCountryMapEndpoint = '$mobileApiPrefix/data/countrymap';
   static const String mobileSectorsSubsectorsEndpoint = '$mobileApiPrefix/data/sectors-subsectors';
   static const String mobilePublicIndicatorBankEndpoint = '$mobileApiPrefix/data/indicator-bank';
+
+  /// `per_page` for public indicator bank list requests. Must stay within the
+  /// Backoffice `public_indicator_bank` route `max_per_page` (currently 2000).
+  static const int mobilePublicIndicatorBankPerPage = 2000;
   static const String mobileIndicatorSuggestionsEndpoint = '$mobileApiPrefix/data/indicator-suggestions';
   static const String mobileQuizLeaderboardEndpoint = '$mobileApiPrefix/data/quiz/leaderboard';
   static const String mobileQuizSubmitScoreEndpoint = '$mobileApiPrefix/data/quiz/submit-score';
+  static const String mobileFdrsPeriodsEndpoint = '$mobileApiPrefix/data/periods';
+  static const String mobileFdrsOverviewEndpoint = '$mobileApiPrefix/data/fdrs-overview';
 
-  // Dashboard (via mobile analytics)
-  static const String dashboardApiEndpoint = mobileDashboardStatsEndpoint;
+  /// Main app dashboard (assignments / entities). Not the admin analytics stats endpoint.
+  static const String dashboardApiEndpoint = mobileUserDashboardEndpoint;
 
   // Storage Keys
   static const String sessionCookieKey = 'session_cookie';

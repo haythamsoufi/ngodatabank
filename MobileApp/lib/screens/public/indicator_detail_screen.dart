@@ -92,14 +92,23 @@ class _IndicatorDetailScreenState extends State<IndicatorDetailScreen> {
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        final indicator = Indicator.fromJson(data);
+        final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+        final rawData = decoded['data'];
+        final Map<String, dynamic> indicatorJson;
+        if (rawData is Map<String, dynamic> && rawData.containsKey('indicator')) {
+          indicatorJson = rawData['indicator'] as Map<String, dynamic>;
+        } else if (rawData is Map<String, dynamic>) {
+          indicatorJson = rawData;
+        } else {
+          indicatorJson = decoded;
+        }
+        final indicator = Indicator.fromJson(indicatorJson);
 
         // Get provider for sector lookups (captured before await above)
 
         // Process localized fields
         final processedIndicator =
-            _processIndicatorWithLocale(data, indicator, locale, provider);
+            _processIndicatorWithLocale(indicatorJson, indicator, locale, provider);
 
         setState(() {
           _indicator = processedIndicator;

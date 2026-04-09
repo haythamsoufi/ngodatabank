@@ -61,6 +61,7 @@ _SKIP_ENDPOINTS = frozenset([
     'main.load_more_activities',
     'forms_api.api_render_pending_dynamic_indicator',
     'ai_v2.chat_stream',
+    'ai_v2.list_conversations',
     # High-frequency mobile push heartbeat — noise for audit trail
     'notifications.device_heartbeat',
     # Mobile screen-view endpoint logs activity itself; skip the automatic path

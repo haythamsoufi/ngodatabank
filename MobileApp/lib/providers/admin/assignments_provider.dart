@@ -47,7 +47,10 @@ class AssignmentsProvider with ChangeNotifier {
         try {
           final jsonData = jsonDecode(response.body) as Map<String, dynamic>;
           if (jsonData['success'] == true) {
-            final assignmentsList = jsonData['assignments'] as List<dynamic>?;
+            final rawData = jsonData['data'];
+            final List<dynamic>? assignmentsList = rawData is List
+                ? rawData
+                : rawData is Map ? (rawData['assignments'] as List<dynamic>?) : (jsonData['assignments'] as List<dynamic>?);
             if (assignmentsList != null) {
               _assignments = assignmentsList
                   .map((json) => AdminAssignment.fromJson(json as Map<String, dynamic>))

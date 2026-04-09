@@ -433,10 +433,10 @@ class _SessionTileState extends State<_SessionTile>
       }
     } catch (_) {}
 
-    final userLine = widget.log.userEmail != null
-        ? (widget.log.userName?.trim().isNotEmpty == true
-            ? '${widget.log.userName} · ${widget.log.userEmail}'
-            : widget.log.userEmail!)
+    final userName = widget.log.userName?.trim();
+    final userEmail = widget.log.userEmail?.trim();
+    final displayName = (userName != null && userName.isNotEmpty)
+        ? userName
         : loc.sessionLogsUnknownUser;
 
     final scheme = Theme.of(context).colorScheme;
@@ -458,7 +458,6 @@ class _SessionTileState extends State<_SessionTile>
         : '—';
 
     final cardSurface = elevatedListCardSurfaceColor(Theme.of(context));
-    final borderColor = elevatedListCardBorderColor(scheme, cardSurface);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -468,7 +467,6 @@ class _SessionTileState extends State<_SessionTile>
         shadowColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: borderColor, width: 1),
         ),
         clipBehavior: Clip.antiAlias,
         child: AnimatedBuilder(
@@ -494,7 +492,10 @@ class _SessionTileState extends State<_SessionTile>
                               context,
                               scheme: scheme,
                               textTheme: textTheme,
-                              userLine: userLine,
+                              displayName: displayName,
+                              email: (userEmail != null && userEmail.isNotEmpty)
+                                  ? userEmail
+                                  : null,
                               deviceIcon:
                                   _sessionDeviceLeadingIcon(widget.log),
                               statusColor: statusColor,
@@ -515,36 +516,64 @@ class _SessionTileState extends State<_SessionTile>
                             ),
                     ),
                   ),
-                  if (showFront &&
-                      widget.log.isActive &&
-                      widget.onForceLogout != null)
+                  if (showFront)
                     ListCardFooterActions(
-                      child: TextButton.icon(
-                        onPressed: widget.busy ? null : widget.onForceLogout,
-                        icon: widget.busy
-                            ? SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: scheme.error,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          if (widget.log.isActive &&
+                              widget.onForceLogout != null)
+                            Expanded(
+                              child: Align(
+                                alignment: AlignmentDirectional.centerStart,
+                                child: TextButton.icon(
+                                  onPressed:
+                                      widget.busy ? null : widget.onForceLogout,
+                                  icon: widget.busy
+                                      ? SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: scheme.error,
+                                          ),
+                                        )
+                                      : Icon(
+                                          Icons.logout_rounded,
+                                          size: 18,
+                                          color: scheme.error,
+                                        ),
+                                  label: Text(loc.sessionLogsForceLogout),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: scheme.error,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    minimumSize: Size.zero,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    visualDensity: VisualDensity.compact,
+                                    alignment: Alignment.centerLeft,
+                                  ),
                                 ),
-                              )
-                            : Icon(
-                                Icons.logout_rounded,
-                                size: 18,
-                                color: scheme.error,
                               ),
-                        label: Text(loc.sessionLogsForceLogout),
-                        style: TextButton.styleFrom(
-                          foregroundColor: scheme.error,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          visualDensity: VisualDensity.compact,
-                          alignment: Alignment.centerLeft,
-                        ),
+                            )
+                          else
+                            const Spacer(),
+                          IconButton(
+                            onPressed: _toggleFlip,
+                            icon: Icon(
+                              Icons.flip_outlined,
+                              size: 20,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                            style: IconButton.styleFrom(
+                              padding: const EdgeInsets.all(4),
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              visualDensity: VisualDensity.compact,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                 ],
@@ -560,7 +589,8 @@ class _SessionTileState extends State<_SessionTile>
     BuildContext context, {
     required ColorScheme scheme,
     required TextTheme textTheme,
-    required String userLine,
+    required String displayName,
+    required String? email,
     required IconData deviceIcon,
     required Color statusColor,
     required String statusLabel,
@@ -571,38 +601,49 @@ class _SessionTileState extends State<_SessionTile>
         mainAxisSize: MainAxisSize.min,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  color: scheme.surfaceContainerHigh.withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(6),
-                  child: Icon(
-                    deviceIcon,
-                    size: 18,
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
               Expanded(
-                child: Text(
-                  userLine,
-                  style: textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    height: 1.25,
-                  ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(
+                      deviceIcon,
+                      size: 18,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            displayName,
+                            style: textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              height: 1.25,
+                            ),
+                          ),
+                          if (email != null) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              email,
+                              style: textTheme.bodySmall?.copyWith(
+                                color: scheme.onSurfaceVariant,
+                                height: 1.2,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              Icon(
-                Icons.flip_outlined,
-                size: 22,
-                color: scheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: 4),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 8,
@@ -635,8 +676,9 @@ class _SessionTileState extends State<_SessionTile>
             children: [
               _statChip(
                 context,
-                widget.localizations.sessionLogsDuration,
+                null,
                 durationStr,
+                leadingIcon: Icons.schedule_rounded,
               ),
               _statChip(
                 context,
@@ -698,24 +740,12 @@ class _SessionTileState extends State<_SessionTile>
     required String value,
   }) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: scheme.surfaceContainerHigh.withValues(alpha: 0.95),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: scheme.outlineVariant.withValues(alpha: 0.4),
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Icon(
-              icon,
-              size: 20,
-              color: scheme.primary,
-            ),
-          ),
+        Icon(
+          icon,
+          size: 20,
+          color: scheme.primary,
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -933,7 +963,12 @@ class _SessionTileState extends State<_SessionTile>
     );
   }
 
-  Widget _statChip(BuildContext context, String label, String value) {
+  Widget _statChip(
+    BuildContext context,
+    String? label,
+    String value, {
+    IconData? leadingIcon,
+  }) {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     return Container(
@@ -945,25 +980,39 @@ class _SessionTileState extends State<_SessionTile>
           color: scheme.outlineVariant.withValues(alpha: 0.35),
         ),
       ),
-      child: Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(
-              text: '$label ',
-              style: textTheme.labelSmall?.copyWith(
-                color: scheme.onSurfaceVariant,
-                fontWeight: FontWeight.w500,
-              ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (leadingIcon != null) ...[
+            Icon(
+              leadingIcon,
+              size: 14,
+              color: scheme.onSurfaceVariant,
             ),
-            TextSpan(
-              text: value,
-              style: textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.2,
-              ),
-            ),
+            const SizedBox(width: 6),
           ],
-        ),
+          Text.rich(
+            TextSpan(
+              children: [
+                if (label != null && label.isNotEmpty)
+                  TextSpan(
+                    text: '$label ',
+                    style: textTheme.labelSmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                TextSpan(
+                  text: value,
+                  style: textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

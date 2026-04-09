@@ -57,23 +57,55 @@ class NotificationService {
 
       if (response.statusCode == 200) {
         try {
-          final data = jsonDecode(response.body);
+          final decoded = jsonDecode(response.body);
           DebugLogger.logNotifications(
-              'Parsed JSON data: success=${data['success']}, notifications count=${data['notifications']?.length ?? 0}');
+            'Parsed JSON root type: ${decoded.runtimeType}',
+          );
 
-          if (data['success'] == true && data['notifications'] != null) {
-            final List<dynamic> notificationsJson = data['notifications'];
-            final notifications = notificationsJson
-                .map((json) => Notification.fromJson(json))
-                .toList();
+          List<dynamic>? notificationsJson;
+          if (decoded is Map<String, dynamic>) {
+            final keys = decoded.keys.toList()..sort();
+            DebugLogger.logNotifications('Top-level keys: $keys');
+            final meta = decoded['meta'];
+            if (meta is Map) {
+              DebugLogger.logNotifications('meta: $meta');
+            }
+
+            // mobile_paginated: { success, data: [ {...}, ... ], meta: { total, page, ... } }
+            final data = decoded['data'];
+            if (data is List) {
+              notificationsJson = data;
+              DebugLogger.logNotifications(
+                'Using mobile_paginated list: ${data.length} items in data[]',
+              );
+            } else if (decoded['notifications'] is List) {
+              notificationsJson = decoded['notifications'] as List<dynamic>;
+              DebugLogger.logNotifications(
+                'Using legacy notifications[]: ${notificationsJson.length} items',
+              );
+            } else {
+              DebugLogger.logNotifications(
+                'Unexpected shape: success=${decoded['success']}, '
+                'data type=${data.runtimeType}, has notifications=${decoded.containsKey('notifications')}',
+              );
+            }
+          }
+
+          if (notificationsJson == null || notificationsJson.isEmpty) {
             DebugLogger.logNotifications(
-                'Successfully parsed ${notifications.length} notifications');
-            return notifications;
-          } else {
-            DebugLogger.logNotifications(
-                'API returned success=false or no notifications');
+              'No notification list in response — returning empty',
+            );
             return [];
           }
+
+          final notifications = notificationsJson
+              .map((json) =>
+                  Notification.fromJson(json as Map<String, dynamic>))
+              .toList();
+          DebugLogger.logNotifications(
+            'Successfully built ${notifications.length} Notification models',
+          );
+          return notifications;
         } catch (e) {
           DebugLogger.logNotifications('Error parsing JSON: $e');
           DebugLogger.logNotifications(
@@ -103,11 +135,35 @@ class NotificationService {
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['success'] == true) {
-          return data['unread_count'] ?? 0;
+        final decoded = jsonDecode(response.body);
+        DebugLogger.logNotifications(
+          'unread count raw type: ${decoded.runtimeType}',
+        );
+        if (decoded is! Map<String, dynamic>) {
+          return 0;
         }
+        final keys = decoded.keys.toList()..sort();
+        DebugLogger.logNotifications('unread count JSON keys: $keys');
+
+        // mobile_ok: { success, data: { unread_count: n } }
+        final inner = decoded['data'];
+        int? n;
+        if (inner is Map<String, dynamic> && inner['unread_count'] != null) {
+          n = (inner['unread_count'] as num).toInt();
+          DebugLogger.logNotifications('unread_count from data envelope: $n');
+        } else if (decoded['unread_count'] != null) {
+          n = (decoded['unread_count'] as num).toInt();
+          DebugLogger.logNotifications('unread_count from top level: $n');
+        } else if (decoded['success'] == true) {
+          DebugLogger.logNotifications(
+            'success=true but no unread_count found — defaulting to 0',
+          );
+        }
+        return n ?? 0;
       }
+      DebugLogger.logNotifications(
+        'unread count non-200: ${response.statusCode}',
+      );
       return 0;
     } on AuthenticationException {
       // Re-throw authentication errors so they can be handled upstream

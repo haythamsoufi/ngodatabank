@@ -87,7 +87,7 @@ class _EditIndicatorScreenState extends State<EditIndicatorScreen> {
           _indicator = indicator;
           _nameController.text = indicator.name ?? '';
           _typeController.text = indicator.type ?? '';
-          _unitController.text = '';
+          _unitController.text = indicator.unit ?? '';
           _definitionController.text = indicator.description ?? '';
           _sectorController.text = indicator.sector ?? '';
           _subSectorController.text = indicator.subSector ?? '';

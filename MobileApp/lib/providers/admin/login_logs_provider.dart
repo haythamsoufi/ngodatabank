@@ -153,31 +153,28 @@ class LoginLogsProvider with ChangeNotifier {
       if (decoded is! Map<String, dynamic>) {
         throw const FormatException('Invalid JSON');
       }
-      // `json_ok(data=dict)` merges keys at the root (no nested `data`).
-      final Map<String, dynamic> data = decoded['data'] is Map<String, dynamic>
-          ? decoded['data'] as Map<String, dynamic>
-          : decoded;
-      final list = data['items'];
+      final rawData = decoded['data'];
+      final meta = decoded['meta'] is Map<String, dynamic>
+          ? decoded['meta'] as Map<String, dynamic>
+          : <String, dynamic>{};
+      final List<dynamic> list;
+      if (rawData is List) {
+        list = rawData;
+      } else if (rawData is Map<String, dynamic> && rawData['items'] is List) {
+        list = rawData['items'] as List;
+      } else {
+        list = [];
+      }
       final parsed = <LoginLogItem>[];
-      if (list is List) {
-        for (final e in list) {
-          if (e is Map<String, dynamic>) {
-            parsed.add(LoginLogItem.fromJson(e));
-          }
+      for (final e in list) {
+        if (e is Map<String, dynamic>) {
+          parsed.add(LoginLogItem.fromJson(e));
         }
       }
-      _total = data['total'] is int
-          ? data['total'] as int
-          : int.tryParse('${data['total'] ?? 0}') ?? 0;
-      _page = data['page'] is int
-          ? data['page'] as int
-          : int.tryParse('${data['page'] ?? nextPage}') ?? nextPage;
-      _perPage = data['per_page'] is int
-          ? data['per_page'] as int
-          : int.tryParse('${data['per_page'] ?? 50}') ?? 50;
-      _totalPages = data['pages'] is int
-          ? data['pages'] as int
-          : int.tryParse('${data['pages'] ?? 0}') ?? 0;
+      _total = meta['total'] as int? ?? int.tryParse('${rawData is Map ? rawData['total'] : 0}') ?? 0;
+      _page = meta['page'] as int? ?? nextPage;
+      _perPage = meta['per_page'] as int? ?? 50;
+      _totalPages = meta['total_pages'] as int? ?? meta['pages'] as int? ?? 0;
 
       if (reset) {
         _items = parsed;

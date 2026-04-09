@@ -67,7 +67,10 @@ class IndicatorBankAdminProvider with ChangeNotifier {
           try {
             final jsonData = jsonDecode(response.body) as Map<String, dynamic>;
             if (jsonData['success'] == true) {
-              final indicatorsList = jsonData['indicators'] as List<dynamic>?;
+              final rawData = jsonData['data'];
+              final List<dynamic>? indicatorsList = rawData is List
+                  ? rawData
+                  : rawData is Map ? (rawData['indicators'] as List<dynamic>?) : (jsonData['indicators'] as List<dynamic>?);
               if (indicatorsList != null) {
                 _indicators = indicatorsList
                     .map((json) => Indicator.fromJson(json as Map<String, dynamic>))
@@ -400,41 +403,53 @@ class IndicatorBankAdminProvider with ChangeNotifier {
 
   Future<Indicator?> getIndicatorById(int id) async {
     try {
-      // Try to get from cached list first
+      Indicator? cached;
       try {
-        final cached = _indicators.firstWhere(
+        cached = _indicators.firstWhere(
           (ind) => ind.id == id,
         );
-        if (cached.name != null && cached.name!.isNotEmpty) {
-          return cached;
-        }
       } catch (e) {
-        // Not found in cache, continue to fetch
+        cached = null;
       }
 
-      // If not in cache, reload indicators to ensure we have the latest data
-      await loadIndicators();
-
-      // Try again from the refreshed list
-      try {
-        final cached = _indicators.firstWhere(
-          (ind) => ind.id == id,
-        );
-        if (cached.name != null && cached.name!.isNotEmpty) {
-          return cached;
-        }
-      } catch (e) {
-        // Still not found
-      }
-
-      // If still not found, try to fetch from view route and parse HTML
       final response =
           await _api.get('${AppConfig.mobileIndicatorBankEndpoint}/$id');
       if (response.statusCode == 200) {
-        // Parse HTML to extract indicator data
-        final indicator = _parseIndicatorFromViewHtml(response.body, id);
-        return indicator;
+        try {
+          final decoded = jsonDecode(response.body);
+          if (decoded is Map<String, dynamic> && decoded['success'] == true) {
+            final rawData = decoded['data'];
+            final Map<String, dynamic>? indicatorMap = rawData is Map<String, dynamic>
+                ? (rawData['indicator'] is Map<String, dynamic> ? rawData['indicator'] as Map<String, dynamic> : rawData)
+                : null;
+            if (indicatorMap != null) {
+              return Indicator.fromJson(indicatorMap);
+            }
+          }
+        } catch (_) {
+          final indicator = _parseIndicatorFromViewHtml(response.body, id);
+          if (indicator != null) {
+            return indicator;
+          }
+        }
       }
+
+      // Fallback to cached data when detail fetch is unavailable.
+      if (cached != null && cached.name != null && cached.name!.isNotEmpty) {
+        return cached;
+      }
+
+      // Last fallback: refresh list once, then try cache again.
+      await loadIndicators();
+      try {
+        final refreshed = _indicators.firstWhere((ind) => ind.id == id);
+        if (refreshed.name != null && refreshed.name!.isNotEmpty) {
+          return refreshed;
+        }
+      } catch (_) {
+        // No refreshed cache hit.
+      }
+
       return null;
     } catch (e) {
       DebugLogger.logError('Error fetching indicator $id: $e');

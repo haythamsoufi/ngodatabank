@@ -55,4 +55,5 @@ from app.routes.api.mobile import (  # noqa: F401, E402
     admin_content,
     admin_org,
     public_data,
+    user_dashboard,
 )

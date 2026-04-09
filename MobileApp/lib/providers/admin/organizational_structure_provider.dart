@@ -69,9 +69,11 @@ class OrganizationalStructureProvider with ChangeNotifier {
         try {
           final jsonData = jsonDecode(response.body) as Map<String, dynamic>;
           if (jsonData['success'] == true) {
-            // Parse JSON response based on active tab
-            final activeTab = jsonData['active_tab'] as String? ?? levelFilter ?? 'countries';
-            _organizations = _parseOrganizationsFromJson(jsonData, activeTab);
+            final rawData = jsonData['data'] is Map<String, dynamic>
+                ? jsonData['data'] as Map<String, dynamic>
+                : jsonData;
+            final activeTab = rawData['active_tab'] as String? ?? jsonData['active_tab'] as String? ?? levelFilter ?? 'countries';
+            _organizations = _parseOrganizationsFromJson(rawData, activeTab);
           } else {
             // Fallback to HTML parsing
             _organizations = _parseOrganizationsFromHtml(response.body, levelFilter);
