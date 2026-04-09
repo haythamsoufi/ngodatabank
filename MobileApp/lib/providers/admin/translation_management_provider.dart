@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'dart:convert';
+import '../../config/app_config.dart';
 import '../../services/api_service.dart';
 import '../../utils/debug_logger.dart';
 
@@ -36,7 +37,7 @@ class TranslationManagementProvider with ChangeNotifier {
       }
 
       final response = await _api.get(
-        '/admin/translations/manage',
+        AppConfig.mobileTranslationsEndpoint,
         queryParams: queryParams.isNotEmpty ? queryParams : null,
       );
 
@@ -83,7 +84,7 @@ class TranslationManagementProvider with ChangeNotifier {
       int translationId, Map<String, dynamic> data) async {
     try {
       final response = await _api.post(
-        '/admin/api/translations/$translationId',
+        '${AppConfig.mobileTranslationsEndpoint}/$translationId',
         body: data,
       );
       if (response.statusCode == 200) {

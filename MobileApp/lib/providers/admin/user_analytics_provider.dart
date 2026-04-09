@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'dart:convert';
+import '../../config/app_config.dart';
 import '../../services/api_service.dart';
 import '../../utils/debug_logger.dart';
 
@@ -32,7 +33,7 @@ class UserAnalyticsProvider with ChangeNotifier {
       }
 
       final response = await _api.get(
-        '/admin/api/dashboard/stats',
+        AppConfig.mobileDashboardStatsEndpoint,
         queryParams: queryParams.isNotEmpty ? queryParams : null,
       );
 
@@ -84,7 +85,7 @@ class UserAnalyticsProvider with ChangeNotifier {
       }
 
       final response = await _api.get(
-        '/admin/api/dashboard/activity',
+        AppConfig.mobileDashboardActivityEndpoint,
         queryParams: queryParams.isNotEmpty ? queryParams : null,
       );
 

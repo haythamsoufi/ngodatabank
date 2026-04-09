@@ -17,6 +17,7 @@ class AuthProvider with ChangeNotifier {
   User? _user;
   bool _isLoading = false;
   String? _error;
+  bool _authCheckedThisSession = false;
 
   User? get user => _user;
   bool get isLoading => _isLoading;
@@ -24,6 +25,12 @@ class AuthProvider with ChangeNotifier {
   bool get isAuthenticated => _user != null;
 
   Future<bool> checkAuthStatus({bool forceRevalidate = false}) async {
+    // Skip redundant non-forced checks within the same session to avoid
+    // duplicate device registration calls from multiple screens.
+    if (_authCheckedThisSession && !forceRevalidate && _user != null) {
+      return true;
+    }
+
     // Load user from cache first (synchronous, fast)
     await _loadUserFromCache();
 
@@ -71,6 +78,7 @@ class AuthProvider with ChangeNotifier {
         _user = null;
         await _storage.remove(AppConfig.cachedUserProfileKey);
       }
+      if (isLoggedIn) _authCheckedThisSession = true;
       return isLoggedIn;
     } catch (e) {
       _error = e.toString();
@@ -263,6 +271,7 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> logout() async {
     _isLoading = true;
+    _authCheckedThisSession = false;
     notifyListeners();
 
     try {

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
+import '../../config/app_config.dart';
 import '../../services/api_service.dart';
 import '../../services/error_handler.dart';
 
@@ -49,7 +50,7 @@ class AdminDashboardProvider with ChangeNotifier {
     final response =
         await _errorHandler.executeWithErrorHandling<http.Response>(
       apiCall: () => _api.get(
-        '/admin/api/dashboard/stats',
+        AppConfig.mobileDashboardStatsEndpoint,
         timeout: const Duration(seconds: 30),
       ),
       context: 'Admin Dashboard Stats',

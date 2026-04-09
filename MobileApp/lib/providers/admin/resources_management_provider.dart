@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'dart:convert';
+import '../../config/app_config.dart';
 import '../../models/shared/resource.dart';
 import '../../services/api_service.dart';
 import '../../utils/debug_logger.dart';
@@ -50,7 +51,7 @@ class ResourcesManagementProvider with ChangeNotifier {
 
   Future<void> _loadFromAdminRoute(Map<String, String>? queryParams) async {
     final response = await _api.get(
-      '/admin/resources',
+      AppConfig.mobileResourcesEndpoint,
       queryParams: queryParams,
     );
 
@@ -166,7 +167,9 @@ class ResourcesManagementProvider with ChangeNotifier {
 
   Future<bool> deleteResource(int resourceId) async {
     try {
-      final response = await _api.post('/admin/resources/delete/$resourceId');
+      final response = await _api.post(
+        '${AppConfig.mobileResourcesEndpoint}/$resourceId/delete',
+      );
       if (response.statusCode == 200 || response.statusCode == 302) {
         await loadResources();
         return true;

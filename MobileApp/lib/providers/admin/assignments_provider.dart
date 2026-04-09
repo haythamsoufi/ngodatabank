@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../config/app_config.dart';
 import '../../models/admin/admin_assignment.dart';
 import '../../services/api_service.dart';
 import '../../services/error_handler.dart';
@@ -25,7 +26,7 @@ class AssignmentsProvider with ChangeNotifier {
 
     final response =
         await _errorHandler.executeWithErrorHandling<http.Response>(
-      apiCall: () => _api.get('/admin/assignments'),
+      apiCall: () => _api.get(AppConfig.mobileAssignmentsEndpoint),
       context: 'Load Assignments',
       defaultValue: null,
       maxRetries: 1,
@@ -167,7 +168,7 @@ class AssignmentsProvider with ChangeNotifier {
     final response =
         await _errorHandler.executeWithErrorHandling<http.Response>(
       apiCall: () => _api.post(
-        '/admin/assignments/delete-assignment/$assignmentId',
+        '${AppConfig.mobileAssignmentsEndpoint}/$assignmentId/delete',
         body: {},
       ),
       context: 'Delete Assignment',
@@ -184,7 +185,7 @@ class AssignmentsProvider with ChangeNotifier {
     final response =
         await _errorHandler.executeWithErrorHandling<http.Response>(
       apiCall: () => _api.post(
-        '/admin/assignments/generate-public-url/$assignmentId',
+        '${AppConfig.mobileAssignmentsEndpoint}/$assignmentId/generate-url',
         body: {},
       ),
       context: 'Generate Public URL',
@@ -201,7 +202,7 @@ class AssignmentsProvider with ChangeNotifier {
     final response =
         await _errorHandler.executeWithErrorHandling<http.Response>(
       apiCall: () => _api.post(
-        '/admin/assignments/toggle-public-access/$assignmentId',
+        '${AppConfig.mobileAssignmentsEndpoint}/$assignmentId/toggle-public',
         body: {},
       ),
       context: 'Toggle Public Access',

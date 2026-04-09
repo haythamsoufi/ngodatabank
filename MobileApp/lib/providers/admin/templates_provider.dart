@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../config/app_config.dart';
 import '../../models/shared/template.dart';
 import '../../services/api_service.dart';
 import '../../services/error_handler.dart';
@@ -25,7 +26,7 @@ class TemplatesProvider with ChangeNotifier {
 
     final response =
         await _errorHandler.executeWithErrorHandling<http.Response>(
-      apiCall: () => _api.get('/admin/templates'),
+      apiCall: () => _api.get(AppConfig.mobileTemplatesEndpoint),
       context: 'Load Templates',
       defaultValue: null,
       maxRetries: 1,
@@ -158,7 +159,7 @@ class TemplatesProvider with ChangeNotifier {
   Future<bool> deleteTemplate(int templateId, {int? dataCount}) async {
     try {
       final response = await _api.post(
-        '/admin/templates/delete/$templateId',
+        '${AppConfig.mobileTemplatesEndpoint}/$templateId/delete',
         body: {},
       );
 
@@ -172,7 +173,7 @@ class TemplatesProvider with ChangeNotifier {
   Future<bool> duplicateTemplate(int templateId) async {
     try {
       final response = await _api.post(
-        '/admin/templates/duplicate/$templateId',
+        '${AppConfig.mobileTemplatesEndpoint}/$templateId/duplicate',
         body: {},
       );
 

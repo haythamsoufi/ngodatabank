@@ -640,11 +640,6 @@ try {
             '/api/v1/users/{user_id}': [
                 {name: 'api_key', type: 'text', placeholder: '{{ _("API Key") }}', description: '{{ _("Required API key for authentication") }}'}
             ],
-            '/api/v1/publications': [
-                {name: 'page', type: 'number', placeholder: '{{ _("Page") }}', description: '{{ _("Page number (default: 1)") }}'},
-                {name: 'per_page', type: 'number', placeholder: '{{ _("Items per page") }}', description: '{{ _("Items per page (default: 10)") }}'},
-                {name: 'search', type: 'text', placeholder: '{{ _("Search term") }}', description: '{{ _("Search by publication title") }}'}
-            ],
             '/api/v1/indicator-bank': [
                 {name: 'search', type: 'text', placeholder: '{{ _("Search term") }}', description: '{{ _("Search by name or definition") }}'},
                 {name: 'type', type: 'select', options: [''].concat(indicatorBankTypeOptions), description: '{{ _("Filter by indicator type") }}'},

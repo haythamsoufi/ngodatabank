@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import '../../models/public/leaderboard_entry.dart';
+import '../../config/app_config.dart';
 import '../../services/api_service.dart';
 import '../../utils/debug_logger.dart';
 
@@ -24,7 +25,7 @@ class LeaderboardProvider with ChangeNotifier {
 
     try {
       final response = await _apiService.get(
-        '/api/v1/quiz/leaderboard',
+        AppConfig.mobileQuizLeaderboardEndpoint,
         queryParams: {'limit': limit.toString()},
         includeAuth: false, // Public endpoint
       );

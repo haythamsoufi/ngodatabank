@@ -5,6 +5,7 @@ import '../../utils/constants.dart';
 import '../../utils/navigation_helper.dart';
 import '../../providers/shared/auth_provider.dart';
 import '../../providers/shared/tab_customization_provider.dart';
+import '../../services/screen_view_tracker.dart';
 // Screens used inside the tab navigation
 import 'notifications_screen.dart';
 import 'dashboard_screen.dart';
@@ -34,6 +35,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
   late int _currentIndex;
   final GlobalKey _homeScreenKey = GlobalKey();
   late PageController _pageController;
+  final ScreenViewTracker _screenViewTracker = ScreenViewTracker();
+  bool _initialTabTracked = false;
 
   // Screen cache
   List<Widget>? _cachedScreens;
@@ -182,6 +185,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
     super.dispose();
   }
 
+  void _trackTabScreenView(int index, List<TabDefinition> tabs) {
+    if (index >= 0 && index < tabs.length) {
+      final tabId = tabs[index].id;
+      final screenName = ScreenViewTracker.screenNameFromTabId(tabId);
+      _screenViewTracker.trackScreenView(screenName,
+          screenClass: 'MainNavigationScreen');
+    }
+  }
+
   Future<void> _checkAuthStatus() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     await authProvider.checkAuthStatus();
@@ -254,6 +266,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
         }
         _previousScreenCount = screens.length;
 
+        if (!_initialTabTracked) {
+          _initialTabTracked = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _trackTabScreenView(validIndex, visibleTabs);
+          });
+        }
+
         if (_currentIndex != validIndex) {
           final capturedVersion = _navVersion;
           DebugLogger.logNav(
@@ -303,6 +322,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
                         'onPageChanged $_currentIndex → $index');
                     _navVersion++;
                     setState(() => _currentIndex = index);
+                    _trackTabScreenView(index, visibleTabs);
                   },
                   children: screens,
                 ),

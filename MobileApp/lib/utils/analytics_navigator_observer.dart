@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../services/analytics_service.dart';
+import '../services/screen_view_tracker.dart';
 
 class AnalyticsNavigatorObserver extends NavigatorObserver {
-  final AnalyticsService _analytics = AnalyticsService();
+  final ScreenViewTracker _tracker = ScreenViewTracker();
 
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
@@ -27,10 +27,11 @@ class AnalyticsNavigatorObserver extends NavigatorObserver {
   }
 
   void _logScreenView(Route<dynamic> route) {
-    final screenName = route.settings.name;
-    if (screenName != null && screenName.isNotEmpty) {
-      _analytics.logScreenView(
-        screenName: screenName,
+    final routeName = route.settings.name;
+    if (routeName != null && routeName.isNotEmpty) {
+      final screenName = ScreenViewTracker.screenNameFromRoute(routeName);
+      _tracker.trackScreenView(
+        screenName,
         screenClass: route.runtimeType.toString(),
       );
     }

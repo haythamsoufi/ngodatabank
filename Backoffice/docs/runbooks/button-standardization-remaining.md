@@ -73,7 +73,6 @@ Use the same rules: sharp corners, semantic colors, `.btn-confirm` / `.btn-cance
 - `admin/templates/templates.html`, `new_template.html`
 - `admin/assignments/assignments.html`, `public_submissions.html`, `public_assignments.html`, `gantt_chart.html`
 - `admin/lists/list_detail.html`, `manage_lists.html`
-- `admin/publications/manage_publications.html`, `edit_publication.html`
 - `admin/rbac/grants.html`, `roles.html`, `grant_form.html`, `role_form.html`
 - `admin/indicator_bank/edit_indicator_bank.html`, `add_indicator_bank.html`, `sectors_subsectors.html`
 - `admin/analytics/` (sessions, login_logs, activity_logs, admin_actions, user_detail, dashboard)

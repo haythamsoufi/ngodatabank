@@ -74,7 +74,7 @@
                         <div class="mb-4">
                             <div class="flex items-center justify-between mb-2">
                                 <label for="item-indicator-label" class="block text-gray-700 text-sm font-semibold">{{ _('Custom Label (Optional)') }}</label>
-                                <button type="button" id="indicator-translations-btn" class="btn btn-primary btn-sm" title="{{ _('Add translations') }}">
+                                <button type="button" id="indicator-translations-btn" class="text-sm font-medium text-blue-600 hover:text-blue-800 focus:outline-none focus:underline inline-flex items-center shrink-0" title="{{ _('Add translations') }}">
                                     <i class="fas fa-language w-4 h-4 mr-1"></i>
                                     {{ _('Translations') }}
                                 </button>
@@ -140,7 +140,7 @@
                         <div class="mb-4">
                             <div class="flex items-center justify-between mb-2">
                                 <label for="item-question-label" class="block text-gray-700 text-sm font-semibold">{{ _('Question Text') }}</label>
-                                <button type="button" id="question-translations-btn" class="btn btn-primary btn-sm" title="{{ _('Add translations') }}">
+                                <button type="button" id="question-translations-btn" class="text-sm font-medium text-blue-600 hover:text-blue-800 focus:outline-none focus:underline inline-flex items-center shrink-0" title="{{ _('Add translations') }}">
                                     <i class="fas fa-language w-4 h-4 mr-1"></i>
                                     {{ _('Translations') }}
                                 </button>
@@ -174,7 +174,7 @@
                         <div id="item-question-options-container" class="mb-6 hidden">
                             <div class="flex items-center justify-between mb-2">
                                 <label class="block text-gray-700 text-sm font-semibold">{{ _('Question Options') }}</label>
-                                <button type="button" id="question-options-translations-matrix-btn" class="btn btn-primary btn-sm" title="{{ _('Manage option translations') }}">
+                                <button type="button" id="question-options-translations-matrix-btn" class="text-sm font-medium text-blue-600 hover:text-blue-800 focus:outline-none focus:underline inline-flex items-center shrink-0" title="{{ _('Manage option translations') }}">
                                     <i class="fas fa-language w-4 h-4 mr-1"></i>
                                     {{ _('Translations') }}
                                 </button>
@@ -194,16 +194,16 @@
                             <template id="item-question-option-template">
                                 <div class="option-row flex items-center space-x-2">
                                     <input type="text" class="option-text shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="{{ _('Enter option text') }}">
-                                    <button type="button" class="move-up-btn btn btn-icon btn-xs btn-secondary" title="{{ _('Move Up') }}">
+                                    <button type="button" class="move-up-btn inline-flex items-center justify-center p-1 min-w-[1.75rem] min-h-[1.75rem] text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-300" title="{{ _('Move Up') }}">
                                         <i class="fas fa-arrow-up w-4 h-4"></i>
                                     </button>
-                                    <button type="button" class="move-down-btn btn btn-icon btn-xs btn-secondary" title="{{ _('Move Down') }}">
+                                    <button type="button" class="move-down-btn inline-flex items-center justify-center p-1 min-w-[1.75rem] min-h-[1.75rem] text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-300" title="{{ _('Move Down') }}">
                                         <i class="fas fa-arrow-down w-4 h-4"></i>
                                     </button>
-                                    <button type="button" class="remove-option-btn btn btn-icon btn-xs btn-ghost-danger" title="{{ _('Remove Option') }}">
+                                    <button type="button" class="remove-option-btn inline-flex items-center justify-center p-1 min-w-[1.75rem] min-h-[1.75rem] text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-red-300" title="{{ _('Remove Option') }}">
                                         <i class="fas fa-trash w-4 h-4"></i>
                                     </button>
-                                    <button type="button" class="add-option-btn btn btn-icon btn-xs btn-success" title="{{ _('Add Option') }}">
+                                    <button type="button" class="add-option-btn inline-flex items-center justify-center p-1 min-w-[1.75rem] min-h-[1.75rem] text-green-600 hover:text-green-800 hover:bg-green-50 rounded transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-green-300" title="{{ _('Add Option') }}">
                                         <i class="fas fa-plus w-4 h-4"></i>
                                     </button>
                                 </div>
@@ -232,7 +232,7 @@
                                     <p class="mt-1 text-xs text-gray-500">{{ _('Values from this column will appear as dropdown options. Fields marked as [Multilingual] will display in the user\'s selected language.') }}</p>
                                 </div>
                             </div>
-                            <button type="button" id="item-calculated-list-add-filter-btn" class="btn btn-secondary btn-xs mt-2"><i class="fas fa-filter w-3 h-3 mr-1"></i>{{ _('Add Filter') }}</button>
+                            <button type="button" id="item-calculated-list-add-filter-btn" class="text-xs font-medium text-blue-600 hover:text-blue-800 focus:outline-none focus:underline inline-flex items-center mt-2"><i class="fas fa-filter w-3 h-3 mr-1"></i>{{ _('Add Filter') }}</button>
                             <div id="item-calculated-list-filters-container" class="mt-2 space-y-2"></div>
                             <input type="hidden" name="list_filters_json" id="item-calculated-list-filters-json">
                         </div>
@@ -379,7 +379,7 @@
                         <div class="mb-4">
                             <div class="flex items-center justify-between mb-2">
                                 <label for="item-document-label" class="block text-gray-700 text-sm font-semibold">{{ _('Document Label') }}</label>
-                                <button type="button" id="document-translations-btn" class="btn btn-primary btn-sm" title="{{ _('Add translations') }}">
+                                <button type="button" id="document-translations-btn" class="text-sm font-medium text-blue-600 hover:text-blue-800 focus:outline-none focus:underline inline-flex items-center shrink-0" title="{{ _('Add translations') }}">
                                     <i class="fas fa-language w-4 h-4 mr-1"></i>
                                     {{ _('Translations') }}
                                 </button>
@@ -597,7 +597,7 @@
                         <div class="mb-4">
                             <div class="flex items-center justify-between mb-2">
                                 <label for="item-matrix-label" class="block text-gray-700 text-sm font-semibold">Matrix Title</label>
-                                <button type="button" id="matrix-translations-btn" class="btn btn-primary btn-sm" title="Add translations">
+                                <button type="button" id="matrix-translations-btn" class="text-sm font-medium text-blue-600 hover:text-blue-800 focus:outline-none focus:underline inline-flex items-center shrink-0" title="{{ _('Add translations') }}">
                                     <i class="fas fa-language w-4 h-4 mr-1"></i>
                                     Translations
                                 </button>
@@ -636,9 +636,9 @@
                                 <div id="matrix-rows-container" class="space-y-2">
                                     <!-- Row headers will be added here dynamically -->
                                 </div>
-                                <button type="button" id="add-matrix-row-btn" class="btn btn-success btn-sm mt-2">
+                                <button type="button" id="add-matrix-row-btn" class="text-sm font-medium text-green-700 hover:text-green-900 focus:outline-none focus:underline inline-flex items-center mt-2">
                                     <i class="fas fa-plus w-3 h-3 mr-1"></i>
-                                    Add Row
+                                    {{ _('Add Row') }}
                                 </button>
                             </div>
 
@@ -693,8 +693,8 @@
                                            value="Search and select a row to add...">
                                     <p class="mt-1 text-xs text-gray-500">Customize the placeholder text shown in the search input when users add rows.</p>
                                 </div>
-                                <button type="button" id="matrix-list-add-filter-btn" class="btn btn-secondary btn-xs mt-2">
-                                    <i class="fas fa-filter w-3 h-3 mr-1"></i>Add Filter
+                                <button type="button" id="matrix-list-add-filter-btn" class="text-xs font-medium text-blue-600 hover:text-blue-800 focus:outline-none focus:underline inline-flex items-center mt-2">
+                                    <i class="fas fa-filter w-3 h-3 mr-1"></i>{{ _('Add Filter') }}
                                 </button>
                                 <div id="matrix-list-filters-container" class="mt-2 space-y-2"></div>
                                 <input type="hidden" name="matrix_list_filters_json" id="matrix-list-filters-json">
@@ -707,17 +707,17 @@
                             <div class="mb-4">
                                 <div class="flex items-center justify-between mb-2">
                                     <label class="block text-gray-700 text-sm font-semibold">Column Headers</label>
-                                    <button type="button" id="matrix-column-headers-translations-matrix-btn" class="btn btn-primary btn-sm" title="{{ _('Manage column header translations') }}">
+                                    <button type="button" id="matrix-column-headers-translations-matrix-btn" class="text-sm font-medium text-blue-600 hover:text-blue-800 focus:outline-none focus:underline inline-flex items-center shrink-0" title="{{ _('Manage column header translations') }}">
                                         <i class="fas fa-language w-4 h-4 mr-1"></i>
-                                        Translations
+                                        {{ _('Translations') }}
                                     </button>
                                 </div>
                                 <div id="matrix-columns-container" class="space-y-2">
                                     <!-- Column headers will be added here dynamically -->
                                 </div>
-                                <button type="button" id="add-matrix-column-btn" class="btn btn-primary btn-sm mt-2">
+                                <button type="button" id="add-matrix-column-btn" class="text-sm font-medium text-blue-600 hover:text-blue-800 focus:outline-none focus:underline inline-flex items-center mt-2">
                                     <i class="fas fa-plus w-3 h-3 mr-1"></i>
-                                    Add Column
+                                    {{ _('Add Column') }}
                                 </button>
                             </div>
 
@@ -745,13 +745,13 @@
                                         <div class="flex items-center justify-between mb-1">
                                             <label class="block text-sm font-medium text-gray-700">Legend Text</label>
                                             <div class="flex items-center space-x-2">
-                                                <button type="button" id="matrix-legend-hide-btn" class="btn btn-secondary btn-sm" title="Legend is shown - click to hide">
+                                                <button type="button" id="matrix-legend-hide-btn" class="text-sm font-medium text-gray-600 hover:text-gray-900 focus:outline-none focus:underline inline-flex items-center" title="{{ _('Legend is shown — click to hide') }}">
                                                     <i class="fas fa-eye w-4 h-4 mr-1"></i>
-                                                    <span>Legend shown</span>
+                                                    <span>{{ _('Legend shown') }}</span>
                                                 </button>
-                                                <button type="button" id="matrix-legend-text-translations-btn" class="btn btn-primary btn-sm" title="Add translations">
+                                                <button type="button" id="matrix-legend-text-translations-btn" class="text-sm font-medium text-blue-600 hover:text-blue-800 focus:outline-none focus:underline inline-flex items-center shrink-0" title="{{ _('Add translations') }}">
                                                     <i class="fas fa-language w-4 h-4 mr-1"></i>
-                                                    Translations
+                                                    {{ _('Translations') }}
                                                 </button>
                                             </div>
                                         </div>
@@ -773,13 +773,13 @@
                         <template id="matrix-row-template">
                             <div class="matrix-row flex items-center space-x-2">
                                 <input type="text" class="row-text shadow-sm focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="Enter row header" data-field-type="label">
-                                <button type="button" class="move-row-up-btn btn btn-icon btn-xs btn-secondary" title="Move Up">
+                                <button type="button" class="move-row-up-btn inline-flex items-center justify-center p-1 min-w-[1.75rem] min-h-[1.75rem] text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-300" title="{{ _('Move Up') }}">
                                     <i class="fas fa-arrow-up w-4 h-4"></i>
                                 </button>
-                                <button type="button" class="move-row-down-btn btn btn-icon btn-xs btn-secondary" title="Move Down">
+                                <button type="button" class="move-row-down-btn inline-flex items-center justify-center p-1 min-w-[1.75rem] min-h-[1.75rem] text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-300" title="{{ _('Move Down') }}">
                                     <i class="fas fa-arrow-down w-4 h-4"></i>
                                 </button>
-                                <button type="button" class="remove-row-btn btn btn-icon btn-xs btn-ghost-danger" title="Remove Row">
+                                <button type="button" class="remove-row-btn inline-flex items-center justify-center p-1 min-w-[1.75rem] min-h-[1.75rem] text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-red-300" title="{{ _('Remove Row') }}">
                                     <i class="fas fa-trash w-4 h-4"></i>
                                 </button>
                             </div>
@@ -798,13 +798,13 @@
                                     <select class="column-variable-select shadow-sm focus:ring-orange-500 focus:border-orange-500 block w-40 sm:text-sm border-gray-300 rounded-md hidden" style="display: none;">
                                         <option value="">Select Variable...</option>
                                     </select>
-                                    <button type="button" class="move-column-up-btn btn btn-icon btn-xs btn-secondary" title="Move Up">
+                                    <button type="button" class="move-column-up-btn inline-flex items-center justify-center p-1 min-w-[1.75rem] min-h-[1.75rem] text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-300" title="{{ _('Move Up') }}">
                                         <i class="fas fa-arrow-up w-4 h-4"></i>
                                     </button>
-                                    <button type="button" class="move-column-down-btn btn btn-icon btn-xs btn-secondary" title="Move Down">
+                                    <button type="button" class="move-column-down-btn inline-flex items-center justify-center p-1 min-w-[1.75rem] min-h-[1.75rem] text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-300" title="{{ _('Move Down') }}">
                                         <i class="fas fa-arrow-down w-4 h-4"></i>
                                     </button>
-                                    <button type="button" class="remove-column-btn btn btn-icon btn-xs btn-ghost-danger" title="Remove Column">
+                                    <button type="button" class="remove-column-btn inline-flex items-center justify-center p-1 min-w-[1.75rem] min-h-[1.75rem] text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-red-300" title="{{ _('Remove Column') }}">
                                         <i class="fas fa-trash w-4 h-4"></i>
                                     </button>
                                 </div>
@@ -914,11 +914,11 @@
                         {# Rules Section - Below Properties Grid #}
                         <div class="mt-6 pt-4 border-t border-gray-100">
                             <div class="flex flex-wrap gap-4">
-                                <button type="button" class="btn btn-ghost btn-sm toggle-rule-builder" data-target="#item-relevance-rule-section">
+                                <button type="button" class="text-sm font-medium text-blue-600 hover:text-blue-800 focus:outline-none focus:underline inline-flex items-center toggle-rule-builder" data-target="#item-relevance-rule-section">
                                     <i class="fas fa-plus-circle mr-1"></i> {{ _('Add Relevance Rule') }}
                                 </button>
                                 <div id="validation-rule-toggle-section">
-                                    <button type="button" class="btn btn-ghost btn-sm toggle-rule-builder" data-target="#item-validation-rule-section">
+                                    <button type="button" class="text-sm font-medium text-blue-600 hover:text-blue-800 focus:outline-none focus:underline inline-flex items-center toggle-rule-builder" data-target="#item-validation-rule-section">
                                         <i class="fas fa-plus-circle mr-1"></i> {{ _('Add Validation Rule') }}
                                     </button>
                                 </div>

@@ -241,9 +241,6 @@ class AppConfig {
   static const String dashboardEndpoint = '/';
   static const String accountSettingsEndpoint = '/account-settings';
 
-  // Dashboard API Endpoint
-  static const String dashboardApiEndpoint = '/api/v1/dashboard';
-
   // Mobile API surface -- all mobile routes use JWT Bearer auth
   static const String mobileApiPrefix = '/api/mobile/v1';
 
@@ -253,11 +250,8 @@ class AppConfig {
   static const String mobileSessionCheckEndpoint = '$mobileApiPrefix/auth/session';
   static const String mobileExchangeSessionEndpoint = '$mobileApiPrefix/auth/exchange-session';
   static const String logoutEndpoint = '$mobileApiPrefix/auth/logout';
-  static const String jsonLoginEndpoint = '$mobileApiPrefix/auth/token';
-  static const String jsonChangePasswordEndpoint = '$mobileApiPrefix/auth/change-password';
-  static const String jsonProfileEndpoint = '$mobileApiPrefix/auth/profile';
-  static const String userProfileApiEndpoint = '$mobileApiPrefix/auth/profile';
-  static const String userProfileUpdateApiEndpoint = '$mobileApiPrefix/auth/profile';
+  static const String changePasswordEndpoint = '$mobileApiPrefix/auth/change-password';
+  static const String profileEndpoint = '$mobileApiPrefix/auth/profile';
 
   // Notifications
   static const String notificationsEndpoint = '$mobileApiPrefix/notifications';
@@ -270,15 +264,48 @@ class AppConfig {
   static const String deviceRegisterEndpoint = '$mobileApiPrefix/devices/register';
   static const String deviceUnregisterEndpoint = '$mobileApiPrefix/devices/unregister';
   static const String deviceHeartbeatEndpoint = '$mobileApiPrefix/devices/heartbeat';
-  static const String mobileDeviceRegisterEndpoint = deviceRegisterEndpoint;
-  static const String mobileDeviceUnregisterEndpoint = deviceUnregisterEndpoint;
-  static const String mobileDeviceHeartbeatEndpoint = deviceHeartbeatEndpoint;
 
-  // Admin
+  // Admin -- Users
   static const String mobileAdminUsersEndpoint = '$mobileApiPrefix/admin/users';
+  static const String mobileRbacRolesEndpoint = '$mobileApiPrefix/admin/users/rbac-roles';
+
+  // Admin -- Access Requests
   static const String mobileAccessRequestsEndpoint = '$mobileApiPrefix/admin/access-requests';
+
+  // Admin -- Analytics
+  static const String mobileDashboardStatsEndpoint = '$mobileApiPrefix/admin/analytics/dashboard-stats';
+  static const String mobileDashboardActivityEndpoint = '$mobileApiPrefix/admin/analytics/dashboard-activity';
+  static const String mobileLoginLogsEndpoint = '$mobileApiPrefix/admin/analytics/login-logs';
+  static const String mobileSessionLogsEndpoint = '$mobileApiPrefix/admin/analytics/session-logs';
+  static const String mobileEndSessionEndpoint = '$mobileApiPrefix/admin/analytics/sessions';
+  static const String mobileAuditTrailEndpoint = '$mobileApiPrefix/admin/analytics/audit-trail';
+
+  // Admin -- Content
+  static const String mobileTemplatesEndpoint = '$mobileApiPrefix/admin/content/templates';
+  static const String mobileAssignmentsEndpoint = '$mobileApiPrefix/admin/content/assignments';
+  static const String mobileDocumentsEndpoint = '$mobileApiPrefix/admin/content/documents';
+  static const String mobileResourcesEndpoint = '$mobileApiPrefix/admin/content/resources';
+  static const String mobileIndicatorBankEndpoint = '$mobileApiPrefix/admin/content/indicator-bank';
+  static const String mobileTranslationsEndpoint = '$mobileApiPrefix/admin/content/translations';
+
+  // Admin -- Notifications (send)
   static const String mobileAdminSendNotificationEndpoint = '$mobileApiPrefix/admin/notifications/send';
-  static const String mobileAdminEndSessionEndpoint = '$mobileApiPrefix/admin/sessions';
+
+  // Admin -- Organization
+  static const String mobileOrgBranchesEndpoint = '$mobileApiPrefix/admin/org/branches';
+  static const String mobileOrgSubbranchesEndpoint = '$mobileApiPrefix/admin/org/subbranches';
+  static const String mobileOrgStructureEndpoint = '$mobileApiPrefix/admin/org/structure';
+
+  // Public data (via mobile API)
+  static const String mobileCountryMapEndpoint = '$mobileApiPrefix/data/countrymap';
+  static const String mobileSectorsSubsectorsEndpoint = '$mobileApiPrefix/data/sectors-subsectors';
+  static const String mobilePublicIndicatorBankEndpoint = '$mobileApiPrefix/data/indicator-bank';
+  static const String mobileIndicatorSuggestionsEndpoint = '$mobileApiPrefix/data/indicator-suggestions';
+  static const String mobileQuizLeaderboardEndpoint = '$mobileApiPrefix/data/quiz/leaderboard';
+  static const String mobileQuizSubmitScoreEndpoint = '$mobileApiPrefix/data/quiz/submit-score';
+
+  // Dashboard (via mobile analytics)
+  static const String dashboardApiEndpoint = mobileDashboardStatsEndpoint;
 
   // Storage Keys
   static const String sessionCookieKey = 'session_cookie';

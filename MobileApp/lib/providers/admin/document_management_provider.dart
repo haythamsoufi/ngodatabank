@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../../config/app_config.dart';
 import '../../models/shared/document.dart';
 import '../../services/api_service.dart';
 import '../../services/error_handler.dart';
@@ -46,7 +47,7 @@ class DocumentManagementProvider with ChangeNotifier {
       final response =
           await _errorHandler.executeWithErrorHandling<http.Response>(
         apiCall: () => _api.get(
-          '/admin/documents',
+          AppConfig.mobileDocumentsEndpoint,
           queryParams: queryParams.isNotEmpty ? queryParams : null,
         ),
         context: 'Load Documents',
@@ -215,7 +216,9 @@ class DocumentManagementProvider with ChangeNotifier {
   Future<bool> deleteDocument(int documentId) async {
     final response =
         await _errorHandler.executeWithErrorHandling<http.Response>(
-      apiCall: () => _api.post('/admin/documents/delete/$documentId'),
+      apiCall: () => _api.post(
+        '${AppConfig.mobileDocumentsEndpoint}/$documentId/delete',
+      ),
       context: 'Delete Document',
       defaultValue: null,
       maxRetries: 0,

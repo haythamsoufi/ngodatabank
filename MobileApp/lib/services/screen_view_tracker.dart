@@ -1,0 +1,135 @@
+import '../services/api_service.dart';
+import '../services/analytics_service.dart';
+import '../utils/debug_logger.dart';
+
+/// Tracks mobile screen views on both Firebase Analytics and the Backoffice
+/// audit trail via `POST /api/mobile/v1/analytics/screen-view`.
+///
+/// Includes a short client-side dedup window so rapid back/forward taps
+/// or tab re-selections don't produce duplicate entries.
+class ScreenViewTracker {
+  static final ScreenViewTracker _instance = ScreenViewTracker._internal();
+  factory ScreenViewTracker() => _instance;
+  ScreenViewTracker._internal();
+
+  final ApiService _api = ApiService();
+  final AnalyticsService _analytics = AnalyticsService();
+
+  String? _lastScreenName;
+  DateTime? _lastTrackedAt;
+  static const _dedupWindow = Duration(seconds: 2);
+
+  /// Human-readable screen name for a route path (Navigator-pushed routes).
+  static String screenNameFromRoute(String routePath) {
+    return _routeNameMap[routePath] ?? _humanize(routePath);
+  }
+
+  /// Human-readable screen name for a tab ID (bottom-nav tabs).
+  static String screenNameFromTabId(String tabId) {
+    return _tabNameMap[tabId] ?? _humanize(tabId);
+  }
+
+  static const _tabNameMap = <String, String>{
+    'notifications': 'Notifications',
+    'dashboard': 'Dashboard',
+    'home': 'Home',
+    'ai_chat': 'AI Chat',
+    'admin': 'Admin Panel',
+    'analysis': 'Disaggregation Analysis',
+    'settings': 'Settings',
+    'resources': 'Resources',
+    'indicators': 'Indicator Bank',
+  };
+
+  static const _routeNameMap = <String, String>{
+    '/': 'Splash',
+    '/login': 'Login',
+    '/azure-login': 'Azure Login',
+    '/dashboard': 'Home',
+    '/settings': 'Settings',
+    '/notifications': 'Notifications',
+    '/notification-preferences': 'Notification Preferences',
+    '/webview': 'WebView',
+    '/admin': 'Admin Panel',
+    '/admin/dashboard': 'Admin Dashboard',
+    '/admin/templates': 'Templates',
+    '/admin/assignments': 'Assignments',
+    '/admin/users': 'Manage Users',
+    '/admin/user-detail': 'User Detail',
+    '/admin/access-requests': 'Access Requests',
+    '/admin/documents': 'Document Management',
+    '/admin/translations/manage': 'Translation Management',
+    '/admin/resources': 'Resources Management',
+    '/admin/organization': 'Organizational Structure',
+    '/admin/indicator_bank': 'Indicator Bank Admin',
+    '/admin/analytics/dashboard': 'User Analytics',
+    '/admin/analytics/audit-trail': 'Audit Trail',
+    '/admin/login-logs': 'Login Logs',
+    '/admin/session-logs': 'Session Logs',
+    '/indicator-bank': 'Indicator Bank',
+    '/resources': 'Resources',
+    '/disaggregation-analysis': 'Disaggregation Analysis',
+    '/countries': 'Countries',
+    '/ns-structure': 'NS Structure',
+    '/quiz-game': 'Quiz Game',
+    '/leaderboard': 'Leaderboard',
+    '/ai-chat': 'AI Chat',
+    '/world-map-fullscreen': 'World Map',
+  };
+
+  static String _humanize(String raw) {
+    // Handle parameterized routes with known prefixes
+    if (raw.startsWith('/indicator-bank/')) return 'Indicator Detail';
+    if (raw.startsWith('/ns-structure/')) return 'NS Structure';
+    if (raw.startsWith('/admin/indicator_bank/edit/')) return 'Edit Indicator';
+    if (raw.startsWith('/admin/organization/edit/')) return 'Edit Entity';
+
+    final segment = raw.split('/').where((s) => s.isNotEmpty).lastOrNull ?? raw;
+    return segment
+        .replaceAll('_', ' ')
+        .replaceAll('-', ' ')
+        .split(' ')
+        .map((w) => w.isEmpty ? '' : '${w[0].toUpperCase()}${w.substring(1)}')
+        .join(' ');
+  }
+
+  /// Track a screen view. Fire-and-forget — errors are swallowed.
+  void trackScreenView(String screenName, {String? screenClass}) {
+    if (screenName.isEmpty) return;
+
+    // Client-side dedup
+    final now = DateTime.now();
+    if (_lastScreenName == screenName &&
+        _lastTrackedAt != null &&
+        now.difference(_lastTrackedAt!) < _dedupWindow) {
+      return;
+    }
+    _lastScreenName = screenName;
+    _lastTrackedAt = now;
+
+    // Firebase Analytics (always, even when unauthenticated)
+    _analytics.logScreenView(
+      screenName: screenName,
+      screenClass: screenClass,
+    );
+
+    // Backoffice audit trail (fire-and-forget)
+    _postScreenView(screenName, screenClass);
+  }
+
+  Future<void> _postScreenView(String screenName, String? screenClass) async {
+    try {
+      final body = <String, dynamic>{
+        'screen_name': screenName,
+        if (screenClass != null) 'screen_class': screenClass,
+      };
+      await _api.post(
+        '/api/mobile/v1/analytics/screen-view',
+        body: body,
+        queueOnOffline: false,
+      );
+    } catch (e) {
+      DebugLogger.logError('screen_view tracking failed: $e');
+    }
+  }
+}

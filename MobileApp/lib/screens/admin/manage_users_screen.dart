@@ -187,6 +187,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
+                  settings: const RouteSettings(name: '/admin/access-requests'),
                   builder: (context) => const AccessRequestsScreen(),
                 ),
               );
@@ -307,6 +308,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute<void>(
+                settings: const RouteSettings(name: '/admin/user-detail'),
                 builder: (ctx) => AdminUserDetailScreen(summary: u),
               ),
             );

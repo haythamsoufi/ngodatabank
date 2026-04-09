@@ -201,8 +201,7 @@ class IndicatorBankProvider with ChangeNotifier {
   Future<void> _loadSectors(String locale) async {
     try {
       final response = await _api.get(
-        '/api/v1/sectors-subsectors',
-        includeAuth: false,
+        AppConfig.mobileSectorsSubsectorsEndpoint,
       );
 
       if (response.statusCode == 200) {
@@ -604,7 +603,6 @@ class IndicatorBankProvider with ChangeNotifier {
   }) async {
     try {
       final queryParams = <String, String>{
-        'api_key': AppConfig.apiKey,
         'archived': archived.toString(),
         'locale': locale, // Pass locale for localized type and unit
       };
@@ -626,9 +624,8 @@ class IndicatorBankProvider with ChangeNotifier {
       }
 
       final response = await _api.get(
-        '/api/v1/indicator-bank',
+        AppConfig.mobilePublicIndicatorBankEndpoint,
         queryParams: queryParams,
-        includeAuth: false,
         timeout: const Duration(seconds: 30), // Increased timeout for large indicator datasets
       );
 
@@ -971,14 +968,11 @@ class IndicatorBankProvider with ChangeNotifier {
 
   Future<bool> proposeNewIndicator(Map<String, dynamic> proposalData) async {
     try {
-      // Add API key to query string manually since POST doesn't support queryParams in our API service
-      final endpoint = '/api/v1/indicator-suggestions?api_key=${AppConfig.apiKey}';
       final response = await _api.post(
-        endpoint,
+        AppConfig.mobileIndicatorSuggestionsEndpoint,
         body: {
           ...proposalData,
         },
-        includeAuth: false,
       );
 
       return response.statusCode == 200 || response.statusCode == 201;

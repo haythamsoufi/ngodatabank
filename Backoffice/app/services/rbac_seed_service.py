@@ -88,8 +88,7 @@ def _permission_catalog() -> List[Tuple[str, str, str]]:
         ("admin.indicator_bank.suggestions.review", "Review indicator suggestions", "Review indicator suggestions"),
 
         # Content
-        ("admin.resources.manage", "Manage resources", "Manage resources"),
-        ("admin.publications.manage", "Manage publications", "Manage publications"),
+        ("admin.resources.manage", "Manage resources", "Manage resources (including publications)"),
         ("admin.documents.manage", "Manage documents", "Manage documents"),
         ("admin.notifications.manage", "Manage notifications", "Manage admin notifications center (view/send)"),
         ("admin.translations.manage", "Manage translations", "Manage translation strings and compilation"),
@@ -254,10 +253,9 @@ def _baseline_roles(permission_catalog: List[Tuple[str, str, str]]) -> List[Dict
         {
             "code": "admin_content_manager",
             "name": "Admin: Content (Manage)",
-            "description": "Manage resources, publications, and documents.",
+            "description": "Manage resources (including publications) and documents.",
             "permission_codes": [
                 "admin.resources.manage",
-                "admin.publications.manage",
                 "admin.documents.manage",
             ],
         },

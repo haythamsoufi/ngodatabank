@@ -668,6 +668,7 @@ class _OverviewBody extends StatelessWidget {
                               await Navigator.of(context)
                                   .push<FdrsMapSessionSnapshot?>(
                             MaterialPageRoute<FdrsMapSessionSnapshot?>(
+                              settings: const RouteSettings(name: '/world-map-fullscreen'),
                               fullscreenDialog: true,
                               builder: (ctx) => FdrsWorldMapFullscreenPage(
                                 l10n: l10n,

@@ -2,11 +2,12 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import '../../config/app_config.dart';
 import '../../models/admin/login_log_item.dart';
 import '../../services/api_service.dart';
 import '../../services/error_handler.dart';
 
-/// Loads [GET /admin/api/analytics/login-logs] (session auth, `admin.analytics.view`).
+/// Loads [GET /api/mobile/v1/admin/analytics/login-logs] (JWT auth, `admin.analytics.view`).
 class LoginLogsProvider with ChangeNotifier {
   final ApiService _api = ApiService();
   final ErrorHandler _errorHandler = ErrorHandler();
@@ -107,7 +108,7 @@ class LoginLogsProvider with ChangeNotifier {
     final response =
         await _errorHandler.executeWithErrorHandling<http.Response>(
       apiCall: () => _api.get(
-            '/admin/api/analytics/login-logs',
+            AppConfig.mobileLoginLogsEndpoint,
             queryParams: queryParams,
             useCache: false,
           ),

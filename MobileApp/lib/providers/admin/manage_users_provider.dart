@@ -3,13 +3,14 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
+import '../../config/app_config.dart';
 import '../../models/admin/admin_user_detail.dart';
 import '../../models/admin/admin_user_list_item.dart';
 import '../../services/api_service.dart';
 import '../../services/error_handler.dart';
 
-/// Loads the admin user directory via [GET /admin/api/users] (session auth, `admin.users.view`).
-/// Updates: [PUT /admin/api/users/:id] (`admin.users.edit`; optional RBAC via `admin.users.roles.assign`).
+/// Loads the admin user directory via [GET /api/mobile/v1/admin/users] (JWT auth, `admin.users.view`).
+/// Updates: [PUT /api/mobile/v1/admin/users/:id] (`admin.users.edit`; optional RBAC via `admin.users.roles.assign`).
 class ManageUsersProvider with ChangeNotifier {
   final ApiService _api = ApiService();
   final ErrorHandler _errorHandler = ErrorHandler();
@@ -18,7 +19,7 @@ class ManageUsersProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
-  /// From GET /api/v1/countrymap; fills missing `entity_region` on user detail when admin API omits it.
+  /// From GET /api/mobile/v1/data/countrymap; fills missing `entity_region` on user detail.
   Map<int, String>? _countryIdToRegionCache;
   String? _countryRegionCacheLocale;
 
@@ -47,7 +48,7 @@ class ManageUsersProvider with ChangeNotifier {
     final response =
         await _errorHandler.executeWithErrorHandling<http.Response>(
       apiCall: () => _api.get(
-            '/admin/api/users',
+            AppConfig.mobileAdminUsersEndpoint,
             useCache: false,
           ),
       context: 'Manage Users',
@@ -117,7 +118,7 @@ class ManageUsersProvider with ChangeNotifier {
     final response =
         await _errorHandler.executeWithErrorHandling<http.Response>(
       apiCall: () => _api.get(
-            '/admin/api/users/$userId',
+            '${AppConfig.mobileAdminUsersEndpoint}/$userId',
             useCache: false,
           ),
       context: 'User detail',
@@ -175,7 +176,7 @@ class ManageUsersProvider with ChangeNotifier {
     }
     try {
       final resp = await _api.get(
-        '/api/v1/countrymap',
+        AppConfig.mobileCountryMapEndpoint,
         useCache: true,
         queryParams: {'locale': localeTag},
       );
@@ -256,7 +257,7 @@ class ManageUsersProvider with ChangeNotifier {
     final response =
         await _errorHandler.executeWithErrorHandling<http.Response>(
       apiCall: () => _api.get(
-            '/admin/api/rbac/roles',
+            AppConfig.mobileRbacRolesEndpoint,
             useCache: false,
           ),
       context: 'RBAC roles',
@@ -326,7 +327,7 @@ class ManageUsersProvider with ChangeNotifier {
     final response =
         await _errorHandler.executeWithErrorHandling<http.Response>(
       apiCall: () => _api.put(
-            '/admin/api/users/$userId',
+            '${AppConfig.mobileAdminUsersEndpoint}/$userId',
             body: body,
             queueOnOffline: false,
           ),

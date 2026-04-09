@@ -168,7 +168,7 @@ def create_test_admin(db_session, **kwargs):
         _grant(role_id, "admin.countries.view")
         _grant(role_id, "admin.countries.edit")
     if kwargs.get("can_manage_publications", True):
-        _grant(role_id, "admin.publications.manage")
+        _grant(role_id, "admin.resources.manage")
         _grant(role_id, "admin.documents.manage")
     if kwargs.get("can_manage_api", True):
         _grant(role_id, "admin.api.manage")

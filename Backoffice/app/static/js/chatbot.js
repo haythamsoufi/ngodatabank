@@ -3213,9 +3213,6 @@ class NGODatabankChatbot {
             } else if (path.includes('/documents') || path.includes('/manage_documents')) {
                 context.pageData.pageType = 'document_management';
                 context.pageData.description = 'Document management system for file uploads and organization';
-            } else if (path.includes('/publications') || path.includes('/manage_publications')) {
-                context.pageData.pageType = 'publication_management';
-                context.pageData.description = 'Publication management for organizing and displaying reports';
             } else if (path.includes('/api_management') || path.includes('/api-management') || path.includes('/admin/api-management')) {
                 context.pageData.pageType = 'api_management';
                 context.pageData.description = 'API management console for monitoring and configuring API access';

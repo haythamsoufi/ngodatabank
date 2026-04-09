@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../../config/app_config.dart';
 import '../../models/shared/indicator.dart';
 import '../../services/api_service.dart';
 import '../../services/error_handler.dart';
@@ -43,7 +44,7 @@ class IndicatorBankAdminProvider with ChangeNotifier {
       final response =
           await _errorHandler.executeWithErrorHandling<http.Response>(
         apiCall: () => _api.get(
-          '/admin/indicator_bank',
+          AppConfig.mobileIndicatorBankEndpoint,
           queryParams: queryParams.isNotEmpty ? queryParams : null,
         ),
         context: 'Load Indicators (Admin)',
@@ -336,7 +337,8 @@ class IndicatorBankAdminProvider with ChangeNotifier {
   Future<bool> deleteIndicator(int indicatorId) async {
     final response =
         await _errorHandler.executeWithErrorHandling<http.Response>(
-      apiCall: () => _api.post('/admin/indicator_bank/delete/$indicatorId'),
+      apiCall: () =>
+          _api.post('${AppConfig.mobileIndicatorBankEndpoint}/$indicatorId/delete'),
       context: 'Delete Indicator',
       defaultValue: null,
       maxRetries: 0,
@@ -367,7 +369,8 @@ class IndicatorBankAdminProvider with ChangeNotifier {
   Future<bool> archiveIndicator(int indicatorId) async {
     final response =
         await _errorHandler.executeWithErrorHandling<http.Response>(
-      apiCall: () => _api.post('/admin/indicator_bank/archive/$indicatorId'),
+      apiCall: () =>
+          _api.post('${AppConfig.mobileIndicatorBankEndpoint}/$indicatorId/archive'),
       context: 'Archive Indicator',
       defaultValue: null,
       maxRetries: 0,
@@ -425,7 +428,8 @@ class IndicatorBankAdminProvider with ChangeNotifier {
       }
 
       // If still not found, try to fetch from view route and parse HTML
-      final response = await _api.get('/admin/indicator_bank/view/$id');
+      final response =
+          await _api.get('${AppConfig.mobileIndicatorBankEndpoint}/$id');
       if (response.statusCode == 200) {
         // Parse HTML to extract indicator data
         final indicator = _parseIndicatorFromViewHtml(response.body, id);
@@ -517,7 +521,7 @@ class IndicatorBankAdminProvider with ChangeNotifier {
 
     try {
       final response = await _api.post(
-        '/admin/indicator_bank/edit/$id',
+        '${AppConfig.mobileIndicatorBankEndpoint}/$id/edit',
         body: data,
         additionalHeaders: {'X-Requested-With': 'XMLHttpRequest'},
       );

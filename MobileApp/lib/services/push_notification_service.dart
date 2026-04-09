@@ -51,6 +51,11 @@ class PushNotificationService {
   GlobalKey<NavigatorState>? _navigatorKey;
   Timer? _heartbeatTimer;
 
+  /// Dedup: last successfully registered (token, userEmail) pair.
+  /// Prevents redundant POST /devices/register calls when nothing changed.
+  String? _lastRegisteredToken;
+  String? _lastRegisteredUserEmail;
+
   /// Initialize push notifications
   Future<void> initialize() async {
     if (_initialized) {
@@ -150,16 +155,21 @@ class PushNotificationService {
         'Current state: initialized=$_initialized, hasToken=${_currentToken != null}');
 
     try {
+      final currentUserEmail = await StorageService().getString(AppConfig.userEmailKey);
+
       // On iOS, register device if not already registered
       if (Platform.isIOS) {
         if (_currentToken == null) {
           DebugLogger.logNotifications(
               'No iOS device token found, registering...');
           await _registerIOSDevice();
-        } else {
-          // Re-register to update user_id if needed
+        } else if (_currentToken == _lastRegisteredToken &&
+            currentUserEmail == _lastRegisteredUserEmail) {
           DebugLogger.logNotifications(
-              'Re-registering iOS device to ensure correct user_id...');
+              'iOS device already registered for this user, skipping...');
+        } else {
+          DebugLogger.logNotifications(
+              'Registering iOS device (token or user changed)...');
           await _registerTokenWithBackend(_currentToken!);
         }
         // Ensure heartbeat is running
@@ -192,10 +202,13 @@ class PushNotificationService {
               'PUSH', '❌ Still no token after registration attempt');
           return;
         }
-      } else {
-        // We have a token, re-register to ensure it's associated with current user
+      } else if (_currentToken == _lastRegisteredToken &&
+          currentUserEmail == _lastRegisteredUserEmail) {
         DebugLogger.logNotifications(
-            'Re-registering device token (${_currentToken!.substring(0, 20)}...) to ensure correct user_id...');
+            'Device already registered for this user, skipping redundant POST...');
+      } else {
+        DebugLogger.logNotifications(
+            'Registering device token (token or user changed)...');
         await _registerTokenWithBackend(_currentToken!);
       }
 
@@ -562,6 +575,8 @@ class PushNotificationService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        _lastRegisteredToken = token;
+        _lastRegisteredUserEmail = await StorageService().getString(AppConfig.userEmailKey);
         DebugLogger.logNotifications('✅ Device registered successfully: $data');
       } else {
         DebugLogger.logError(
@@ -591,6 +606,8 @@ class PushNotificationService {
       if (response.statusCode == 200) {
         DebugLogger.logNotifications('Device unregistered successfully');
         _currentToken = null;
+        _lastRegisteredToken = null;
+        _lastRegisteredUserEmail = null;
       } else {
         DebugLogger.logNotifications(
             'Failed to unregister device: ${response.statusCode}');

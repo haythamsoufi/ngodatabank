@@ -5,6 +5,7 @@ import '../../providers/shared/language_provider.dart';
 import '../../utils/constants.dart';
 import '../../utils/theme_extensions.dart';
 import '../../utils/url_helper.dart';
+import '../../config/app_config.dart';
 import '../../config/routes.dart';
 import '../../l10n/app_localizations.dart';
 import 'dart:convert';
@@ -49,7 +50,7 @@ class _CountriesScreenState extends State<CountriesScreen> {
       final language = languageProvider.currentLanguage;
 
       final response = await _apiService.get(
-        '/api/v1/countrymap',
+        AppConfig.mobileCountryMapEndpoint,
         queryParams: {
           'locale': language,
         },

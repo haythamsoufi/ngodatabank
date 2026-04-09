@@ -117,6 +117,7 @@ class AppRouter {
     if (settings.name == AppRoutes.webview) {
       final url = settings.arguments as String;
       return MaterialPageRoute(
+        settings: settings,
         builder: (context) => WebViewScreen(initialUrl: url),
       );
     }
@@ -128,6 +129,7 @@ class AppRouter {
       final countryId = int.tryParse(idString);
       if (countryId != null) {
         return MaterialPageRoute(
+          settings: settings,
           builder: (context) => NSStructureScreen(countryId: countryId),
         );
       }
@@ -140,6 +142,7 @@ class AppRouter {
       final id = int.tryParse(idString);
       if (id != null) {
         return MaterialPageRoute(
+          settings: settings,
           builder: (context) => IndicatorDetailScreen(indicatorId: id),
         );
       }
@@ -152,6 +155,7 @@ class AppRouter {
       final id = int.tryParse(idString);
       if (id != null) {
         return MaterialPageRoute(
+          settings: settings,
           builder: (context) => EditIndicatorScreen(indicatorId: id),
         );
       }
@@ -171,6 +175,7 @@ class AppRouter {
           final entityName =
               args is Map ? args['entityName'] as String? : null;
           return MaterialPageRoute(
+            settings: settings,
             builder: (context) => EditEntityScreen(
               entityId: id,
               entityType: entityType,
@@ -188,6 +193,7 @@ class AppRouter {
           final entityType =
               args is Map ? args['entityType'] as String? : null;
           return MaterialPageRoute(
+            settings: settings,
             builder: (context) => EditEntityScreen(
               entityId: id,
               entityType: entityType,

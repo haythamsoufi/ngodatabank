@@ -4,6 +4,7 @@ import '../../models/indicator_bank/indicator.dart';
 import '../../models/public/quiz_question.dart';
 import '../../providers/public/indicator_bank_provider.dart';
 import '../../providers/shared/language_provider.dart';
+import '../../config/app_config.dart';
 import '../../services/api_service.dart';
 import '../../utils/debug_logger.dart';
 
@@ -265,7 +266,7 @@ class QuizGameProvider with ChangeNotifier {
 
     try {
       final response = await _apiService.post(
-        '/api/v1/quiz/submit-score',
+        AppConfig.mobileQuizSubmitScoreEndpoint,
         body: {'score': _score},
         includeAuth: true,
       );

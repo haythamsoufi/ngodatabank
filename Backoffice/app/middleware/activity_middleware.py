@@ -63,6 +63,8 @@ _SKIP_ENDPOINTS = frozenset([
     'ai_v2.chat_stream',
     # High-frequency mobile push heartbeat — noise for audit trail
     'notifications.device_heartbeat',
+    # Mobile screen-view endpoint logs activity itself; skip the automatic path
+    'mobile_api.screen_view',
 ])
 
 # Endpoint *prefixes* that produce only background noise
@@ -427,7 +429,8 @@ def init_activity_tracking(app):
         if (is_static_asset_request() or
             not request.endpoint or
             _should_skip_endpoint(request.endpoint) or
-            request.path.startswith('/api/v1/')):
+            request.path.startswith('/api/v1/') or
+            request.path.startswith('/api/mobile/')):
             return
 
         # Snapshot user identity now while the instance is still session-bound.
@@ -449,7 +452,8 @@ def init_activity_tracking(app):
         if (is_static_asset_request() or
             not request.endpoint or
             _should_skip_endpoint(request.endpoint) or
-            request.path.startswith('/api/v1/')):
+            request.path.startswith('/api/v1/') or
+            request.path.startswith('/api/mobile/')):
             return response
 
         # Only log for authenticated users and successful requests

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'dart:convert';
+import '../../config/app_config.dart';
 import '../../services/api_service.dart';
 import '../../utils/debug_logger.dart';
 
@@ -59,7 +60,7 @@ class OrganizationalStructureProvider with ChangeNotifier {
 
       // Use HTML route
       final response = await _api.get(
-        '/admin/organization',
+        AppConfig.mobileOrgStructureEndpoint,
         queryParams: queryParams.isNotEmpty ? queryParams : null,
       );
 

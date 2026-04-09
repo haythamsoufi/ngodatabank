@@ -3,11 +3,12 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
+import '../../config/app_config.dart';
 import '../../models/admin/country_access_request_item.dart';
 import '../../services/api_service.dart';
 import '../../services/error_handler.dart';
 
-/// Country access requests via [GET /admin/api/users/access-requests] and actions.
+/// Country access requests via [GET /api/mobile/v1/admin/access-requests] and actions.
 class AccessRequestsProvider with ChangeNotifier {
   final ApiService _api = ApiService();
   final ErrorHandler _errorHandler = ErrorHandler();
@@ -36,7 +37,7 @@ class AccessRequestsProvider with ChangeNotifier {
     final response =
         await _errorHandler.executeWithErrorHandling<http.Response>(
       apiCall: () => _api.get(
-            '/admin/api/users/access-requests',
+            AppConfig.mobileAccessRequestsEndpoint,
             useCache: false,
           ),
       context: 'Access requests',
@@ -112,14 +113,14 @@ class AccessRequestsProvider with ChangeNotifier {
 
   Future<bool> approve(int requestId) async {
     return _postAction(
-      '/admin/api/users/access-requests/$requestId/approve',
+      '${AppConfig.mobileAccessRequestsEndpoint}/$requestId/approve',
       contextLabel: 'Approve access request',
     );
   }
 
   Future<bool> reject(int requestId) async {
     return _postAction(
-      '/admin/api/users/access-requests/$requestId/reject',
+      '${AppConfig.mobileAccessRequestsEndpoint}/$requestId/reject',
       contextLabel: 'Reject access request',
     );
   }

@@ -2,12 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import '../../config/app_config.dart';
 import '../../models/admin/session_log_item.dart';
 import '../../services/api_service.dart';
 import '../../services/error_handler.dart';
 
-/// Loads [GET /admin/api/analytics/session-logs] and force-logout via
-/// [POST /admin/api/analytics/end-session/<session_id>].
+/// Loads [GET /api/mobile/v1/admin/analytics/session-logs] and force-logout via
+/// [POST /api/mobile/v1/admin/analytics/sessions/<session_id>/end].
 class SessionLogsProvider with ChangeNotifier {
   final ApiService _api = ApiService();
   final ErrorHandler _errorHandler = ErrorHandler();
@@ -61,7 +62,7 @@ class SessionLogsProvider with ChangeNotifier {
     final response =
         await _errorHandler.executeWithErrorHandling<http.Response>(
       apiCall: () => _api.post(
-            '/admin/api/analytics/end-session/$sessionId',
+            '${AppConfig.mobileEndSessionEndpoint}/$sessionId/end',
             body: {},
           ),
       context: 'End session',
@@ -151,7 +152,7 @@ class SessionLogsProvider with ChangeNotifier {
     final response =
         await _errorHandler.executeWithErrorHandling<http.Response>(
       apiCall: () => _api.get(
-            '/admin/api/analytics/session-logs',
+            AppConfig.mobileSessionLogsEndpoint,
             queryParams: queryParams,
             useCache: false,
           ),

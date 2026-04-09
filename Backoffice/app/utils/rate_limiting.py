@@ -143,3 +143,21 @@ def password_reset_rate_limit():
 def api_rate_limit():
     """Rate limiting for API endpoints."""
     return rate_limit(requests_per_minute=60, key_func=lambda: f"api_{get_client_ip()}")
+
+
+def mobile_rate_limit(requests_per_minute=10):
+    """Rate limiting for mobile API endpoints (JSON-only, no flash/redirect)."""
+    return rate_limit(
+        requests_per_minute=requests_per_minute,
+        key_func=lambda: f"mobile_{get_client_ip()}",
+        methods=['POST', 'PUT', 'PATCH', 'DELETE'],
+    )
+
+
+def mobile_destructive_rate_limit():
+    """Rate limiting for destructive mobile operations (delete, archive, etc.)."""
+    return rate_limit(
+        requests_per_minute=10,
+        key_func=lambda: f"mobile_destructive_{get_client_ip()}",
+        methods=['POST'],
+    )

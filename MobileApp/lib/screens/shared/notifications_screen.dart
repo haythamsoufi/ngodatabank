@@ -229,6 +229,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
+                      settings: const RouteSettings(name: '/notification-preferences'),
                       builder: (context) =>
                           const NotificationPreferencesScreen(),
                     ),

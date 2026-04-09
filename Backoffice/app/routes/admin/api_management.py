@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request
 from sqlalchemy import func, case
 from datetime import datetime, timedelta
 from app.models.api_usage import APIUsage
-from app.models import IndicatorBank, Sector, SubSector, FormTemplate, Country, User, Resource
+from app.models import IndicatorBank, Sector, SubSector, FormTemplate, Country, User
 from app import db
 from app.routes.admin.shared import admin_permission_required
 from flask import current_app
@@ -79,11 +79,6 @@ def api_management():
             'description': 'Get a list of all available national societies'
         },
         {
-            'path': '/api/v1/publications',
-            'method': 'GET',
-            'description': 'Get a paginated list of publications with optional search'
-        },
-        {
             'path': '/api/v1/indicator-bank',
             'method': 'GET',
             'description': 'Get a list of all indicators with optional filters'
@@ -149,7 +144,6 @@ def api_management():
     templates.sort(key=lambda t: t.name if t.name else "")
     countries = Country.query.order_by(Country.name.asc()).all()
     users = User.query.order_by(User.name.asc()).all()
-    publications = Resource.query.order_by(Resource.default_title.asc()).all()
 
     # Fetch dropdown options for Indicator Bank filters
     sector_options = [s.name for s in Sector.query.order_by(Sector.name.asc()).all()]
@@ -201,8 +195,7 @@ def api_management():
                          type_options=type_options,
                          templates=templates,
                          countries=countries,
-                         users=users,
-                         publications=publications)
+                         users=users)
 
 @bp.route('/api-management/stats')
 @admin_permission_required('admin.api.manage')

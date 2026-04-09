@@ -11,6 +11,7 @@ import '../../widgets/bottom_navigation_bar.dart';
 import '../../widgets/app_bar.dart';
 import '../../providers/shared/auth_provider.dart';
 import '../../providers/shared/language_provider.dart';
+import '../../config/app_config.dart';
 import '../../l10n/app_localizations.dart';
 
 class IndicatorDetailScreen extends StatefulWidget {
@@ -83,7 +84,7 @@ class _IndicatorDetailScreenState extends State<IndicatorDetailScreen> {
           Provider.of<IndicatorBankProvider>(context, listen: false);
       final api = ApiService();
       final response = await api.get(
-        '/api/v1/indicator-bank/${widget.indicatorId}',
+        '${AppConfig.mobilePublicIndicatorBankEndpoint}/${widget.indicatorId}',
         queryParams: {
           'locale': locale,  // Pass locale for localized type and unit
         },

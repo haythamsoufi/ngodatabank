@@ -71,6 +71,8 @@ class ApiService {
   final OfflineCacheService _cacheService = OfflineCacheService();
   final UserScopeService _scopeService = UserScopeService();
 
+  // Legacy secure storage key for CSRF tokens. Mobile uses JWT Bearer auth only;
+  // CSRF is not needed when requests are authenticated with JWT (no session-cookie form posts).
   static const String _csrfTokenStorageKey = 'csrf_token_v1';
 
   Future<String?> _getCachedCsrfToken() async {
@@ -86,19 +88,7 @@ class ApiService {
   }
 
   Future<String?> refreshCsrfToken() async {
-    try {
-      final resp =
-          await get('/api/v1/csrf-token', includeAuth: true, useCache: false);
-      if (resp.statusCode != 200) return null;
-      final data = jsonDecode(resp.body) as Map<String, dynamic>;
-      final token = data['csrf_token']?.toString();
-      if (token != null && token.isNotEmpty) {
-        await _cacheCsrfToken(token);
-      }
-      return token;
-    } catch (_) {
-      return null;
-    }
+    return null;
   }
 
   /// Cache a CSRF token obtained from a JSON API response (e.g. login).
@@ -107,8 +97,7 @@ class ApiService {
   }
 
   bool _shouldAttachPublicApiKey(String endpoint) {
-    // Only attach to Backoffice public API routes; avoid interfering with AI endpoints.
-    return endpoint.startsWith('/api/v1/');
+    return false;
   }
 
   bool _isUnsafeMethod(String method) {

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'dart:convert';
+import '../../config/app_config.dart';
 import '../../services/api_service.dart';
 import '../../services/audit_trail_home_widget_sync.dart';
 import '../../utils/debug_logger.dart';
@@ -47,7 +48,7 @@ class AuditTrailProvider with ChangeNotifier {
       // Use the HTML route and parse it
       try {
         final response = await _api.get(
-          '/admin/analytics/audit-trail',
+          AppConfig.mobileAuditTrailEndpoint,
           queryParams: queryParams.isNotEmpty ? queryParams : null,
         );
 

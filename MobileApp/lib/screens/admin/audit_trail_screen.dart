@@ -6,7 +6,6 @@ import '../../providers/shared/auth_provider.dart';
 import '../../widgets/admin_filter_panel.dart';
 import '../../widgets/admin_filters_bottom_sheet.dart';
 import '../../widgets/app_bar.dart';
-import '../../widgets/audit_trail_widget_config.dart';
 import '../../widgets/bottom_navigation_bar.dart';
 import '../../config/routes.dart';
 import '../../utils/constants.dart';
@@ -196,10 +195,7 @@ class _AuditTrailScreenState extends State<AuditTrailScreen> {
                   ),
                 ),
               ),
-              if (AuditTrailWidgetConfig.isSupported) ...[
-                AdminFilterPanel.fieldGap,
-                const AuditTrailWidgetConfig(),
-              ],
+
             ],
           ),
         );
