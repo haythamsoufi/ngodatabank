@@ -549,7 +549,7 @@ class PushNotificationService {
       final packageInfo = await _getPackageInfo();
       final deviceInfo = await _getDeviceInfo();
 
-      final endpoint = AppConfig.mobileDeviceRegisterEndpoint;
+      final endpoint = AppConfig.deviceRegisterEndpoint;
       final body = {
         'device_token': token,
         'platform': platform,
@@ -597,7 +597,7 @@ class PushNotificationService {
 
     try {
       final response = await _api.post(
-        AppConfig.mobileDeviceUnregisterEndpoint,
+        AppConfig.deviceUnregisterEndpoint,
         body: {
           'device_token': _currentToken,
         },
@@ -726,7 +726,7 @@ class PushNotificationService {
 
     try {
       final response = await _api.post(
-        AppConfig.mobileDeviceHeartbeatEndpoint,
+        AppConfig.deviceHeartbeatEndpoint,
         body: {'device_token': _currentToken},
       );
 

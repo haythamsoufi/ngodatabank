@@ -43,7 +43,7 @@ class UserProfileService {
 
       // Try the new API endpoint first
       final response = await _api.get(
-        AppConfig.userProfileApiEndpoint,
+        AppConfig.profileEndpoint,
         timeout: const Duration(seconds: 5),
       );
 
@@ -92,7 +92,7 @@ class UserProfileService {
       } else if (response.statusCode == 404) {
         // Endpoint doesn't exist - this should not happen if backend is properly deployed
         DebugLogger.logAuth(
-            'API endpoint ${AppConfig.userProfileApiEndpoint} not found (404)');
+            'API endpoint ${AppConfig.profileEndpoint} not found (404)');
         return null;
       } else {
         DebugLogger.logAuth('API returned status ${response.statusCode}');
@@ -237,7 +237,7 @@ class UserProfileService {
 
       // Make PUT request to update profile
       final response = await _api.put(
-        AppConfig.userProfileUpdateApiEndpoint,
+        AppConfig.profileEndpoint,
         body: requestBody,
       );
 

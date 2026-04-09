@@ -1119,7 +1119,7 @@ class AuthService {
       DebugLogger.logAuth('Updating profile color to: $color');
 
       final response = await _api.put(
-        AppConfig.jsonProfileEndpoint,
+        AppConfig.profileEndpoint,
         body: {'profile_color': color},
         includeAuth: true,
       );
@@ -1168,7 +1168,7 @@ class AuthService {
       await _validateSessionBeforeCriticalOperation();
 
       final response = await _api.post(
-        AppConfig.jsonChangePasswordEndpoint,
+        AppConfig.changePasswordEndpoint,
         body: {
           'current_password': currentPassword,
           'new_password': newPassword,
