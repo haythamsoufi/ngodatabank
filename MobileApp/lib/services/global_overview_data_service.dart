@@ -109,13 +109,15 @@ class GlobalOverviewDataService {
       period = list.first;
     }
 
+    final resolvedPeriod = period;
+
     final qp = <String, String>{
       'indicator_bank_id': '$indicatorBankId',
       'template_id': '${FdrsConstants.templateId}',
       'locale': locale,
     };
-    if (period != null && period.isNotEmpty) {
-      qp['period_name'] = period;
+    if (resolvedPeriod.isNotEmpty) {
+      qp['period_name'] = resolvedPeriod;
     }
 
     final http.Response resp = await _api.get(
@@ -139,7 +141,7 @@ class GlobalOverviewDataService {
     final byCountryRaw = (data['by_country'] as Map<String, dynamic>?) ?? {};
     final countryNamesRaw = (data['country_names'] as Map<String, dynamic>?) ?? {};
     final countryIso2Raw = (data['country_iso2'] as Map<String, dynamic>?) ?? {};
-    final returnedPeriod = data['period_name'] as String? ?? period;
+    final returnedPeriod = data['period_name'] as String? ?? resolvedPeriod;
 
     final byCountry = <int, double>{};
     byCountryRaw.forEach((k, v) {

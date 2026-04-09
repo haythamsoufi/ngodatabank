@@ -315,7 +315,7 @@ class _ActiveField extends StatelessWidget {
         children: [
           Expanded(
             child: FocusTraversalOrder(
-              order: NumericFocusOrder(0),
+              order: const NumericFocusOrder(0),
               child: TextField(
                 controller: controller,
                 focusNode: focusNode,
@@ -351,7 +351,7 @@ class _ActiveField extends StatelessWidget {
             ),
           ),
           FocusTraversalOrder(
-            order: NumericFocusOrder(1),
+            order: const NumericFocusOrder(1),
             child: IconButton(
               onPressed: onSubmit,
               style: IconButton.styleFrom(
