@@ -398,7 +398,7 @@ class PushNotificationService:
             Dict with success status
         """
         try:
-            # Check if device already exists
+            # Check if device already exists by token (exact match)
             existing_device = UserDevice.query.filter_by(device_token=device_token).first()
 
             if existing_device:
@@ -420,6 +420,7 @@ class PushNotificationService:
                     existing_device.timezone = timezone
                 existing_device.last_active_at = utcnow()
                 existing_device.logged_out_at = None
+                existing_device.consecutive_failures = 0
                 db.session.commit()
 
                 return {
@@ -431,27 +432,71 @@ class PushNotificationService:
                     ),
                     'device_id': existing_device.id
                 }
-            else:
-                # Create new device
-                device = UserDevice(
-                    user_id=user_id,
-                    device_token=device_token,
-                    platform=platform,
-                    app_version=app_version,
-                    device_model=device_model,
-                    device_name=device_name,
-                    os_version=os_version,
-                    ip_address=ip_address,
-                    timezone=timezone
-                )
-                db.session.add(device)
-                db.session.commit()
 
-                return {
-                    'success': True,
-                    'message': 'Device registered',
-                    'device_id': device.id
-                }
+            # Fallback: same physical device may have a stale token (e.g. after
+            # app reinstall).  Match by user + device_model + device_name +
+            # platform and replace the old token so we don't create duplicate
+            # rows.  Only apply when exactly one device matches (device_model
+            # can be generic, e.g. "iPhone" for all iPhones, so we require an
+            # unambiguous match to avoid overwriting a different device's token).
+            if device_model:
+                stale_q = UserDevice.query.filter_by(
+                    user_id=user_id,
+                    device_model=device_model,
+                    platform=platform,
+                )
+                if device_name:
+                    stale_q = stale_q.filter_by(device_name=device_name)
+                stale_candidates = stale_q.all()
+                stale_device = stale_candidates[0] if len(stale_candidates) == 1 else None
+                if stale_device:
+                    was_logged_out = stale_device.logged_out_at is not None
+                    stale_device.device_token = device_token
+                    if app_version:
+                        stale_device.app_version = app_version
+                    if device_name:
+                        stale_device.device_name = device_name
+                    if os_version:
+                        stale_device.os_version = os_version
+                    if ip_address:
+                        stale_device.ip_address = ip_address
+                    if timezone:
+                        stale_device.timezone = timezone
+                    stale_device.last_active_at = utcnow()
+                    stale_device.logged_out_at = None
+                    stale_device.consecutive_failures = 0
+                    db.session.commit()
+
+                    return {
+                        'success': True,
+                        'message': (
+                            'Device updated and reactivated'
+                            if was_logged_out
+                            else 'Device updated'
+                        ),
+                        'device_id': stale_device.id
+                    }
+
+            # Truly new device — create a record
+            device = UserDevice(
+                user_id=user_id,
+                device_token=device_token,
+                platform=platform,
+                app_version=app_version,
+                device_model=device_model,
+                device_name=device_name,
+                os_version=os_version,
+                ip_address=ip_address,
+                timezone=timezone,
+            )
+            db.session.add(device)
+            db.session.commit()
+
+            return {
+                'success': True,
+                'message': 'Device registered',
+                'device_id': device.id
+            }
 
         except Exception as e:
             current_app.logger.error(f"Error registering device: {str(e)}")

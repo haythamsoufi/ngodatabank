@@ -50,6 +50,7 @@ class PushNotificationService {
   String? _currentToken;
   GlobalKey<NavigatorState>? _navigatorKey;
   Timer? _heartbeatTimer;
+  Timer? _initialHeartbeatTimer;
 
   /// Dedup: last successfully registered (token, userEmail) pair.
   /// Prevents redundant POST /devices/register calls when nothing changed.
@@ -172,9 +173,11 @@ class PushNotificationService {
               'Registering iOS device (token or user changed)...');
           await _registerTokenWithBackend(_currentToken!);
         }
-        // Ensure heartbeat is running
-        if (!_initialized) {
+        // Ensure heartbeat is running (may have been stopped by unregisterDevice)
+        if (_heartbeatTimer == null) {
           _startHeartbeat();
+        }
+        if (!_initialized) {
           _initialized = true;
         }
         DebugLogger.logNotifications('✅ iOS device registration ensured');
@@ -468,8 +471,8 @@ class PushNotificationService {
   Future<void> _registerIOSDevice() async {
     try {
       // Install-scoped UUID (not an Apple device ID). Must survive logout:
-      // AuthService.logout() calls StorageService.clear() which wipes all
-      // SharedPreferences, so we persist this in secure storage instead.
+      // AuthService.logout() preserves this key across clearSecure() so the
+      // same physical device reuses the same token on every login.
       final storage = StorageService();
       String? deviceId =
           await storage.getSecure(AppConfig.persistentDeviceInstallIdKey);
@@ -591,6 +594,11 @@ class PushNotificationService {
 
   /// Unregister device from backend
   Future<void> unregisterDevice() async {
+    // Stop heartbeat immediately — no point sending heartbeats for a device
+    // that is about to be unregistered (also prevents the heartbeat from
+    // re-registering the device after logout via _sendHeartbeat → _registerIOSDevice).
+    _stopHeartbeat();
+
     if (_currentToken == null) {
       return;
     }
@@ -605,9 +613,6 @@ class PushNotificationService {
 
       if (response.statusCode == 200) {
         DebugLogger.logNotifications('Device unregistered successfully');
-        _currentToken = null;
-        _lastRegisteredToken = null;
-        _lastRegisteredUserEmail = null;
       } else {
         DebugLogger.logNotifications(
             'Failed to unregister device: ${response.statusCode}');
@@ -615,6 +620,12 @@ class PushNotificationService {
     } catch (e) {
       DebugLogger.logNotifications('Error unregistering device: $e');
     }
+
+    // Always clear in-memory state regardless of API success — the user is
+    // logging out and the next login will re-register.
+    _currentToken = null;
+    _lastRegisteredToken = null;
+    _lastRegisteredUserEmail = null;
   }
 
   /// Get package info for app version
@@ -685,11 +696,14 @@ class PushNotificationService {
 
   /// Start periodic heartbeat to update device activity (every 5 minutes)
   void _startHeartbeat() {
-    // Stop existing timer if any
+    // Stop existing timers if any
     _heartbeatTimer?.cancel();
+    _initialHeartbeatTimer?.cancel();
 
-    // Send initial heartbeat after 30 seconds (give app time to fully load)
-    Future.delayed(const Duration(seconds: 30), () {
+    // Send initial heartbeat after 30 seconds (give app time to fully load).
+    // Uses a Timer (not Future.delayed) so _stopHeartbeat() can cancel it.
+    _initialHeartbeatTimer = Timer(const Duration(seconds: 30), () {
+      _initialHeartbeatTimer = null;
       _sendHeartbeat();
     });
 
@@ -705,6 +719,8 @@ class PushNotificationService {
   void _stopHeartbeat() {
     _heartbeatTimer?.cancel();
     _heartbeatTimer = null;
+    _initialHeartbeatTimer?.cancel();
+    _initialHeartbeatTimer = null;
     DebugLogger.logNotifications('Heartbeat stopped');
   }
 

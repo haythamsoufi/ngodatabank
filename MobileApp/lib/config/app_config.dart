@@ -325,7 +325,8 @@ class AppConfig {
   static const String rememberMeKey = 'remember_me';
   static const String selectedEntityTypeKey = 'selected_entity_type';
   static const String selectedEntityIdKey = 'selected_entity_id';
-  /// Survives logout (`StorageService.clear()` wipes SharedPreferences only).
+  /// Survives logout — AuthService.logout() preserves this key across
+  /// clearSecure() so the same physical device keeps the same token.
   static const String persistentDeviceInstallIdKey =
       'persistent_device_install_id';
 

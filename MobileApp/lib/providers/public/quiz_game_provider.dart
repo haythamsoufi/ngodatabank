@@ -21,6 +21,8 @@ class QuizGameProvider with ChangeNotifier {
   int _currentQuestionIndex = 0;
   int _score = 0;
   int _totalQuestions = 10;
+  int _answerStreak = 0;
+  int _bestStreak = 0;
 
   // Current question data
   Indicator? _currentIndicator;
@@ -63,11 +65,16 @@ class QuizGameProvider with ChangeNotifier {
   bool get showResult => _showResult;
   bool get isCorrect => _isCorrect;
   List<QuizQuestion> get questions => _questions;
+  int get answerStreak => _answerStreak;
+  int get bestStreakThisRun => _bestStreak;
 
   bool get hasMoreQuestions => _currentQuestionIndex < _questions.length - 1;
   bool get isQuizComplete => _currentQuestionIndex >= _questions.length;
-  double get progress => _questions.isEmpty ? 0.0 : (_currentQuestionIndex + 1) / _questions.length;
-  double get scorePercentage => _questions.isEmpty ? 0.0 : (_score / _questions.length) * 100;
+  double get progress => _questions.isEmpty
+      ? 0.0
+      : (_currentQuestionIndex + 1) / _questions.length;
+  double get scorePercentage =>
+      _questions.isEmpty ? 0.0 : (_score / _questions.length) * 100;
 
   /// Start a new quiz game
   Future<void> startQuiz({int numQuestions = 10}) async {
@@ -89,9 +96,11 @@ class QuizGameProvider with ChangeNotifier {
 
       // Filter indicators that have sectors or subsectors
       final validIndicators = _indicatorBankProvider.allIndicators
-          .where((ind) =>
-              (ind.sector != null && ind.displaySector.isNotEmpty) ||
-              (ind.subSector != null && ind.displaySubSector.isNotEmpty))
+          .where(
+            (ind) =>
+                (ind.sector != null && ind.displaySector.isNotEmpty) ||
+                (ind.subSector != null && ind.displaySubSector.isNotEmpty),
+          )
           .toList();
 
       if (validIndicators.isEmpty) {
@@ -107,6 +116,8 @@ class QuizGameProvider with ChangeNotifier {
       _totalQuestions = _questions.length;
       _currentQuestionIndex = 0;
       _score = 0;
+      _answerStreak = 0;
+      _bestStreak = 0;
       _isQuizActive = true;
       _loadCurrentQuestion();
     } catch (e) {
@@ -117,7 +128,10 @@ class QuizGameProvider with ChangeNotifier {
   }
 
   /// Generate quiz questions
-  List<QuizQuestion> _generateQuestions(List<Indicator> indicators, int numQuestions) {
+  List<QuizQuestion> _generateQuestions(
+    List<Indicator> indicators,
+    int numQuestions,
+  ) {
     final questions = <QuizQuestion>[];
     final random = Random();
     final usedIndicators = <int>{};
@@ -135,7 +149,8 @@ class QuizGameProvider with ChangeNotifier {
       }
     }
 
-    while (questions.length < numQuestions && usedIndicators.length < indicators.length) {
+    while (questions.length < numQuestions &&
+        usedIndicators.length < indicators.length) {
       // Pick a random indicator we haven't used yet
       Indicator? indicator;
       int attempts = 0;
@@ -173,7 +188,9 @@ class QuizGameProvider with ChangeNotifier {
         correctAnswer = indicator.displaySubSector;
       }
 
-      if (questionType == null || correctAnswer == null || correctAnswer.isEmpty) {
+      if (questionType == null ||
+          correctAnswer == null ||
+          correctAnswer.isEmpty) {
         continue;
       }
 
@@ -186,25 +203,35 @@ class QuizGameProvider with ChangeNotifier {
       final options = [correctAnswer, ...wrongAnswers];
       options.shuffle(random);
 
-      questions.add(QuizQuestion(
-        indicator: indicator,
-        questionType: questionType,
-        correctAnswer: correctAnswer,
-        options: options,
-      ));
+      questions.add(
+        QuizQuestion(
+          indicator: indicator,
+          questionType: questionType,
+          correctAnswer: correctAnswer,
+          options: options,
+        ),
+      );
     }
 
     return questions;
   }
 
   /// Generate wrong answers from available options
-  List<String> _generateWrongAnswers(String correctAnswer, List<String> allAnswers, int count) {
+  List<String> _generateWrongAnswers(
+    String correctAnswer,
+    List<String> allAnswers,
+    int count,
+  ) {
     final random = Random();
     final wrongAnswers = <String>{};
-    final availableAnswers = allAnswers.where((a) => a != correctAnswer).toList();
+    final availableAnswers = allAnswers
+        .where((a) => a != correctAnswer)
+        .toList();
 
-    while (wrongAnswers.length < count && wrongAnswers.length < availableAnswers.length) {
-      final randomAnswer = availableAnswers[random.nextInt(availableAnswers.length)];
+    while (wrongAnswers.length < count &&
+        wrongAnswers.length < availableAnswers.length) {
+      final randomAnswer =
+          availableAnswers[random.nextInt(availableAnswers.length)];
       wrongAnswers.add(randomAnswer);
     }
 
@@ -237,6 +264,12 @@ class QuizGameProvider with ChangeNotifier {
 
     if (_isCorrect) {
       _score++;
+      _answerStreak++;
+      if (_answerStreak > _bestStreak) {
+        _bestStreak = _answerStreak;
+      }
+    } else {
+      _answerStreak = 0;
     }
 
     notifyListeners();
@@ -272,9 +305,15 @@ class QuizGameProvider with ChangeNotifier {
       );
 
       if (response.statusCode == 200) {
-        DebugLogger.logInfo('QUIZ', 'Score submitted successfully: $_score points');
+        DebugLogger.logInfo(
+          'QUIZ',
+          'Score submitted successfully: $_score points',
+        );
       } else {
-        DebugLogger.logWarn('QUIZ', 'Failed to submit score: ${response.statusCode}');
+        DebugLogger.logWarn(
+          'QUIZ',
+          'Failed to submit score: ${response.statusCode}',
+        );
       }
     } catch (e) {
       // Silently fail - score submission is not critical
@@ -297,6 +336,8 @@ class QuizGameProvider with ChangeNotifier {
     _correctAnswer = null;
     _selectedAnswer = null;
     _showResult = false;
+    _answerStreak = 0;
+    _bestStreak = 0;
     notifyListeners();
   }
 
@@ -314,6 +355,8 @@ class QuizGameProvider with ChangeNotifier {
     _isCorrect = false;
     _error = null;
     _isLoading = false;
+    _answerStreak = 0;
+    _bestStreak = 0;
     notifyListeners();
   }
 }

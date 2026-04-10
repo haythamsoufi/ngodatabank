@@ -17,6 +17,7 @@ import 'offline_cache_service.dart';
 import 'offline_queue_service.dart';
 import 'ai_chat_service.dart';
 import 'ai_chat_persistence_service.dart';
+import 'push_notification_service.dart';
 
 /// Session state enum
 enum SessionState {
@@ -387,6 +388,12 @@ class AuthService {
 
   // Logout
   Future<void> logout() async {
+    // Unregister device BEFORE the logout API call because logout blacklists
+    // the JWT — any authenticated request after that would get 401.
+    try {
+      await PushNotificationService().unregisterDevice();
+    } catch (_) {}
+
     try {
       ErrorHandler.addBreadcrumb(
         message: 'User logging out',
@@ -401,8 +408,28 @@ class AuthService {
       await _jwtService.clearTokens();
       await AiChatService().clearToken();
       await _session.clearSession();
+
+      // Preserve the device install ID so the same physical device reuses the
+      // same token on next login (prevents duplicate device rows).
+      // Wrapped in try-catch so a Keychain/platform error doesn't abort the
+      // rest of the logout cleanup (setting _currentUser = null, stopping
+      // timers, etc.).
+      String? deviceInstallId;
+      try {
+        deviceInstallId =
+            await _storage.getSecure(AppConfig.persistentDeviceInstallIdKey);
+      } catch (_) {}
+
       await _storage.clearSecure();
       await _storage.clear();
+
+      // Restore the device install ID after wiping secure storage.
+      try {
+        if (deviceInstallId != null && deviceInstallId.isNotEmpty) {
+          await _storage.setSecure(
+              AppConfig.persistentDeviceInstallIdKey, deviceInstallId);
+        }
+      } catch (_) {}
       await OfflineCacheService().clearAll();
       await OfflineQueueService().clearAll();
       await AiChatPersistenceService().clearAllConversations();
