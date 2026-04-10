@@ -102,6 +102,10 @@
         border-bottom-color: rgb(30 41 59);
         margin-bottom: -1px;
     }
+    /* Surface filter chips: sharp corners in every state (default, active, focus, disabled). */
+    #epSurfaceBtns .ep-surface-btn {
+        border-radius: 0;
+    }
     /* Override per-chip Tailwind colours when disabled (otherwise e.g. border-yellow-300 stays visible). */
     #epSurfaceBtns .ep-surface-btn:disabled {
         opacity: 1;
@@ -311,7 +315,7 @@
             <div class="flex flex-wrap items-start justify-between gap-x-3 gap-y-2 min-w-0 w-full">
                 <div class="flex flex-wrap gap-1 min-w-0 flex-1 basis-0" id="epSurfaceBtns">
                     <span class="ep-filter-wrap">
-                        <button type="button" data-surface="all" class="ep-surface-btn ep-active px-3 py-1.5 text-xs font-semibold rounded-lg border">
+                        <button type="button" data-surface="all" class="ep-surface-btn ep-active px-3 py-1.5 text-xs font-semibold rounded-none border">
                             {{ _('All') }} <span class="ml-1 opacity-60">{{ surface_summary.all.total }}</span>
                         </button>
                         <span class="ep-filter-tip" role="tooltip">
@@ -322,7 +326,7 @@
                         </span>
                     </span>
                     <span class="ep-filter-wrap">
-                        <button type="button" data-surface="v1" class="ep-surface-btn px-3 py-1.5 text-xs font-semibold rounded-lg border"{% if ep_surface_filter_disabled['v1'] %} disabled{% endif %}>
+                        <button type="button" data-surface="v1" class="ep-surface-btn px-3 py-1.5 text-xs font-semibold rounded-none border"{% if ep_surface_filter_disabled['v1'] %} disabled{% endif %}>
                             <i class="fas fa-database mr-1"></i>{{ _('External /v1') }}
                             <span class="ml-1 opacity-60">{{ surface_summary.v1.total }}</span>
                         </button>
@@ -333,7 +337,7 @@
                         </span>
                     </span>
                     <span class="ep-filter-wrap">
-                        <button type="button" data-surface="mobile" class="ep-surface-btn px-3 py-1.5 text-xs font-semibold rounded-lg border"{% if ep_surface_filter_disabled['mobile'] %} disabled{% endif %}>
+                        <button type="button" data-surface="mobile" class="ep-surface-btn px-3 py-1.5 text-xs font-semibold rounded-none border"{% if ep_surface_filter_disabled['mobile'] %} disabled{% endif %}>
                             <i class="fas fa-mobile-alt mr-1"></i>{{ _('Mobile') }}
                             <span class="ml-1 opacity-60">{{ surface_summary.mobile.total }}</span>
                         </button>
@@ -344,7 +348,7 @@
                         </span>
                     </span>
                     <span class="ep-filter-wrap">
-                        <button type="button" data-surface="ai" class="ep-surface-btn px-3 py-1.5 text-xs font-semibold rounded-lg border"{% if ep_surface_filter_disabled['ai'] %} disabled{% endif %}>
+                        <button type="button" data-surface="ai" class="ep-surface-btn px-3 py-1.5 text-xs font-semibold rounded-none border"{% if ep_surface_filter_disabled['ai'] %} disabled{% endif %}>
                             <i class="fas fa-robot mr-1"></i>{{ _('AI /v2') }}
                             <span class="ml-1 opacity-60">{{ surface_summary.ai.total }}</span>
                         </button>
@@ -355,7 +359,7 @@
                         </span>
                     </span>
                     <span class="ep-filter-wrap">
-                        <button type="button" data-surface="flagged" class="ep-surface-btn px-3 py-1.5 text-xs font-semibold rounded-lg border text-red-600 border-red-200"{% if ep_surface_filter_disabled['flagged'] %} disabled{% endif %}>
+                        <button type="button" data-surface="flagged" class="ep-surface-btn px-3 py-1.5 text-xs font-semibold rounded-none border text-red-600 border-red-200"{% if ep_surface_filter_disabled['flagged'] %} disabled{% endif %}>
                             <i class="fas fa-exclamation-triangle mr-1"></i>{{ _('Issues') }}
                             <span class="ml-1 opacity-60">{{ surface_summary.all.flagged }}</span>
                         </button>
@@ -366,7 +370,7 @@
                         </span>
                     </span>
                     <span class="ep-filter-wrap">
-                        <button type="button" data-surface="overlap" class="ep-surface-btn px-3 py-1.5 text-xs font-semibold rounded-lg border text-indigo-600 border-indigo-200"{% if ep_surface_filter_disabled['overlap'] %} disabled{% endif %}>
+                        <button type="button" data-surface="overlap" class="ep-surface-btn px-3 py-1.5 text-xs font-semibold rounded-none border text-indigo-600 border-indigo-200"{% if ep_surface_filter_disabled['overlap'] %} disabled{% endif %}>
                             <i class="fas fa-copy mr-1"></i>{{ _('Overlaps') }}
                             <span class="ml-1 opacity-60">{{ surface_summary.all.overlapping }}</span>
                         </button>
@@ -377,7 +381,7 @@
                         </span>
                     </span>
                     <span class="ep-filter-wrap">
-                        <button type="button" data-surface="has_stats" class="ep-surface-btn px-3 py-1.5 text-xs font-semibold rounded-lg border text-green-700 border-green-200"{% if ep_surface_filter_disabled['has_stats'] %} disabled{% endif %}>
+                        <button type="button" data-surface="has_stats" class="ep-surface-btn px-3 py-1.5 text-xs font-semibold rounded-none border text-green-700 border-green-200"{% if ep_surface_filter_disabled['has_stats'] %} disabled{% endif %}>
                             <i class="fas fa-chart-line mr-1"></i>{{ _('Has usage') }}
                             <span class="ml-1 opacity-60">{{ surface_summary.all.with_stats }}</span>
                         </button>
@@ -388,7 +392,7 @@
                         </span>
                     </span>
                     <span class="ep-filter-wrap">
-                        <button type="button" data-surface="undocumented" class="ep-surface-btn px-3 py-1.5 text-xs font-semibold rounded-lg border text-yellow-800 border-yellow-300"{% if ep_surface_filter_disabled['undocumented'] %} disabled{% endif %}>
+                        <button type="button" data-surface="undocumented" class="ep-surface-btn px-3 py-1.5 text-xs font-semibold rounded-none border text-yellow-800 border-yellow-300"{% if ep_surface_filter_disabled['undocumented'] %} disabled{% endif %}>
                             <i class="fas fa-eye-slash mr-1"></i>{{ _('Undocumented') }}
                             <span class="ml-1 opacity-60">{{ surface_summary.all.undocumented }}</span>
                         </button>
@@ -399,7 +403,7 @@
                         </span>
                     </span>
                     <span class="ep-filter-wrap">
-                        <button type="button" data-surface="stale" class="ep-surface-btn px-3 py-1.5 text-xs font-semibold rounded-lg border text-gray-700 border-gray-300"{% if ep_surface_filter_disabled['stale'] %} disabled{% endif %}>
+                        <button type="button" data-surface="stale" class="ep-surface-btn px-3 py-1.5 text-xs font-semibold rounded-none border text-gray-700 border-gray-300"{% if ep_surface_filter_disabled['stale'] %} disabled{% endif %}>
                             <i class="fas fa-ghost mr-1"></i>{{ _('Stale') }}
                             <span class="ml-1 opacity-60">{{ surface_summary.all.stale }}</span>
                         </button>
@@ -411,7 +415,7 @@
                     </span>
                     {% if surface_summary.all.undocumented or surface_summary.all.stale %}
                     <span class="ep-filter-wrap">
-                        <button type="button" data-surface="gaps" class="ep-surface-btn px-3 py-1.5 text-xs font-semibold rounded-lg border text-yellow-700 border-yellow-300"{% if ep_surface_filter_disabled['gaps'] %} disabled{% endif %}>
+                        <button type="button" data-surface="gaps" class="ep-surface-btn px-3 py-1.5 text-xs font-semibold rounded-none border text-yellow-700 border-yellow-300"{% if ep_surface_filter_disabled['gaps'] %} disabled{% endif %}>
                             <i class="fas fa-exclamation-circle mr-1"></i>{{ _('Gaps') }}
                             <span class="ml-1 opacity-60">{{ surface_summary.all.undocumented + surface_summary.all.stale }}</span>
                         </button>
