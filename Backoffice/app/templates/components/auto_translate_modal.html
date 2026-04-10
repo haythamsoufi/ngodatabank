@@ -36,11 +36,104 @@ Usage:
         min-width: 2.75rem;
         min-height: 2.75rem;
     }
+    /* Drag: grab cursor on header; buttons inside keep pointer */
+    #auto-translate-modal-header {
+        cursor: grab;
+        user-select: none;
+    }
+    #auto-translate-modal-header button {
+        cursor: pointer !important;
+    }
+    /* Mini-banner — positioned via CSS so no Tailwind recompile needed */
+    #auto-translate-mini-banner {
+        position: fixed;
+        bottom: 1.25rem;
+        left: 1.25rem;
+        z-index: 9999;
+        width: 300px;
+    }
+    #auto-translate-mini-banner .mini-inner {
+        background: #fff;
+        border-radius: 0.5rem;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.18);
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+    }
+    #auto-translate-mini-banner .mini-header {
+        background: #4f46e5;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+        gap: 0.5rem;
+    }
+    #auto-translate-mini-banner .mini-header-left {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-width: 0;
+    }
+    #auto-translate-mini-banner .mini-header-right {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-shrink: 0;
+    }
+    #auto-translate-mini-banner .mini-title {
+        color: #fff;
+        font-size: 0.875rem;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    #mini-banner-percent {
+        color: #c7d2fe;
+        font-size: 0.75rem;
+        font-family: monospace;
+    }
+    #auto-translate-mini-banner .mini-track {
+        background: #e0e7ff;
+        height: 3px;
+    }
+    #mini-banner-progress-bar {
+        background: #6366f1;
+        height: 3px;
+        transition: width 0.3s ease;
+        width: 0%;
+    }
+    #auto-translate-mini-banner .mini-footer {
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.4rem 1rem;
+    }
+    #mini-banner-status {
+        font-size: 0.75rem;
+        color: #4b5563;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    #mini-banner-counts {
+        font-size: 0.75rem;
+        color: #9ca3af;
+        font-family: monospace;
+        flex-shrink: 0;
+        margin-left: 0.5rem;
+    }
+    #restore-auto-translate-modal-btn {
+        color: #c7d2fe !important;
+    }
+    #restore-auto-translate-modal-btn:hover {
+        color: #fff !important;
+    }
 </style>
 <div id="auto-translate-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col transform transition-all">
-        <!-- Header -->
-        <div class="p-6 border-b flex justify-between items-center">
+    <div id="auto-translate-modal-panel" class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col transform transition-all">
+        <!-- Header — draggable; grab handle communicated via cursor -->
+        <div id="auto-translate-modal-header" class="p-6 border-b flex justify-between items-center" title="{{ _('Drag to move') }}">
             <div>
                 <h3 class="text-2xl font-semibold text-gray-800">
                     {% if auto_translate_config and auto_translate_config.title %}
@@ -57,7 +150,13 @@ Usage:
                     {% endif %}
                 </p>
             </div>
-            <button type="button" id="close-auto-translate-modal-btn" class="btn-close-icon" aria-label="{{ _('Close') }}">&times;</button>
+            <div class="flex items-center gap-0.5 flex-shrink-0">
+                <button type="button" id="minimize-auto-translate-modal-btn" class="btn-close-icon"
+                        aria-label="{{ _('Minimize') }}" title="{{ _('Minimize — translation keeps running in background') }}">
+                    <i class="fas fa-minus" style="font-size: 0.75rem;"></i>
+                </button>
+                <button type="button" id="close-auto-translate-modal-btn" class="btn-close-icon" aria-label="{{ _('Close') }}">&times;</button>
+            </div>
         </div>
 
         <!-- Confirmation Section -->
@@ -221,6 +320,36 @@ Usage:
                     {{ _('Close') }}
                 </button>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Auto-Translate Mini Banner (shown when modal is minimised) -->
+<div id="auto-translate-mini-banner" style="display: none;">
+    <div class="mini-inner">
+        <!-- Coloured title bar -->
+        <div class="mini-header">
+            <div class="mini-header-left">
+                <i class="fas fa-language" style="color:#fff; font-size:0.875rem; flex-shrink:0;"></i>
+                <span class="mini-title">{{ _('Auto-Translate') }}</span>
+            </div>
+            <div class="mini-header-right">
+                <span id="mini-banner-percent">0%</span>
+                <button type="button" id="restore-auto-translate-modal-btn"
+                        class="btn-close-icon"
+                        aria-label="{{ _('Restore') }}" title="{{ _('Restore') }}">
+                    <i class="fas fa-expand-alt" style="font-size: 0.65rem;"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Thin progress bar -->
+        <div class="mini-track">
+            <div id="mini-banner-progress-bar"></div>
+        </div>
+        <!-- Status row -->
+        <div class="mini-footer">
+            <span id="mini-banner-status">{{ _('Running in background\u2026') }}</span>
+            <span id="mini-banner-counts">0/0</span>
         </div>
     </div>
 </div>

@@ -2035,3 +2035,2247 @@ msgstr "A következő"
 
 msgid "Based on:"
 msgstr "Az alapon:"
+
+msgid "Basic Education"
+msgstr "Alapfokú oktatás"
+
+msgid "Basic Information"
+msgstr "Alapvető információk"
+
+msgid "Batch size"
+msgstr "Tételméret"
+
+msgid "Before"
+msgstr "Előtte"
+
+msgid "Beneficiaries"
+msgstr "Kedvezményezettek"
+
+msgid "Beta"
+msgstr "Béta"
+
+msgid "Blocked by WAF for translation"
+msgstr "A WAF letiltotta fordítás miatt"
+
+msgid "Boolean"
+msgstr "Boolean"
+
+msgid "Branch"
+msgstr "Ág"
+
+msgid "Branches"
+msgstr "Fiókok"
+
+msgid "Branding"
+msgstr "Márkaépítés"
+
+msgid "Break after"
+msgstr "Szünet után"
+
+msgid "Briefly describe your role and why you need access"
+msgstr "Röviden írd le a szerepedet és azt, miért van szükséged hozzáférésre"
+
+msgid "Build & Apply"
+msgstr "Build & Apply"
+
+msgid "Bulk Selection"
+msgstr "Tömeges Válogatás"
+
+msgid "Bulk User Selection"
+msgstr "Tömeges felhasználói választás"
+
+msgid "By Age:"
+msgstr "Életkor szerint:"
+
+msgid "By Country"
+msgstr "Országonként"
+
+msgid "By Indicator"
+msgstr "Mutató szerint"
+
+msgid "By Sex and Age:"
+msgstr "Nemi és életkor szerint:"
+
+msgid "By Sex:"
+msgstr "Nemi szempontból:"
+
+msgid "By conversation"
+msgstr "Beszélgetés útján"
+
+msgid "By message"
+msgstr "Üzenet szerint"
+
+msgid "CC"
+msgstr "CC"
+
+msgid "CPU Usage"
+msgstr "CPU használat"
+
+msgid "Calculating..."
+msgstr "Számítás..."
+
+msgid "Campaign Details"
+msgstr "Kampány részletei"
+
+msgid "Campaign Name"
+msgstr "Kampány neve"
+
+msgid "Campaign Recipients"
+msgstr "Kampánydíjasok"
+
+msgid "Campaign Type"
+msgstr "Kampánytípus"
+
+msgid "Campaigns"
+msgstr "Hadjáratok"
+
+msgid "Can't find an indicator? Propose a new one here"
+msgstr "Nem találsz jelzőt? Javasolj itt egy újat"
+
+msgid "Cancel"
+msgstr "Törlés"
+
+msgid "Cancel deletion"
+msgstr "Törlés törlése"
+
+msgid "Cancel edit"
+msgstr "Vágás törlése"
+
+msgid "Cancel failed (connection issue)."
+msgstr "Törlés sikertelen (kapcsolati probléma)."
+
+msgid "Cancel import"
+msgstr "Importolás törlése"
+
+msgid "Cancelled"
+msgstr "Törölve"
+
+msgid "Cancelling..."
+msgstr "Törlés..."
+
+msgid "Cancelling…"
+msgstr "Törlés..."
+
+msgid ""
+"Cannot cancel deletion. This field allows a maximum of %(max)s document(s). "
+"Remove the newly added document first."
+msgstr ""
+"Nem lehet törölni a törlést. Ez a mező lehetővé teszi a maximális %(max)s "
+"dokumentum(ok) számát. Először távolítsd el az újonnan hozzáadott "
+"dokumentumot."
+
+msgid "Cannot resume: translation parameters not found."
+msgstr "Nem lehet folytatni: fordítási paraméterek nem találva."
+
+msgid "Category"
+msgstr "Kategória"
+
+msgid "Category Name"
+msgstr "Kategória neve"
+
+msgid "Centers"
+msgstr "Központok"
+
+msgid "Change History"
+msgstr "Változás története"
+
+msgid "Change Type"
+msgstr "Típus módosítása"
+
+msgid "Change due date"
+msgstr "A határidő módosítása"
+
+msgid "Change due date of selected"
+msgstr "A kiválasztott kiesési határidő módosítása"
+
+msgid "Change status"
+msgstr "Változási státusz"
+
+msgid "Change status of selected"
+msgstr "A kiválasztott státusz módosítása"
+
+msgid "Change the approval status of this document"
+msgstr "A dokumentum jóváhagyási státuszának módosítása"
+
+msgid ""
+"Change the interface language here. Arabic uses RTL and the Tajawal font."
+msgstr ""
+"Változtasd meg az interfész nyelvét itt. Az arab nyelv RTL-t és a Tajawal "
+"betűtípust használja."
+
+msgid "Changed By"
+msgstr "Megváltoztatva"
+
+msgid "Changes"
+msgstr "Változások"
+
+msgid ""
+"Changes made here will immediately affect the live template. Consider "
+"creating a draft version instead for safer editing."
+msgstr ""
+"Az itt végrehajtott változtatások azonnal hatással lesznek az élő sablonra. "
+"Fontold meg inkább egy vázlatverzió létrehozását biztonságosabb szerkesztés "
+"érdekében."
+
+msgid "Chat is disabled for your account."
+msgstr "A fiókodban a chat le van tiltva."
+
+msgid "Chat is not available."
+msgstr "A chat nem elérhető."
+
+msgid "Chat is only available to organization users."
+msgstr "A chat csak szervezeti felhasználók számára érhető el."
+
+msgid ""
+"Chat with the AI assistant for help about the platform and admin functions."
+msgstr ""
+"Beszélj az AI asszisztenssel, hogy segítséget kapjon a platformról és az "
+"adminisztrátor funkciókról."
+
+msgid ""
+"Chat with the AI assistant for help with reporting and using the platform."
+msgstr ""
+"Beszélj az AI asszisztenssel, ha segítséget kapsz a jelentéshez és a "
+"platform használatához."
+
+msgid "Chatbot"
+msgstr "Chatbot"
+
+msgid "Chatbot Name"
+msgstr "Chatbot név"
+
+msgid "Check for updates"
+msgstr "Ellenőrizd a frissítéseket"
+
+msgid "Check notifications and manage your admin profile"
+msgstr "Ellenőrizd az értesítéseket és kezeld az adminisztrációs profilodat"
+
+msgid "Check notifications for new assignments and updates"
+msgstr "Ellenőrizd az értesítéseket az új feladatokról és frissítésekről"
+
+msgid "Check this box to make the document publicly accessible"
+msgstr ""
+"Jelöld meg ezt a dobozt, hogy a dokumentum nyilvánosan elérhetővé váljon"
+
+msgid "Checking data…"
+msgstr "Adatokat ellenőrizünk..."
+
+msgid "Checking…"
+msgstr "Ellenőrizem..."
+
+msgid "Choose an option:"
+msgstr "Válassz egy lehetőséget:"
+
+msgid "Choose email and push delivery per notification type."
+msgstr "Válaszd ki az e-mailt és a push delivery értesítési típus szerint."
+
+msgid "Choose the type of item you want to add"
+msgstr "Válaszd ki, milyen típusú tárgyat szeretnél hozzáadni"
+
+msgid ""
+"Choose which entity selectors appear across admin tools like User Management"
+" and Assignment Management. Disable a type to hide the related tabs, forms, "
+"and drag-and-drop panels shown in those pages."
+msgstr ""
+"Válaszd ki, mely entitásválasztók jelennek meg az adminisztratív "
+"eszközökben, mint a Felhasználói Menedzsment és a Assignment Management. "
+"Tiltsd le a típust, hogy elrejtsd a kapcsolódó füleket, űrlapokat és a drag-"
+"and-drop paneleket az adott oldalakon."
+
+msgid "Chunks"
+msgstr "Chunks"
+
+msgid "City"
+msgstr "Város"
+
+msgid "Cleaned up %(count)d expired sessions."
+msgstr "Lejárt üléseket takarítottam le az IFRCPLACE-en. %(count)d"
+
+msgid "Clear"
+msgstr "Tiszta"
+
+msgid "Clear All"
+msgstr "Tisztázd az összes"
+
+msgid "Clear Conversation?"
+msgstr "Tiszta beszélgetés?"
+
+msgid "Clear Filter"
+msgstr "Clear Filter"
+
+msgid "Clear Logs?"
+msgstr "Tisztítani a naplókat?"
+
+msgid "Clear Parameters"
+msgstr "Tiszta paraméterek"
+
+msgid "Clear Translations"
+msgstr "Tiszta fordítások"
+
+msgid "Clear Translations?"
+msgstr "Tiszta fordítások?"
+
+msgid "Clear all"
+msgstr "Töröld az összes"
+
+msgid "Clear all conversations"
+msgstr "Tisztítsd meg az összes beszélgetést"
+
+msgid "Clear all conversations?"
+msgstr "Minden beszélgetést tiszta?"
+
+msgid "Clear all database-saved AI settings and revert to defaults"
+msgstr ""
+"Töröld az összes adatbázisba mentett AI beállítást, és térj vissza az "
+"alapértelmezettekre"
+
+msgid "Clear all filters"
+msgstr "Töröld ki az összes szűrőt"
+
+msgid "Clear all translation fields except English"
+msgstr "Töröld ki az összes fordítási mezőt, kivéve az angolt"
+
+msgid "Clear probe"
+msgstr "Tiszta szonda"
+
+msgid "Clear search"
+msgstr "Tiszta keresés"
+
+msgid "Clear selection"
+msgstr "Tiszta kiválasztás"
+
+msgid "Cleared"
+msgstr "Tisztázva"
+
+msgid "Cleared 1 translation field."
+msgstr "1 fordítási mezőt töröltem."
+
+msgid "Click"
+msgstr "Kattints"
+
+msgid "Click \"Add Entry\" to repeat this group of fields multiple times"
+msgstr ""
+"Kattints a \"Add Entry\" gombra, hogy többször ismételd meg ezt a "
+"mezőcsoportot"
+
+msgid "Click \"Add Section\" to get started."
+msgstr "Kattints a \"Add Section Addition\" gombra, hogy elkezdhesd."
+
+msgid "Click 'Start Translation' to begin translating blank"
+msgstr "Kattints a 'Fordítás kezdés' gombra, hogy elkezdd az üres fordítást"
+
+msgid ""
+"Click 'Start Translation' to begin translating blank organization entities."
+msgstr ""
+"Kattintson a 'Fordítás indítása' gombra, hogy elkezdje az üres szervezeti "
+"entitások fordítását."
+
+msgid "Click Copy to copy the URL to clipboard, or Open to test the endpoint"
+msgstr ""
+"Kattints a Másolásra, hogy az URL-t a clipboardra másolj, vagy Nyitva a "
+"végpont teszteléséhez"
+
+msgid "Click Search or Refresh to load documents from the IFRC API."
+msgstr ""
+"Kattintson a Keresésre vagy Frissítésre, hogy betöltse a dokumentumokat az "
+"IFRC API-ból."
+
+msgid "Click a provider to edit its settings. Drag to reorder fallback order."
+msgstr ""
+"Kattints egy szolgáltatóra, hogy módosítsd a beállításait. Húzd el a "
+"visszahúzás sorrendjét."
+
+msgid ""
+"Click here to create a new report using available templates for your "
+"country."
+msgstr ""
+"Kattintson ide, hogy új jelentést készíts az országodhoz tartozó elérhető "
+"sablonokkal."
+
+msgid ""
+"Click here to expand or collapse the admin sidebar. The sidebar contains all"
+" admin tools and sections."
+msgstr ""
+"Kattintson ide, hogy bővítse vagy összezárja az adminisztrátor oldalsávját. "
+"Az oldalsáv tartalmazza az összes adminisztratív eszközt és szekciót."
+
+msgid ""
+"Click here to expand or collapse the sidebar. The sidebar contains your "
+"dashboard and reporting tools."
+msgstr ""
+"Kattintson ide, hogy bővítse vagy összehúzza az oldalsávot. Az oldalsáv "
+"tartalmazza a műszerfalat és a jelentési eszközöket."
+
+msgid "Click or drag Excel file here"
+msgstr "Kattints vagy húzd el az Excel fájlt ide"
+
+msgid "Click or drag Excel file here to import"
+msgstr "Kattints vagy húzd ide az Excel fájlt az importáláshoz"
+
+msgid "Click or drag Kobo XLSForm file here"
+msgstr "Kattints vagy húzd el a Kobo XLSForm fájlt ide"
+
+msgid "Click or drag PO file here"
+msgstr "Kattints vagy húzd el a PO fájlt ide"
+
+msgid "Click or drag ZIP file here"
+msgstr "Kattints vagy húzd el a ZIP fájlt ide"
+
+msgid "Click or drag document here to upload"
+msgstr "Kattints vagy húzd ide a dokumentumot a feltöltéshez"
+
+msgid "Click to change category"
+msgstr "Kattintson a kategóriáváltáshoz"
+
+msgid "Click to make not public"
+msgstr "Kattints a nem nyilvános szereplésért"
+
+msgid "Click to make public"
+msgstr "Kattintson a nyilvánosságra hozatalhoz"
+
+msgid "Client Name"
+msgstr "Ügyfél neve"
+
+msgid "Clinics"
+msgstr "Klinikák"
+
+msgid "Clone"
+msgstr "Klón"
+
+msgid "Close"
+msgstr "Zárt"
+
+msgid "Close Modal?"
+msgstr "Modal zárás?"
+
+msgid "Close chat"
+msgstr "Közeli beszélgetés"
+
+msgid "Close menu"
+msgstr "Zárja be az étlapot"
+
+msgid "Close modal"
+msgstr "Zárt modal"
+
+msgid "Close this assignment? It can be reopened later by an admin."
+msgstr "Lezárjuk ezt a feladatot? Később egy admin újra megnyithatja."
+
+msgid "Closed"
+msgstr "Zárva"
+
+msgid "Cluster"
+msgstr "Klaszter"
+
+msgid "Cluster Office Name"
+msgstr "Klaszter iroda neve"
+
+msgid "Cluster Offices"
+msgstr "Klaszterirodák"
+
+msgid "Clusters"
+msgstr "Klaszterek"
+
+msgid "Code"
+msgstr "Kód"
+
+msgid "Collapse all"
+msgstr "Összeomlás minden"
+
+msgid "Collapse all observations"
+msgstr "Összezárt minden megfigyelés"
+
+msgid "Collapse all pages"
+msgstr "Összezárja az összes oldalt"
+
+msgid "Collapse all sections"
+msgstr "Összeomlás minden szakaszt"
+
+msgid "Collapse navigation panel"
+msgstr "Összeomlási navigációs panel"
+
+msgid "Collapse section"
+msgstr "Összeomlás szakasz"
+
+msgid "Collapse subsection"
+msgstr "Összeomlás alszakasz"
+
+msgid "Collapse/Expand"
+msgstr "Összeomlás/Bővítés"
+
+msgid "Collapse/expand all pages"
+msgstr "Összecsukás/bővítés minden oldalt"
+
+msgid "Collapse/expand all sections and sub-sections"
+msgstr "Összezárás/bővítés minden szakaszt és alszakaszt"
+
+msgid "Color"
+msgstr "Szín"
+
+msgid "Colour"
+msgstr "Szín"
+
+msgid "Column Visibility"
+msgstr "Oszlop láthatósága"
+
+msgid "Columns"
+msgstr "Oszlopok"
+
+msgid "Combined Sex & Age Distribution"
+msgstr "Kombinált nemi és korbeli megoszlás"
+
+msgid "Coming soon"
+msgstr "Hamarosan"
+
+msgid "Comma-separated tags"
+msgstr "Vesszővel elválasztott címkék"
+
+msgid "Comments"
+msgstr "Hozzászólások"
+
+msgid "Common"
+msgstr "Gyakori"
+
+msgid "Common Words"
+msgstr "Gyakori szavak"
+
+msgid "Communities"
+msgstr "Közösségek"
+
+msgid "Compare"
+msgstr "Összehasonlítás"
+
+msgid "Compare Traces"
+msgstr "Összehasonlítsa a nyomokat"
+
+msgid "Compile Translations"
+msgstr "Fordítások fordítása"
+
+msgid "Compile Translations?"
+msgstr "Fordításokat kell fordítani?"
+
+msgid "Compile translations and restart the application"
+msgstr "Fordítások fordítása és az alkalmazás újraindítása"
+
+msgid ""
+"Compiling translations will restart the application. This may cause a brief "
+"interruption in service. Do you want to continue?"
+msgstr ""
+"Fordítások fordítása újraindítja az alkalmazást. Ez rövid távú szolgáltatási"
+" megszakítást okozhat. Folytatni akarod?"
+
+msgid "Compiling..."
+msgstr "Összeállítás..."
+
+msgid "Completed"
+msgstr "Befejezve"
+
+msgid "Completed:"
+msgstr "Befejezve:"
+
+msgid "Compliance"
+msgstr "Megfelelés"
+
+msgid "Compliance Status"
+msgstr "Megfelelőségi státusz"
+
+msgid ""
+"Compliance requires at least one Annual Report AND one Audited Financial "
+"Statement in the past 3 years."
+msgstr ""
+"A megfelelőséghez legalább egy éves jelentés ÉS egy auditált pénzügyi "
+"kimutatás szükséges az elmúlt 3 évben."
+
+msgid "Compliant"
+msgstr "Megfelelőség"
+
+msgid "Compliant Countries"
+msgstr "Kompatibilis országok"
+
+msgid "Components"
+msgstr "Összetevők"
+
+msgid ""
+"Compression is handled automatically by the server. No client configuration "
+"needed."
+msgstr ""
+"A tömörítést a szerver automatikusan kezeli. Nem szükséges kliens "
+"konfiguráció."
+
+msgid "Compression level: 6 (balanced)"
+msgstr "Tömörítési szint: 6 (kiegyensúlyozott)"
+
+msgid "Concept Gate Stats"
+msgstr "Concept Gate statisztikák"
+
+msgid "Condition"
+msgstr "Állapot"
+
+msgid "Confidence"
+msgstr "Bizalom"
+
+msgid "Confidence:"
+msgstr "Magabiztosság:"
+
+msgid "Configuration Keys:"
+msgstr "Konfigurációs kulcsok:"
+
+msgid "Configure AI validation sources"
+msgstr "Konfiguráld az AI validációs forrásokat"
+
+msgid "Configure data sources"
+msgstr "Adatforrások konfigurálása"
+
+msgid ""
+"Configure notification preferences for this user. These settings control how"
+" and when the user receives notifications."
+msgstr ""
+"Állítsd be az értesítési beállításokat ehhez a felhasználóhoz. Ezek a "
+"beállítások szabályozzák, hogy a felhasználó hogyan és mikor kap "
+"értesítéseket."
+
+msgid ""
+"Configure system-wide settings for your organization. Manage supported "
+"languages for internationalization, define document types for uploads, set "
+"age groups for demographic disaggregation, configure sex categories for data"
+" analysis, and customize organization branding. Changes here affect the "
+"entire system and all forms."
+msgstr ""
+"Állítsd be a szervezeted rendszerszintű beállításait. Kezelni a támogatott "
+"nyelveket a nemzetköziesítéshez, dokumentumtípusok meghatározása a "
+"feltöltésekhez, korcsoportok beállítása demográfiai szétválasztáshoz, nemi "
+"kategóriák konfigurálása adatelemzéshez, valamint szervezeti márkaépítés "
+"testreszabása. A változások itt az egész rendszert és minden formát "
+"érintenek."
+
+msgid ""
+"Configure which notification types to receive via email and push "
+"notifications"
+msgstr ""
+"Állítsd be, mely értesítéstípusokat kell e-mailben és push-értesítésekben "
+"kapni"
+
+msgid "Confirm"
+msgstr "Megerősítse"
+
+msgid "Confirm Deletion"
+msgstr "Törlés megerősítése"
+
+msgid "Confirm New Password"
+msgstr "Erősítse meg az új jelszót"
+
+msgid "Confirm Password"
+msgstr "Jelszó megerősítése"
+
+msgid "Confirm Plugin Uninstallation"
+msgstr "Erősítsd meg a plugin eltávolítását"
+
+msgid "Confirm action"
+msgstr "Erősítse meg az akciót"
+
+msgid "Connection lost. Please keep this window open and try again."
+msgstr ""
+"Kapcsolat elveszett. Kérlek, tartsd nyitva ezt az ablakot, és próbáld újra."
+
+msgid "Consider backing up your data before proceeding."
+msgstr "Gondold meg, hogy menteld le az adataidat, mielőtt továbblépnél."
+
+msgid "Contact Email"
+msgstr "Kapcsolatfelvételi e-mail"
+
+msgid "Contact Name"
+msgstr "Kapcsolati név"
+
+msgid "Contains"
+msgstr "Tartalmazza"
+
+msgid "Contains a lowercase letter"
+msgstr "Kisbetűt tartalmaz"
+
+msgid "Contains a number"
+msgstr "Tartalmaz egy számot"
+
+msgid "Contains a special character (e.g. !@#$)"
+msgstr "Tartalmaz egy speciális karaktert (pl. !@#$)"
+
+msgid "Contains an uppercase letter"
+msgstr "Tartalmaz egy nagybetűt"
+
+msgid "Contains format placeholders - preserve them in translations"
+msgstr "Formátumi helykitöltőket tartalmaz – megőrizd őket fordításokban"
+
+msgid "Content"
+msgstr "Tartalom"
+
+msgid "Context Data"
+msgstr "Kontextus adatok"
+
+msgid "Continue"
+msgstr "Folytatás"
+
+msgid "Controls"
+msgstr "Irányítás"
+
+msgid "Conversation"
+msgstr "Beszélgetés"
+
+msgid "Conversation traces"
+msgstr "Beszélgetés nyomai"
+
+msgid "Conversations"
+msgstr "Beszélgetések"
+
+msgid "Copied!"
+msgstr "Másolva!"
+
+msgid "Copy"
+msgstr "Értettem"
+
+msgid "Copy Summarised"
+msgstr "Összefoglalva másolat"
+
+msgid "Copy URL"
+msgstr "URL-másolat"
+
+msgid "Copy all steps with details"
+msgstr "Másold le az összes lépést részletekkel"
+
+msgid "Copy all steps with observations limited to 30 lines each"
+msgstr "Másolj le minden lépést, megfigyeléseket 30 sorra korlátozva"
+
+msgid "Copy failed"
+msgstr "A másolás sikertelen"
+
+msgid "Copy for AI Review"
+msgstr "Másolat AI Review-hoz"
+
+msgid "Copy full"
+msgstr "Teljes másolat"
+
+msgid "Copy full thread (queries, answers, reasoning steps)"
+msgstr "Másold le a teljes szálat (lekérdezések, válaszok, érvelési lépések)"
+
+msgid "Copy full trace with metadata for AI review"
+msgstr ""
+"Másold le a teljes nyomkövetést metaadatokkal az AI felülvizsgálatához"
+
+msgid "Copy summary"
+msgstr "Másolat összefoglaló"
+
+msgid "Copy summary (queries + answers + meta only)"
+msgstr "Másolás összefoglaló (lekérdezések + válaszok + csak meta)"
+
+msgid "Copyright Year"
+msgstr "Szerzői Év"
+
+msgid "Correct"
+msgstr "Helyes"
+
+msgid "Correct answer for regression testing..."
+msgstr "Helyes válasz a regressziós teszthez..."
+
+msgid "Cost"
+msgstr "Költség"
+
+msgid "Cost (30d)"
+msgstr "Költség (30d)"
+
+msgid "Cost Limit"
+msgstr "Költségkorlát"
+
+msgid "Cost:"
+msgstr "Költség:"
+
+msgid "Could not complete Azure sign-in."
+msgstr "Nem sikerült befejezni az Azure bejelentkezést."
+
+msgid "Could not create account. Please try again."
+msgstr "Nem tudtam fiókot létrehozni. Kérlek, próbáld meg újra."
+
+msgid "Could not create user from Azure login."
+msgstr "Nem sikerült Azure bejelentkezésből felhasználót létrehozni."
+
+msgid "Could not fetch sync status."
+msgstr "Nem tudtam szinkron státuszt hozni."
+
+msgid "Could not load preview"
+msgstr "Nem tudtam betölteni az előnézetet"
+
+msgid "Could not prepare delete request"
+msgstr "Nem tudtam előkészíteni törlési kérelmet"
+
+msgid "Could not submit request. Please try again."
+msgstr "Nem lehetett kérelmet benyújtani. Kérlek, próbáld meg újra."
+
+msgid "Could not update translation files."
+msgstr "Nem tudtam frissíteni a fordító fájlokat."
+
+msgid "Couldn't send feedback."
+msgstr "Nem tudtam visszajelzést küldeni."
+
+msgid "Countries"
+msgstr "Országok"
+
+msgid "Countries & Organization"
+msgstr "Országok és szervezet"
+
+msgid "Countries you need access to"
+msgstr "Országok, amelyekhez hozzáférésre van szükséged"
+
+msgid "Countries – Excel"
+msgstr "Országok – Excel"
+
+msgid "Country"
+msgstr "Country"
+
+msgid "Country / Scope"
+msgstr "Ország / Hatókör"
+
+msgid "Country Access Requests"
+msgstr "Országos hozzáférési kérelmek"
+
+msgid "Country Disaggregation Coverage"
+msgstr "Országos szétválasztási lefedés"
+
+msgid "Country Name"
+msgstr "Országnév"
+
+msgid "Country Names in Other Languages"
+msgstr "Országnevek más nyelveken"
+
+msgid "Country Plan"
+msgstr "Országterv"
+
+msgid "Country Report"
+msgstr "Országjelentés"
+
+msgid "Country access"
+msgstr "Országhoz való hozzáférés"
+
+msgid "Country access request"
+msgstr "Országos hozzáférési kérelem"
+
+msgid "Country selection"
+msgstr "Országválasztás"
+
+msgid "Country you need access to"
+msgstr "Melyik országhoz kell hozzáférned"
+
+msgid "Country you will cover"
+msgstr "Milyen országot fogsz lefedni"
+
+msgid "Country:"
+msgstr "Ország:"
+
+msgid "Country: %(country)s"
+msgstr "Ország: %(country)s"
+
+msgid "Cover images are always public and visible on country pages"
+msgstr "A borítóképek mindig nyilvánosak és láthatóak az országoldalain"
+
+msgid "Create"
+msgstr "Létrehozni"
+
+msgid "Create API Key"
+msgstr "API kulcs létrehozása"
+
+msgid "Create Account"
+msgstr "Fiók létrehozása"
+
+msgid "Create Assignment"
+msgstr "Feladat létrehozása"
+
+msgid "Create Campaign"
+msgstr "Kampány létrehozása"
+
+msgid "Create New API Key"
+msgstr "Új API kulcs létrehozása"
+
+msgid "Create New Assignment"
+msgstr "Új feladat létrehozása"
+
+msgid "Create New Public Form Link"
+msgstr "Új nyilvános űrlap link létrehozása"
+
+msgid "Create New Template"
+msgstr "Új sablon létrehozása"
+
+msgid "Create Notification"
+msgstr "Értesítés létrehozása"
+
+msgid "Create Role"
+msgstr "Szerep létrehozása"
+
+msgid "Create Rule"
+msgstr "Szabály létrehozása"
+
+msgid "Create Sector"
+msgstr "Létrehozó szektor"
+
+msgid "Create Sub-Sector"
+msgstr "Alágazat létrehozása"
+
+msgid "Create a new assignment"
+msgstr "Új feladat létrehozása"
+
+msgid "Create a new role by selecting permissions to include."
+msgstr ""
+"Hozz létre új szerepet azzal, hogy kiválasztod a beilleszthető "
+"jogosultságokat."
+
+msgid "Create a new standard indicator for the"
+msgstr "Hozz létre egy új szabványos mutatót a"
+
+msgid "Create a new template"
+msgstr "Új sablon létrehozása"
+
+msgid ""
+"Create and manage data collection assignments that distribute form templates"
+" to specific periods and organizations. Assignments control when forms are "
+"available, who can access them, and how data is collected. Use this to "
+"organize your reporting cycles, enable public submissions, and track "
+"completion status across different time periods and regions."
+msgstr ""
+"Adatgyűjtési feladatokat hozz létre és kezelj, amelyek űrlapsablonokat "
+"osztanak szét meghatározott időszakokra és szervezetekre. A kiosztások "
+"szabályozzák, mikor állnak rendelkezésre az űrlapok, ki férhet hozzá "
+"hozzájuk, és hogyan gyűjtik az adatokat. Ezt használd a jelentési ciklusok "
+"rendszerezésére, nyilvános beküldések engedélyezésére, valamint a "
+"teljesítési állapot nyomon követésére különböző időszakokban és régiókban."
+
+msgid ""
+"Create and manage form templates that define the structure and fields for "
+"data collection. Templates serve as blueprints for assignments and can "
+"include various field types, validation rules, and conditional logic. Use "
+"templates to standardize data collection across different periods and ensure"
+" consistency in your reporting workflows."
+msgstr ""
+"Hozz létre és kezelje az űrlapsablonokat, amelyek meghatározzák az "
+"adatgyűjtés struktúráját és mezőit. A sablonok a feladatok tervrajzaiként "
+"szolgálnak, és különféle mezőtípusokat, validációs szabályokat és feltételes"
+" logikát tartalmazhatnak. Használjon sablonokat az adatgyűjtés "
+"szabványosítására különböző időszakokban, és biztosítani a jelentési "
+"munkafolyamatok következetességét."
+
+msgid ""
+"Create and manage notification campaigns. Campaigns can be scheduled for "
+"future delivery or saved as drafts for later use."
+msgstr ""
+"Hozz létre és kezelje az értesítési kampányokat. A kampányokat későbbi "
+"kiadásra lehet ütemezni, vagy változatként elmenteni későbbi felhasználásra."
+
+msgid "Create anyway"
+msgstr "Mindenképp teremts"
+
+msgid "Create assignment"
+msgstr "Hozz létre feladatot"
+
+msgid "Create one to get started."
+msgstr "Készíts egyet, hogy elkezdhesd."
+
+msgid "Create your account"
+msgstr "Hozza létre a fiókot"
+
+msgid "Create your first API key to get started"
+msgstr "Készítsd el az első API kulcsodat, hogy elkezdhesd"
+
+msgid "Create your first assignment to see the timeline view."
+msgstr "Hozd létre az első feladatodat, hogy lásd az idővonal nézetét."
+
+msgid "Create your first sector"
+msgstr "Hozd létre az első szektorodat"
+
+msgid "Create your first sub-sector"
+msgstr "Hozd létre az első alszektorodat"
+
+msgid "Created"
+msgstr "Létrehozva"
+
+msgid "Created At"
+msgstr "Létrehozva:"
+
+msgid "Created By"
+msgstr "Készítette:"
+
+msgid "Critical"
+msgstr "Kritikus"
+
+msgid "Critical error"
+msgstr "Kritikus hiba"
+
+msgid "Currency Code"
+msgstr "Valutakód"
+
+msgid "Current"
+msgstr "Jelenlegi"
+
+msgid "Current Document:"
+msgstr "Jelenlegi dokumentum:"
+
+msgid "Current Memory Usage"
+msgstr "Jelenlegi memóriahasználat"
+
+msgid "Current System Metrics"
+msgstr "Jelenlegi rendszeradatok"
+
+msgid "Current Year View"
+msgstr "Jelenlegi év nézete"
+
+msgid "Current thumbnail"
+msgstr "Jelenlegi thumbnail"
+
+msgid "Current thumbnail:"
+msgstr "Jelenlegi bélyegkép:"
+
+msgid "Currently viewing/editing this version"
+msgstr "Jelenleg ezt a verziót nézem/szerkesztem"
+
+msgid "Currently with you editing this form:"
+msgstr "Jelenleg veled szerkesztem ezt a formát:"
+
+msgid "Custom"
+msgstr "Egyedi"
+
+msgid "Custom Definition (Optional)"
+msgstr "Egyedi definíció (opcionális)"
+
+msgid "Custom Fields"
+msgstr "Egyedi mezők"
+
+msgid "Custom Label (Optional)"
+msgstr "Egyedi címke (opcionális)"
+
+msgid "Custom URL"
+msgstr "Egyedi URL"
+
+msgid "Custom field type from a plugin."
+msgstr "Egyedi mezőtípus egy pluginből."
+
+msgid "Custom question."
+msgstr "Egyedi kérdés."
+
+msgid "Daily Digest"
+msgstr "Daily Digest"
+
+msgid "Daily digest"
+msgstr "Napi összefoglaló"
+
+msgid "Dashboard"
+msgstr "Dashboard"
+
+msgid "Data"
+msgstr "Adatok"
+
+msgid "Data & Export"
+msgstr "Adatok és exportálás"
+
+msgid "Data Deleted"
+msgstr "Adatok törlése"
+
+msgid "Data Entries"
+msgstr "Adatbejegyzések"
+
+msgid "Data Entry"
+msgstr "Adatbevitel"
+
+msgid "Data Exploration"
+msgstr "Adatkutatás"
+
+msgid "Data Exported"
+msgstr "Exportált adatok"
+
+msgid "Data Guidance"
+msgstr "Adat útmutatás"
+
+msgid "Data Handling"
+msgstr "Adatkezelés"
+
+msgid ""
+"Data Loss Prevention (DLP) scans that detect and may block or warn about "
+"sensitive patterns before sending."
+msgstr ""
+"Adatvesztés-megelőzési (DLP) szkennelések, amelyek érzékelnek, illetve "
+"blokkolhatják vagy figyelmeztethetnek érzékeny mintákra küldés előtt."
+
+msgid "Data Migration"
+msgstr "Adatmigráció"
+
+msgid "Data Modified"
+msgstr "Adatok módosítása"
+
+msgid "Data Not Available"
+msgstr "Adat nem elérhető"
+
+msgid "Data Owner"
+msgstr "Adattulajdonos"
+
+msgid "Data Sheet"
+msgstr "Adatlap"
+
+msgid "Data Table"
+msgstr "Adattábla"
+
+msgid "Data availability options"
+msgstr "Adatelérhetőségi lehetőségek"
+
+msgid "Data matrix for"
+msgstr "Adatmátrix a"
+
+msgid "Data not available"
+msgstr "Adatok nem elérhetők"
+
+msgid "Data will appear here after applying parameters."
+msgstr "Az adatok itt jelennek meg a paraméterek alkalmazása után."
+
+msgid "Databank"
+msgstr "Adatbank"
+
+msgid "Database Pool"
+msgstr "Adatbázis Pool"
+
+msgid "Database Tables:"
+msgstr "Adatbázis táblázatok:"
+
+msgid "Date"
+msgstr "Dátum"
+
+msgid "Date and time."
+msgstr "Dátum és idő."
+
+msgid "Date only."
+msgstr "Csak randi."
+
+msgid "Date range"
+msgstr "Dátumtartomány"
+
+msgid "Day of Week"
+msgstr "A hét napja"
+
+msgid "Day of week"
+msgstr "A hét napja"
+
+msgid "Deactivate"
+msgstr "Kapcsold ki"
+
+msgid "Deactivate User?"
+msgstr "Kikapcsolni a felhasználót?"
+
+msgid "Deadline Reminder"
+msgstr "Határidő emlékeztető"
+
+msgid "Deadline reminder"
+msgstr "Határidő emlékeztető"
+
+msgid "Dec"
+msgstr "Dec"
+
+msgid "Decision"
+msgstr "Döntés"
+
+msgid "Decision:"
+msgstr "Döntés:"
+
+msgid "Decline"
+msgstr "Hanyatlás"
+
+msgid "Decline Document"
+msgstr "Visszaesési dokumentum"
+
+msgid "Default Value (Optional)"
+msgstr "Alapértelmezett érték (opcionális)"
+
+msgid "Default: latest year"
+msgstr "Alapértelmezés: legutóbbi év"
+
+msgid "Defaults to current year if empty."
+msgstr "Ha üres, alapértelmezetten az aktuális évre kerül."
+
+msgid "Definition"
+msgstr "Definíció"
+
+msgid "Definition translations cleared:"
+msgstr "Definíciók fordításai tisztázva:"
+
+msgid "Definitions"
+msgstr "Definíciók"
+
+msgid "Delete"
+msgstr "Törlés"
+
+msgid "Delete Common Word?"
+msgstr "Törölni a köznyelvet?"
+
+msgid "Delete Data and Remove"
+msgstr "Adatok törlése és eltávolítása"
+
+msgid "Delete Document"
+msgstr "Dokumentum törlése"
+
+msgid "Delete Document?"
+msgstr "Törölni a dokumentumot?"
+
+msgid "Delete Documents?"
+msgstr "Törölni a dokumentumokat?"
+
+msgid "Delete Section"
+msgstr "Törlés szakasz"
+
+msgid "Delete Sub-section"
+msgstr "Töröld alszakaszt"
+
+msgid "Delete Template"
+msgstr "Törlés sablon"
+
+msgid "Delete User"
+msgstr "Töröld a felhasználót"
+
+msgid "Delete Version"
+msgstr "Törlés verziója"
+
+msgid "Delete all conversations? This cannot be undone."
+msgstr "Minden beszélgetést törölni? Ezt nem lehet visszafordítani."
+
+msgid "Delete chat"
+msgstr "Töröld a csevegést"
+
+msgid "Delete conversation?"
+msgstr "Törölni a beszélgetést?"
+
+msgid "Delete document"
+msgstr "Dokumentum törlése"
+
+msgid "Delete failed"
+msgstr "Törlés sikertelen"
+
+msgid "Delete removed string?"
+msgstr "Törölni a törölt stringet?"
+
+msgid "Delete role"
+msgstr "Delete szerep"
+
+msgid "Delete selected"
+msgstr "Töröld a kiválasztott"
+
+msgid "Delete selected documents?"
+msgstr "Kiválasztott dokumentumokat törölni?"
+
+msgid "Delete selected traces"
+msgstr "Kiválasztott nyomok törlése"
+
+msgid "Delete this conversation? This cannot be undone."
+msgstr "Törölni ezt a beszélgetést? Ezt nem lehet visszafordítani."
+
+msgid "Delete this entry"
+msgstr "Töröld ezt a bejegyzést"
+
+msgid "Delete this grant?"
+msgstr "Törölni ezt a támogatást?"
+
+msgid "Delete this version? This cannot be undone."
+msgstr "Törölni ezt a verziót? Ezt nem lehet visszafordítani."
+
+msgid "Delete thumbnail"
+msgstr "Töröld a thumbpicture-ot"
+
+msgid "Deleted"
+msgstr "Törölve"
+
+msgid "Deleting thumbnail..."
+msgstr "A thumbnail törlése..."
+
+msgid "Deleting..."
+msgstr "Törlés..."
+
+msgid "Delivery Method"
+msgstr "Szállítási módszer"
+
+msgid "Delivery Options"
+msgstr "Szállítási lehetőségek"
+
+msgid "Department"
+msgstr "Tanszék"
+
+msgid "Department Name"
+msgstr "Osztály neve"
+
+msgid "Departments"
+msgstr "Tanszékek"
+
+msgid "Deploy"
+msgstr "Bevetés"
+
+msgid "Deploy Version"
+msgstr "Deploy verzió"
+
+msgid "Deploy Version?"
+msgstr "Telepíteni a verziót?"
+
+msgid "Deploy this version? This will publish it as the live version."
+msgstr "Ezt a verziót telepítsük? Ez élő verzióként fogja közzétenni."
+
+msgid "Deployed"
+msgstr "Bevetés"
+
+msgid "Describe how this event was resolved..."
+msgstr "Írd le, hogyan oldották meg ezt az eseményt..."
+
+msgid "Description"
+msgstr "Leírás"
+
+msgid "Description (Optional)"
+msgstr "Leírás (opcionális)"
+
+msgid "Deselect All"
+msgstr "Töröld az összes kiválasztást"
+
+msgid "Detailed analysis"
+msgstr "Részletes elemzés"
+
+msgid "Detailed definition/description of this question"
+msgstr "A kérdés részletes meghatározása/leírása"
+
+msgid "Details"
+msgstr "Részletek"
+
+msgid "Detecting countries"
+msgstr "Országok észlelése"
+
+msgid "Development"
+msgstr "Fejlesztés"
+
+msgid "Device"
+msgstr "Eszköz"
+
+msgid "Device Kicked"
+msgstr "Eszköz rúgva"
+
+msgid "Device Removed"
+msgstr "Eszköz eltávolítása"
+
+msgid "Device Status Details"
+msgstr "Eszköz állapot részletei"
+
+msgid "Device registration"
+msgstr "Eszköz regisztráció"
+
+msgid "Device unregistered"
+msgstr "Eszköz nem regisztrált"
+
+msgid "Digest Schedule"
+msgstr "Digest ütemterv"
+
+msgid "Direct approach: %(step)s"
+msgstr "Közvetlen megközelítés: %(step)s"
+
+msgid "Disable public reporting"
+msgstr "A nyilvános jelentés letiltása"
+
+msgid "Disaggregation"
+msgstr "Szétválasztás"
+
+msgid "Disaggregation Analysis"
+msgstr "Deszegregációs elemzés"
+
+msgid "Disaggregation Data"
+msgstr "Szétválasztási adatok"
+
+msgid "Disaggregation Options"
+msgstr "Szétválasztási lehetőségek"
+
+msgid "Discrepancy"
+msgstr "Eltérés"
+
+msgid "Disk Space:"
+msgstr "Lemeztér:"
+
+msgid "Disk Usage"
+msgstr "Lemezhasználat"
+
+msgid "Dislike"
+msgstr "Nem kedvelem"
+
+msgid "Dismiss"
+msgstr "Feladás"
+
+msgid "Dismiss offline notice"
+msgstr "Offline értesítés elutasítása"
+
+msgid "Dismiss warning"
+msgstr "Figyelmeztetés elutasítása"
+
+msgid "Dismissing..."
+msgstr "Elutasítva..."
+
+msgid "Displaced"
+msgstr "Elmozdítás"
+
+msgid "Display Column"
+msgstr "Kijelzőoszlop"
+
+msgid "Display Name"
+msgstr "Megjelenítési név"
+
+msgid "Display Order"
+msgstr "Megjelenítési sorrend"
+
+msgid "Display Order Numbers"
+msgstr "Megjelenítési sorrendi számok"
+
+msgid ""
+"Display Order Numbers (Show section/field numbering in data entry forms)"
+msgstr ""
+"Megjelenítési sorrendszámok (Adatbeviteli űrlapokon a szakasz/mezőszámozás "
+"megjelenítése)"
+
+msgid "Display label"
+msgstr "Kijelző címke"
+
+msgid "Distribution by Age Group"
+msgstr "Korcsoportok szerinti eloszlás"
+
+msgid "Distribution by Sex"
+msgstr "Nemi eloszlás"
+
+msgid "Division"
+msgstr "Divízió"
+
+msgid "Division ID"
+msgstr "Divízióazonosító"
+
+msgid "Division Name"
+msgstr "Osztály neve"
+
+msgid "Divisions"
+msgstr "Osztályok"
+
+msgid "Divisions & Departments"
+msgstr "Osztályok és osztályok"
+
+msgid ""
+"Do NOT paste personal data, financial information, or highly confidential "
+"operational details."
+msgstr ""
+"NE ragasztson be személyes adatokat, pénzügyi adatokat vagy nagyon bizalmas "
+"működési adatokat."
+
+msgid "Do NOT share passwords, credentials, or other secrets."
+msgstr "NE ossza meg jelszavakat, hitelesítő adatokat vagy egyéb titkokat."
+
+msgid "Do not share this key or commit it to version control"
+msgstr "Ne ossza meg ezt a kulcsot, és ne kötelezze be verziókezelésbe"
+
+msgid "Doc Date"
+msgstr "Dokumentum Dátuma"
+
+msgid "Document"
+msgstr "Dokumentum"
+
+msgid "Document Descriptions"
+msgstr "Dokumentumleírások"
+
+msgid "Document Field"
+msgstr "Dokumentummező"
+
+msgid "Document Field Translations"
+msgstr "Dokumentummező fordítások"
+
+msgid "Document File"
+msgstr "Dokumentumfájl"
+
+msgid "Document Label"
+msgstr "Dokumentum címke"
+
+msgid "Document Labels"
+msgstr "Dokumentumcímkék"
+
+msgid "Document Management"
+msgstr "Dokumentumkezelés"
+
+msgid "Document Selected"
+msgstr "Dokumentum kiválasztása"
+
+msgid "Document Status"
+msgstr "Dokumentum állapota"
+
+msgid "Document Type"
+msgstr "Dokumentumtípus"
+
+msgid "Document Type (Optional)"
+msgstr "Dokumentumtípus (opcionális)"
+
+msgid "Document Type:"
+msgstr "Dokumentum típusa:"
+
+msgid "Document Types"
+msgstr "Dokumentumtípusok"
+
+msgid "Document Updated"
+msgstr "Dokumentum frissítve"
+
+msgid "Document Upload"
+msgstr "Dokumentumfeltöltés"
+
+msgid "Document Upload Not Available"
+msgstr "Dokumentumfeltöltés nem elérhető"
+
+msgid "Document Uploaded"
+msgstr "Dokumentum feltöltése"
+
+msgid "Document deleted"
+msgstr "Dokumentum törölve"
+
+msgid "Document pending review"
+msgstr "Dokumentum felülvizsgálat előtt"
+
+msgid "Document repository"
+msgstr "Dokumentumtár"
+
+msgid "Document title (optional)"
+msgstr "Dokumentum címe (opcionális)"
+
+msgid "Document types"
+msgstr "Dokumentumtípusok"
+
+msgid "Document upload is disabled when the form is read-only."
+msgstr "A dokumentumfeltöltés letiltott, ha az űrlap csak olvasható."
+
+msgid "Document uploaded"
+msgstr "Dokumentum feltöltése"
+
+msgid "Document uploaded: %(document)s"
+msgstr "Feltöltött dokumentum: %(document)s"
+
+msgid "Documentation"
+msgstr "Dokumentáció"
+
+msgid "Documents are uploaded through form submissions."
+msgstr "A dokumentumokat űrlapok beküldésén keresztül töltik fel."
+
+msgid "Documents uploaded through the system will appear here"
+msgstr "A rendszeren keresztül feltöltött dokumentumok itt jelennek meg"
+
+msgid "Domains"
+msgstr "Domainek"
+
+msgid "Don't share sensitive information."
+msgstr "Ne ossz meg érzékeny információkat."
+
+msgid ""
+"Don't share sensitive information. We use system traces and telemetry to "
+"improve the assistant."
+msgstr ""
+"Ne ossz meg érzékeny információkat. Rendszerkövetéseket és telemetriát "
+"használunk az asszisztens fejlesztésére."
+
+msgid ""
+"Don't share sensitive information. We use system traces/telemetry to improve"
+" the assistant."
+msgstr ""
+"Ne ossz meg érzékeny információkat. Rendszerkövetést/telemetriát használunk "
+"az asszisztens javítására."
+
+msgid "Done"
+msgstr "Kész"
+
+msgid "Done."
+msgstr "Kész."
+
+msgid "Double-click"
+msgstr "Dupla kattintás"
+
+msgid "Download"
+msgstr "Letöltés"
+
+msgid "Download Excel"
+msgstr "Töltse le az Excel"
+
+msgid "Download PDF"
+msgstr "Letöltés PDF"
+
+msgid "Download Starter Plugin"
+msgstr "Töltsd le a Starter plugint"
+
+msgid "Download as Excel"
+msgstr "Letöltés Excel formátumban"
+
+msgid "Download document"
+msgstr "Dokumentum letöltése"
+
+msgid "Download the sample plugin package and starter guide"
+msgstr "Töltse le a mintaplugin csomagot és a kezdő útmutatót"
+
+msgid "Drafting answer…"
+msgstr "Válasz megfogalmazása..."
+
+msgid "Drag"
+msgstr "Drag"
+
+msgid "Drag and drop files here, or click to select"
+msgstr "Húzd el és dobd le a fájlokat ide, vagy kattints a kiválasztáshoz"
+
+msgid "Drag and drop pages to reorder them."
+msgstr "Húzd el és dobd le az oldalakat, hogy átrendezd őket."
+
+msgid "Drag user types here"
+msgstr "Drag felhasználói típusok itt"
+
+msgid "Drag user types to To or CC fields to configure email distribution."
+msgstr ""
+"Húzd a felhasználói típusokat a To vagy CC mezőkbe, hogy konfiguráld az "
+"e-mail terjesztést."
+
+msgid "Drag user types to configure distribution"
+msgstr "Húzd el a felhasználói típusokat az elosztás konfigurálásához"
+
+msgid "Dry run (preview only, no DB write)"
+msgstr "Próbafutás (csak előnézet, adatbázis írás nélkül)"
+
+msgid "Due Date"
+msgstr "Kiadási időpont"
+
+msgid "Due Date:"
+msgstr "Kiadási időpont:"
+
+msgid "Duplicate"
+msgstr "Duplikátum"
+
+msgid "Duplicate Document Field"
+msgstr "Duplán dokumentummező"
+
+msgid "Duplicate Indicator"
+msgstr "Duplán Jelző"
+
+msgid "Duplicate Matrix"
+msgstr "Duplán mátrix"
+
+msgid "Duplicate Plugin Item"
+msgstr "Duplán plugin elem"
+
+msgid "Duplicate Question"
+msgstr "Duplikált kérdés"
+
+msgid "Duplicate Section"
+msgstr "Duplikált szakasz"
+
+msgid "Duplicate Sub-section"
+msgstr "Duplikált alszakasz"
+
+msgid "Duplicate assignment"
+msgstr "Duplán kijelölés"
+
+msgid ""
+"Duplicate this document field? This will copy its upload configuration and "
+"permissions."
+msgstr ""
+"Duplizálni ezt a dokumentummezőt? Ez lemásolja a feltöltési konfigurációt és"
+" a jogosultságokat."
+
+msgid ""
+"Duplicate this indicator? This will create a copy with the same calculations"
+" and settings."
+msgstr ""
+"Ezt a jelzőt megmásolhatod? Ez egy másolatot hoz létre ugyanazokkal a "
+"számításokkal és beállításokkal."
+
+msgid ""
+"Duplicate this item? This will copy the item and all of its configuration."
+msgstr ""
+"Megmásolni ezt a tárgyat? Ez lemásolja az elemet és az összes "
+"konfigurációját."
+
+msgid ""
+"Duplicate this matrix? This will copy all rows, columns, and validation "
+"rules."
+msgstr ""
+"Megmásolni ezt a mátrixot? Ez lemásolja az összes sort, oszlopot és "
+"ellenőrzési szabályt."
+
+msgid ""
+"Duplicate this plugin item? This will copy its configuration and logic."
+msgstr ""
+"Duplikálni ezt a plugin elemet? Ez lemásolja a konfigurációját és logikáját."
+
+msgid ""
+"Duplicate this question? This will copy its options, logic, and "
+"translations."
+msgstr ""
+"Megismételni ezt a kérdést? Ez lemásolja a lehetőségeket, a logikát és a "
+"fordításokat."
+
+msgid ""
+"Duplicate this section? This will copy the section, all sub-sections, and "
+"their items."
+msgstr ""
+"Ezt a részt megmásolhatod? Ez lemásolja a szakaszt, az összes alszakaszt és "
+"azok elemeit."
+
+msgid ""
+"Duplicate this sub-section? This will copy the sub-section along with all of"
+" its items."
+msgstr ""
+"Megmásolni ezt az alszakaszt? Ez lemásolja az alrészt és az összes elemet."
+
+msgid "Duplicate this template?"
+msgstr "Megmásolni ezt a sablont?"
+
+msgid "Duration"
+msgstr "Időtartam"
+
+msgid "Dynamic"
+msgstr "Dinamika"
+
+msgid "Dynamic Indicators"
+msgstr "Dinamikus indikátorok"
+
+msgid "EUR"
+msgstr "EUR"
+
+msgid ""
+"Each dot represents one indicator from the Indicator Bank. Indicators are "
+"positioned based on their <strong>AI-generated vector embeddings</strong> — "
+"numerical representations of their name and definition produced by a "
+"language model. Indicators that are semantically similar are placed closer "
+"together."
+msgstr ""
+"Minden pont egy mutatót képvisel az Indikátor Bankból. Az indikátorokat az "
+"<strong>AI által generált vektorbeágyazásuk</strong> alapján pozicionálják –"
+" ezek a név és definíciójuk numerikus ábrázolásai, amelyeket egy nyelvi "
+"modell készít. A szemantikailag hasonló indikátorokat közelebb helyezik "
+"egymáshoz."
+
+msgid ""
+"Each section groups related fields together. Click the collapse button (△) "
+"to hide/show section content. Fill in all required fields marked with a red "
+"asterisk (*)."
+msgstr ""
+"Minden szekció összecsoportosítja a kapcsolódó mezőket. Kattints a "
+"összeomlás gombra (△), hogy elrejtsd vagy megmutassd a rész tartalmát. "
+"Töltse ki az összes kötelező mezőt, amelyet piros csillaggal jelöltek (*)."
+
+msgid "Earliest:"
+msgstr "Legrégebbi:"
+
+msgid "Edit"
+msgstr "Szerkesztés"
+
+msgid "Edit Country"
+msgstr "Szerkesztés országa"
+
+msgid "Edit Details"
+msgstr "Szerkesztés Részletek"
+
+msgid "Edit Document"
+msgstr "Dokumentum szerkesztése"
+
+msgid "Edit Document Field"
+msgstr "Dokumentummező szerkesztése"
+
+msgid "Edit Indicator"
+msgstr "Szerkesztés Jelző"
+
+msgid "Edit Item"
+msgstr "Szerkesztés tétel"
+
+msgid "Edit Matrix"
+msgstr "Szerkesztési mátrix"
+
+msgid "Edit Plugin Item"
+msgstr "Plugin elem szerkesztése"
+
+msgid "Edit Question"
+msgstr "Szerkesztési kérdés"
+
+msgid "Edit Section"
+msgstr "Szerkesztés szekció"
+
+msgid "Edit Sector"
+msgstr "Szerkesztési szektor"
+
+msgid "Edit Status"
+msgstr "Szerkesztési állapot"
+
+msgid "Edit Sub-Sector"
+msgstr "Szerkesztés: Alszektor"
+
+msgid "Edit Sub-section"
+msgstr "Szerkesztés alrész"
+
+msgid "Edit Template"
+msgstr "Sablon szerkesztése"
+
+msgid "Edit Translation"
+msgstr "Szerkesztés Fordítás"
+
+msgid "Edit all translations"
+msgstr "Szerkesztés minden fordítása"
+
+msgid "Edit message"
+msgstr "Üzenet szerkesztése"
+
+msgid "Edit template name translations"
+msgstr "Szerkesztés sablonnévfordítások"
+
+msgid "Editor"
+msgstr "Szerkesztő"
+
+msgid "Education"
+msgstr "Oktatás"
+
+msgid "Effect"
+msgstr "Hatás"
+
+msgid "Email"
+msgstr "E-mail"
+
+msgid "Email & Notification Templates"
+msgstr "E-mail és értesítési sablonok"
+
+msgid "Email Distribution Rules"
+msgstr "E-mail terjesztési szabályok"
+
+msgid "Email Domain"
+msgstr "Email Domain"
+
+msgid "Email Frequency"
+msgstr "E-mail gyakoriság"
+
+msgid "Email Notification"
+msgstr "E-mail értesítés"
+
+msgid "Email frequency"
+msgstr "E-mail gyakoriság"
+
+msgid ""
+"Email sent to admins for security events. Variables: event_type, severity, "
+"description, ip_address, user_email, user_id, timestamp, admin_url, "
+"org_name, copyright_year"
+msgstr ""
+"Biztonsági események miatt küldött e-mailt adminisztrátoroknak. Változók: "
+"event_type, súlyosság, leírás, ip_address, user_email, user_id, időbélyeg, "
+"admin_url, org_name, copyright_year"
+
+msgid ""
+"Email sent to admins when a new indicator suggestion is submitted. "
+"Variables: submitter_name, submitter_email, suggestion_type_display, "
+"indicator_name, submitted_date, suggestion_details, reason, "
+"additional_notes, admin_url, org_name, copyright_year"
+msgstr ""
+"E-mail, amelyet az adminoknak küldenek, amikor új indikátor javaslatot "
+"küldenek be. Változók: submitter_name, submitter_email, "
+"suggestion_type_display, indicator_name, submitted_date, suggestion_details,"
+" ok, additional_notes, admin_url, org_name, copyright_year"
+
+msgid ""
+"Email sent to new users upon registration. Variables: user_name, "
+"dashboard_url, notifications_url, org_name, copyright_year"
+msgstr ""
+"Új felhasználóknak küldött e-mailt regisztrációkor. Változók: user_name, "
+"dashboard_url, notifications_url, org_name, copyright_year"
+
+msgid ""
+"Email sent to users when they submit an indicator suggestion. Variables: "
+"submitter_name, suggestion_type_display, indicator_name, submitted_date, "
+"suggestion_details, org_name, copyright_year"
+msgstr ""
+"E-mail, amelyet a felhasználóknak küldenek, amikor indikátor javaslatot "
+"küldenek be. Változók: submitter_name, suggestion_type_display, "
+"indicator_name, submitted_date, suggestion_details, org_name, copyright_year"
+
+msgid "Email templates"
+msgstr "E-mail sablonok"
+
+msgid "Emails"
+msgstr "E-mailek"
+
+msgid "Embed query and place on map"
+msgstr "Lekérdezés beágyazása és helyezése térképen"
+
+msgid ""
+"Embeddings live in a <strong>1,536-dimensional</strong> space. Projecting "
+"that down to 2 or 3 dimensions inevitably loses information — like "
+"flattening a globe into a 2D map where some distances get distorted. Two "
+"indicators may be very close in the original space but end up far apart in "
+"the projection. The <strong>similarity scores</strong> shown in the detail "
+"panel are always calculated in the full-dimensional space, so they are "
+"accurate regardless of where dots appear on screen."
+msgstr ""
+"A beágyazások egy <strong>1 536 dimenziós</strong> térben élnek. Ha ezt 2 "
+"vagy 3 dimenzióra vetítjük, elkerülhetetlenül információvesztést jelent — "
+"mintha egy gömböt lapítanánk egy 2D térképre, ahol bizonyos távolságok "
+"torzulnak. Két jelző lehet nagyon közel az eredeti térben, de a vetítésben "
+"messze egymástól. A részletpanelben mutatott <strong>hasonlósági "
+"pontszámokat</strong> mindig a teljes dimenziós térben számítják, így "
+"pontosak attól függnek, hogy hol jelennek meg a pontok a képernyőn."
+
+msgid "Emergency"
+msgstr "Vészhelyzet"
+
+msgid "Emergency type"
+msgstr "Vészhelyzeti típus"
+
+msgid "Empty"
+msgstr "Üres"
+
+msgid "Empty list"
+msgstr "Üres lista"
+
+msgid "Enable Export Excel button"
+msgstr "Engedélyezd az Excel exportálás gombot"
+
+msgid "Enable Export PDF button"
+msgstr "Engedélyezd a PDF exportálás gombot"
+
+msgid "Enable Import Excel button"
+msgstr "Engedélyezd az Excel importálása gombot"
+
+msgid "Enable Run AI validation button"
+msgstr "Engedélyezd a Run AI validációs gombot"
+
+msgid ""
+"Enable Secretariat Divisions/Departments and Regions tabs for granular "
+"entity assignments."
+msgstr ""
+"Engedélyezze a Secretariat Divisions/Departments and Regions füleket "
+"részletes entitáskiosztáshoz."
+
+msgid "Enable Sound"
+msgstr "Hang engedélyezése"
+
+msgid "Enable public reporting"
+msgstr "Engedélyezd a nyilvános jelentést"
+
+msgid "Enable sound for new notifications"
+msgstr "Hang engedélyezése új értesítésekhez"
+
+msgid "Enabled Entity Types"
+msgstr "Engedélyezett entitástípusok"
+
+msgid "End Period"
+msgstr "Záróidőszak"
+
+msgid "End Tour"
+msgstr "Vége a turné"
+
+msgid "End Year"
+msgstr "Év vége"
+
+msgid "End date (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)"
+msgstr "Végdátum (YYYY-MM-DD vagy YYYY-MM-DDTHH:MM:SS)"
+
+msgid "End period"
+msgstr "Záróidőszak"
+
+msgid "Ended"
+msgstr "Vége"
+
+msgid "Endpoint"
+msgstr "Végpont"
+
+msgid "Ends with"
+msgstr "Vége"
+
+msgid "English (en) is the source language and should not be imported."
+msgstr "Az angol (en) a forrásnyelv, és nem szabad importálni."
+
+msgid "Enter Jinja2 template HTML here..."
+msgstr "Írd be a Jinja2 sablon HTML-jét ide..."
+
+msgid ""
+"Enter a custom URL or route. Full URLs (http:// or https://) will open in "
+"webview."
+msgstr ""
+"Adjon meg egy egyedi URL-t vagy útvonalat. A teljes URL-ek (http:// vagy "
+"https://) megnyílnak a webnézetben."
+
+msgid "Enter category name..."
+msgstr "Írd be a kategória nevét..."
+
+msgid "Enter name"
+msgstr "Írd be a nevet"
+
+msgid "Enter new value…"
+msgstr "Új értéket adj be..."
+
+msgid "Enter option text"
+msgstr "Válasz szöveget írj be"
+
+msgid "Enter question text"
+msgstr "Írd be a kérdés szövegét"
+
+msgid "Enter translation"
+msgstr "Lépj be a fordítás"
+
+msgid "Enter your email and we'll send you a link to reset your password."
+msgstr ""
+"Adja meg az e-mail címét, és küldünk egy linket, hogy visszaállítsd a "
+"jelszavadat."
+
+msgid "Entities"
+msgstr "Entitások"
+
+msgid "Entity"
+msgstr "Entitás"
+
+msgid "Entity ID"
+msgstr "Entity ID"
+
+msgid "Entity Name"
+msgstr "Szervezet neve"
+
+msgid "Entity Name (with hierarchy)"
+msgstr "Entitás neve (hierarchiával)"
+
+msgid "Entity Scope"
+msgstr "Vállalkozás hatóköre"
+
+msgid "Entity Type"
+msgstr "Entitástípus"
+
+msgid "Entity Types to Include"
+msgstr "Tartalmazni fogható entitástípusok"
+
+msgid "Entity assignment mode"
+msgstr "Entitás-hozzárendelési mód"
+
+msgid "Entity assignment type"
+msgstr "Entitás-hozzárendelés típusa"
+
+msgid "Entity campaigns only"
+msgstr "Csak entitáskampányok"
+
+msgid "Entity-based"
+msgstr "Entitás-alapú"
+
+msgid "Entry"
+msgstr "Bejegyzés"
+
+msgid "Equals"
+msgstr "Egyenlő"
+
+msgid "Error"
+msgstr "Hiba"
+
+msgid "Error Details"
+msgstr "Hibaadatok"
+
+msgid "Error adding category"
+msgstr "Kategória hozzáadása hiba"
+
+msgid "Error adding category:"
+msgstr "Hiba kategória hozzáadása:"
+
+msgid "Error approving document:"
+msgstr "Hiba jóváhagyási dokumentum:"
+
+msgid "Error compiling translations: %(error)s"
+msgstr "Fordítások fordításában hiba: %(error)s"
+
+msgid "Error declining document:"
+msgstr "Hiba elutasító dokumentum:"
+
+msgid "Error deleting document:"
+msgstr "Dokumentum törlési hiba:"
+
+msgid "Error deleting suggestion."
+msgstr "Hiba javaslat törlésére."
+
+msgid "Error during session cleanup."
+msgstr "Hiba a session tisztítása közben."
+
+msgid "Error during translation"
+msgstr "Hiba fordítás közben"
+
+msgid "Error extracting/updating translations: %(error)s"
+msgstr "Hiba fordítások kinyerésében/frissítésében: %(error)s"
+
+msgid "Error loading NS hierarchy data. Please try again."
+msgstr "Hiba NS hierarchia adatok betöltésekor. Kérlek, próbáld meg újra."
+
+msgid "Error loading chart data"
+msgstr "Hiba betöltési diagram adatai"
+
+msgid "Error loading countries"
+msgstr "Hiba betöltési országok"
+
+msgid "Error loading country data. Please try again."
+msgstr "Hiba az ország adatai betöltésénél. Kérlek, próbáld meg újra."
+
+msgid "Error loading deletion information. Please try again."
+msgstr "Hiba betöltése törlési információ. Kérlek, próbáld meg újra."
+
+msgid "Error loading documents"
+msgstr "Dokumentumok betöltése hiba"
+
+msgid "Error loading form items"
+msgstr "Hiba űrlapelemek betöltése"
+
+msgid "Error loading periods"
+msgstr "Hiba betöltési időszakok"
+
+msgid "Error loading translation services"
+msgstr "Fordítási szolgáltatások hiba betöltése"
+
+msgid "Error processing documents:"
+msgstr "Hibafeldolgozási dokumentumok:"
+
+msgid "Error retrieving session data."
+msgstr "Hiba a munkamenet adatai letöltésén."
+
+msgid "Error updating suggestion status."
+msgstr "Hiba frissítése a javaslat státuszának."
+
+msgid "Error:"
+msgstr "Hiba:"
+
+msgid ""
+"Error: Could not extract indicator IDs. Please try again or contact support."
+msgstr ""
+"Hiba: Nem sikerült kivenni az indikátorazonosítókat. Kérlek, próbálkozz "
+"újra, vagy vedd fel a kapcsolatot az ügyfélszolgálattal."
+
+msgid "Errors"
+msgstr "Hibák"
+
+msgid "Errors:"
+msgstr "Hibák:"
+
+msgid "Established"
+msgstr "Alapítás"
+
+msgid "Estimated time"
+msgstr "Becsült idő"
+
+msgid "Event"
+msgstr "Esemény"
+
+msgid "Event Type"
+msgstr "Esemény típusa"
+
+msgid "Events"
+msgstr "Események"
+
+msgid "Example Requests"
+msgstr "Példakérések"
+
+msgid "Example prompts"
+msgstr "Példa promptok"
+
+msgid "Example:"
+msgstr "Példa:"
+
+msgid "Examples: https://example.com, /forms/assignment/123"
+msgstr "Példák: https://example.com, /űrlapok/assignment/123"
+
+msgid "Excel"
+msgstr "Excel"
+
+msgid "Excel Export"
+msgstr "Excel Export"
+
+msgid "Excel Import"
+msgstr "Excel Import"
+
+msgid "Excel Import/Export"
+msgstr "Excel Import/Export"
+
+msgid "Excel Import/Export Not Available"
+msgstr "Excel import/export nem elérhető"
+
+msgid "Excel Imported"
+msgstr "Excel importálása"
+
+msgid "Excel Options"
+msgstr "Excel beállítások"
+
+msgid "Excel file"
+msgstr "Excel fájl"
+
+msgid "Excel file is empty or header row not found."
+msgstr "Az Excel fájl üres vagy fejlécsora nem található."
+
+msgid ""
+"Excel import finished. Updated: %(u)d, skipped missing msgids: %(m)d. (Empty"
+" updates are ignored by default.)"
+msgstr ""
+"Az Excel importálása befejeződött. Frissítve: %(u)d, kihagyva a hiányzó "
+"msgideket: %(m)d. (Az üres frissítéseket alapértelmezés szerint figyelmen "
+"kívül hagyjuk.)"
+
+msgid "Excel import requires a 'msgid' column header."
+msgstr "Az Excel importhoz 'msgid' oszlopfejléc szükséges."
+
+msgid "Excel operations are not available for public submissions."
+msgstr "Az Excel műveletek nem elérhetők nyilvános beküldésekhez."
+
+msgid "Exclude selected"
+msgstr "Kizárva a kiválasztott"
+
+msgid "Excluded No-Mention Plans"
+msgstr "Kizárt említés nélküli tervek"
+
+msgid "Execution Path"
+msgstr "Végrehajtási út"
+
+msgid "Execution Time"
+msgstr "Kivégzési idő"
+
+msgid "Execution path"
+msgstr "Végrehajtási útvonal"
+
+msgid "Expand Sections Menu"
+msgstr "Bővítse a szekciók menüjét"
+
+msgid "Expand all"
+msgstr "Bővítsd ki az összes"
+
+msgid "Expand all observations"
+msgstr "Bővítsük az összes megfigyelést"
+
+msgid "Expand all pages"
+msgstr "Bővítsd ki az összes oldalt"
+
+msgid "Expand all sections"
+msgstr "Bővítsd ki az összes szakaszt"
+
+msgid "Expand or collapse filters"
+msgstr "Bővítés vagy összeomlás szűrők"
+
+msgid "Expected JSON body"
+msgstr "Várható JSON test"
+
+msgid "Experts"
+msgstr "Szakértők"
+
+msgid "Expired"
+msgstr "Lejárt"
+
+msgid "Expired Keys"
+msgstr "Lejárt kulcsok"
+
+msgid "Expired Only"
+msgstr "Csak lejárt"
+
+msgid "Expires"
+msgstr "Lejár"
+
+msgid "Expiry Date"
+msgstr "Lejárati dátum"
+
+msgid "Explore Data"
+msgstr "Fedezze fel az adatokat"
+
+msgid "Explore Data tabs"
+msgstr "Adat felfedezése fülek"
+
+msgid ""
+"Explore and filter form data directly from the database. Use the parameters "
+"below to narrow down data by template and assignment period."
+msgstr ""
+"Közvetlenül az adatbázisból vizsgálja fel és szűrje az űrlapadatokat. Az "
+"alábbi paraméterekkel szűkítsd le az adatokat sablon és kiosztási időszak "
+"szerint."
+
+msgid "Export"
+msgstr "Export"
+
+msgid "Export Data"
+msgstr "Exportadatok"

@@ -6,6 +6,9 @@
 
 name: Deploy to Webapp
 
+# Shown in the Actions run list instead of the default "Manually run by …" title.
+run-name: Deploy to Webapp — ${{ inputs.environment }} (${{ inputs.version }})
+
 on:
   workflow_dispatch:
     inputs:

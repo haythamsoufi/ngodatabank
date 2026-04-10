@@ -415,7 +415,10 @@ Requires auto_translate_config to be set with endpoint URL
             updateProgress: updateProgress,
             notifyCompletion: notifyCompletion,
             translationState: translationState,
-            config: autoTranslateConfig
+            config: autoTranslateConfig,
+            updateEstimatedTime: updateEstimatedTime,
+            minimize: function() { minimizeModal(); },
+            restore:  function() { restoreModal(); }
         };
 
         // Log translation progress
@@ -454,6 +457,50 @@ Requires auto_translate_config to be set with endpoint URL
                 ).join('');
                 jQuery('#error-list').html(errorList);
             }
+
+            // Keep mini-banner in sync when running in background
+            updateMiniBanner();
+        }
+
+        // ── Mini-banner helpers ──────────────────────────────────────────────
+        function updateMiniBanner() {
+            const miniBanner = document.getElementById('auto-translate-mini-banner');
+            // offsetParent is always null for position:fixed elements — check display style only
+            if (!miniBanner || miniBanner.style.display === 'none') return;
+            const state = (window.autoTranslateModal && window.autoTranslateModal.translationState) || translationState;
+            const pct = state.totalItems > 0
+                ? Math.round((state.processedItems / state.totalItems) * 100) : 0;
+            const miniBar    = document.getElementById('mini-banner-progress-bar');
+            const miniPct    = document.getElementById('mini-banner-percent');
+            const miniStatus = document.getElementById('mini-banner-status');
+            const miniCounts = document.getElementById('mini-banner-counts');
+            if (miniBar)    miniBar.style.width = pct + '%';
+            if (miniPct)    miniPct.textContent  = pct + '%';
+            if (miniCounts) miniCounts.textContent = state.processedItems + '/' + state.totalItems;
+            if (miniStatus) {
+                if (state.isRunning && !state.isPaused) {
+                    miniStatus.textContent = {{ _("Translating\u2026") | tojson }};
+                } else if (state.isPaused) {
+                    miniStatus.textContent = {{ _("Paused") | tojson }};
+                } else if (!state.isRunning && state.totalItems > 0 && state.processedItems >= state.totalItems) {
+                    miniStatus.textContent = {{ _("Complete \u2014 click \u25b2 to restore") | tojson }};
+                } else if (state.totalItems === 0) {
+                    miniStatus.textContent = {{ _("Click \u25b2 to restore") | tojson }};
+                } else {
+                    miniStatus.textContent = {{ _("Stopped") | tojson }};
+                }
+            }
+        }
+
+        function minimizeModal() {
+            jQuery('#auto-translate-modal').addClass('hidden');
+            jQuery('#auto-translate-mini-banner').show();
+            updateMiniBanner();
+        }
+
+        function restoreModal() {
+            jQuery('#auto-translate-mini-banner').hide();
+            jQuery('#auto-translate-modal').removeClass('hidden');
         }
 
         // Perform translation
@@ -587,7 +634,11 @@ Requires auto_translate_config to be set with endpoint URL
 
             updateEstimatedTime();
 
-            // Show modal
+            // Show modal (reset drag position; hide any leftover mini-banner)
+            if (window.autoTranslateModal && window.autoTranslateModal._resetDragPosition) {
+                window.autoTranslateModal._resetDragPosition();
+            }
+            jQuery('#auto-translate-mini-banner').hide();
             jQuery('#auto-translate-modal').removeClass('hidden');
             jQuery('#confirmation-section').show();
             jQuery('#progress-section').hide();
@@ -602,6 +653,7 @@ Requires auto_translate_config to be set with endpoint URL
                 if (window.showConfirmation) {
                     window.showConfirmation(closeConfirmMsg, () => {
                         translationState.shouldStop = true;
+                        jQuery('#auto-translate-mini-banner').hide();
                         jQuery('#auto-translate-modal').addClass('hidden');
                         resetTranslationState();
                     }, () => {}, {{ _("Close") | tojson }}, {{ _("Cancel") | tojson }}, {{ _("Close Modal?") | tojson }});
@@ -609,6 +661,7 @@ Requires auto_translate_config to be set with endpoint URL
                 }
                 translationState.shouldStop = true;
             }
+            jQuery('#auto-translate-mini-banner').hide();
             jQuery('#auto-translate-modal').addClass('hidden');
             resetTranslationState();
         });
@@ -729,11 +782,114 @@ Requires auto_translate_config to be set with endpoint URL
 
         // Close after completion
         jQuery('#auto-translate-close-btn').on('click', function() {
+            jQuery('#auto-translate-mini-banner').hide();
             jQuery('#auto-translate-modal').addClass('hidden');
             resetTranslationState();
             // Reload the page to show updated translations
             window.location.reload();
         });
+
+        // Minimize / restore buttons
+        jQuery('#minimize-auto-translate-modal-btn').on('click', minimizeModal);
+        jQuery('#restore-auto-translate-modal-btn').on('click', restoreModal);
+
+        // ── Drag-to-move ─────────────────────────────────────────────────────
+        (function setupDrag() {
+            const panel  = document.getElementById('auto-translate-modal-panel');
+            const header = document.getElementById('auto-translate-modal-header');
+            if (!panel || !header) return;
+
+            let isDragging = false;
+            let originX = 0, originY = 0;
+            let tx = 0, ty = 0;
+
+            // Expose a reset so the open-button handler can re-centre for a fresh open.
+            if (window.autoTranslateModal) {
+                window.autoTranslateModal._resetDragPosition = function () {
+                    tx = 0; ty = 0;
+                    panel.style.transform = '';
+                };
+            }
+
+            header.addEventListener('mousedown', function (e) {
+                // Don't start drag when clicking an interactive element
+                if (e.target.closest('button, input, select, a')) return;
+                isDragging = true;
+                originX = e.clientX - tx;
+                originY = e.clientY - ty;
+                panel.style.transition = 'none';       // disable animation while dragging
+                header.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', function (e) {
+                if (!isDragging) return;
+                tx = e.clientX - originX;
+                ty = e.clientY - originY;
+                panel.style.transform = 'translate(' + tx + 'px, ' + ty + 'px)';
+            });
+
+            document.addEventListener('mouseup', function () {
+                if (!isDragging) return;
+                isDragging = false;
+                header.style.cursor = 'grab';
+                panel.style.transition = '';            // restore animation
+            });
+        })();
+
+        // ── Navigation guard while translation is running ────────────────────
+        // NOTE: for true browser refresh / tab-close (F5, Ctrl-R, × button)
+        // the browser MANDATES its own native dialog — custom HTML cannot replace it.
+        // For in-app link clicks we intercept early and show the app's custom dialog.
+        (function setupNavigationGuard() {
+            const leaveLabel  = {{ _("Leave Page")  | tojson }};
+            const stayLabel   = {{ _("Stay")        | tojson }};
+            const titleLabel  = {{ _("Leave Page?") | tojson }};
+            const warnMsg     = {{ _("Translation is running. Navigating away will stop it permanently. Leave anyway?") | tojson }};
+            const refreshMsg  = {{ _("Translation is in progress. Leaving will stop it.") | tojson }};
+
+            // 1) Native guard for refresh / close / URL-bar navigation
+            window.addEventListener('beforeunload', function (e) {
+                const state = (window.autoTranslateModal && window.autoTranslateModal.translationState) || translationState;
+                if (!state.isRunning) return;
+                e.preventDefault();
+                // Chrome requires returnValue to be set (ignores the string, shows generic message)
+                e.returnValue = refreshMsg;
+                return refreshMsg;
+            });
+
+            // 2) Custom dialog for in-app anchor clicks (sidebar, header nav, breadcrumbs…)
+            document.addEventListener('click', function (e) {
+                const state = (window.autoTranslateModal && window.autoTranslateModal.translationState) || translationState;
+                if (!state.isRunning) return;
+
+                const anchor = e.target.closest('a[href]');
+                if (!anchor) return;
+
+                const href = anchor.getAttribute('href') || '';
+                // Skip fragment-only, javascript:, and _blank (new tab) links
+                if (!href || href === '#' || href.startsWith('#') ||
+                    href.startsWith('javascript:') || anchor.target === '_blank') return;
+
+                e.preventDefault();
+                e.stopImmediatePropagation();
+
+                if (window.showConfirmation) {
+                    window.showConfirmation(warnMsg, function () {
+                        state.shouldStop = true;
+                        state.isRunning  = false;
+                        window.location.href = anchor.href;   // follow the original link
+                    }, null, leaveLabel, stayLabel, titleLabel);
+                } else {
+                    // Fallback if custom confirmation is unavailable
+                    if (window.confirm(warnMsg)) {
+                        state.shouldStop = true;
+                        state.isRunning  = false;
+                        window.location.href = anchor.href;
+                    }
+                }
+            }, true /* capture phase — runs before other handlers */);
+        })();
     }
 
     // Initialize when DOM is ready and jQuery is available

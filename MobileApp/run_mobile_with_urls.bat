@@ -4,7 +4,12 @@ cd /d "%~dp0"
 
 echo.
 echo  NGO Databank Mobile — choose Backoffice URL
-echo  (writes BACKEND_URL + FRONTEND_URL=https://website-databank.fly.dev into MobileApp\.env)
+echo  (writes BACKEND_URL + FRONTEND_URL + MOBILE_APP_API_KEY into MobileApp\.env)
+echo.
+echo  API keys: add these once in MobileApp\.env — this script sets MOBILE_APP_API_KEY from them:
+echo    MOBILE_APP_API_KEY_IFRC_PROD     — choice 1 ^(IFRC production^)
+echo    MOBILE_APP_API_KEY_IFRC_STAGING  — choice 2 ^(IFRC staging^)
+echo    MOBILE_APP_API_KEY_LOCAL_DEV     — choice 5 ^(local dev^)
 echo.
 
 echo  Backoffice (Flask / API^):
@@ -39,16 +44,38 @@ echo  BACKEND_URL=!BACKEND_URL!
 echo  FRONTEND_URL=!FRONTEND_URL! ^(fixed^)
 echo.
 
-REM Merge into .env (preserve other keys; replace BACKEND_URL / FRONTEND_URL)
+REM Merge into .env (preserve other keys; replace BACKEND_URL / FRONTEND_URL / MOBILE_APP_API_KEY)
+REM MOBILE_APP_API_KEY is filled from MOBILE_APP_API_KEY_IFRC_PROD / _IFRC_STAGING / _LOCAL_DEV for choices 1,2,5; otherwise previous MOBILE_APP_API_KEY is kept.
+set "BO_CHOICE=!BO_CHOICE!"
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "$ErrorActionPreference = 'Stop';" ^
   "$envFile = Join-Path (Get-Location) '.env';" ^
   "$b = $env:BACKEND_URL.Trim().TrimEnd('/');" ^
   "$f = $env:FRONTEND_URL.Trim().TrimEnd('/');" ^
+  "$choice = ($env:BO_CHOICE + '').Trim();" ^
+  "$map = @{};" ^
+  "if (Test-Path $envFile) {" ^
+  "  Get-Content -LiteralPath $envFile -Encoding UTF8 | ForEach-Object {" ^
+  "    $line = $_;" ^
+  "    if ($line -match '^\s*#' -or $line -notmatch '=') { return };" ^
+  "    $i = $line.IndexOf('='); if ($i -lt 1) { return };" ^
+  "    $k = $line.Substring(0, $i).Trim(); $v = $line.Substring($i + 1);" ^
+  "    $map[$k] = $v;" ^
+  "  }" ^
+  "};" ^
+  "$mobile = $null;" ^
+  "switch ($choice) {" ^
+  "  '1' { $mobile = $map['MOBILE_APP_API_KEY_IFRC_PROD'] }" ^
+  "  '2' { $mobile = $map['MOBILE_APP_API_KEY_IFRC_STAGING'] }" ^
+  "  '5' { $mobile = $map['MOBILE_APP_API_KEY_LOCAL_DEV'] }" ^
+  "  default { $mobile = $map['MOBILE_APP_API_KEY'] }" ^
+  "};" ^
+  "if ($null -eq $mobile) { $mobile = '' };" ^
   "$lines = @();" ^
-  "if (Test-Path $envFile) { $lines = @(Get-Content -LiteralPath $envFile -Encoding UTF8 | Where-Object { $_ -notmatch '^(BACKEND_URL|FRONTEND_URL)=' }) };" ^
+  "if (Test-Path $envFile) { $lines = @(Get-Content -LiteralPath $envFile -Encoding UTF8 | Where-Object { $_ -notmatch '^(BACKEND_URL|FRONTEND_URL|MOBILE_APP_API_KEY)=' }) };" ^
   "$lines += ('BACKEND_URL=' + $b);" ^
   "$lines += ('FRONTEND_URL=' + $f);" ^
+  "$lines += ('MOBILE_APP_API_KEY=' + $mobile);" ^
   "Set-Content -LiteralPath $envFile -Value $lines -Encoding UTF8;"
 
 if errorlevel 1 (
@@ -57,6 +84,12 @@ if errorlevel 1 (
 )
 
 echo  Updated .env
+if "!BO_CHOICE!"=="1" echo   MOBILE_APP_API_KEY ^<= MOBILE_APP_API_KEY_IFRC_PROD
+if "!BO_CHOICE!"=="2" echo   MOBILE_APP_API_KEY ^<= MOBILE_APP_API_KEY_IFRC_STAGING
+if "!BO_CHOICE!"=="5" echo   MOBILE_APP_API_KEY ^<= MOBILE_APP_API_KEY_LOCAL_DEV
+if "!BO_CHOICE!"=="3" echo   MOBILE_APP_API_KEY ^(unchanged / same as last .env^)
+if "!BO_CHOICE!"=="4" echo   MOBILE_APP_API_KEY ^(unchanged / same as last .env^)
+if "!BO_CHOICE!"=="6" echo   MOBILE_APP_API_KEY ^(unchanged / same as last .env^)
 echo.
 
 if "!BO_CHOICE!"=="5" (
