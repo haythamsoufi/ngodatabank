@@ -26,8 +26,9 @@
     /**
      * Bump when global column-visibility / clear-filters toolbar styles change.
      * Used so existing DOM (data-styled from a prior script version) re-applies inline styles.
+     * Canonical appearance: ag-column-visibility-manager.css (loaded via ag_grid_includes).
      */
-    var AG_GRID_TOOLBAR_BUTTON_STYLE_REV = '4';
+    var AG_GRID_TOOLBAR_BUTTON_STYLE_REV = '5';
 
     /**
      * Get AG Grid localeText translations

@@ -1,84 +1,170 @@
 /**
  * AG Grid Column Visibility Manager Styles
  * Professional styling for column visibility panel
+ *
+ * Toolbar (Columns + Clear all filters): canonical global appearance for every template that
+ * includes this stylesheet via ag_grid_includes — flat controls, no shadow, sharp corners (aligned
+ * with Backoffice .btn / theme), including pages that do not wrap the grid in .sharp-ui.
  */
 
-/* Panel toolbar: compact controls (text-xs / semibold); sharp corners per Backoffice .btn rules */
+/* Placeholders — any id containing column-visibility-button-placeholder */
+[id*="column-visibility-button-placeholder"],
+#column-visibility-button-placeholder,
+#pending-column-visibility-button-placeholder,
+#processed-column-visibility-button-placeholder {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    margin: 0 !important;
+}
+
 .ag-column-visibility-button-container {
     position: relative;
     margin-bottom: 0;
-    display: flex;
-    justify-content: flex-end;
     z-index: 1;
+    display: inline-flex !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    width: auto !important;
+    flex-shrink: 0 !important;
+    box-shadow: none !important;
+    justify-content: flex-end;
 }
 
-/* Clear All Filters Button */
-.ag-clear-filters-button {
-    box-sizing: border-box;
-    padding: 6px 12px;
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 0;
-    cursor: pointer;
-    font-size: 12px;
-    line-height: 1.25;
-    font-weight: 600;
-    color: #374151;
-    display: none; /* Hidden by default, shown when filters are active */
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    transition: background-color 0.15s ease, border-color 0.15s ease;
-    box-shadow: none;
+[id*="column-visibility-button-placeholder"] .ag-column-visibility-button-container,
+#column-visibility-button-placeholder .ag-column-visibility-button-container,
+#pending-column-visibility-button-placeholder .ag-column-visibility-button-container,
+#processed-column-visibility-button-placeholder .ag-column-visibility-button-container {
+    display: inline-flex !important;
 }
 
-.ag-clear-filters-button:hover {
-    background: #fef2f2;
-    border-color: #fecaca;
-    box-shadow: none;
+#column-visibility-button-placeholder .ag-column-visibility-button,
+#pending-column-visibility-button-placeholder .ag-column-visibility-button,
+#processed-column-visibility-button-placeholder .ag-column-visibility-button,
+.ag-column-visibility-button-container .ag-column-visibility-button,
+button.ag-column-visibility-button {
+    box-sizing: border-box !important;
+    padding: 6px 12px !important;
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 0 !important;
+    cursor: pointer !important;
+    font-size: 12px !important;
+    line-height: 1.25 !important;
+    color: #374151 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    transition: background-color 0.15s ease, border-color 0.15s ease !important;
+    box-shadow: none !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    font-family: inherit !important;
 }
 
-.ag-clear-filters-button:active {
-    box-shadow: none;
+#column-visibility-button-placeholder .ag-column-visibility-button:hover,
+#pending-column-visibility-button-placeholder .ag-column-visibility-button:hover,
+#processed-column-visibility-button-placeholder .ag-column-visibility-button:hover,
+.ag-column-visibility-button-container .ag-column-visibility-button:hover,
+button.ag-column-visibility-button:hover {
+    background: #f9fafb !important;
+    border-color: #d1d5db !important;
+    box-shadow: none !important;
 }
 
-.ag-clear-filters-button i {
-    font-size: 12px;
-    color: #dc2626;
+#column-visibility-button-placeholder .ag-column-visibility-button:active,
+#pending-column-visibility-button-placeholder .ag-column-visibility-button:active,
+#processed-column-visibility-button-placeholder .ag-column-visibility-button:active,
+.ag-column-visibility-button-container .ag-column-visibility-button:active,
+button.ag-column-visibility-button:active {
+    box-shadow: none !important;
 }
 
-.ag-column-visibility-button {
-    box-sizing: border-box;
-    padding: 6px 12px;
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 0;
-    cursor: pointer;
-    font-size: 12px;
-    line-height: 1.25;
-    font-weight: 600;
-    color: #374151;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    transition: background-color 0.15s ease, border-color 0.15s ease;
-    box-shadow: none;
+#column-visibility-button-placeholder .ag-column-visibility-button:focus,
+#pending-column-visibility-button-placeholder .ag-column-visibility-button:focus,
+#processed-column-visibility-button-placeholder .ag-column-visibility-button:focus,
+.ag-column-visibility-button-container .ag-column-visibility-button:focus,
+button.ag-column-visibility-button:focus {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    outline: none !important;
 }
 
-.ag-column-visibility-button:hover {
-    background: #f9fafb;
-    border-color: #d1d5db;
-    box-shadow: none;
+#column-visibility-button-placeholder .ag-column-visibility-button:focus-visible,
+#pending-column-visibility-button-placeholder .ag-column-visibility-button:focus-visible,
+#processed-column-visibility-button-placeholder .ag-column-visibility-button:focus-visible,
+.ag-column-visibility-button-container .ag-column-visibility-button:focus-visible,
+button.ag-column-visibility-button:focus-visible {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    outline: 2px solid var(--btn-primary, #0d9488) !important;
+    outline-offset: 2px !important;
 }
 
-.ag-column-visibility-button:active {
-    box-shadow: none;
+#column-visibility-button-placeholder .ag-column-visibility-button i,
+#pending-column-visibility-button-placeholder .ag-column-visibility-button i,
+#processed-column-visibility-button-placeholder .ag-column-visibility-button i,
+.ag-column-visibility-button-container .ag-column-visibility-button i,
+button.ag-column-visibility-button i {
+    font-size: 12px !important;
+    color: #4b5563 !important;
 }
 
-.ag-column-visibility-button i {
-    font-size: 12px;
-    color: #4b5563;
+/* Clear all filters — same flat chip scale (display toggled inline by ag-grid-helper.js) */
+.ag-column-visibility-button-container .ag-clear-filters-button,
+button.ag-clear-filters-button {
+    box-sizing: border-box !important;
+    padding: 6px 12px !important;
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 0 !important;
+    cursor: pointer !important;
+    font-size: 12px !important;
+    line-height: 1.25 !important;
+    font-weight: 600 !important;
+    color: #374151 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    box-shadow: none !important;
+    transition: background-color 0.15s ease, border-color 0.15s ease !important;
+    font-family: inherit !important;
+}
+
+.ag-column-visibility-button-container .ag-clear-filters-button:hover,
+button.ag-clear-filters-button:hover {
+    background: #fef2f2 !important;
+    border-color: #fecaca !important;
+    box-shadow: none !important;
+}
+
+.ag-column-visibility-button-container .ag-clear-filters-button:active,
+button.ag-clear-filters-button:active {
+    box-shadow: none !important;
+}
+
+.ag-column-visibility-button-container .ag-clear-filters-button:focus,
+button.ag-clear-filters-button:focus {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    outline: none !important;
+}
+
+.ag-column-visibility-button-container .ag-clear-filters-button:focus-visible,
+button.ag-clear-filters-button:focus-visible {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    outline: 2px solid var(--btn-primary, #0d9488) !important;
+    outline-offset: 2px !important;
+}
+
+.ag-column-visibility-button-container .ag-clear-filters-button i,
+button.ag-clear-filters-button i {
+    font-size: 12px !important;
+    color: #dc2626 !important;
 }
 
 /* Panel Backdrop */
@@ -319,9 +405,20 @@
 .ag-theme-balham-dark .ag-column-visibility-button,
 .ag-theme-quartz-dark .ag-column-visibility-button,
 .ag-theme-material-dark .ag-column-visibility-button {
-    background: var(--ag-header-background-color, #2a2a2a);
-    border-color: var(--ag-border-color, #444);
-    color: var(--ag-foreground-color, #fff);
+    background: var(--ag-header-background-color, #2a2a2a) !important;
+    border-color: var(--ag-border-color, #444) !important;
+    color: var(--ag-foreground-color, #fff) !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+.ag-theme-alpine-dark .ag-column-visibility-button:hover,
+.ag-theme-balham-dark .ag-column-visibility-button:hover,
+.ag-theme-quartz-dark .ag-column-visibility-button:hover,
+.ag-theme-material-dark .ag-column-visibility-button:hover {
+    background: var(--ag-row-hover-color, #333) !important;
+    border-color: var(--ag-border-color, #555) !important;
+    box-shadow: none !important;
 }
 
 .ag-theme-alpine-dark .ag-column-visibility-item:hover,
@@ -336,17 +433,20 @@
 .ag-theme-balham-dark .ag-clear-filters-button,
 .ag-theme-quartz-dark .ag-clear-filters-button,
 .ag-theme-material-dark .ag-clear-filters-button {
-    background: var(--ag-header-background-color, #2a2a2a);
-    border-color: var(--ag-border-color, #444);
-    color: var(--ag-foreground-color, #fff);
+    background: var(--ag-header-background-color, #2a2a2a) !important;
+    border-color: var(--ag-border-color, #444) !important;
+    color: var(--ag-foreground-color, #fff) !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
 }
 
 .ag-theme-alpine-dark .ag-clear-filters-button:hover,
 .ag-theme-balham-dark .ag-clear-filters-button:hover,
 .ag-theme-quartz-dark .ag-clear-filters-button:hover,
 .ag-theme-material-dark .ag-clear-filters-button:hover {
-    background: #3b0000;
-    border-color: #7f1d1d;
+    background: #3b0000 !important;
+    border-color: #7f1d1d !important;
+    box-shadow: none !important;
 }
 
 .ag-theme-alpine-dark .ag-clear-filters-button i,
