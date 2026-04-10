@@ -24,6 +24,12 @@
     'use strict';
 
     /**
+     * Bump when global column-visibility / clear-filters toolbar styles change.
+     * Used so existing DOM (data-styled from a prior script version) re-applies inline styles.
+     */
+    var AG_GRID_TOOLBAR_BUTTON_STYLE_REV = '4';
+
+    /**
      * Get AG Grid localeText translations
      * Reads from window.agGridTranslations or i18n-json script tag
      * @returns {Object} localeText object for AG Grid
@@ -116,11 +122,16 @@
      * @param {Array} config.rowData - Initial row data (optional)
      * @param {Object} config.options - Additional grid options
      * @param {Object} config.columnVisibilityOptions - Column Visibility Manager options
+     * @param {boolean} [config.autoDetectFilters=true] - Run autoDetectColumnFilters on init; re-evaluate on filterChanged
+     * @param {Object} [config.autoDetectFilterOptions] - Options for autoDetectColumnFilters (maxUniqueValues, sampleSize, …)
      */
     function AgGridHelper(config) {
         if (!config || !config.containerId || !config.templateId || !config.columnDefs) {
             throw new Error('AgGridHelper: containerId, templateId, and columnDefs are required');
         }
+
+        this._autoDetectFiltersEnabled = config.autoDetectFilters !== false;
+        this._autoDetectFilterOptions = config.autoDetectFilterOptions || {};
 
         this.config = {
             containerId: config.containerId,
@@ -471,6 +482,15 @@
         if (!this.gridDiv) {
             console.error('AgGridHelper: Grid container #' + this.config.containerId + ' not found');
             return null;
+        }
+
+        // Match AgGridHelper.create(): pick customSetFilter vs text/number from rowData before grid builds.
+        if (this._autoDetectFiltersEnabled !== false && typeof AgGridHelper.autoDetectColumnFilters === 'function') {
+            AgGridHelper.autoDetectColumnFilters(
+                this.config.columnDefs,
+                this.config.rowData || [],
+                this._autoDetectFilterOptions || {}
+            );
         }
 
         // Detect grid API
@@ -925,21 +945,24 @@
 
         const button = this.clearFiltersButton;
 
-        // Apply styles matching the column visibility button
+        /* Sharp corners + compact toolbar (Backoffice .btn system uses border-radius: 0) */
         button.style.cssText = [
-            'padding: 8px 16px !important',
+            'box-sizing: border-box !important',
+            'padding: 6px 12px !important',
             'background: #ffffff !important',
-            'border: 1px solid #d1d5db !important',
-            'border-radius: 6px !important',
+            'border: 1px solid #e5e7eb !important',
+            'border-radius: 0 !important',
             'cursor: pointer !important',
-            'font-size: 14px !important',
+            'font-size: 12px !important',
+            'line-height: 1.25 !important',
             'color: #374151 !important',
             'display: none',  // Hidden by default, shown when filters active
             'align-items: center !important',
+            'justify-content: center !important',
             'gap: 6px !important',
-            'transition: all 0.2s ease !important',
-            'box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important',
-            'font-weight: 500 !important',
+            'transition: background-color 0.15s ease, border-color 0.15s ease !important',
+            'box-shadow: none !important',
+            'font-weight: 600 !important',
             'white-space: nowrap !important',
             'font-family: inherit !important'
         ].join('; ');
@@ -947,7 +970,7 @@
         // Style icon
         const iconElement = button.querySelector('i');
         if (iconElement) {
-            iconElement.style.cssText = 'font-size: 14px !important; color: #dc2626 !important;';
+            iconElement.style.cssText = 'font-size: 12px !important; color: #dc2626 !important;';
         }
 
         // Apply hover styles
@@ -955,26 +978,19 @@
             button.addEventListener('mouseenter', function() {
                 this.style.background = '#fef2f2';
                 this.style.borderColor = '#fecaca';
-                this.style.boxShadow = '0 2px 4px rgba(220, 38, 38, 0.15)';
+                this.style.boxShadow = 'none';
             });
 
             button.addEventListener('mouseleave', function() {
                 this.style.background = '#ffffff';
-                this.style.borderColor = '#d1d5db';
-                this.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
-            });
-
-            button.addEventListener('mousedown', function() {
-                this.style.transform = 'translateY(1px)';
-                this.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.1)';
-            });
-
-            button.addEventListener('mouseup', function() {
-                this.style.transform = '';
+                this.style.borderColor = '#e5e7eb';
+                this.style.boxShadow = 'none';
             });
 
             button.dataset.hoverListeners = 'true';
         }
+
+        button.dataset.agGridToolbarStyleRev = AG_GRID_TOOLBAR_BUTTON_STYLE_REV;
     };
 
     /**
@@ -1581,28 +1597,30 @@
             // Ensure icon-only (fallback check, button should already be icon-only)
             ensureIconOnly(button);
 
-            // Mark as styled but allow re-styling for icon check
-            if (button.dataset.styled === 'true') {
-                // Still check icon even if already styled (in case text was re-added)
+            // Re-apply when global styles change (rev bump); old code used data-styled only and never updated.
+            if (button.dataset.agGridToolbarStyleRev === AG_GRID_TOOLBAR_BUTTON_STYLE_REV) {
                 ensureIconOnly(button);
                 return;
             }
 
-            // Apply base styles
+            /* Sharp corners + compact chip-like scale (align with filter row density, not rounded-lg) */
             button.style.cssText = [
-                'padding: 8px 16px !important',
+                'box-sizing: border-box !important',
+                'padding: 6px 12px !important',
                 'background: #ffffff !important',
-                'border: 1px solid #d1d5db !important',
-                'border-radius: 6px !important',
+                'border: 1px solid #e5e7eb !important',
+                'border-radius: 0 !important',
                 'cursor: pointer !important',
-                'font-size: 14px !important',
+                'font-size: 12px !important',
+                'line-height: 1.25 !important',
                 'color: #374151 !important',
                 'display: inline-flex !important',
                 'align-items: center !important',
+                'justify-content: center !important',
                 'gap: 6px !important',
-                'transition: all 0.2s ease !important',
-                'box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important',
-                'font-weight: 500 !important',
+                'transition: background-color 0.15s ease, border-color 0.15s ease !important',
+                'box-shadow: none !important',
+                'font-weight: 600 !important',
                 'white-space: nowrap !important',
                 // IMPORTANT: inherit app font so Arabic uses Tajawal (and other locales use the global font)
                 'font-family: inherit !important'
@@ -1611,35 +1629,26 @@
             // Style icon (re-query after potentially changing innerHTML)
             const iconElement = button.querySelector('i');
             if (iconElement) {
-                iconElement.style.cssText = 'font-size: 14px !important; color: #6b7280 !important;';
+                iconElement.style.cssText = 'font-size: 12px !important; color: #4b5563 !important;';
             }
 
             // Apply hover styles via event listeners (only once)
             if (!button.dataset.hoverListeners) {
                 button.addEventListener('mouseenter', function() {
                     this.style.background = '#f9fafb';
-                    this.style.borderColor = '#9ca3af';
-                    this.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.15)';
+                    this.style.borderColor = '#d1d5db';
+                    this.style.boxShadow = 'none';
                 });
 
                 button.addEventListener('mouseleave', function() {
                     this.style.background = '#ffffff';
-                    this.style.borderColor = '#d1d5db';
-                    this.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
-                });
-
-                button.addEventListener('mousedown', function() {
-                    this.style.transform = 'translateY(1px)';
-                    this.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.1)';
-                });
-
-                button.addEventListener('mouseup', function() {
-                    this.style.transform = '';
+                    this.style.borderColor = '#e5e7eb';
+                    this.style.boxShadow = 'none';
                 });
                 button.dataset.hoverListeners = 'true';
             }
 
-            button.dataset.styled = 'true';
+            button.dataset.agGridToolbarStyleRev = AG_GRID_TOOLBAR_BUTTON_STYLE_REV;
         };
 
         // Try to find and style the button for this specific grid instance
@@ -1760,7 +1769,7 @@
             // Also style any existing containers
             const existingContainers = placeholder.querySelectorAll('.ag-column-visibility-button-container');
             existingContainers.forEach(function(container) {
-                container.style.cssText = 'display: inline-block !important; margin: 0 !important; text-align: left !important; width: auto !important;';
+                container.style.cssText = 'display: inline-flex !important; align-items: center !important; flex-wrap: nowrap !important; gap: 8px !important; margin: 0 !important; width: auto !important;';
                 const btn = container.querySelector('.ag-column-visibility-button');
                 if (btn) {
                     styleButton(btn);
@@ -1794,7 +1803,7 @@
                                     moveButtonToPlaceholder(node, buttonPlaceholderId);
 
                                     // Style the container
-                                    node.style.cssText = 'display: inline-block !important; margin: 0 !important; text-align: left !important; width: auto !important;';
+                                    node.style.cssText = 'display: inline-flex !important; align-items: center !important; flex-wrap: nowrap !important; gap: 8px !important; margin: 0 !important; width: auto !important;';
 
                                     // Style the button
                                     const btn = node.querySelector('.ag-column-visibility-button');
@@ -1849,7 +1858,7 @@
                 // Also check existing containers in THIS placeholder only
                 const containers = placeholder.querySelectorAll('.ag-column-visibility-button-container');
                 containers.forEach(function(container) {
-                    container.style.cssText = 'display: inline-block !important; margin: 0 !important; text-align: left !important; width: auto !important;';
+                    container.style.cssText = 'display: inline-flex !important; align-items: center !important; flex-wrap: nowrap !important; gap: 8px !important; margin: 0 !important; width: auto !important;';
                     const btn = container.querySelector('.ag-column-visibility-button');
                     if (btn) {
                         styleButton(btn);
@@ -2980,11 +2989,6 @@
     AgGridHelper.create = function(gridId, templateId, columnDefs, rowData, options) {
         options = options || {};
 
-        // Auto-detect filter types unless explicitly disabled
-        if (options.autoDetectFilters !== false && Array.isArray(columnDefs) && Array.isArray(rowData)) {
-            AgGridHelper.autoDetectColumnFilters(columnDefs, rowData, options.autoDetectFilterOptions);
-        }
-
         var gridOptions = options.gridOptions || {};
         var columnVisibilityOptions = options.columnVisibility || {};
         var heightOptions = options.height || {};
@@ -3015,12 +3019,10 @@
             rowData: rowData || [],
             options: mergedGridOptions,
             columnVisibilityOptions: mergedColumnVisibility,
-            heightOptions: heightOptions
+            heightOptions: heightOptions,
+            autoDetectFilters: options.autoDetectFilters,
+            autoDetectFilterOptions: options.autoDetectFilterOptions
         });
-
-        // Persist auto-detection settings on the helper instance (used for re-evaluation on filterChanged)
-        helper._autoDetectFiltersEnabled = options.autoDetectFilters !== false;
-        helper._autoDetectFilterOptions = options.autoDetectFilterOptions || {};
 
         // Initialize the grid
         var api = helper.initialize();

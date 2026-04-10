@@ -3,9 +3,9 @@
 
 Auth policy:
   - Truly public (no login required): countrymap, sectors-subsectors, indicator-bank,
-    indicator-suggestions, quiz/leaderboard, data/periods, data/fdrs-overview.
+    indicator-suggestions, data/periods, data/fdrs-overview.
     Rate-limited to prevent abuse.
-  - Auth-required: quiz/submit-score (score is tied to the authenticated user).
+  - Auth-required: quiz/leaderboard, quiz/submit-score (scores are tied to authenticated users).
 """
 
 from contextlib import suppress
@@ -340,25 +340,41 @@ def submit_indicator_suggestion():
 
 
 @mobile_bp.route('/data/quiz/leaderboard', methods=['GET'])
+@mobile_auth_required
 @mobile_rate_limit(requests_per_minute=60)
 def quiz_leaderboard():
-    """Quiz leaderboard (mirrors /api/v1/quiz/leaderboard)."""
-    from app.models import QuizScore
+    """Quiz leaderboard (mirrors /api/v1/quiz/leaderboard).
 
-    limit = request.args.get('limit', 20, type=int)
+    Scores are stored on ``User.quiz_score`` (additive total per user), not a
+    separate per-attempt table.
+    """
+    from sqlalchemy import desc
+    from app.models import User
 
-    scores = QuizScore.query.order_by(
-        QuizScore.score.desc(), QuizScore.created_at.asc()
-    ).limit(min(limit, 100)).all()
+    limit = request.args.get('limit', default=20, type=int)
+    if limit < 1 or limit > 100:
+        limit = 20
+
+    top_users = (
+        User.query.filter(
+            User.active == True,  # noqa: E712
+            User.quiz_score > 0,
+        )
+        .order_by(desc(User.quiz_score), User.name.asc())
+        .limit(limit)
+        .all()
+    )
 
     items = []
-    for s in scores:
+    for rank, user in enumerate(top_users, start=1):
         items.append({
-            'id': s.id,
-            'user_name': s.user_name,
-            'score': s.score,
-            'total_questions': getattr(s, 'total_questions', None),
-            'created_at': s.created_at.isoformat() if s.created_at else None,
+            'rank': rank,
+            'user_id': user.id,
+            'name': user.name or (
+                user.email.split('@')[0] if user.email else 'User'
+            ),
+            'email': user.email or '',
+            'score': user.quiz_score or 0,
         })
 
     return mobile_ok(data={'leaderboard': items}, meta={'total': len(items)})
@@ -531,35 +547,31 @@ def mobile_fdrs_overview():
 def submit_quiz_score():
     """Submit a quiz score (mirrors /api/v1/quiz/submit-score).
 
-    user_name is derived from the authenticated user so the client never
-    needs to send it — avoids the payload mismatch that caused all
-    submissions to return 400 when the client sent only {score}.
+    Points are added to the authenticated user's ``User.quiz_score`` (same as
+    the session-based v1 endpoint). The client should send only ``score``;
+    identity comes from the JWT.
     """
     from app.utils.api_helpers import get_json_safe
-    from app.models import QuizScore
 
     data = get_json_safe()
     score = data.get('score')
     if score is None:
         return mobile_bad_request('score is required')
-
-    # Derive display name from the authenticated user; never trust a
-    # client-provided name for score attribution.
-    user_name = (
-        getattr(current_user, 'name', None)
-        or getattr(current_user, 'email', None)
-        or f'User {current_user.id}'
-    ).strip()
+    if not isinstance(score, int) or score < 0:
+        return mobile_bad_request('Invalid score. Must be a non-negative integer.')
 
     try:
-        quiz_score = QuizScore(
-            user_name=user_name,
-            score=score,
-            total_questions=data.get('total_questions'),
-        )
-        db.session.add(quiz_score)
+        user = current_user
+        user.quiz_score = (user.quiz_score or 0) + score
         db.session.flush()
-        return mobile_ok(message='Score submitted', data={'id': quiz_score.id})
+        return mobile_ok(
+            message='Score submitted',
+            data={
+                'user_id': user.id,
+                'total_score': user.quiz_score,
+                'points_added': score,
+            },
+        )
     except Exception as e:
         current_app.logger.error("submit_quiz_score: %s", e, exc_info=True)
         from app.utils.transactions import request_transaction_rollback

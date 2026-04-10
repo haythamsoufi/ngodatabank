@@ -57,6 +57,7 @@
 
     CustomSetFilter.prototype.init = function(params) {
         this.params = params;
+        this.hidePopup = (params && typeof params.hidePopup === 'function') ? params.hidePopup : null;
         this.filterChangedCallback = params.filterChangedCallback;
         this.valueGetter = params.valueGetter;
         this.doesRowPassOtherFilters = params.doesRowPassOtherFilters;
@@ -111,6 +112,7 @@
             this.onFilterChangedListener = this.onFilterChanged.bind(this);
             this.params.api.addEventListener('filterChanged', this.onFilterChangedListener);
         }
+
     };
 
     CustomSetFilter.prototype.extractUniqueValues = function() {
@@ -325,7 +327,8 @@
             return a > b ? 1 : a < b ? -1 : 0;
         });
 
-        this.filteredValues = [...this.uniqueValues];
+        // Keep list narrowed to the search text when unique values refresh (filterChanged / GUI attach).
+        this.filterValues();
     };
 
     CustomSetFilter.prototype.formatValue = function(value) {
@@ -809,6 +812,10 @@
 
     CustomSetFilter.prototype.onApply = function() {
         this.filterChangedCallback();
+        var close = this.hidePopup || (this.params && this.params.hidePopup);
+        if (typeof close === 'function') {
+            close();
+        }
     };
 
     CustomSetFilter.prototype.onClear = function() {
@@ -861,7 +868,10 @@
         }, 10);
     };
 
-    CustomSetFilter.prototype.afterGuiAttached = function() {
+    CustomSetFilter.prototype.afterGuiAttached = function(params) {
+        if (params && typeof params.hidePopup === 'function') {
+            this.hidePopup = params.hidePopup;
+        }
         // Called when filter UI is attached/opened - refresh available values
         // This ensures values are updated when user opens the filter
         setTimeout(() => {

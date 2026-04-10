@@ -423,7 +423,10 @@ MOBILE_ENDPOINT_REGISTRY = [
      'flutter': 'GlobalOverviewDataService'},
     {'group': 'Public Data', 'path': '/api/mobile/v1/data/fdrs-overview', 'methods': ['GET'],
      'auth': 'public', 'rate_limited': True,
-     'description': 'FDRS aggregated country/period data (publicly accessible without login)',
+     'description': (
+         'FDRS aggregated totals per country (GET). Required query: indicator_bank_id. '
+         'Optional: template_id, period_name, locale. Path has no <id> segment — ID is only in the query string.'
+     ),
      'flutter': 'GlobalOverviewDataService'},
     {'group': 'Public Data', 'path': '/api/mobile/v1/data/quiz/leaderboard', 'methods': ['GET'],
      'auth': 'public', 'rate_limited': True,

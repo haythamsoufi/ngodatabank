@@ -16,7 +16,7 @@ from app.routes.admin.shared import admin_permission_required
 from app.services.user_analytics_service import log_admin_action
 from app.utils.api_responses import json_ok, json_ok_result, json_server_error
 
-bp = Blueprint("api_key_management", __name__, url_prefix="/admin")
+bp = Blueprint("api_key_management", __name__, url_prefix="/admin/api-management")
 
 
 @bp.route("/api-keys", methods=["GET"])

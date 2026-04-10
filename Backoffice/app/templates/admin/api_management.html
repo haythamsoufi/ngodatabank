@@ -113,6 +113,62 @@
     #epSurfaceBtns .ep-surface-btn:disabled .opacity-60 {
         opacity: 0.55 !important;
     }
+    /* AI identity: trigger only (panel is position:fixed on body — escapes AG Grid overflow) */
+    .ep-ai-identity-tip-trigger {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        vertical-align: middle;
+    }
+    #epAiIdentityTooltipLayer {
+        position: fixed;
+        z-index: 50000;
+        left: 0;
+        top: 0;
+        min-width: 14rem;
+        max-width: min(24rem, calc(100vw - 24px));
+        margin: 0;
+        padding: 0;
+        border: none;
+        background: transparent;
+        box-shadow: none;
+        pointer-events: none;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.12s ease, visibility 0.12s ease;
+    }
+    #epAiIdentityTooltipLayer.ep-ai-identity-tip-visible {
+        pointer-events: auto;
+        opacity: 1;
+        visibility: visible;
+    }
+    #epAiIdentityTooltipLayer .ep-rich-tip-inner {
+        display: block;
+        position: relative;
+        background: rgb(30 41 59);
+        color: rgb(248 250 252);
+        font-size: 11px;
+        font-weight: 500;
+        line-height: 1.45;
+        padding: 8px 10px;
+        text-align: left;
+        white-space: normal;
+        box-shadow: 0 10px 28px rgb(15 23 42 / 0.22);
+        border: 1px solid rgb(51 65 85);
+        user-select: text;
+        -webkit-user-select: text;
+        cursor: default;
+    }
+    #epAiIdentityTooltipLayer .ep-rich-tip-inner::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 100%;
+        transform: translateX(-50%);
+        border: 6px solid transparent;
+        border-top-color: rgb(30 41 59);
+        margin-top: -1px;
+    }
     /* Path/description clipping + stacking: rules live in the page extra_js block, right after ag_grid_js(), so they load after AG Grid CSS. */
 </style>
 
@@ -251,9 +307,9 @@
                 </p>
             </div>
 
-            <!-- Surface filter buttons (custom tooltips on hover / focus) -->
-            <div class="flex flex-wrap items-center gap-3 min-w-0">
-                <div class="flex flex-wrap gap-1 min-w-0" id="epSurfaceBtns">
+            <!-- Surface filter chips + grid actions (column visibility, clear filters) on one row -->
+            <div class="flex flex-wrap items-start justify-between gap-x-3 gap-y-2 min-w-0 w-full">
+                <div class="flex flex-wrap gap-1 min-w-0 flex-1 basis-0" id="epSurfaceBtns">
                     <span class="ep-filter-wrap">
                         <button type="button" data-surface="all" class="ep-surface-btn ep-active px-3 py-1.5 text-xs font-semibold rounded-lg border">
                             {{ _('All') }} <span class="ml-1 opacity-60">{{ surface_summary.all.total }}</span>
@@ -367,6 +423,9 @@
                     </span>
                     {% endif %}
                 </div>
+                <div class="flex items-center gap-2 shrink-0 pl-3 border-l border-gray-200 self-center">
+                    <div id="ep-registry-col-vis-placeholder" class="flex items-center justify-end gap-2 min-h-[2rem]"></div>
+                </div>
             </div>
         </div>
 
@@ -377,8 +436,7 @@
             {{ ag_grid_loading('epRegistryGrid', loading_text=_('Loading endpoints…')) }}
             <div id="epRegistryGrid-container" class="w-full min-w-0" style="display: none;">
                 <div id="epRegistryGrid" class="ag-theme-alpine ag-grid-container"
-                     style="width: 100%; height: min(70vh, 42rem);"
-                     data-placeholder-id="ep-registry-col-vis-placeholder"></div>
+                     style="width: 100%; height: min(70vh, 42rem);"></div>
             </div>
         </div>
 
@@ -441,16 +499,34 @@
         </div>
         {% endif %}
 
-        <!-- Legend -->
+        <!-- Legend (mostly native title; AI Session uses fixed-layer tooltip — see epAiIdentityTooltipInit) -->
         <div class="px-6 py-3 bg-gray-50 border-t border-gray-100 text-xs text-gray-400 flex flex-wrap gap-x-5 gap-y-1 min-w-0 overflow-x-auto [-webkit-overflow-scrolling:touch] overscroll-x-contain">
-            <span><i class="fas fa-globe text-gray-400 mr-1"></i>Public — no auth</span>
-            <span><i class="fas fa-key text-amber-500 mr-1"></i>API Key — Bearer DB-managed key</span>
-            <span><i class="fas fa-key text-indigo-500 mr-1"></i>Key / Session — either works</span>
-            <span><i class="fas fa-user text-blue-500 mr-1"></i>Session — @login_required</span>
-            <span><i class="fas fa-robot text-purple-500 mr-1"></i>AI Session — resolve_ai_identity()</span>
-            <span><i class="fas fa-mobile-alt text-teal-500 mr-1"></i>User JWT — @mobile_auth_required</span>
-            <span><i class="fas fa-shield-alt text-orange-500 mr-1"></i>RBAC — @mobile_auth_required(permission=…)</span>
-            <span><i class="fas fa-tachometer-alt text-yellow-400 mr-1"></i>Rate limited</span>
+            <span class="cursor-help" title="{{ _('No authentication. Anyone who can reach the server may call the route (rate limits may still apply).') }}">
+                <i class="fas fa-globe text-gray-400 mr-1" aria-hidden="true"></i>{{ _('Public — no auth') }}</span>
+            <span class="cursor-help" title="{{ _('Bearer token using a database-managed API key (Authorization: Bearer …). Typical for external integrations.') }}">
+                <i class="fas fa-key text-amber-500 mr-1" aria-hidden="true"></i>{{ _('API Key — Bearer DB-managed key') }}</span>
+            <span class="cursor-help" title="{{ _('Valid API key (Bearer) or an authenticated Backoffice session, depending on the client. Pagination and response shape may differ by mode.') }}">
+                <i class="fas fa-key text-indigo-500 mr-1" aria-hidden="true"></i>{{ _('Key / Session — either works') }}</span>
+            <span class="cursor-help" title="{{ _('Flask-Login session only (@login_required). The user is already signed into the Backoffice in the browser.') }}">
+                <i class="fas fa-user text-blue-500 mr-1" aria-hidden="true"></i>{{ _('Session — @login_required') }}</span>
+            {% set ep_ai_identity_tip = _('AI identity from resolve_ai_identity(): (1) Backoffice session cookie, (2) short-lived AI JWT in Authorization: Bearer (often from GET /api/ai/v2/token), or (3) anonymous when the route allows. Coarse access is public / user / admin / system_manager; AI tools can still enforce granular RBAC permissions.') %}
+            <span class="ep-ai-identity-tip-trigger cursor-help outline-none rounded-sm" tabindex="0"
+                  aria-label="{{ ep_ai_identity_tip }}">
+                <span class="inline-flex items-center">
+                    <i class="fas fa-robot text-purple-500 mr-1" aria-hidden="true"></i>{{ _('AI Session — resolve_ai_identity()') }}
+                </span>
+                <span class="ep-ai-identity-tip-source sr-only" aria-hidden="true">{{ ep_ai_identity_tip }}</span>
+            </span>
+            <span class="cursor-help" title="{{ _('Mobile user JWT or compatible session via @mobile_auth_required, without requiring a specific RBAC permission on the route.') }}">
+                <i class="fas fa-mobile-alt text-teal-500 mr-1" aria-hidden="true"></i>{{ _('User JWT — @mobile_auth_required') }}</span>
+            <span class="cursor-help" title="{{ _('Mobile admin: @mobile_auth_required plus one RBAC permission. The exact permission code appears in the Permission column.') }}">
+                <i class="fas fa-shield-alt text-orange-500 mr-1" aria-hidden="true"></i>{{ _('RBAC — @mobile_auth_required(permission=…)') }}</span>
+            <span class="cursor-help" title="{{ _('This route applies request throttling (for example a maximum number of requests per minute).') }}">
+                <i class="fas fa-tachometer-alt text-yellow-400 mr-1" aria-hidden="true"></i>{{ _('Rate limited') }}</span>
+        </div>
+        {# Fixed tooltip host (moved to document.body by JS so it is not clipped by the grid or cards) #}
+        <div id="epAiIdentityTooltipLayer" aria-hidden="true">
+            <div class="ep-rich-tip-inner" role="tooltip"></div>
         </div>
     </div>
     </div>{# /panel-registry #}
@@ -890,24 +966,41 @@ try {
         const periodSelector = document.getElementById('periodSelector');
         const endpointSelector = document.getElementById('endpointSelector');
 
+        window.__apiMgmtUrlExtra = window.__apiMgmtUrlExtra || { surface: 'all', ep_f: '', vol_p: 'daily', vol_e: 'all' };
+        function persistVolumeToUrl() {
+            window.__apiMgmtUrlExtra.vol_p = periodSelector ? periodSelector.value : 'daily';
+            window.__apiMgmtUrlExtra.vol_e = endpointSelector ? endpointSelector.value : 'all';
+            if (typeof window.apiMgmtSyncUrl === 'function') window.apiMgmtSyncUrl();
+        }
+
         function updateChart() {
             const period = periodSelector ? periodSelector.value : 'daily';
             const endpoint = endpointSelector ? endpointSelector.value : 'all';
             fetchAndRenderVolumeChart(period, endpoint);
         }
 
+        if (periodSelector && window.__apiMgmtUrlExtra.vol_p) {
+            periodSelector.value = window.__apiMgmtUrlExtra.vol_p;
+        }
+        if (endpointSelector && window.__apiMgmtUrlExtra.vol_e) {
+            endpointSelector.value = window.__apiMgmtUrlExtra.vol_e;
+        }
+
         if (periodSelector) {
-            periodSelector.addEventListener('change', updateChart);
+            periodSelector.addEventListener('change', function () { updateChart(); persistVolumeToUrl(); });
         }
 
         if (endpointSelector) {
-            endpointSelector.addEventListener('change', updateChart);
+            endpointSelector.addEventListener('change', function () { updateChart(); persistVolumeToUrl(); });
         }
 
         document.addEventListener('api-mgmt-tab-activated', function (e) {
             if (!e.detail || e.detail.tab !== 'volume') return;
+            var ex = window.__apiMgmtUrlExtra || {};
+            var vp = ex.vol_p || 'daily';
+            var ve = ex.vol_e != null ? ex.vol_e : 'all';
             if (!volumeChart) {
-                fetchAndRenderVolumeChart('daily', 'all');
+                fetchAndRenderVolumeChart(vp, ve);
             } else {
                 requestAnimationFrame(function () { volumeChart.resize(); });
             }
@@ -1290,6 +1383,37 @@ try {
 
 <script nonce="{{ csp_nonce() }}">
 (function () {
+    window.__apiMgmtUrlExtra = window.__apiMgmtUrlExtra || { surface: 'all', ep_f: '', vol_p: 'daily', vol_e: 'all' };
+    try {
+        var u0 = new URLSearchParams(window.location.search);
+        if (u0.has('surface')) window.__apiMgmtUrlExtra.surface = u0.get('surface') || 'all';
+        if (u0.has('ep_f')) window.__apiMgmtUrlExtra.ep_f = u0.get('ep_f') || '';
+        if (u0.has('vol_p')) window.__apiMgmtUrlExtra.vol_p = u0.get('vol_p') || 'daily';
+        if (u0.has('vol_e')) window.__apiMgmtUrlExtra.vol_e = u0.get('vol_e') || 'all';
+    } catch (e) {}
+
+    var KEYS = { tab: 'tab', surface: 'surface', ep_f: 'ep_f', vol_p: 'vol_p', vol_e: 'vol_e' };
+
+    function getActiveTabId() {
+        var el = document.querySelector('#api-mgmt-tabs .settings-tab[aria-selected="true"]');
+        return (el && el.getAttribute('data-tab')) || 'registry';
+    }
+
+    function syncApiMgmtUrl() {
+        var usp = new URLSearchParams();
+        var tab = getActiveTabId();
+        if (tab !== 'registry') usp.set(KEYS.tab, tab);
+        var ex = window.__apiMgmtUrlExtra || {};
+        if (ex.surface && ex.surface !== 'all') usp.set(KEYS.surface, ex.surface);
+        if (ex.ep_f) usp.set(KEYS.ep_f, ex.ep_f);
+        if (ex.vol_p && ex.vol_p !== 'daily') usp.set(KEYS.vol_p, ex.vol_p);
+        if (ex.vol_e && ex.vol_e !== 'all') usp.set(KEYS.vol_e, ex.vol_e);
+        var qs = usp.toString();
+        var url = qs ? (window.location.pathname + '?' + qs) : window.location.pathname;
+        window.history.replaceState({}, '', url);
+    }
+    window.apiMgmtSyncUrl = syncApiMgmtUrl;
+
     function runApiMgmtTabs() {
         const A = window.AdminUnderlineTabs;
         const tabs = document.querySelectorAll('#api-mgmt-tabs .settings-tab');
@@ -1303,15 +1427,26 @@ try {
                 const id = btn.getAttribute('data-tab');
                 if (!id) return;
                 activate(id);
-                history.replaceState(null, '', '#' + id);
+                syncApiMgmtUrl();
             });
         });
-        const hash = (location.hash || '').replace('#', '');
-        if (hash && document.getElementById('panel-' + hash)) {
-            activate(hash);
-        } else {
-            activate('registry');
+        var tabTarget = '';
+        try {
+            var u = new URLSearchParams(window.location.search);
+            tabTarget = (u.get(KEYS.tab) || '').trim();
+        } catch (e) {}
+        if (!tabTarget) {
+            const hash = (location.hash || '').replace('#', '');
+            if (hash && document.getElementById('panel-' + hash)) tabTarget = hash;
         }
+        if (!tabTarget || !document.getElementById('panel-' + tabTarget)) {
+            tabTarget = 'registry';
+        }
+        activate(tabTarget);
+        if (window.location.hash) {
+            window.history.replaceState({}, '', window.location.pathname + window.location.search);
+        }
+        syncApiMgmtUrl();
     }
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', runApiMgmtTabs);
@@ -1341,6 +1476,18 @@ try {
         stale: {{ _('stale')|tojson }},
     };
 
+    /** Longer native `title` tooltips for auth icons (keep in sync with legend `title` attributes). */
+    var AUTH_TOOLTIPS = {
+        '?': {{ _('Auth mode could not be inferred from route metadata; review the view or decorator tags.')|tojson }},
+        public: {{ _('No authentication. Anyone who can reach the server may call the route (rate limits may still apply).')|tojson }},
+        api_key: {{ _('Bearer token using a database-managed API key (Authorization: Bearer …). Typical for external integrations.')|tojson }},
+        api_key_or_session: {{ _('Valid API key (Bearer) or an authenticated Backoffice session, depending on the client. Pagination and response shape may differ by mode.')|tojson }},
+        session: {{ _('Flask-Login session only (@login_required). The user is already signed into the Backoffice in the browser.')|tojson }},
+        ai_session: {{ _('AI identity from resolve_ai_identity(): (1) Backoffice session cookie, (2) short-lived AI JWT in Authorization: Bearer (often from GET /api/ai/v2/token), or (3) anonymous when the route allows. Coarse access is public / user / admin / system_manager; AI tools can still enforce granular RBAC permissions.')|tojson }},
+        user: {{ _('Mobile user JWT or compatible session via @mobile_auth_required, without requiring a specific RBAC permission on the route.')|tojson }},
+        rbac: {{ _('Mobile admin: @mobile_auth_required plus one RBAC permission. The exact permission code is appended below when known.')|tojson }},
+    };
+
     var surfaceBtns = document.querySelectorAll('.ep-surface-btn');
     var emptyMsg = document.getElementById('epEmpty');
     var matchFooter = document.getElementById('epRegistryFooter');
@@ -1352,7 +1499,11 @@ try {
     var loadingEl = document.getElementById('epRegistryGrid-loading');
     var containerEl = document.getElementById('epRegistryGrid-container');
 
-    var activeSurface = 'all';
+    window.__apiMgmtUrlExtra = window.__apiMgmtUrlExtra || { surface: 'all', ep_f: '', vol_p: 'daily', vol_e: 'all' };
+    var activeSurface = window.__apiMgmtUrlExtra.surface || 'all';
+    var epFilterUrlTimer = null;
+    /** False until post-init timeout applies URL column filters (avoids clobbering `ep_f` on load). */
+    var epRegistryFilterUrlSyncReady = false;
     var epRegistryGridApi = null;
     var epRegistryGridSizeFitTimer = null;
     var epRegistryAllRows = [];
@@ -1436,6 +1587,8 @@ try {
             var cur = document.querySelector('.ep-surface-btn[data-surface="' + activeSurface + '"]');
             if (cur && cur.disabled && allBtnRef) {
                 activeSurface = 'all';
+                window.__apiMgmtUrlExtra.surface = 'all';
+                if (typeof window.apiMgmtSyncUrl === 'function') window.apiMgmtSyncUrl();
                 styleActiveBtn(allBtnRef);
                 refreshExternalFilter();
                 return;
@@ -1599,7 +1752,22 @@ try {
         } else if (typeof epRegistryGridApi.refreshClientSideRowModel === 'function') {
             epRegistryGridApi.refreshClientSideRowModel('filter');
         }
+        window.__apiMgmtUrlExtra.ep_f = '';
+        if (typeof window.apiMgmtSyncUrl === 'function') window.apiMgmtSyncUrl();
         updateFooterAndEmpty();
+    }
+
+    function scheduleEpColumnFilterUrlSync() {
+        if (!epRegistryFilterUrlSyncReady) return;
+        if (epFilterUrlTimer) clearTimeout(epFilterUrlTimer);
+        epFilterUrlTimer = setTimeout(function () {
+            epFilterUrlTimer = null;
+            if (!epRegistryGridApi || typeof epRegistryGridApi.getFilterModel !== 'function') return;
+            var m = epRegistryGridApi.getFilterModel();
+            var json = m && Object.keys(m).length ? encodeURIComponent(JSON.stringify(m)) : '';
+            window.__apiMgmtUrlExtra.ep_f = json;
+            if (typeof window.apiMgmtSyncUrl === 'function') window.apiMgmtSyncUrl();
+        }, 300);
     }
 
     function updateFooterAndEmpty() {
@@ -1747,6 +1915,128 @@ try {
         }, 80);
     }
 
+    /**
+     * AI identity help: single position:fixed layer on document.body so AG Grid viewports/cards
+     * cannot clip it. Triggers carry .ep-ai-identity-tip-source (sr-only) with plain text.
+     */
+    function epAiIdentityTooltipInit() {
+        if (window.__epAiIdentityTooltipInitDone) return;
+        var layer = document.getElementById('epAiIdentityTooltipLayer');
+        var registryPanel = document.getElementById('panel-registry');
+        if (!layer || !registryPanel) return;
+        var inner = layer.querySelector('.ep-rich-tip-inner');
+        if (!inner) return;
+        window.__epAiIdentityTooltipInitDone = true;
+
+        if (layer.parentElement !== document.body) {
+            document.body.appendChild(layer);
+        }
+
+        var hideT = null;
+        var activeTrigger = null;
+        var HIDE_MS = 220;
+
+        function hide() {
+            clearTimeout(hideT);
+            hideT = null;
+            activeTrigger = null;
+            layer.classList.remove('ep-ai-identity-tip-visible');
+            layer.setAttribute('aria-hidden', 'true');
+            layer.style.left = '';
+            layer.style.top = '';
+        }
+
+        function positionNear(rect) {
+            var vw = window.innerWidth;
+            var vh = window.innerHeight;
+            var w = layer.offsetWidth;
+            var h = layer.offsetHeight;
+            if (!w || !h) {
+                w = 280;
+                h = 100;
+            }
+            var left = rect.left + rect.width / 2 - w / 2;
+            left = Math.max(12, Math.min(left, vw - w - 12));
+            var gap = 8;
+            var top = rect.top - h - gap;
+            if (top < 12) {
+                top = rect.bottom + gap;
+            }
+            if (top + h > vh - 12) {
+                top = Math.max(12, vh - h - 12);
+            }
+            layer.style.left = left + 'px';
+            layer.style.top = top + 'px';
+        }
+
+        function showFor(trig) {
+            if (!trig) return;
+            var src = trig.querySelector('.ep-ai-identity-tip-source');
+            var txt = src ? src.textContent : '';
+            if (!txt) return;
+            inner.textContent = txt;
+            activeTrigger = trig;
+            layer.classList.add('ep-ai-identity-tip-visible');
+            layer.setAttribute('aria-hidden', 'false');
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                    positionNear(trig.getBoundingClientRect());
+                });
+            });
+        }
+
+        function schedHide() {
+            clearTimeout(hideT);
+            hideT = setTimeout(hide, HIDE_MS);
+        }
+
+        function onDocMove(e) {
+            var tr = e.target.closest && e.target.closest('.ep-ai-identity-tip-trigger');
+            if (tr && registryPanel.contains(tr)) {
+                clearTimeout(hideT);
+                hideT = null;
+                if (activeTrigger !== tr || !layer.classList.contains('ep-ai-identity-tip-visible')) {
+                    showFor(tr);
+                }
+                return;
+            }
+            if (!layer.classList.contains('ep-ai-identity-tip-visible')) return;
+            if (layer.contains(e.target)) {
+                clearTimeout(hideT);
+                hideT = null;
+                return;
+            }
+            schedHide();
+        }
+
+        document.addEventListener('mousemove', onDocMove, true);
+
+        layer.addEventListener('mouseenter', function () {
+            clearTimeout(hideT);
+            hideT = null;
+        });
+        layer.addEventListener('mouseleave', function () {
+            schedHide();
+        });
+
+        function onScrollOrResize() {
+            if (!layer.classList.contains('ep-ai-identity-tip-visible') || !activeTrigger) return;
+            if (!document.body.contains(activeTrigger)) {
+                hide();
+                return;
+            }
+            positionNear(activeTrigger.getBoundingClientRect());
+        }
+        document.addEventListener('scroll', onScrollOrResize, true);
+        window.addEventListener('resize', onScrollOrResize);
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && layer.classList.contains('ep-ai-identity-tip-visible')) {
+                hide();
+            }
+        });
+    }
+
     function methodBadgeHtml(m) {
         var esc = AgGridRenderers.escapeHtml(m);
         var cls = 'px-1.5 py-0.5 text-xs font-bold rounded ';
@@ -1766,9 +2056,23 @@ try {
         return '<div class="flex flex-wrap gap-1">' + methods.map(methodBadgeHtml).join('') + '</div>';
     }
 
-    function authIconOnly(iconClass, iconTextClass, titleText) {
-        return '<span class="inline-flex items-center justify-center" title="' +
-            AgGridRenderers.escapeHtmlAttr(titleText) + '"><i class="fas ' + iconClass + ' ' + iconTextClass + '"></i></span>';
+    function authIconOnly(iconClass, iconTextClass, shortLabel, tooltipText) {
+        var tip = tooltipText != null && String(tooltipText) !== '' ? String(tooltipText) : String(shortLabel || '');
+        return '<span class="inline-flex items-center justify-center cursor-help" title="' +
+            AgGridRenderers.escapeHtmlAttr(tip) + '"><i class="fas ' + iconClass + ' ' + iconTextClass + '" aria-hidden="true"></i><span class="sr-only">' +
+            AgGridRenderers.escapeHtml(shortLabel || '') + '</span></span>';
+    }
+
+    /** AI Session icon: fixed-layer tooltip (see epAiIdentityTooltipInit); hidden source holds text. */
+    function authAiIdentityIconHtml(shortLabel, bodyText) {
+        var raw = bodyText != null ? String(bodyText) : '';
+        var body = AgGridRenderers.escapeHtml(raw);
+        var lab = AgGridRenderers.escapeHtml(shortLabel != null ? String(shortLabel) : '');
+        return '<span class="ep-ai-identity-tip-trigger inline-flex items-center justify-center cursor-help" aria-label="' +
+            AgGridRenderers.escapeHtmlAttr(raw) + '">' +
+            '<span class="inline-flex items-center justify-center"><i class="fas fa-robot text-purple-600" aria-hidden="true"></i>' +
+            '<span class="sr-only">' + lab + '</span></span>' +
+            '<span class="ep-ai-identity-tip-source sr-only" aria-hidden="true">' + body + '</span></span>';
     }
 
     function authCellRenderer(params) {
@@ -1776,32 +2080,34 @@ try {
         if (!d || d.__epGroupHeader) return '';
         var a = d.auth;
         var html = '';
-        var titleExtra = '';
+        var rbacTip = AUTH_TOOLTIPS.rbac;
         if (a === 'rbac' && d.permission) {
-            titleExtra = ' — ' + String(d.permission);
+            rbacTip = rbacTip + ' ' + {{ _('Permission:')|tojson }} + ' ' + String(d.permission);
         }
+        var rateTip = {{ _('This route applies request throttling (for example a maximum number of requests per minute).')|tojson }};
         if (a === '?') {
-            html = authIconOnly('fa-question', 'text-yellow-600', EP_L.unknown);
+            html = authIconOnly('fa-question', 'text-yellow-600', EP_L.unknown, AUTH_TOOLTIPS['?']);
         } else if (a === 'public') {
-            html = authIconOnly('fa-globe', 'text-gray-500', EP_L.public);
+            html = authIconOnly('fa-globe', 'text-gray-500', EP_L.public, AUTH_TOOLTIPS.public);
         } else if (a === 'api_key') {
-            html = authIconOnly('fa-key', 'text-amber-600', EP_L.apiKey);
+            html = authIconOnly('fa-key', 'text-amber-600', EP_L.apiKey, AUTH_TOOLTIPS.api_key);
         } else if (a === 'api_key_or_session') {
-            html = authIconOnly('fa-user-lock', 'text-indigo-600', EP_L.keySession);
+            html = authIconOnly('fa-user-lock', 'text-indigo-600', EP_L.keySession, AUTH_TOOLTIPS.api_key_or_session);
         } else if (a === 'session') {
-            html = authIconOnly('fa-user', 'text-blue-600', EP_L.session);
+            html = authIconOnly('fa-user', 'text-blue-600', EP_L.session, AUTH_TOOLTIPS.session);
         } else if (a === 'ai_session') {
-            html = authIconOnly('fa-robot', 'text-purple-600', EP_L.aiSession);
+            html = authAiIdentityIconHtml(EP_L.aiSession, AUTH_TOOLTIPS.ai_session);
         } else if (a === 'user') {
-            html = authIconOnly('fa-mobile-alt', 'text-teal-600', EP_L.userJwt);
+            html = authIconOnly('fa-mobile-alt', 'text-teal-600', EP_L.userJwt, AUTH_TOOLTIPS.user);
         } else if (a === 'rbac') {
-            html = authIconOnly('fa-shield-alt', 'text-orange-600', EP_L.rbac + titleExtra);
+            html = authIconOnly('fa-shield-alt', 'text-orange-600', EP_L.rbac, rbacTip);
         } else {
-            html = authIconOnly('fa-tag', 'text-gray-500', (a != null && String(a) !== '') ? String(a) : EP_L.unknown);
+            var raw = (a != null && String(a) !== '') ? String(a) : EP_L.unknown;
+            html = authIconOnly('fa-tag', 'text-gray-500', raw, raw);
         }
         html = '<div class="flex items-center gap-2 flex-nowrap">' + html;
         if (d.rate_limited) {
-            html += authIconOnly('fa-tachometer-alt', 'text-yellow-500', EP_L.rateLimited);
+            html += authIconOnly('fa-tachometer-alt', 'text-yellow-500', EP_L.rateLimited, rateTip);
         }
         html += '</div>';
         return html;
@@ -1839,6 +2145,16 @@ try {
             var pathHref = epRegistryV1PathHref(path);
             pathEl = '<a href="' + AgGridRenderers.escapeHtmlAttr(pathHref) + '" target="_blank" rel="noopener noreferrer" style="' + pathTextStyle + '" class="font-mono text-xs text-blue-600 hover:underline api-endpoint-link" data-endpoint-path="' +
                 AgGridRenderers.escapeHtmlAttr(path) + '">' + AgGridRenderers.escapeHtml(path) + '</a>';
+        } else if (d.auth === 'public') {
+            /* Public endpoints on non-v1 surfaces (e.g. /api/mobile/v1/auth/token) need no
+               credentials, so they can be opened directly in a browser or Postman. */
+            try {
+                var publicHref = new URL(path, window.location.origin).href;
+                pathEl = '<a href="' + AgGridRenderers.escapeHtmlAttr(publicHref) + '" target="_blank" rel="noopener noreferrer" style="' + pathTextStyle + '" class="font-mono text-xs text-blue-600 hover:underline api-endpoint-link" data-endpoint-path="' +
+                    AgGridRenderers.escapeHtmlAttr(path) + '">' + AgGridRenderers.escapeHtml(path) + '</a>';
+            } catch (e) {
+                pathEl = '<code class="font-mono text-xs text-gray-700" style="' + pathTextStyle + '">' + AgGridRenderers.escapeHtml(path) + '</code>';
+            }
         } else {
             pathEl = '<code class="font-mono text-xs text-gray-700" style="' + pathTextStyle + '">' + AgGridRenderers.escapeHtml(path) + '</code>';
         }
@@ -2051,7 +2367,15 @@ try {
             { field: 'surface', headerName: '{{ _("Surface") }}', width: 75, cellRenderer: surfaceCellRenderer, filter: 'customSetFilter' },
             { field: 'path', headerName: '{{ _("Path") }}', flex: 2, minWidth: 0, cellClass: 'ep-registry-path-cell', cellStyle: { display: 'flex', alignItems: 'center', minWidth: 0, overflow: 'hidden', maxWidth: '100%' }, cellRenderer: pathCellRenderer, filter: 'agTextColumnFilter', tooltipValueGetter: function (p) { return p.data && !p.data.__epGroupHeader && p.data.path ? p.data.path : ''; } },
             { field: 'methodsStr', headerName: '{{ _("Methods") }}', width: 110, cellRenderer: methodsCellRenderer, filter: 'agTextColumnFilter', valueGetter: function (p) { return p.data && !p.data.__epGroupHeader ? p.data.methodsStr : ''; } },
-            { field: 'auth', headerName: '{{ _("Auth") }}', width: 80, maxWidth: 100, cellRenderer: authCellRenderer, filter: 'customSetFilter' },
+            {
+                field: 'auth',
+                headerName: '{{ _("Auth") }}',
+                headerTooltip: {{ _('How callers are authenticated. Hover an icon in each row for details. AI Session uses resolve_ai_identity() (Backoffice session or AI Bearer JWT, else anonymous if allowed), not the mobile user JWT; AI tools may still enforce RBAC.')|tojson }},
+                width: 80,
+                maxWidth: 100,
+                cellRenderer: authCellRenderer,
+                filter: 'customSetFilter',
+            },
             { field: 'description', headerName: '{{ _("Description") }}', flex: 1, minWidth: 0, cellClass: 'ep-registry-desc-cell', cellStyle: { display: 'flex', alignItems: 'center', minWidth: 0, overflow: 'hidden', maxWidth: '100%' }, cellRenderer: descriptionCellRenderer, filter: 'agTextColumnFilter', tooltipValueGetter: function (p) { return p.data && !p.data.__epGroupHeader && p.data.description != null ? String(p.data.description) : ''; } },
             { field: 'consumers', headerName: '{{ _("Consumers") }}', width: 140, hide: true, filter: 'agTextColumnFilter', cellClass: 'font-mono text-xs text-gray-600' },
             {
@@ -2093,11 +2417,18 @@ try {
             templateId: 'api-mgmt-endpoint-registry',
             columnDefs: columnDefs,
             rowData: gridRowData,
-            columnVisibilityOptions: { persistOnChange: true, showPanelButton: false, enableExport: false, enableReset: true },
+            columnVisibilityOptions: {
+                buttonPlaceholderId: 'ep-registry-col-vis-placeholder',
+                persistOnChange: true,
+                enableExport: false,
+                enableReset: true,
+            },
             heightOptions: { minHeight: 280, maxHeight: 800, maxRowsToShow: 0, viewportOffset: 200 },
             /* AgGridHelper merges `options` into grid options; `gridOptions` is ignored. */
             options: {
                 pagination: false,
+                /* Native browser tooltips for headerTooltip (Auth column) and tooltipValueGetter cells. */
+                enableBrowserTooltips: true,
                 embedFullWidthRows: true,
                 components: {
                     epRegistryGroupFw: EpRegistryGroupFullWidthRenderer,
@@ -2170,6 +2501,7 @@ try {
                 onFilterChanged: function () {
                     updateFooterAndEmpty();
                     scheduleEpRegistryCellClipping('onFilterChanged');
+                    scheduleEpColumnFilterUrlSync();
                 },
             },
         });
@@ -2195,6 +2527,21 @@ try {
                     epRegistryGridApi.sizeColumnsToFit();
                 }
             } catch (e) {}
+            var raw = window.__apiMgmtUrlExtra && window.__apiMgmtUrlExtra.ep_f;
+            if (raw && epRegistryGridApi && typeof epRegistryGridApi.setFilterModel === 'function') {
+                try {
+                    var m = JSON.parse(decodeURIComponent(raw));
+                    if (m && typeof m === 'object') {
+                        epRegistryGridApi.setFilterModel(m);
+                        if (typeof epRegistryGridApi.onFilterChanged === 'function') {
+                            epRegistryGridApi.onFilterChanged();
+                        } else if (typeof epRegistryGridApi.refreshClientSideRowModel === 'function') {
+                            epRegistryGridApi.refreshClientSideRowModel('filter');
+                        }
+                    }
+                } catch (err) {}
+            }
+            epRegistryFilterUrlSyncReady = true;
         }, 250);
     }
 
@@ -2223,6 +2570,8 @@ try {
                 styleActiveBtn(btn);
             }
             refreshExternalFilter();
+            window.__apiMgmtUrlExtra.surface = activeSurface;
+            if (typeof window.apiMgmtSyncUrl === 'function') window.apiMgmtSyncUrl();
         });
     });
 
@@ -2272,7 +2621,16 @@ try {
     }
 
     var allBtn = document.querySelector('.ep-surface-btn[data-surface="all"]');
-    if (allBtn) styleActiveBtn(allBtn);
+    var surfBtnRestore = document.querySelector('.ep-surface-btn[data-surface="' + activeSurface + '"]');
+    if (surfBtnRestore && !surfBtnRestore.disabled) {
+        styleActiveBtn(surfBtnRestore);
+    } else if (allBtn) {
+        activeSurface = 'all';
+        window.__apiMgmtUrlExtra.surface = 'all';
+        styleActiveBtn(allBtn);
+    }
+
+    epAiIdentityTooltipInit();
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', tryInitGrid);

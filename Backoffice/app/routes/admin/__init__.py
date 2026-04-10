@@ -4,7 +4,7 @@ from app.utils.datetime_helpers import utcnow
 Admin Module - Centralized registration of all admin blueprints
 """
 
-from flask import Blueprint, render_template, current_app, request, url_for
+from flask import Blueprint, render_template, current_app, request, url_for, redirect
 from werkzeug.routing.exceptions import BuildError
 from app.utils.api_responses import json_forbidden, json_not_found, json_ok, json_server_error
 from flask_login import current_user
@@ -131,6 +131,20 @@ def _kobo_data_import_url_for_dashboard():
         return url_for(ep)
     except BuildError:
         return None
+
+
+# Legacy URL: API key admin UI now lives under /admin/api-management/api-keys
+@bp.route("/api-keys", defaults={"subpath": None}, methods=["GET", "HEAD", "POST", "OPTIONS"])
+@bp.route("/api-keys/<path:subpath>", methods=["GET", "HEAD", "POST", "OPTIONS"])
+@admin_permission_required("admin.api.manage")
+def legacy_api_key_admin_redirect(subpath=None):
+    dest = "/admin/api-management/api-keys"
+    if subpath:
+        dest += "/" + subpath
+    qs = request.query_string.decode()
+    if qs:
+        dest += "?" + qs
+    return redirect(dest, code=301)
 
 
 # Main admin dashboard route
