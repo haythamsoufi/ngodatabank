@@ -13,7 +13,19 @@ function isAllowedEmbedUrl(url) {
   }
 }
 
-export default function DownloadAppsPage({ androidDemoEmbedUrl = '' }) {
+/**
+ * Appetize browser embeds require a plan that includes embedding; disabled until upgraded.
+ * Set to true to show Android/iOS iframe demos again.
+ */
+const ENABLE_APPETIZE_BROWSER_DEMOS = false;
+
+/** Default Appetize.io embeds (override with ANDROID_DEMO_EMBED_URL / IOS_DEMO_EMBED_URL or NEXT_PUBLIC_*). */
+const DEFAULT_APPETIZE_ANDROID_EMBED =
+  'https://appetize.io/embed/b_erwrjl54m4twliwpe2hdn7glim';
+const DEFAULT_APPETIZE_IOS_EMBED =
+  'https://appetize.io/embed/b_oe7tcyhr5pjr7jzwjlikugbkty';
+
+export default function DownloadAppsPage({ androidDemoEmbedUrl = '', iosDemoEmbedUrl = '' }) {
   const { t, isLoaded } = useTranslation();
 
   const handleDownload = (platform, filename) => {
@@ -64,39 +76,73 @@ export default function DownloadAppsPage({ androidDemoEmbedUrl = '' }) {
             </p>
           </div>
 
-          {/* Cloud-hosted Android demo (e.g. Appetize.io embed URL after uploading the APK) */}
-          <div className="max-w-4xl mx-auto mb-8 sm:mb-12">
-            <div className="bg-white rounded-xl shadow-lg border-2 border-humdb-gray-200 p-6 sm:p-8">
-              <h2 className="text-2xl font-bold text-humdb-navy mb-2 text-center">
-                <TranslationSafe fallback="Try the Android app in your browser">
-                  {t('downloadApps.demo.title')}
-                </TranslationSafe>
-              </h2>
-              <p className="text-sm sm:text-base text-humdb-gray-600 text-center mb-6 max-w-2xl mx-auto">
-                <TranslationSafe fallback="Interactive demo on a cloud Android device. No install required.">
-                  {t('downloadApps.demo.description')}
-                </TranslationSafe>
-              </p>
-              {isAllowedEmbedUrl(androidDemoEmbedUrl) ? (
-                <div className="relative w-full max-w-[400px] mx-auto rounded-xl overflow-hidden border border-humdb-gray-200 bg-humdb-gray-900 shadow-inner aspect-[9/16] max-h-[min(85vh,820px)]">
-                  <iframe
-                    title="Humanitarian Databank Android demo"
-                    src={androidDemoEmbedUrl}
-                    className="absolute inset-0 w-full h-full border-0"
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  />
+          {ENABLE_APPETIZE_BROWSER_DEMOS ? (
+            <div className="max-w-4xl mx-auto mb-8 sm:mb-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+                <div className="bg-white rounded-xl shadow-lg border-2 border-humdb-gray-200 p-6 sm:p-8">
+                  <h2 className="text-2xl font-bold text-humdb-navy mb-2 text-center">
+                    <TranslationSafe fallback="Try the Android app in your browser">
+                      {t('downloadApps.demo.title')}
+                    </TranslationSafe>
+                  </h2>
+                  <p className="text-sm sm:text-base text-humdb-gray-600 text-center mb-6 max-w-2xl mx-auto">
+                    <TranslationSafe fallback="Interactive demo on a cloud Android device. No install required.">
+                      {t('downloadApps.demo.description')}
+                    </TranslationSafe>
+                  </p>
+                  {isAllowedEmbedUrl(androidDemoEmbedUrl) ? (
+                    <div className="relative w-full max-w-[400px] mx-auto rounded-xl overflow-hidden border border-humdb-gray-200 bg-humdb-gray-900 shadow-inner aspect-[9/16] max-h-[min(85vh,820px)]">
+                      <iframe
+                        title="Humanitarian Databank Android demo"
+                        src={androidDemoEmbedUrl}
+                        className="absolute inset-0 w-full h-full border-0"
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      />
+                    </div>
+                  ) : (
+                    <p className="text-sm text-humdb-gray-600 text-center max-w-xl mx-auto py-4 px-4 bg-humdb-gray-50 rounded-lg border border-dashed border-humdb-gray-300">
+                      <TranslationSafe fallback="Browser demo is not configured yet. Set ANDROID_DEMO_EMBED_URL (or NEXT_PUBLIC_ANDROID_DEMO_EMBED_URL) to your hosted emulator embed link, or download the APK above.">
+                        {t('downloadApps.demo.unavailable')}
+                      </TranslationSafe>
+                    </p>
+                  )}
                 </div>
-              ) : (
-                <p className="text-sm text-humdb-gray-600 text-center max-w-xl mx-auto py-4 px-4 bg-humdb-gray-50 rounded-lg border border-dashed border-humdb-gray-300">
-                  <TranslationSafe fallback="Browser demo is not configured yet. Set ANDROID_DEMO_EMBED_URL (or NEXT_PUBLIC_ANDROID_DEMO_EMBED_URL) to your hosted emulator embed link, or download the APK above.">
-                    {t('downloadApps.demo.unavailable')}
-                  </TranslationSafe>
-                </p>
-              )}
+
+                <div className="bg-white rounded-xl shadow-lg border-2 border-humdb-gray-200 p-6 sm:p-8">
+                  <h2 className="text-2xl font-bold text-humdb-navy mb-2 text-center">
+                    <TranslationSafe fallback="Try the iOS app in your browser">
+                      {t('downloadApps.demo.iosTitle')}
+                    </TranslationSafe>
+                  </h2>
+                  <p className="text-sm sm:text-base text-humdb-gray-600 text-center mb-6 max-w-2xl mx-auto">
+                    <TranslationSafe fallback="Interactive demo on a cloud iOS device. No install required.">
+                      {t('downloadApps.demo.iosDescription')}
+                    </TranslationSafe>
+                  </p>
+                  {isAllowedEmbedUrl(iosDemoEmbedUrl) ? (
+                    <div className="relative w-full max-w-[400px] mx-auto rounded-xl overflow-hidden border border-humdb-gray-200 bg-humdb-gray-900 shadow-inner aspect-[9/16] max-h-[min(85vh,820px)]">
+                      <iframe
+                        title="Humanitarian Databank iOS demo"
+                        src={iosDemoEmbedUrl}
+                        className="absolute inset-0 w-full h-full border-0"
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      />
+                    </div>
+                  ) : (
+                    <p className="text-sm text-humdb-gray-600 text-center max-w-xl mx-auto py-4 px-4 bg-humdb-gray-50 rounded-lg border border-dashed border-humdb-gray-300">
+                      <TranslationSafe fallback="iOS browser demo is not configured yet. Set IOS_DEMO_EMBED_URL (or NEXT_PUBLIC_IOS_DEMO_EMBED_URL) to your Appetize embed link, or download the IPA above.">
+                        {t('downloadApps.demo.iosUnavailable')}
+                      </TranslationSafe>
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
+          ) : null}
 
           {/* Download Cards */}
           <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
@@ -273,12 +319,19 @@ export default function DownloadAppsPage({ androidDemoEmbedUrl = '' }) {
 }
 
 // Ensure SSR to avoid build-time prerender errors.
-// ANDROID_DEMO_EMBED_URL: server-only, read at request time (e.g. Fly secrets) — no rebuild needed.
-// NEXT_PUBLIC_ANDROID_DEMO_EMBED_URL: baked at build time; handy for local .env
+// When ENABLE_APPETIZE_BROWSER_DEMOS is true: ANDROID_DEMO_EMBED_URL / IOS_DEMO_EMBED_URL (server)
+// or NEXT_PUBLIC_* (build); defaults use committed Appetize embed URLs when env is unset.
 export async function getServerSideProps() {
+  if (!ENABLE_APPETIZE_BROWSER_DEMOS) {
+    return { props: {} };
+  }
   const androidDemoEmbedUrl =
     process.env.ANDROID_DEMO_EMBED_URL ||
     process.env.NEXT_PUBLIC_ANDROID_DEMO_EMBED_URL ||
-    '';
-  return { props: { androidDemoEmbedUrl } };
+    DEFAULT_APPETIZE_ANDROID_EMBED;
+  const iosDemoEmbedUrl =
+    process.env.IOS_DEMO_EMBED_URL ||
+    process.env.NEXT_PUBLIC_IOS_DEMO_EMBED_URL ||
+    DEFAULT_APPETIZE_IOS_EMBED;
+  return { props: { androidDemoEmbedUrl, iosDemoEmbedUrl } };
 }

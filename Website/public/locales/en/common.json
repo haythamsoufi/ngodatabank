@@ -877,7 +877,10 @@
     "demo": {
       "title": "Try the Android app in your browser",
       "description": "Interactive demo on a cloud Android device. No install required.",
-      "unavailable": "Browser demo is not configured yet. Set ANDROID_DEMO_EMBED_URL (or NEXT_PUBLIC_ANDROID_DEMO_EMBED_URL) to your hosted emulator embed link — for example after uploading the APK to Appetize.io — or download the APK above."
+      "unavailable": "Browser demo is not configured yet. Set ANDROID_DEMO_EMBED_URL (or NEXT_PUBLIC_ANDROID_DEMO_EMBED_URL) to your hosted emulator embed link — for example after uploading the APK to Appetize.io — or download the APK above.",
+      "iosTitle": "Try the iOS app in your browser",
+      "iosDescription": "Interactive demo on a cloud iOS device. No install required.",
+      "iosUnavailable": "iOS browser demo is not configured yet. Set IOS_DEMO_EMBED_URL (or NEXT_PUBLIC_IOS_DEMO_EMBED_URL) to your Appetize embed link — for example after uploading the build — or download the IPA above."
     },
     "android": {
       "title": "Android App",
