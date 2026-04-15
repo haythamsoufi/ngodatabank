@@ -113,7 +113,7 @@ The backoffice includes an AI chat and RAG (document QA). You need at least one 
 
 ## 🔄 Data Migration
 
-For database migrations use Flask-Migrate (`python -m flask db upgrade`). For data migration procedures and scripts, see `scripts/` and `docs/` (index in `docs/README.md`).
+For database migrations use Flask-Migrate (`python -m flask db upgrade`). Optional future cleanup: [baseline squash checklist](migrations/README.md). For data migration procedures and scripts, see `scripts/` and `docs/` (index in `docs/README.md`).
 
 ## 🧪 AI review queue testing (dev)
 

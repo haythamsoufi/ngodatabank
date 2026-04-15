@@ -712,8 +712,6 @@
     },
     "instructions": {
       "title": "Instructions d'Installation",
-      "revealTitle": "Comment installer",
-      "dismiss": "Compris",
       "android": {
         "title": "Android",
         "step1": "Téléchargez le fichier APK en utilisant le bouton ci-dessus",
@@ -723,9 +721,9 @@
       "ios": {
         "title": "iOS",
         "step1": "Téléchargez le fichier IPA en utilisant le bouton ci-dessus",
-        "step2": "Installez Sideloadly sur votre Mac ou PC Windows (sideloadly.io), puis connectez votre iPhone ou iPad en USB",
-        "step3": "Dans Sideloadly, sélectionnez l'appareil, ajoutez l'IPA et lancez l'installation ; connectez-vous avec votre Apple ID si demandé",
-        "step4": "Sur l'appareil, accordez votre confiance au développeur dans Réglages > Général > VPN et gestion des appareils (ou Gestion de l'appareil sur les anciennes versions d'iOS)"
+        "step2": "Connectez votre appareil iOS à votre ordinateur",
+        "step3": "Utilisez iTunes ou Finder pour installer le fichier IPA sur votre appareil",
+        "step4": "Faites confiance au certificat du développeur dans Réglages > Général > Gestion de l'appareil"
       }
     }
   },

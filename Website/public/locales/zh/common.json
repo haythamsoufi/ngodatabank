@@ -676,8 +676,6 @@
     },
     "instructions": {
       "title": "安装说明",
-      "revealTitle": "如何安装",
-      "dismiss": "知道了",
       "android": {
         "title": "Android",
         "step1": "使用上面的按钮下载APK文件",
@@ -687,9 +685,9 @@
       "ios": {
         "title": "iOS",
         "step1": "使用上面的按钮下载IPA文件",
-        "step2": "在 Mac 或 Windows 电脑上安装 Sideloadly（sideloadly.io），然后用 USB 连接 iPhone 或 iPad",
-        "step3": "在 Sideloadly 中选择设备，添加 IPA 并开始安装；提示时使用 Apple ID 登录",
-        "step4": "在设备上前往 设置 > 通用 > VPN与设备管理（或旧版 iOS 的 设备管理）信任开发者"
+        "step2": "将您的iOS设备连接到计算机",
+        "step3": "使用iTunes或Finder在您的设备上安装IPA文件",
+        "step4": "在设置 > 通用 > 设备管理中信任开发者证书"
       }
     }
   },

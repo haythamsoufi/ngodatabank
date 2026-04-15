@@ -1,7 +1,5 @@
 // pages/download-apps.js
 import Head from 'next/head';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { useTranslation } from '../lib/useTranslation';
 import { TranslationSafe } from '../components/ClientOnly';
 
@@ -15,54 +13,18 @@ function isAllowedEmbedUrl(url) {
   }
 }
 
-const installPanelVariants = {
-  hidden: { opacity: 0, y: -14, scale: 0.97, filter: 'blur(4px)' },
-  show: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    filter: 'blur(0px)',
-    transition: { type: 'spring', damping: 28, stiffness: 380, mass: 0.6 },
-  },
-  exit: {
-    opacity: 0,
-    y: -8,
-    scale: 0.99,
-    filter: 'blur(3px)',
-    transition: { duration: 0.22 },
-  },
-};
-
 export default function DownloadAppsPage({ androidDemoEmbedUrl = '' }) {
   const { t, isLoaded } = useTranslation();
-  const [activeInstallGuide, setActiveInstallGuide] = useState(null);
-  const installPanelRef = useRef(null);
 
-  const handleDownload = useCallback((platform, filename) => {
-    setActiveInstallGuide(platform);
-
+  const handleDownload = (platform, filename) => {
+    // Use API route to ensure proper download headers with Content-Disposition: attachment
+    // This forces the browser/webview to download the file instead of displaying it
     const downloadUrl = `/api/download-app?filename=${encodeURIComponent(filename)}`;
-    // Prefer a synthetic <a download> so the page stays mounted and the install guide can animate in.
-    if (typeof document !== 'undefined') {
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.setAttribute('download', filename);
-      link.rel = 'noopener noreferrer';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } else {
-      window.location.href = downloadUrl;
-    }
-  }, []);
 
-  useEffect(() => {
-    if (!activeInstallGuide) return undefined;
-    const id = requestAnimationFrame(() => {
-      installPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    });
-    return () => cancelAnimationFrame(id);
-  }, [activeInstallGuide]);
+    // Use window.location.href for maximum compatibility with webviews
+    // The API route sets proper headers to force download
+    window.location.href = downloadUrl;
+  };
 
   // Prevent rendering until translations are loaded to avoid hydration mismatches
   if (!isLoaded) {
@@ -139,13 +101,7 @@ export default function DownloadAppsPage({ androidDemoEmbedUrl = '' }) {
           {/* Download Cards */}
           <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
             {/* Android APK Card */}
-            <div
-              className={`bg-white rounded-xl shadow-lg border-2 p-6 sm:p-8 hover:shadow-xl transition-all duration-500 ${
-                activeInstallGuide === 'android'
-                  ? 'border-humdb-green/50 ring-2 ring-humdb-green/25 ring-offset-2 ring-offset-humdb-gray-100 shadow-xl'
-                  : 'border-humdb-gray-200'
-              }`}
-            >
+            <div className="bg-white rounded-xl shadow-lg border-2 border-humdb-gray-200 p-6 sm:p-8 hover:shadow-xl transition-shadow duration-300">
               <div className="text-center">
                 <div className="mb-6 flex justify-center">
                   <div className="bg-humdb-green/10 rounded-full p-6">
@@ -180,81 +136,11 @@ export default function DownloadAppsPage({ androidDemoEmbedUrl = '' }) {
                     {t('downloadApps.android.version')}
                   </TranslationSafe>
                 </p>
-
-                <AnimatePresence initial={false} mode="wait">
-                  {activeInstallGuide === 'android' && (
-                    <motion.div
-                      ref={installPanelRef}
-                      key="android-install-guide"
-                      variants={installPanelVariants}
-                      initial="hidden"
-                      animate="show"
-                      exit="exit"
-                      className="mt-6 text-left"
-                    >
-                      <div className="relative overflow-hidden rounded-xl border border-humdb-green/20 bg-gradient-to-b from-humdb-green/10 via-white to-white p-4 sm:p-5 shadow-inner">
-                        <motion.div
-                          aria-hidden
-                          className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-humdb-green/20 blur-2xl"
-                          initial={{ opacity: 0, scale: 0.6 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.45 }}
-                        />
-                        <div className="relative flex items-start justify-between gap-3">
-                          <h3 className="text-sm font-bold uppercase tracking-wide text-humdb-green">
-                            <TranslationSafe fallback="How to install">
-                              {t('downloadApps.instructions.revealTitle')}
-                            </TranslationSafe>
-                          </h3>
-                          <button
-                            type="button"
-                            onClick={() => setActiveInstallGuide(null)}
-                            className="shrink-0 rounded-md px-2 py-1 text-xs font-semibold text-humdb-gray-600 underline-offset-2 hover:bg-humdb-gray-100 hover:text-humdb-navy hover:underline"
-                          >
-                            <TranslationSafe fallback="Got it">
-                              {t('downloadApps.instructions.dismiss')}
-                            </TranslationSafe>
-                          </button>
-                        </div>
-                        <ol className="relative mt-4 space-y-3">
-                          {['step1', 'step2', 'step3'].map((step, i) => (
-                            <motion.li
-                              key={step}
-                              initial={{ opacity: 0, x: -14 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: 0.06 * i + 0.08, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                              className="flex gap-3 text-sm sm:text-base text-humdb-gray-700"
-                            >
-                              <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-humdb-green/15 text-xs font-bold text-humdb-green shadow-sm">
-                                {i + 1}
-                              </span>
-                              <span className="pt-0.5 leading-snug">
-                                <TranslationSafe
-                                  fallback={
-                                    ['Download the APK file using the button above', "Enable 'Install from Unknown Sources' in your device settings", 'Open the downloaded APK file and follow the installation prompts'][i]
-                                  }
-                                >
-                                  {t(`downloadApps.instructions.android.${step}`)}
-                                </TranslationSafe>
-                              </span>
-                            </motion.li>
-                          ))}
-                        </ol>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </div>
             </div>
 
             {/* iOS IPA Card */}
-            <div
-              className={`bg-white rounded-xl shadow-lg border-2 p-6 sm:p-8 hover:shadow-xl transition-all duration-500 ${
-                activeInstallGuide === 'ios'
-                  ? 'border-humdb-blue-600/45 ring-2 ring-humdb-blue-600/30 ring-offset-2 ring-offset-humdb-gray-100 shadow-xl'
-                  : 'border-humdb-gray-200'
-              }`}
-            >
+            <div className="bg-white rounded-xl shadow-lg border-2 border-humdb-gray-200 p-6 sm:p-8 hover:shadow-xl transition-shadow duration-300">
               <div className="text-center">
                 <div className="mb-6 flex justify-center">
                   <div className="bg-humdb-blue-100 rounded-full p-6 flex items-center justify-center">
@@ -295,75 +181,6 @@ export default function DownloadAppsPage({ androidDemoEmbedUrl = '' }) {
                     {t('downloadApps.ios.version')}
                   </TranslationSafe>
                 </p>
-
-                <AnimatePresence initial={false} mode="wait">
-                  {activeInstallGuide === 'ios' && (
-                    <motion.div
-                      ref={installPanelRef}
-                      key="ios-install-guide"
-                      variants={installPanelVariants}
-                      initial="hidden"
-                      animate="show"
-                      exit="exit"
-                      className="mt-6 text-left"
-                    >
-                      <div className="relative overflow-hidden rounded-xl border border-humdb-blue-600/20 bg-gradient-to-b from-humdb-blue-600/10 via-white to-white p-4 sm:p-5 shadow-inner">
-                        <motion.div
-                          aria-hidden
-                          className="pointer-events-none absolute -left-10 -bottom-10 h-36 w-36 rounded-full bg-humdb-blue-600/15 blur-3xl"
-                          initial={{ opacity: 0, scale: 0.5 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.5 }}
-                        />
-                        <div className="relative flex items-start justify-between gap-3">
-                          <h3 className="text-sm font-bold uppercase tracking-wide text-humdb-blue-700">
-                            <TranslationSafe fallback="How to install">
-                              {t('downloadApps.instructions.revealTitle')}
-                            </TranslationSafe>
-                          </h3>
-                          <button
-                            type="button"
-                            onClick={() => setActiveInstallGuide(null)}
-                            className="shrink-0 rounded-md px-2 py-1 text-xs font-semibold text-humdb-gray-600 underline-offset-2 hover:bg-humdb-gray-100 hover:text-humdb-navy hover:underline"
-                          >
-                            <TranslationSafe fallback="Got it">
-                              {t('downloadApps.instructions.dismiss')}
-                            </TranslationSafe>
-                          </button>
-                        </div>
-                        <ol className="relative mt-4 space-y-3">
-                          {['step1', 'step2', 'step3', 'step4'].map((step, i) => (
-                            <motion.li
-                              key={step}
-                              initial={{ opacity: 0, x: -14 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: 0.06 * i + 0.08, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                              className="flex gap-3 text-sm sm:text-base text-humdb-gray-700"
-                            >
-                              <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-humdb-blue-600/15 text-xs font-bold text-humdb-blue-700 shadow-sm">
-                                {i + 1}
-                              </span>
-                              <span className="pt-0.5 leading-snug">
-                                <TranslationSafe
-                                  fallback={
-                                    [
-                                      'Download the IPA file using the button above',
-                                      'Install Sideloadly on your Mac or Windows PC (sideloadly.io), then connect your iPhone or iPad with a USB cable',
-                                      'In Sideloadly, select your device, add the IPA, and start the install — sign in with your Apple ID when prompted',
-                                      'On your device, trust the developer in Settings > General > VPN & Device Management (or Device Management on older iOS)',
-                                    ][i]
-                                  }
-                                >
-                                  {t(`downloadApps.instructions.ios.${step}`)}
-                                </TranslationSafe>
-                              </span>
-                            </motion.li>
-                          ))}
-                        </ol>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </div>
             </div>
           </div>
@@ -430,17 +247,17 @@ export default function DownloadAppsPage({ androidDemoEmbedUrl = '' }) {
                       </TranslationSafe>
                     </li>
                     <li>
-                      <TranslationSafe fallback="Install Sideloadly on your Mac or Windows PC (sideloadly.io), then connect your iPhone or iPad with a USB cable">
+                      <TranslationSafe fallback="Connect your iOS device to your computer">
                         {t('downloadApps.instructions.ios.step2')}
                       </TranslationSafe>
                     </li>
                     <li>
-                      <TranslationSafe fallback="In Sideloadly, select your device, add the IPA, and start the install — sign in with your Apple ID when prompted">
+                      <TranslationSafe fallback="Use iTunes or Finder to install the IPA file on your device">
                         {t('downloadApps.instructions.ios.step3')}
                       </TranslationSafe>
                     </li>
                     <li>
-                      <TranslationSafe fallback="On your device, trust the developer in Settings > General > VPN & Device Management (or Device Management on older iOS)">
+                      <TranslationSafe fallback="Trust the developer certificate in Settings > General > Device Management">
                         {t('downloadApps.instructions.ios.step4')}
                       </TranslationSafe>
                     </li>
