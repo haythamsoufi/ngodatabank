@@ -83,6 +83,13 @@ class ResourceForm(MultilingualForm, FileUploadForm):
         default='publication'
     )
 
+    resource_subcategory_id = SelectField(
+        "Subgroup",
+        coerce=int,
+        validators=[Optional()],
+        default=0,
+    )
+
     publication_date = DateField("Publication Date (Optional)", format='%Y-%m-%d', validators=[Optional()])
 
     # Default language (English) fields
@@ -94,12 +101,24 @@ class ResourceForm(MultilingualForm, FileUploadForm):
     def __init__(self, *args, **kwargs):
         # Get languages first (before calling super) by calling the function directly
         from ..base import _get_supported_language_codes
+        from app.models.documents import ResourceSubcategory
+
         runtime_languages = _get_supported_language_codes()
 
         # Add missing language fields to the class if needed
         ResourceForm._add_missing_language_fields_to_class(runtime_languages)
 
         super(ResourceForm, self).__init__(*args, **kwargs)
+
+        rows = (
+            ResourceSubcategory.query.order_by(
+                ResourceSubcategory.display_order.asc(),
+                ResourceSubcategory.name.asc(),
+            ).all()
+        )
+        self.resource_subcategory_id.choices = [(0, "— None —")] + [
+            (r.id, r.name) for r in rows
+        ]
 
     @classmethod
     def _add_missing_language_fields_to_class(cls, languages):

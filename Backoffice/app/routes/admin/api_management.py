@@ -432,7 +432,8 @@ MOBILE_ENDPOINT_REGISTRY = [
     {'group': 'Public Data', 'path': '/api/mobile/v1/data/resources', 'methods': ['GET'],
      'auth': 'public', 'rate_limited': True,
      'description': (
-         'Paginated resources/publications library (search, type, locale). '
+         'Resources/publications library (search, type, locale). '
+         'Use grouped=true (no search) for subgroup sections; otherwise paginated list. '
          'No auth required; same content family as /api/v1/resources (API key there).'
      ),
      'flutter': 'PublicResourcesProvider',

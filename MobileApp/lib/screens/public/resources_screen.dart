@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../config/routes.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/shared/resource.dart';
+import '../../models/shared/resource_list_section.dart';
 import '../../providers/public/public_resources_provider.dart';
 import '../../providers/shared/language_provider.dart';
 import '../../utils/constants.dart';
@@ -249,7 +250,11 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
     }
 
     // ── Empty state ────────────────────────────────────────────────
-    if (!provider.isLoading && provider.resources.isEmpty) {
+    final bool groupedEmpty =
+        provider.groupedMode && provider.sections.isEmpty;
+    final bool flatEmpty =
+        !provider.groupedMode && provider.resources.isEmpty;
+    if (!provider.isLoading && (groupedEmpty || flatEmpty)) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -273,7 +278,70 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
       );
     }
 
-    // ── Grid ───────────────────────────────────────────────────────
+    // ── Grouped by subgroup (no search) ─────────────────────────────
+    if (provider.groupedMode) {
+      return RefreshIndicator(
+        onRefresh: () => provider.loadResources(locale: language, refresh: true),
+        color: Color(AppConstants.ifrcRed),
+        child: CustomScrollView(
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            if (provider.groupedCapped)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 8, 14, 0),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surfaceContainerHighest
+                          .withValues(alpha: 0.65),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.info_outline_rounded,
+                            size: 18,
+                            color: context.textSecondaryColor,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              loc.resourcesListTruncatedHint,
+                              style: TextStyle(
+                                fontSize: 12,
+                                height: 1.35,
+                                color: context.textSecondaryColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            for (var sIdx = 0;
+                sIdx < provider.sections.length;
+                sIdx++) ..._sliversForSection(
+              context,
+              provider.sections[sIdx],
+              sIdx,
+              language,
+              loc,
+              theme,
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          ],
+        ),
+      );
+    }
+
+    // ── Flat grid (search or legacy) ───────────────────────────────
     return RefreshIndicator(
       onRefresh: () => provider.loadResources(locale: language, refresh: true),
       color: Color(AppConstants.ifrcRed),
@@ -308,6 +376,83 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
         },
       ),
     );
+  }
+
+  List<Widget> _sliversForSection(
+    BuildContext context,
+    ResourceListSection section,
+    int sectionIndex,
+    String language,
+    AppLocalizations loc,
+    ThemeData theme,
+  ) {
+    final title = section.subcategory?.name ??
+        loc.resourcesOtherSubgroup;
+    final items = section.resources;
+
+    return [
+      SliverToBoxAdapter(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            14,
+            sectionIndex == 0 ? 10 : 20,
+            14,
+            10,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.2,
+                    color: context.textColor,
+                  ),
+                ),
+              ),
+              Text(
+                '${items.length}',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: context.textSecondaryColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      SliverPadding(
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        sliver: SliverGrid(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 0.66,
+          ),
+          delegate: SliverChildBuilderDelegate(
+            (context, i) {
+              final res = items[i];
+              final globalIndex = sectionIndex * 1000 + i;
+              return _ResourceCard(
+                key: ValueKey('${section.subcategory?.id ?? 'u'}-${res.id}'),
+                resource: res,
+                index: globalIndex,
+                currentLanguage: language,
+                onOpen: (url) => _openResource(
+                  context,
+                  url,
+                  title: res.title ?? loc.document,
+                ),
+              );
+            },
+            childCount: items.length,
+          ),
+        ),
+      ),
+    ];
   }
 
   void _openResource(

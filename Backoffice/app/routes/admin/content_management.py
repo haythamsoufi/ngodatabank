@@ -10,12 +10,14 @@ import uuid
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app, abort
 from flask_login import current_user
 from sqlalchemy import and_, func
+from sqlalchemy.orm import joinedload
 from werkzeug.utils import secure_filename
 
 from app import db
 from app.models import (
     Country,
     Resource,
+    ResourceSubcategory,
     ResourceTranslation,
     SubmittedDocument,
     PublicSubmission,
@@ -344,7 +346,10 @@ def manage_resources():
     from app.utils.api_pagination import validate_pagination_params
     page, per_page = validate_pagination_params(request.args, default_per_page=10, max_per_page=100)
     search_query = request.args.get('search', '').strip()
-    query = Resource.query.order_by(Resource.publication_date.desc(), Resource.created_at.desc())
+    query = (
+        Resource.query.options(joinedload(Resource.resource_subcategory))
+        .order_by(Resource.publication_date.desc(), Resource.created_at.desc())
+    )
     if search_query:
         query = query.filter(Resource.default_title.ilike(safe_ilike_pattern(search_query)))
     resources = query.paginate(page=page, per_page=per_page, error_out=False)
@@ -392,11 +397,13 @@ def new_resource():
             upload_base_path = get_resource_upload_path()
 
             # Create new resource
+            sub_id = form.resource_subcategory_id.data
             new_resource = Resource(
                 resource_type=form.resource_type.data,
                 default_title=form.default_title.data,
                 default_description=form.default_description.data,
-                publication_date=form.publication_date.data
+                publication_date=form.publication_date.data,
+                resource_subcategory_id=sub_id if sub_id else None,
             )
 
             db.session.add(new_resource)
@@ -439,6 +446,8 @@ def edit_resource(resource_id):
             resource.default_title = form.default_title.data
             resource.default_description = form.default_description.data
             resource.publication_date = form.publication_date.data
+            sub_id = form.resource_subcategory_id.data
+            resource.resource_subcategory_id = sub_id if sub_id else None
 
             # Handle file updates if new files are uploaded
             upload_base_path = get_resource_upload_path()
@@ -476,6 +485,7 @@ def edit_resource(resource_id):
     if request.method == 'GET':
         form.default_title.data = resource.default_title
         form.default_description.data = resource.default_description
+        form.resource_subcategory_id.data = resource.resource_subcategory_id or 0
         # Pre-populate per-language fields from ResourceTranslation
         # Use the same language source as the form to ensure dynamically added languages are included
         from app.forms.base import _get_supported_language_codes
@@ -531,6 +541,94 @@ def delete_resource(resource_id):
         )
 
     return redirect(url_for("content_management.manage_resources"))
+
+
+# --- Resource subgroups (admin-managed; used by mobile resources screen) ---
+
+
+@bp.route("/resources/subgroups", methods=["GET"])
+@permission_required('admin.resources.manage')
+def manage_resource_subgroups():
+    rows = (
+        ResourceSubcategory.query.order_by(
+            ResourceSubcategory.display_order.asc(),
+            ResourceSubcategory.name.asc(),
+        ).all()
+    )
+    form = DeleteForm()
+    return render_template(
+        "admin/resources/manage_resource_subgroups.html",
+        title="Resource subgroups",
+        subgroups=rows,
+        delete_form=form,
+    )
+
+
+@bp.route("/resources/subgroups/new", methods=["GET", "POST"])
+@permission_required('admin.resources.manage')
+def new_resource_subgroup():
+    if request.method == "POST":
+        name = (request.form.get("name") or "").strip()
+        if not name:
+            flash("Name is required.", "error")
+            return redirect(url_for("content_management.new_resource_subgroup"))
+        try:
+            order_raw = request.form.get("display_order", "0") or "0"
+            display_order = int(order_raw)
+        except (TypeError, ValueError):
+            display_order = 0
+        row = ResourceSubcategory(name=name[:120], display_order=display_order)
+        db.session.add(row)
+        db.session.commit()
+        flash(f"Subgroup “{row.name}” created.", "success")
+        return redirect(url_for("content_management.manage_resource_subgroups"))
+    return render_template("admin/resources/edit_resource_subgroup.html", subgroup=None)
+
+
+@bp.route("/resources/subgroups/edit/<int:subgroup_id>", methods=["GET", "POST"])
+@permission_required('admin.resources.manage')
+def edit_resource_subgroup(subgroup_id):
+    row = ResourceSubcategory.query.get_or_404(subgroup_id)
+    if request.method == "POST":
+        name = (request.form.get("name") or "").strip()
+        if not name:
+            flash("Name is required.", "error")
+            return redirect(url_for("content_management.edit_resource_subgroup", subgroup_id=subgroup_id))
+        try:
+            order_raw = request.form.get("display_order", "0") or "0"
+            display_order = int(order_raw)
+        except (TypeError, ValueError):
+            display_order = row.display_order or 0
+        row.name = name[:120]
+        row.display_order = display_order
+        db.session.commit()
+        flash(f"Subgroup “{row.name}” updated.", "success")
+        return redirect(url_for("content_management.manage_resource_subgroups"))
+    return render_template("admin/resources/edit_resource_subgroup.html", subgroup=row)
+
+
+@bp.route("/resources/subgroups/delete/<int:subgroup_id>", methods=["POST"])
+@permission_required('admin.resources.manage')
+def delete_resource_subgroup(subgroup_id):
+    row = ResourceSubcategory.query.get_or_404(subgroup_id)
+    name = row.name
+    try:
+        Resource.query.filter_by(resource_subcategory_id=subgroup_id).update(
+            {"resource_subcategory_id": None},
+            synchronize_session=False,
+        )
+        db.session.delete(row)
+        db.session.commit()
+        flash(f"Subgroup “{name}” deleted.", "success")
+    except Exception as e:
+        db.session.rollback()
+        handle_view_exception(
+            e,
+            GENERIC_ERROR_MESSAGE,
+            log_message=f"Error deleting resource subgroup {subgroup_id}: {e}",
+        )
+    return redirect(url_for("content_management.manage_resource_subgroups"))
+
 
 @bp.route("/resources/admin_download/<int:resource_id>/<language>", methods=["GET"])
 @permission_required('admin.resources.manage')
