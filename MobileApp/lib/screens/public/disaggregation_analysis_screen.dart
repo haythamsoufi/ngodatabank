@@ -523,9 +523,8 @@ class _DisaggregationAnalysisScreenState
                       Navigator.of(context).pushNamed(
                         AppRoutes.aiChat,
                         arguments: AiChatLaunchArgs(
-                          bottomNavTabIndex: (user?.chatbotEnabled ?? false)
-                              ? 3
-                              : 2,
+                          bottomNavTabIndex:
+                              NavigationHelper.aiChatMainTabPageIndex(context),
                         ),
                       );
                     },

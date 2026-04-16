@@ -2846,28 +2846,6 @@ const ifrcDocumentsColumnDefs = [
             'padding-top': '6px',
             'padding-bottom': '6px'
         }
-    },
-    {
-        field: 'already_imported',
-        headerName: '{{ _("Status") }}',
-        width: 150,
-        minWidth: 130,
-        maxWidth: 200,
-        filter: 'customSetFilter',
-        sortable: true,
-        filterValueGetter: function(params) {
-            return params.data && params.data.already_imported ? '{{ _("Already imported") }}' : '{{ _("Available") }}';
-        },
-        cellRenderer: function(params) {
-            const d = params.data || {};
-            if (d.already_imported) {
-                return '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">' +
-                    '<i class="fas fa-check-circle mr-1"></i>{{ _("Already imported") }}</span>';
-            }
-            return '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">' +
-                '<i class="fas fa-download mr-1"></i>{{ _("Available") }}</span>';
-        },
-        cellStyle: { 'white-space': 'nowrap' }
     }
 ];
 

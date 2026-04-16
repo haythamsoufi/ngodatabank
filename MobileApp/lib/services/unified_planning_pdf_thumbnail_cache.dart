@@ -1,0 +1,258 @@
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+
+import '../config/app_config.dart';
+import '../utils/debug_logger.dart';
+
+/// JPEG thumbnails for unified-planning PDF URLs (IFRC GO).
+///
+/// Loads a small server-rendered image from the Backoffice mobile API instead of
+/// downloading full PDFs and rendering them on-device.
+///
+/// Caches bytes in memory for the session and on disk under the application cache
+/// directory (survives app restarts; pruned by LRU when file count grows large).
+/// Web builds skip disk (no `dart:io`).
+class UnifiedPlanningPdfThumbnailCache {
+  UnifiedPlanningPdfThumbnailCache._();
+  static final UnifiedPlanningPdfThumbnailCache instance =
+      UnifiedPlanningPdfThumbnailCache._();
+
+  /// Upper bound on JPEG body size (server renders ~280px wide).
+  static const int _maxBytes = 512 * 1024;
+
+  /// Max JPEG files on disk; oldest modified files are removed when over budget.
+  static const int _maxDiskFiles = 400;
+
+  final Map<String, Uint8List?> _cache = {};
+  final Map<String, Future<Uint8List?>> _inFlight = {};
+  int _activeLoads = 0;
+  static const int _maxConcurrent = 4;
+
+  Directory? _diskDir;
+  Future<Directory?>? _diskDirFuture;
+  bool _diskInitFailed = false;
+
+  /// Resolves the on-disk cache folder early (e.g. from [loadUnifiedPlanningDocuments])
+  /// so the first thumbnail reads do not pay [getApplicationCacheDirectory] latency alone.
+  Future<void> warmCacheDirectory() async {
+    await _cacheDir();
+  }
+
+  /// Synchronous read from memory or disk when [warmCacheDirectory] has already run
+  /// (no server I/O). Use from card [initState] so the first frame can show cached JPEGs.
+  Uint8List? readThumbnailSync(String url) {
+    if (_cache.containsKey(url)) {
+      return _cache[url];
+    }
+    if (kIsWeb || _diskInitFailed) return null;
+    final dir = _diskDir;
+    if (dir == null) return null;
+    try {
+      final file = File(p.join(dir.path, '${_urlKey(url)}.jpg'));
+      if (!file.existsSync()) return null;
+      final bytes = file.readAsBytesSync();
+      if (!_isJpeg(bytes)) return null;
+      _cache[url] = bytes;
+      return bytes;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Cached JPEG bytes, or `null` if unavailable.
+  ///
+  /// Order: **memory → disk → server** (server only on miss).
+  Future<Uint8List?> getThumbnail(String url) {
+    if (_cache.containsKey(url)) {
+      return Future<Uint8List?>.value(_cache[url]);
+    }
+    return _inFlight.putIfAbsent(
+      url,
+      () => _load(url).whenComplete(() => _inFlight.remove(url)),
+    );
+  }
+
+  Future<Uint8List?> _load(String url) async {
+    // Disk hits must not wait on the network semaphore — otherwise a grid of
+    // thumbnails after cold start queues 4-at-a-time and feels sluggish.
+    final fromDisk = await _readDisk(url);
+    if (fromDisk != null) {
+      _cache[url] = fromDisk;
+      return fromDisk;
+    }
+
+    while (_activeLoads >= _maxConcurrent) {
+      await Future<void>.delayed(const Duration(milliseconds: 120));
+    }
+    _activeLoads++;
+    try {
+      final bytes = await _fetchServerThumbnail(url);
+      if (bytes != null && bytes.isNotEmpty) {
+        _cache[url] = bytes;
+        await _writeDisk(url, bytes);
+        return bytes;
+      }
+      _cache[url] = null;
+      return null;
+    } finally {
+      _activeLoads--;
+    }
+  }
+
+  static String _urlKey(String url) =>
+      sha256.convert(utf8.encode(url.trim())).toString();
+
+  static bool _isJpeg(Uint8List out) =>
+      out.length >= 3 && out[0] == 0xff && out[1] == 0xd8 && out[2] == 0xff;
+
+  Future<Directory?> _cacheDir() async {
+    if (kIsWeb || _diskInitFailed) return null;
+    if (_diskDir != null) return _diskDir;
+    _diskDirFuture ??= _initDiskDir();
+    final d = await _diskDirFuture!;
+    return d;
+  }
+
+  Future<Directory?> _initDiskDir() async {
+    try {
+      final base = await getApplicationCacheDirectory();
+      final dir = Directory(p.join(base.path, 'unified_planning_thumbnails'));
+      if (!await dir.exists()) {
+        await dir.create(recursive: true);
+      }
+      _diskDir = dir;
+      return dir;
+    } catch (e, st) {
+      _diskInitFailed = true;
+      _diskDirFuture = null;
+      DebugLogger.logErrorWithTag('PDF_THUMB', 'Disk cache init: $e\n$st');
+      return null;
+    }
+  }
+
+  Future<Uint8List?> _readDisk(String url) async {
+    final dir = await _cacheDir();
+    if (dir == null) return null;
+    final file = File(p.join(dir.path, '${_urlKey(url)}.jpg'));
+    if (!await file.exists()) return null;
+    try {
+      final bytes = await file.readAsBytes();
+      if (!_isJpeg(bytes)) {
+        await file.delete();
+        return null;
+      }
+      return bytes;
+    } catch (e, st) {
+      DebugLogger.logErrorWithTag('PDF_THUMB', 'Disk read: $e\n$st');
+      return null;
+    }
+  }
+
+  Future<void> _writeDisk(String url, Uint8List bytes) async {
+    final dir = await _cacheDir();
+    if (dir == null) return;
+    final file = File(p.join(dir.path, '${_urlKey(url)}.jpg'));
+    try {
+      await file.writeAsBytes(bytes, flush: true);
+      await _pruneDiskCache(dir);
+    } catch (e, st) {
+      DebugLogger.logErrorWithTag('PDF_THUMB', 'Disk write: $e\n$st');
+    }
+  }
+
+  Future<void> _pruneDiskCache(Directory dir) async {
+    try {
+      final files = <File>[];
+      await for (final entity in dir.list()) {
+        if (entity is File && entity.path.toLowerCase().endsWith('.jpg')) {
+          files.add(entity);
+        }
+      }
+      if (files.length <= _maxDiskFiles) return;
+
+      final times = <File, DateTime>{};
+      for (final f in files) {
+        try {
+          times[f] = (await f.stat()).modified;
+        } catch (_) {}
+      }
+      files.sort((a, b) {
+        final ta = times[a];
+        final tb = times[b];
+        if (ta == null) return 1;
+        if (tb == null) return -1;
+        return ta.compareTo(tb);
+      });
+
+      final removeCount = files.length - _maxDiskFiles;
+      for (var i = 0; i < removeCount && i < files.length; i++) {
+        try {
+          await files[i].delete();
+        } catch (_) {}
+      }
+    } catch (_) {}
+  }
+
+  Future<Uint8List?> _fetchServerThumbnail(String pdfUrl) async {
+    if (pdfUrl.trim().isEmpty) return null;
+
+    final base = Uri.parse(
+      '${AppConfig.baseApiUrl}${AppConfig.mobileUnifiedPlanningThumbnailEndpoint}',
+    );
+    final uri = base.replace(queryParameters: {'url': pdfUrl});
+
+    final headers = <String, String>{
+      'Accept': 'image/jpeg',
+      'User-Agent': 'hum-databank-mobile/1.0',
+    };
+    final key = AppConfig.apiKey.trim();
+    if (key.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $key';
+    }
+
+    final client = http.Client();
+    try {
+      final req = http.Request('GET', uri)..headers.addAll(headers);
+      final streamed =
+          await client.send(req).timeout(const Duration(seconds: 45));
+      if (streamed.statusCode != 200) {
+        await streamed.stream.drain();
+        return null;
+      }
+      final len = streamed.contentLength;
+      if (len != null && len > _maxBytes) {
+        await streamed.stream.drain();
+        return null;
+      }
+      final chunks = <int>[];
+      await for (final chunk in streamed.stream
+          .timeout(const Duration(seconds: 45))) {
+        chunks.addAll(chunk);
+        if (chunks.length > _maxBytes) {
+          return null;
+        }
+      }
+      final out = Uint8List.fromList(chunks);
+      if (!_isJpeg(out)) {
+        DebugLogger.logErrorWithTag(
+          'PDF_THUMB',
+          'Thumbnail response is not JPEG (${out.length} bytes)',
+        );
+        return null;
+      }
+      return out;
+    } catch (e, st) {
+      DebugLogger.logErrorWithTag('PDF_THUMB', '$e\n$st');
+      return null;
+    } finally {
+      client.close();
+    }
+  }
+}

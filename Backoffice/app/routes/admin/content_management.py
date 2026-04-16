@@ -37,7 +37,7 @@ from app.utils.file_paths import (
     save_submission_document,
 )
 from app.services import storage_service as storage
-from app.utils.error_handling import handle_view_exception
+from app.utils.error_handling import handle_json_view_exception, handle_view_exception
 from app.utils.advanced_validation import AdvancedValidator
 from app.utils.datetime_helpers import utcnow
 from app.utils.sql_utils import safe_ilike_pattern
@@ -46,6 +46,16 @@ from app.utils.transactions import request_transaction_rollback
 # Allowed file extensions for uploads
 ALLOWED_DOCUMENT_EXTENSIONS = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt']
 ALLOWED_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+
+
+def _resource_subcategories_for_modal():
+    """Ordered rows for resource edit/create subcategory modal."""
+    return (
+        ResourceSubcategory.query.order_by(
+            ResourceSubcategory.display_order.asc(),
+            ResourceSubcategory.name.asc(),
+        ).all()
+    )
 
 
 def _standalone_entity_pair_from_storage_path(storage_path: str | None) -> tuple[str, int] | None:
@@ -403,7 +413,7 @@ def new_resource():
                 default_title=form.default_title.data,
                 default_description=form.default_description.data,
                 publication_date=form.publication_date.data,
-                resource_subcategory_id=sub_id if sub_id else None,
+                resource_subcategory_id=sub_id if sub_id and sub_id > 0 else None,
             )
 
             db.session.add(new_resource)
@@ -423,9 +433,12 @@ def new_resource():
                 log_message=f"Error creating resource: {e}"
             )
 
-    return render_template("admin/resources/edit_resource.html",
-                         form=form,
-                         title="Create New Resource")
+    return render_template(
+        "admin/resources/edit_resource.html",
+        form=form,
+        title="Create New Resource",
+        resource_subcategories=_resource_subcategories_for_modal(),
+    )
 
 @bp.route("/resources/edit/<int:resource_id>", methods=["GET", "POST"])
 @permission_required('admin.resources.manage')
@@ -447,7 +460,7 @@ def edit_resource(resource_id):
             resource.default_description = form.default_description.data
             resource.publication_date = form.publication_date.data
             sub_id = form.resource_subcategory_id.data
-            resource.resource_subcategory_id = sub_id if sub_id else None
+            resource.resource_subcategory_id = sub_id if sub_id and sub_id > 0 else None
 
             # Handle file updates if new files are uploaded
             upload_base_path = get_resource_upload_path()
@@ -508,10 +521,13 @@ def edit_resource(resource_id):
                     if hasattr(form, desc_attr):
                         getattr(form, desc_attr).data = resource.default_description or ''
 
-    return render_template("admin/resources/edit_resource.html",
-                         title=f"Edit Resource: {resource.default_title}",
-                         form=form,
-                         resource=resource)
+    return render_template(
+        "admin/resources/edit_resource.html",
+        title=f"Edit Resource: {resource.default_title}",
+        form=form,
+        resource=resource,
+        resource_subcategories=_resource_subcategories_for_modal(),
+    )
 
 @bp.route("/resources/delete/<int:resource_id>", methods=["POST"])
 @permission_required('admin.resources.manage')
@@ -543,7 +559,7 @@ def delete_resource(resource_id):
     return redirect(url_for("content_management.manage_resources"))
 
 
-# --- Resource subgroups (admin-managed; used by mobile resources screen) ---
+# --- Resource subcategories (admin-managed; used by mobile resources screen) ---
 
 
 @bp.route("/resources/subgroups", methods=["GET"])
@@ -558,10 +574,112 @@ def manage_resource_subgroups():
     form = DeleteForm()
     return render_template(
         "admin/resources/manage_resource_subgroups.html",
-        title="Resource subgroups",
+        title="Resource subcategories",
         subgroups=rows,
         delete_form=form,
     )
+
+
+@bp.route("/resources/subcategory-options", methods=["GET"])
+@permission_required('admin.resources.manage')
+def resource_subcategory_select_options():
+    """JSON list for refreshing the resource form subcategory dropdown without a full reload."""
+    rows = (
+        ResourceSubcategory.query.order_by(
+            ResourceSubcategory.display_order.asc(),
+            ResourceSubcategory.name.asc(),
+        ).all()
+    )
+    return json_ok(subcategories=[{"id": r.id, "name": r.name} for r in rows])
+
+
+@bp.post("/resources/subcategories")
+@permission_required('admin.resources.manage')
+def resource_subcategory_api_create():
+    """JSON create for the resource edit page subcategory modal (avoids full-page navigation)."""
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return json_bad_request("Expected a JSON object.")
+    name = (data.get("name") or "").strip()
+    if not name:
+        return json_bad_request("Name is required.")
+    try:
+        order_raw = data.get("display_order", 0)
+        display_order = int(order_raw) if order_raw is not None and str(order_raw).strip() != "" else 0
+    except (TypeError, ValueError):
+        display_order = 0
+    try:
+        row = ResourceSubcategory(name=name[:120], display_order=display_order)
+        db.session.add(row)
+        db.session.commit()
+        return json_ok(
+            subcategory={"id": row.id, "name": row.name, "display_order": row.display_order},
+            message="Subcategory created.",
+        )
+    except Exception as e:
+        return handle_json_view_exception(
+            e,
+            GENERIC_ERROR_MESSAGE,
+            log_message=f"Error creating resource subcategory: {e}",
+        )
+
+
+@bp.put("/resources/subcategories/<int:subcategory_id>")
+@permission_required('admin.resources.manage')
+def resource_subcategory_api_update(subcategory_id):
+    """JSON update for the resource edit page subcategory modal."""
+    row = ResourceSubcategory.query.get(subcategory_id)
+    if not row:
+        return json_not_found("Subcategory not found.")
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return json_bad_request("Expected a JSON object.")
+    name = (data.get("name") or "").strip()
+    if not name:
+        return json_bad_request("Name is required.")
+    try:
+        order_raw = data.get("display_order", row.display_order)
+        display_order = int(order_raw) if order_raw is not None and str(order_raw).strip() != "" else 0
+    except (TypeError, ValueError):
+        display_order = row.display_order or 0
+    try:
+        row.name = name[:120]
+        row.display_order = display_order
+        db.session.commit()
+        return json_ok(
+            subcategory={"id": row.id, "name": row.name, "display_order": row.display_order},
+            message="Subcategory updated.",
+        )
+    except Exception as e:
+        return handle_json_view_exception(
+            e,
+            GENERIC_ERROR_MESSAGE,
+            log_message=f"Error updating resource subcategory {subcategory_id}: {e}",
+        )
+
+
+@bp.delete("/resources/subcategories/<int:subcategory_id>")
+@permission_required('admin.resources.manage')
+def resource_subcategory_api_delete(subcategory_id):
+    """JSON delete for the resource edit page subcategory modal."""
+    row = ResourceSubcategory.query.get(subcategory_id)
+    if not row:
+        return json_not_found("Subcategory not found.")
+    name = row.name
+    try:
+        Resource.query.filter_by(resource_subcategory_id=subcategory_id).update(
+            {"resource_subcategory_id": None},
+            synchronize_session=False,
+        )
+        db.session.delete(row)
+        db.session.commit()
+        return json_ok(deleted_id=subcategory_id, message=f"Subcategory “{name}” deleted.")
+    except Exception as e:
+        return handle_json_view_exception(
+            e,
+            GENERIC_ERROR_MESSAGE,
+            log_message=f"Error deleting resource subcategory {subcategory_id}: {e}",
+        )
 
 
 @bp.route("/resources/subgroups/new", methods=["GET", "POST"])
@@ -580,7 +698,7 @@ def new_resource_subgroup():
         row = ResourceSubcategory(name=name[:120], display_order=display_order)
         db.session.add(row)
         db.session.commit()
-        flash(f"Subgroup “{row.name}” created.", "success")
+        flash(f"Subcategory “{row.name}” created.", "success")
         return redirect(url_for("content_management.manage_resource_subgroups"))
     return render_template("admin/resources/edit_resource_subgroup.html", subgroup=None)
 
@@ -602,7 +720,7 @@ def edit_resource_subgroup(subgroup_id):
         row.name = name[:120]
         row.display_order = display_order
         db.session.commit()
-        flash(f"Subgroup “{row.name}” updated.", "success")
+        flash(f"Subcategory “{row.name}” updated.", "success")
         return redirect(url_for("content_management.manage_resource_subgroups"))
     return render_template("admin/resources/edit_resource_subgroup.html", subgroup=row)
 
@@ -619,13 +737,13 @@ def delete_resource_subgroup(subgroup_id):
         )
         db.session.delete(row)
         db.session.commit()
-        flash(f"Subgroup “{name}” deleted.", "success")
+        flash(f"Subcategory “{name}” deleted.", "success")
     except Exception as e:
         db.session.rollback()
         handle_view_exception(
             e,
             GENERIC_ERROR_MESSAGE,
-            log_message=f"Error deleting resource subgroup {subgroup_id}: {e}",
+            log_message=f"Error deleting resource subcategory {subgroup_id}: {e}",
         )
     return redirect(url_for("content_management.manage_resource_subgroups"))
 

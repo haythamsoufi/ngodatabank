@@ -11,7 +11,10 @@ class IfrcUnifiedPlanningService {
   IfrcUnifiedPlanningService._();
   static final IfrcUnifiedPlanningService instance = IfrcUnifiedPlanningService._();
 
-  static final _yearRe = RegExp(r'\b(20\d{2})\b');
+  /// Same rule as Backoffice `IFRC_APPEALS_TITLE_YEAR_RE` / `list_ifrc_api_documents`:
+  /// first `20xx` (2000–2099) in `AppealOrigType` + `AppealsName` with digit boundaries
+  /// (not `\b`, so `INP_2023_…` matches).
+  static final _yearRe = RegExp(r'(?<!\d)(20\d{2})(?!\d)');
   static final _iso2SuffixRe = RegExp(r'\s*\([A-Z]{2}\)\s*$');
 
   /// GET [AppConfig.mobileUnifiedPlanningConfigEndpoint] — public mobile API.
@@ -66,6 +69,20 @@ class IfrcUnifiedPlanningService {
     return out;
   }
 
+  /// Parses `/DownloadFile/{id}/` from an IFRC GO document URL, if present.
+  static int? ifrcDownloadFileNumericId(String url) {
+    final m = RegExp(r'/DownloadFile/(\d+)/', caseSensitive: false).firstMatch(url);
+    if (m == null) return null;
+    return int.tryParse(m.group(1)!);
+  }
+
+  /// Dedupe key: IFRC file id when present, else normalized URL string.
+  static String unifiedPlanningListDedupeKey(String url) {
+    final id = ifrcDownloadFileNumericId(url);
+    if (id != null) return 'ifrc_download:$id';
+    return url;
+  }
+
   static String _normalizeHttpsUrl(String raw) {
     final u = raw.trim();
     if (u.isEmpty) return '';
@@ -91,6 +108,49 @@ class IfrcUnifiedPlanningService {
     } catch (_) {
       return u;
     }
+  }
+
+  /// Parses IFRC `AppealsDate` (string, int epoch, or .NET `/Date(ms)/` form).
+  static DateTime? parseAppealsDate(dynamic raw) {
+    if (raw == null) return null;
+    if (raw is DateTime) return raw.toLocal();
+    if (raw is num) {
+      final v = raw.round();
+      if (v.abs() > 2000000000000) {
+        return DateTime.fromMillisecondsSinceEpoch(v, isUtc: true).toLocal();
+      }
+      if (v.abs() > 2000000000) {
+        return DateTime.fromMillisecondsSinceEpoch(v * 1000, isUtc: true)
+            .toLocal();
+      }
+      return null;
+    }
+    final s = raw.toString().trim();
+    if (s.isEmpty) return null;
+
+    final dotnet = RegExp(r'/Date\((-?\d+)(?:[+-]\d{4})?\)/').firstMatch(s);
+    if (dotnet != null) {
+      final ms = int.tryParse(dotnet.group(1)!);
+      if (ms != null) {
+        return DateTime.fromMillisecondsSinceEpoch(ms, isUtc: true).toLocal();
+      }
+    }
+
+    var parsed = DateTime.tryParse(s);
+    if (parsed != null) {
+      return parsed.isUtc ? parsed.toLocal() : parsed;
+    }
+
+    final ymd = RegExp(r'^(\d{4})-(\d{2})-(\d{2})').firstMatch(s);
+    if (ymd != null) {
+      final y = int.tryParse(ymd.group(1)!);
+      final m = int.tryParse(ymd.group(2)!);
+      final d = int.tryParse(ymd.group(3)!);
+      if (y != null && m != null && d != null) {
+        return DateTime(y, m, d);
+      }
+    }
+    return null;
   }
 
   static String? _stripCountrySuffix(String? name) {
@@ -133,8 +193,10 @@ class IfrcUnifiedPlanningService {
     }
 
     final out = <UnifiedPlanningDocument>[];
+    final seenDedupeKeys = <String>{};
     for (final item in decoded) {
       if (item is! Map<String, dynamic>) continue;
+      // Skip hidden; collapse duplicate EpiServer rows that share the same DownloadFile id.
       if (item['Hidden'] == true) continue;
 
       final baseDir = (item['BaseDirectory'] as String?) ?? '';
@@ -143,6 +205,7 @@ class IfrcUnifiedPlanningService {
 
       final url = _normalizeHttpsUrl(baseDir + baseFile);
       if (!url.toLowerCase().startsWith('https://')) continue;
+      if (!seenDedupeKeys.add(unifiedPlanningListDedupeKey(url))) continue;
 
       final appealsTypeId = item['AppealsTypeId'];
       int? tid;
@@ -154,13 +217,15 @@ class IfrcUnifiedPlanningService {
 
       final orig = (item['AppealOrigType'] as String?) ?? '';
       final name = (item['AppealsName'] as String?) ?? '';
-      final ym = _yearRe.firstMatch('$orig $name');
-      final year = ym != null ? int.tryParse(ym.group(1)!) : null;
+      final yearMatch = _yearRe.firstMatch('$orig $name');
+      final year =
+          yearMatch != null ? int.tryParse(yearMatch.group(1)!) : null;
 
       final locCode = (item['LocationCountryCode'] as String?)?.trim().toUpperCase();
       final locName = _stripCountrySuffix(item['LocationCountryName'] as String?);
 
       final title = name.trim().isNotEmpty ? name.trim() : (orig.trim().isNotEmpty ? orig.trim() : 'Document');
+      final publishedAt = parseAppealsDate(item['AppealsDate']);
 
       out.add(
         UnifiedPlanningDocument(
@@ -171,6 +236,7 @@ class IfrcUnifiedPlanningService {
           appealsTypeId: tid,
           documentTypeLabel: tid != null ? typeLabels[tid] : null,
           year: year,
+          publishedAt: publishedAt,
         ),
       );
     }

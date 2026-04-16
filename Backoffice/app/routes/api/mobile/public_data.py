@@ -4,14 +4,18 @@
 Auth policy:
   - Truly public (no login required): countrymap, sectors-subsectors, indicator-bank,
     indicator-suggestions, data/periods, data/fdrs-overview, data/resources,
-    data/unified-planning-config (IFRC GO URL + unified planning type IDs for the mobile app).
+    data/unified-planning-config (IFRC GO URL + unified planning type IDs for the mobile app),
+    data/unified-planning-thumbnail (JPEG first page — server-rendered; IFRC URL allowlist).
     Rate-limited to prevent abuse.
   - Auth-required: quiz/leaderboard, quiz/submit-score (scores are tied to authenticated users).
 """
 
+from collections import OrderedDict
 from contextlib import suppress
+from hashlib import sha256
+from threading import Lock
 
-from flask import request, current_app
+from flask import request, current_app, make_response
 from flask_login import current_user
 
 from app.utils.api_pagination import validate_pagination_params
@@ -30,6 +34,11 @@ from app.utils.transactions import request_transaction_rollback
 from app.utils.sql_utils import safe_ilike_pattern
 from app.routes.api.mobile import mobile_bp
 from app.utils.constants import APPEALS_TYPE_DEFAULT_IDS_STR, APPEALS_TYPE_DISPLAY_NAMES
+
+# In-process JPEG cache for unified-planning thumbnails (key = sha256 of URL).
+_UNIFIED_PLANNING_THUMB_JPEG: "OrderedDict[str, bytes]" = OrderedDict()
+_UNIFIED_PLANNING_THUMB_LOCK = Lock()
+_UNIFIED_PLANNING_THUMB_MAX_ENTRIES = 128
 
 
 @mobile_bp.route('/data/countrymap', methods=['GET'])
@@ -876,6 +885,121 @@ def unified_planning_config():
             'document_types': document_types,
         },
     )
+
+
+@mobile_bp.route('/data/unified-planning-thumbnail', methods=['GET'])
+@mobile_rate_limit(requests_per_minute=45)
+def unified_planning_thumbnail():
+    """Return a small JPEG of the PDF first page for unified-planning grid tiles.
+
+    The mobile app should prefer this over downloading full PDFs on-device. The server
+    fetches the IFRC PDF (same allowlist / Basic auth as document import), renders with
+    PyMuPDF, and returns ``image/jpeg`` (not the usual mobile JSON envelope).
+
+    Query: ``url`` — full https URL of the PDF (must pass IFRC_DOCUMENT_ALLOWED_HOSTS checks).
+    """
+    from urllib.parse import unquote
+
+    import requests
+    import fitz  # PyMuPDF
+
+    from app.routes.ai_documents.helpers import (
+        _get_ifrc_basic_auth,
+        _validate_ifrc_fetch_url,
+    )
+
+    raw = (request.args.get('url') or '').strip()
+    url = unquote(raw).strip()
+    ok, err = _validate_ifrc_fetch_url(url)
+    if not ok:
+        return mobile_bad_request(err)
+
+    cache_key = sha256(url.encode('utf-8')).hexdigest()
+    with _UNIFIED_PLANNING_THUMB_LOCK:
+        cached = _UNIFIED_PLANNING_THUMB_JPEG.get(cache_key)
+        if cached is not None:
+            _UNIFIED_PLANNING_THUMB_JPEG.move_to_end(cache_key)
+            resp = make_response(cached)
+            resp.headers['Content-Type'] = 'image/jpeg'
+            resp.headers['Cache-Control'] = 'public, max-age=86400'
+            return resp
+
+    max_bytes = int(current_app.config.get('UNIFIED_PLANNING_THUMB_MAX_BYTES') or (12 * 1024 * 1024))
+    auth = _get_ifrc_basic_auth()
+    if auth is None:
+        current_app.logger.warning('unified_planning_thumbnail: IFRC basic auth not configured')
+        return mobile_bad_request('IFRC credentials are not configured on the server')
+
+    r = None
+    try:
+        r = requests.get(
+            url,
+            auth=auth,
+            timeout=(15, 90),
+            stream=True,
+            headers={'User-Agent': 'hum-databank-backoffice/1.0'},
+            allow_redirects=True,
+        )
+        if r.status_code != 200:
+            return mobile_bad_request(f'Upstream HTTP {r.status_code}')
+        cl = r.headers.get('Content-Length')
+        if cl is not None:
+            with suppress(ValueError):
+                if int(cl) > max_bytes:
+                    return mobile_bad_request('PDF too large for thumbnail')
+        chunks = []
+        total = 0
+        for chunk in r.iter_content(chunk_size=65536):
+            if not chunk:
+                continue
+            total += len(chunk)
+            if total > max_bytes:
+                return mobile_bad_request('PDF too large for thumbnail')
+            chunks.append(chunk)
+        pdf_bytes = b''.join(chunks)
+    except requests.RequestException as e:
+        current_app.logger.warning('unified_planning_thumbnail fetch: %s', e)
+        return mobile_server_error()
+    finally:
+        if r is not None:
+            with suppress(Exception):
+                r.close()
+
+    doc = None
+    jpeg_bytes = b''
+    try:
+        doc = fitz.open(stream=pdf_bytes, filetype='pdf')
+        if doc.page_count < 1:
+            return mobile_bad_request('PDF has no pages')
+        page = doc.load_page(0)
+        rect = page.rect
+        if rect.width <= 0:
+            return mobile_bad_request('Invalid PDF page size')
+        zoom = min(280.0 / float(rect.width), 2.5)
+        mat = fitz.Matrix(zoom, zoom)
+        pix = page.get_pixmap(matrix=mat, alpha=False)
+        jpeg_bytes = pix.tobytes('jpeg', jpg_quality=82)
+    except Exception as e:
+        current_app.logger.warning('unified_planning_thumbnail render: %s', e, exc_info=True)
+        return mobile_bad_request('Could not render PDF thumbnail')
+    finally:
+        if doc is not None:
+            with suppress(Exception):
+                doc.close()
+
+    if not jpeg_bytes:
+        return mobile_server_error()
+
+    with _UNIFIED_PLANNING_THUMB_LOCK:
+        _UNIFIED_PLANNING_THUMB_JPEG[cache_key] = jpeg_bytes
+        _UNIFIED_PLANNING_THUMB_JPEG.move_to_end(cache_key)
+        while len(_UNIFIED_PLANNING_THUMB_JPEG) > _UNIFIED_PLANNING_THUMB_MAX_ENTRIES:
+            _UNIFIED_PLANNING_THUMB_JPEG.popitem(last=False)
+
+    resp = make_response(jpeg_bytes)
+    resp.headers['Content-Type'] = 'image/jpeg'
+    resp.headers['Cache-Control'] = 'public, max-age=86400'
+    return resp
 
 
 @mobile_bp.route('/data/quiz/submit-score', methods=['POST'])

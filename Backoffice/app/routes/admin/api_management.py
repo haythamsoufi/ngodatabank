@@ -445,6 +445,13 @@ MOBILE_ENDPOINT_REGISTRY = [
          '(Plan, Mid-Year Report, Annual Report) for client-side IFRC document fetch.'
      ),
      'flutter': 'PublicResourcesProvider'},
+    {'group': 'Public Data', 'path': '/api/mobile/v1/data/unified-planning-thumbnail', 'methods': ['GET'],
+     'auth': 'public', 'rate_limited': True,
+     'description': (
+         'JPEG first page of an IFRC PDF for grid thumbnails (query: url). '
+         'Server fetches PDF with IFRC credentials; returns image/jpeg, not JSON.'
+     ),
+     'flutter': 'UnifiedPlanningPdfThumbnailCache'},
     {'group': 'Public Data', 'path': '/api/mobile/v1/data/quiz/leaderboard', 'methods': ['GET'],
      'auth': 'public', 'rate_limited': True,
      'description': 'Quiz global leaderboard — publicly accessible, rate-limited',

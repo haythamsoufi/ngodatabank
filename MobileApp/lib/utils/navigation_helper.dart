@@ -15,9 +15,9 @@ import 'debug_logger.dart';
 /// handle to animate/jump the PageView without going through the Navigator.
 ///
 /// ## AI chat tab
-/// The AI chat screen is now a regular PageView page at index 3 (when enabled).
-/// All tab transitions — including home↔chat↔admin — are uniform horizontal
-/// PageView swipes with no push/pop involved.
+/// The AI chat screen is a regular [PageView] page; its index depends on the
+/// visible tab set (see [TabCustomizationProvider], [AppBottomNavigationBar.aiChatNavIndex]).
+/// All tab transitions are uniform horizontal PageView swipes with no push/pop involved.
 class NavigationHelper {
   // ---------------------------------------------------------------------------
   // PageView registration — set by MainNavigationScreen
@@ -129,6 +129,15 @@ class NavigationHelper {
   /// to the AI chat page in place. Otherwise pops to the main screen first.
   ///
   /// AI chat is now a regular PageView page — no route is pushed.
+  /// Page index of the AI chat tab for the current role / customization / chatbot flag.
+  static int aiChatMainTabPageIndex(BuildContext context) {
+    return _resolveTabIndex(
+      context,
+      TabIds.aiChat,
+      fallback: AppBottomNavigationBar.aiChatNavIndex,
+    );
+  }
+
   static void openAiChat(BuildContext context) {
     final aiPage = _resolveTabIndex(context, TabIds.aiChat,
         fallback: AppBottomNavigationBar.aiChatNavIndex);

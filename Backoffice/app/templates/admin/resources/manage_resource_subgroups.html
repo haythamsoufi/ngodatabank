@@ -1,24 +1,26 @@
 {% extends "core/layout.html" %}
 {% from "macros/breadcrumbs.html" import breadcrumb %}
 
-{% block title %}Resource subgroups{% endblock %}
+{% block title %}Resource subcategories{% endblock %}
 
 {% block content %}
 {% from "components/_page_header.html" import page_header %}
 
+{% set new_sub_url = url_for('content_management.new_resource_subgroup') %}
+
 {{ page_header(
-    title='Resource subgroups',
+    title='Resource subcategories',
     icon='fas fa-layer-group',
     breadcrumbs=[
         {'name': 'Admin', 'url': url_for('admin.admin_dashboard')},
         {'name': 'Resource Management', 'url': url_for('content_management.manage_resources')},
-        {'name': 'Subgroups'}
+        {'name': 'Subcategories'}
     ],
     actions=[
         {
             'type': 'link',
-            'text': 'Add subgroup',
-            'url': url_for('content_management.new_resource_subgroup'),
+            'text': 'Add subcategory',
+            'url': new_sub_url,
             'icon': 'fas fa-plus',
             'classes': 'professional-action-btn professional-action-btn-green',
         },
@@ -50,7 +52,7 @@
                     <td class="px-6 py-4 text-sm text-gray-900 font-medium">{{ s.name }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-right space-x-3">
                         <a href="{{ url_for('content_management.edit_resource_subgroup', subgroup_id=s.id) }}" class="text-indigo-600 hover:text-indigo-900" title="Edit"><i class="fas fa-pen"></i></a>
-                        <form action="{{ url_for('content_management.delete_resource_subgroup', subgroup_id=s.id) }}" method="POST" class="inline-block" data-confirm="Delete subgroup “{{ s.name|e }}”? Resources will be unassigned from this subgroup." data-confirm-danger="true">
+                        <form action="{{ url_for('content_management.delete_resource_subgroup', subgroup_id=s.id) }}" method="POST" class="inline-block" data-confirm="Delete subcategory “{{ s.name|e }}”? Resources will be unassigned from this subcategory." data-confirm-danger="true">
                             {{ delete_form.csrf_token }}
                             <button type="submit" class="text-red-600 hover:text-red-900" title="Delete"><i class="fas fa-trash-alt"></i></button>
                         </form>
@@ -62,8 +64,8 @@
     </div>
     {% else %}
     <div class="text-center py-10 bg-white border border-gray-200 rounded-lg shadow-sm">
-        <p class="text-gray-600 text-sm">No subgroups yet. Create one to organize publications on the mobile app.</p>
-        <a href="{{ url_for('content_management.new_resource_subgroup') }}" class="inline-block mt-4 text-indigo-600 hover:underline text-sm font-medium">Add subgroup</a>
+        <p class="text-gray-600 text-sm">No subcategories yet. Create one to organize publications on the mobile app.</p>
+        <a href="{{ new_sub_url }}" class="inline-block mt-4 text-indigo-600 hover:underline text-sm font-medium">Add subcategory</a>
     </div>
     {% endif %}
 </div>

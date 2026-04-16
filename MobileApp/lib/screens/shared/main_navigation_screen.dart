@@ -15,6 +15,7 @@ import '../public/home_screen.dart';
 import '../public/indicator_bank_screen.dart';
 import '../public/resources_screen.dart';
 import '../public/disaggregation_analysis_screen.dart';
+import '../public/unified_planning_documents_screen.dart';
 import '../admin/admin_screen.dart';
 // Widgets
 import '../../widgets/bottom_navigation_bar.dart';
@@ -55,6 +56,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
         return const DashboardScreen();
       case TabIds.home:
         return HomeScreen(key: _homeScreenKey);
+      case TabIds.unifiedPlanning:
+        return const UnifiedPlanningDocumentsScreen();
       case TabIds.aiChat:
         return const AiChatScreen();
       case TabIds.admin:

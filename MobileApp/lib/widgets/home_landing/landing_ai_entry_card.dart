@@ -6,9 +6,9 @@ import 'package:provider/provider.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../models/shared/ai_chat_launch_args.dart';
-import '../../providers/shared/auth_provider.dart';
 import '../../config/routes.dart';
 import '../../utils/constants.dart';
+import '../../utils/navigation_helper.dart';
 
 /// Glass-style AI ask card.
 ///
@@ -121,14 +121,11 @@ class _LandingAiEntryCardState extends State<LandingAiEntryCard>
   }
 
   void _navigateToChat(String? initialText) {
-    final chatbot =
-        Provider.of<AuthProvider>(context, listen: false).user?.chatbotEnabled ??
-            false;
     widget.onNavigated?.call();
     Navigator.of(context).pushNamed(
       AppRoutes.aiChat,
       arguments: AiChatLaunchArgs(
-        bottomNavTabIndex: chatbot ? 3 : 2,
+        bottomNavTabIndex: NavigationHelper.aiChatMainTabPageIndex(context),
         startNewConversation: true,
         initialText: initialText,
         sendImmediately: initialText != null && initialText.isNotEmpty,

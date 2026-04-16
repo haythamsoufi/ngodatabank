@@ -37,6 +37,7 @@ from app.utils.constants import (
 
 from . import ai_docs_bp
 from .helpers import (
+    IFRC_APPEALS_TITLE_YEAR_RE,
     _get_ifrc_basic_auth,
     _validate_ifrc_fetch_url,
     _normalize_ifrc_source_url,
@@ -644,7 +645,9 @@ def list_ifrc_api_documents():
             appeal_orig_type = (item.get('AppealOrigType') or '')
             appeals_name = (item.get('AppealsName') or '')
 
-            year_match = re.search(r'\b(20\d{2})\b', appeal_orig_type + ' ' + appeals_name)
+            year_match = IFRC_APPEALS_TITLE_YEAR_RE.search(
+                appeal_orig_type + ' ' + appeals_name
+            )
             if year_match:
                 year = int(year_match.group(1))
 

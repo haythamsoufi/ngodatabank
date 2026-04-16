@@ -103,30 +103,29 @@ img[data-thumbnail-preview]:hover { opacity:.8; }
     ]
 ) }}
 
-<div class="container mx-auto px-4 py-6">
+<div class="w-full max-w-none min-w-0 px-4 sm:px-6 py-6">
 <form method="POST" enctype="multipart/form-data">
 {{ form.csrf_token }}
 
 {# ── Metadata card ─────────────────────────────────────────────────────── #}
-<div class="bg-white border border-gray-200 rounded-lg shadow-sm p-5 mb-5 max-w-5xl mx-auto">
+<div class="bg-white border border-gray-200 rounded-lg shadow-sm p-5 mb-5">
     <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Resource Details</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2" style="gap:1.5rem">
-        <div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 items-start">
+        <div class="min-w-0">
             {{ form.resource_type.label(class="block text-gray-700 text-sm font-semibold mb-1") }}
             {{ form.resource_type(class="shadow-sm appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500") }}
             {% for error in form.resource_type.errors %}
                 <p class="mt-1 text-red-500 text-xs">{{ error }}</p>
             {% endfor %}
         </div>
-        <div>
+        <div class="min-w-0">
             {{ form.resource_subcategory_id.label(class="block text-gray-700 text-sm font-semibold mb-1") }}
-            <p class="text-xs text-gray-500 mb-1">Used to group items on the mobile Resources screen. Manage the list under <a href="{{ url_for('content_management.manage_resource_subgroups') }}" class="text-blue-600 hover:underline">Resource subgroups</a>.</p>
-            {{ form.resource_subcategory_id(class="shadow-sm appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500") }}
+            {{ form.resource_subcategory_id(id="resource_subcategory_id", class="shadow-sm appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500") }}
             {% for error in form.resource_subcategory_id.errors %}
                 <p class="mt-1 text-red-500 text-xs">{{ error }}</p>
             {% endfor %}
         </div>
-        <div>
+        <div class="min-w-0">
             {{ form.publication_date.label(class="block text-gray-700 text-sm font-semibold mb-1") }}
             {{ form.publication_date(class="shadow-sm appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500") }}
             {% for error in form.publication_date.errors %}
@@ -137,7 +136,7 @@ img[data-thumbnail-preview]:hover { opacity:.8; }
 </div>
 
 {# ── Multilingual content card ─────────────────────────────────────────── #}
-<div class="bg-white border border-gray-200 rounded-lg shadow-sm max-w-5xl mx-auto">
+<div class="bg-white border border-gray-200 rounded-lg shadow-sm">
 
     {# Tab bar #}
     <div class="border-b border-gray-200 px-6">
@@ -565,6 +564,9 @@ img[data-thumbnail-preview]:hover { opacity:.8; }
     <img src="" alt="Thumbnail preview">
 </div>
 
+{% set resource_subcategories = resource_subcategories|default([]) %}
+{% include 'admin/resources/_resource_subcategories_modal.html' %}
+
 <script nonce="{{ csp_nonce() }}">
 (function () {
     'use strict';
@@ -575,6 +577,117 @@ img[data-thumbnail-preview]:hover { opacity:.8; }
 
     const footerAutoTranslateBtn  = document.getElementById('footer-auto-translate-btn');
     const footerAutoTranslateLang = document.getElementById('footer-auto-translate-lang');
+
+    var subSel = document.getElementById('resource_subcategory_id');
+    var optsUrl = {{ url_for('content_management.resource_subcategory_select_options') | tojson }};
+    var subcatApiCreateUrl = {{ url_for('content_management.resource_subcategory_api_create') | tojson }};
+    var subcatApiMutateUrlTemplate = {{ url_for('content_management.resource_subcategory_api_update', subcategory_id=0) | tojson }};
+
+    function subcatMutateUrl(id) {
+        return subcatApiMutateUrlTemplate.replace(/\/0$/, '/' + id);
+    }
+
+    function refreshResourceSubcategorySelect() {
+        if (!subSel || !optsUrl) return;
+        var previous = subSel.value;
+        var doFetch = (window.getFetch && window.getFetch()) || fetch;
+        doFetch(optsUrl, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+            .then(function (r) { return r.json(); })
+            .then(function (body) {
+                var rows = body.subcategories;
+                if (!Array.isArray(rows)) return;
+                subSel.innerHTML = '';
+                var o0 = document.createElement('option');
+                o0.value = '0';
+                o0.textContent = '— None —';
+                subSel.appendChild(o0);
+                rows.forEach(function (row) {
+                    var o = document.createElement('option');
+                    o.value = String(row.id);
+                    o.textContent = row.name;
+                    subSel.appendChild(o);
+                });
+                var om = document.createElement('option');
+                om.value = '-1';
+                om.textContent = '+ Manage subcategories…';
+                subSel.appendChild(om);
+                if (previous && previous !== '-1') {
+                    subSel.value = previous;
+                    if (subSel.value !== previous) subSel.value = '0';
+                } else {
+                    subSel.value = '0';
+                }
+            })
+            .catch(function () {});
+    }
+
+    function toggleSubcatEmptyRow() {
+        var tb = document.getElementById('resource-subcategories-tbody');
+        var emptyEl = document.getElementById('resource-subcategories-empty');
+        if (!tb || !emptyEl) return;
+        var has = tb.querySelectorAll('tr[data-subcategory-id]').length > 0;
+        emptyEl.classList.toggle('hidden', has);
+    }
+
+    function appendSubcategoryRow(sub) {
+        var tb = document.getElementById('resource-subcategories-tbody');
+        if (!tb || !sub || sub.id == null) return;
+        var tr = document.createElement('tr');
+        tr.setAttribute('data-subcategory-id', String(sub.id));
+        var tdOrder = document.createElement('td');
+        tdOrder.className = 'px-4 py-2 whitespace-nowrap text-gray-700 subcat-cell-order';
+        tdOrder.textContent = String(sub.display_order != null ? sub.display_order : 0);
+        var tdName = document.createElement('td');
+        tdName.className = 'px-4 py-2 text-gray-900 font-medium subcat-cell-name';
+        tdName.textContent = sub.name || '';
+        var tdAct = document.createElement('td');
+        tdAct.className = 'px-4 py-2 whitespace-nowrap text-right space-x-2';
+        var editBtn = document.createElement('button');
+        editBtn.type = 'button';
+        editBtn.className = 'subcat-edit-btn text-indigo-600 hover:text-indigo-900 p-1';
+        editBtn.title = 'Edit';
+        editBtn.setAttribute('data-id', String(sub.id));
+        editBtn.setAttribute('data-name', sub.name || '');
+        editBtn.setAttribute('data-order', String(sub.display_order != null ? sub.display_order : 0));
+        editBtn.innerHTML = '<i class="fas fa-pen"></i>';
+        var delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'subcat-delete-btn text-red-600 hover:text-red-900 p-1';
+        delBtn.title = 'Delete';
+        delBtn.setAttribute('data-id', String(sub.id));
+        delBtn.setAttribute('data-name', sub.name || '');
+        delBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+        tdAct.appendChild(editBtn);
+        tdAct.appendChild(delBtn);
+        tr.appendChild(tdOrder);
+        tr.appendChild(tdName);
+        tr.appendChild(tdAct);
+        tb.appendChild(tr);
+        toggleSubcatEmptyRow();
+    }
+
+    function updateSubcategoryRow(sub) {
+        if (!sub || sub.id == null) return;
+        var tr = document.querySelector('#resource-subcategories-tbody tr[data-subcategory-id="' + sub.id + '"]');
+        if (!tr) return;
+        var o = tr.querySelector('.subcat-cell-order');
+        var n = tr.querySelector('.subcat-cell-name');
+        if (o) o.textContent = String(sub.display_order != null ? sub.display_order : 0);
+        if (n) n.textContent = sub.name || '';
+        var editBtn = tr.querySelector('.subcat-edit-btn');
+        if (editBtn) {
+            editBtn.setAttribute('data-name', sub.name || '');
+            editBtn.setAttribute('data-order', String(sub.display_order != null ? sub.display_order : 0));
+        }
+        var delBtn = tr.querySelector('.subcat-delete-btn');
+        if (delBtn) delBtn.setAttribute('data-name', sub.name || '');
+    }
+
+    function removeSubcategoryRow(id) {
+        var tr = document.querySelector('#resource-subcategories-tbody tr[data-subcategory-id="' + id + '"]');
+        if (tr && tr.parentNode) tr.parentNode.removeChild(tr);
+        toggleSubcatEmptyRow();
+    }
 
     function showTab(lang) {
         document.querySelectorAll('.language-tab').forEach(t => {
@@ -604,6 +717,156 @@ img[data-thumbnail-preview]:hover { opacity:.8; }
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+        // Subcategory: “+ Manage subcategories…” opens modal (sentinel -1; reset so it is never submitted)
+        if (subSel) {
+            var prevSub = subSel.value;
+            subSel.addEventListener('focus', function () { prevSub = subSel.value; });
+            subSel.addEventListener('change', function () {
+                if (subSel.value === '-1') {
+                    subSel.value = prevSub;
+                    if (window.ResourceSubcategoriesModal && typeof window.ResourceSubcategoriesModal.openModal === 'function') {
+                        window.ResourceSubcategoriesModal.openModal();
+                    }
+                } else {
+                    prevSub = subSel.value;
+                }
+            });
+        }
+        var refreshSubcatBtn = document.getElementById('resource-subcategories-refresh-btn');
+        if (refreshSubcatBtn) {
+            refreshSubcatBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                refreshResourceSubcategorySelect();
+            });
+        }
+        toggleSubcatEmptyRow();
+
+        var subcatModalEl = document.getElementById('resource-subcategories-modal');
+        if (subcatModalEl && window.ModalUtils && typeof window.ModalUtils.makeModal === 'function') {
+            window.ResourceSubcategoriesModal = window.ModalUtils.makeModal(subcatModalEl);
+        }
+        var subcatEditModalEl = document.getElementById('resource-subcategory-edit-modal');
+        if (subcatEditModalEl && window.ModalUtils && typeof window.ModalUtils.makeModal === 'function') {
+            window.ResourceSubcategoryEditModal = window.ModalUtils.makeModal(subcatEditModalEl);
+        }
+
+        var addBtn = document.getElementById('subcat-add-btn');
+        if (addBtn && subcatApiCreateUrl) {
+            addBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                var nameInp = document.getElementById('subcat-add-name');
+                var orderInp = document.getElementById('subcat-add-order');
+                var name = nameInp ? nameInp.value.trim() : '';
+                if (!name) {
+                    window.showAlert && window.showAlert('Enter a name for the subcategory.', 'warning');
+                    return;
+                }
+                var order = orderInp ? parseInt(orderInp.value, 10) : 0;
+                if (isNaN(order)) order = 0;
+                addBtn.disabled = true;
+                var apiFetch = (window.getApiFetch && window.getApiFetch());
+                if (!apiFetch) return;
+                apiFetch(subcatApiCreateUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name, display_order: order })
+                }).then(function (data) {
+                    if (data && data.subcategory) {
+                        appendSubcategoryRow(data.subcategory);
+                        if (nameInp) nameInp.value = '';
+                        if (orderInp) orderInp.value = '0';
+                        refreshResourceSubcategorySelect();
+                    }
+                }).catch(function (err) {
+                    window.showAlert && window.showAlert(err.message || 'Could not add subcategory.', 'error');
+                }).finally(function () {
+                    addBtn.disabled = false;
+                });
+            });
+        }
+
+        document.addEventListener('click', function (e) {
+            var editBtn = e.target.closest('.subcat-edit-btn');
+            if (editBtn) {
+                e.preventDefault();
+                var id = editBtn.getAttribute('data-id');
+                var nm = editBtn.getAttribute('data-name') || '';
+                var ord = editBtn.getAttribute('data-order') || '0';
+                var idField = document.getElementById('subcat-edit-id');
+                var nameField = document.getElementById('subcat-edit-name');
+                var orderField = document.getElementById('subcat-edit-order');
+                if (idField) idField.value = id;
+                if (nameField) nameField.value = nm;
+                if (orderField) orderField.value = ord;
+                if (window.ResourceSubcategoryEditModal && window.ResourceSubcategoryEditModal.openModal) {
+                    window.ResourceSubcategoryEditModal.openModal();
+                }
+                return;
+            }
+            var delBtn = e.target.closest('.subcat-delete-btn');
+            if (delBtn) {
+                e.preventDefault();
+                var sid = delBtn.getAttribute('data-id');
+                var snm = delBtn.getAttribute('data-name') || '';
+                var doDel = function () {
+                    var apiFetch = (window.getApiFetch && window.getApiFetch());
+                    if (!apiFetch) return;
+                    apiFetch(subcatMutateUrl(sid), { method: 'DELETE' }).then(function () {
+                        removeSubcategoryRow(sid);
+                        refreshResourceSubcategorySelect();
+                    }).catch(function (err) {
+                        window.showAlert && window.showAlert(err.message || 'Could not delete.', 'error');
+                    });
+                };
+                if (window.showDangerConfirmation) {
+                    window.showDangerConfirmation(
+                        'Delete subcategory “' + snm + '”? Resources will be unassigned from this subcategory.',
+                        doDel, null, 'Delete', 'Cancel', 'Confirm delete'
+                    );
+                } else {
+                    doDel();
+                }
+            }
+        });
+
+        var saveEditBtn = document.getElementById('subcat-edit-save-btn');
+        if (saveEditBtn) {
+            saveEditBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                var idField = document.getElementById('subcat-edit-id');
+                var nameField = document.getElementById('subcat-edit-name');
+                var orderField = document.getElementById('subcat-edit-order');
+                var id = idField ? idField.value : '';
+                var name = nameField ? nameField.value.trim() : '';
+                if (!id || !name) {
+                    window.showAlert && window.showAlert('Name is required.', 'warning');
+                    return;
+                }
+                var order = orderField ? parseInt(orderField.value, 10) : 0;
+                if (isNaN(order)) order = 0;
+                saveEditBtn.disabled = true;
+                var apiFetch = (window.getApiFetch && window.getApiFetch());
+                if (!apiFetch) return;
+                apiFetch(subcatMutateUrl(id), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name, display_order: order })
+                }).then(function (data) {
+                    if (data && data.subcategory) {
+                        updateSubcategoryRow(data.subcategory);
+                        refreshResourceSubcategorySelect();
+                    }
+                    if (window.ResourceSubcategoryEditModal && window.ResourceSubcategoryEditModal.closeModal) {
+                        window.ResourceSubcategoryEditModal.closeModal();
+                    }
+                }).catch(function (err) {
+                    window.showAlert && window.showAlert(err.message || 'Could not save.', 'error');
+                }).finally(function () {
+                    saveEditBtn.disabled = false;
+                });
+            });
+        }
+
         // Wire tab buttons
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', function (e) {

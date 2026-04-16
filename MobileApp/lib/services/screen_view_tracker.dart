@@ -42,6 +42,7 @@ class ScreenViewTracker {
     'settings': 'Settings',
     'resources': 'Resources',
     'indicators': 'Indicator Bank',
+    'unified_planning': 'Unified Planning Documents',
   };
 
   static const _routeNameMap = <String, String>{
@@ -73,6 +74,8 @@ class ScreenViewTracker {
     '/indicator-bank': 'Indicator Bank',
     '/indicator-bank/propose': 'Propose Indicator',
     '/resources': 'Resources',
+    '/unified-planning-documents': 'Unified Planning Documents',
+    '/unified-planning-analytics': 'Unified Planning Analytics',
     '/disaggregation-analysis': 'Disaggregation Analysis',
     '/countries': 'Countries',
     '/ns-structure': 'NS Structure',

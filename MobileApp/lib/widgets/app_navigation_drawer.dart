@@ -8,6 +8,8 @@ import '../providers/shared/auth_provider.dart';
 import '../providers/shared/language_provider.dart';
 import '../utils/ios_constants.dart';
 import '../utils/url_helper.dart';
+import '../utils/navigation_helper.dart';
+import '../providers/shared/tab_customization_provider.dart';
 import 'modern_navigation_drawer.dart';
 
 /// Identifies which screen currently hosts the drawer so tile behaviour
@@ -140,7 +142,7 @@ class AppNavigationDrawer extends StatelessWidget {
                       AppRoutes.aiChat,
                       arguments: AiChatLaunchArgs(
                         bottomNavTabIndex:
-                            (user?.chatbotEnabled ?? false) ? 3 : 2,
+                            NavigationHelper.aiChatMainTabPageIndex(context),
                         startNewConversation: true,
                       ),
                       alwaysPushOnTop: true,
@@ -156,10 +158,10 @@ class AppNavigationDrawer extends StatelessWidget {
                       ),
                     )
                   else
-                    ModernDrawerTile(
-                      icon: Icons.folder_rounded,
-                      title: localizations.resources,
-                      onTap: () {
+                  ModernDrawerTile(
+                    icon: Icons.folder_rounded,
+                    title: localizations.resources,
+                    onTap: () {
                         if (activeScreen == ActiveDrawerScreen.resources) {
                           Navigator.pop(context);
                         } else {
@@ -167,6 +169,33 @@ class AppNavigationDrawer extends StatelessWidget {
                         }
                       },
                     ),
+                  ModernDrawerTile(
+                    icon: Icons.description_rounded,
+                    title: localizations.resourcesUnifiedPlanningSectionTitle,
+                    onTap: () {
+                      Navigator.pop(context);
+                      if (_isNested) {
+                        Navigator.of(context).pop();
+                      }
+                      final tabProvider = Provider.of<TabCustomizationProvider>(
+                        context,
+                        listen: false,
+                      );
+                      final idx = tabProvider.indexOfTab(
+                        TabIds.unifiedPlanning,
+                        isAdmin: user?.isAdmin ?? false,
+                        isAuthenticated: isAuthenticated,
+                        isFocalPoint: isFocalPoint,
+                        chatbotEnabled: user?.chatbotEnabled ?? false,
+                      );
+                      if (idx >= 0) {
+                        NavigationHelper.navigateToMainTab(context, idx);
+                      } else {
+                        Navigator.of(context)
+                            .pushNamed(AppRoutes.unifiedPlanningDocuments);
+                      }
+                    },
+                  ),
                   ModernDrawerTile(
                     icon: Icons.public_rounded,
                     title: localizations.countries,

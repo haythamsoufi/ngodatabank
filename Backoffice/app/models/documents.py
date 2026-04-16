@@ -122,7 +122,7 @@ class SubmittedDocument(db.Model):
 
 
 class ResourceSubcategory(db.Model):
-    """Admin-managed subgroup for resources (e.g. publication series)."""
+    """Admin-managed subcategory for resources (e.g. publication series)."""
     __tablename__ = 'resource_subcategory'
     id = Column(Integer, primary_key=True)
     name = Column(String(120), nullable=False)

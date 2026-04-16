@@ -39,6 +39,11 @@ _NUM_RE = re.compile(r"\b\d[\d,]*(?:\.\d+)?[mkMK]?\b")
 _YEAR_RANGE_RE = re.compile(r"\b(19\d{2}|20\d{2})\s*(?:-|–|—|to)\s*(19\d{2}|20\d{2})\b", re.IGNORECASE)
 _NO_RELEVANT_INFO_SENTINEL = "__NO_RELEVANT_INFO__"
 
+# IFRC PublicSiteAppeals: year from AppealOrigType + AppealsName (same 2000–2099 scope as
+# historical ``\\b(20\\d{2})\\b``). Uses digit boundaries, not ``\\b`` — underscores count as
+# "word" characters, so ``INP_2023_Country`` would not match ``\\b20``.
+IFRC_APPEALS_TITLE_YEAR_RE = re.compile(r"(?<!\d)(20\d{2})(?!\d)")
+
 # ---------------------------------------------------------------------------
 # Storage helpers
 # ---------------------------------------------------------------------------

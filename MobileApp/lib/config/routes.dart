@@ -36,6 +36,8 @@ class AppRoutes {
   static const String proposeIndicator = '/indicator-bank/propose';
   static String indicatorDetail(int id) => '/indicator-bank/$id';
   static const String resources = '/resources';
+  static const String unifiedPlanningDocuments = '/unified-planning-documents';
+  static const String unifiedPlanningAnalytics = '/unified-planning-analytics';
   static const String pdfViewer = '/pdf-viewer';
   static const String disaggregationAnalysis = '/disaggregation-analysis';
   static const String countries = '/countries';

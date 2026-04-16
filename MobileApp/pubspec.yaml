@@ -29,6 +29,7 @@ dependencies:
   shared_preferences: ^2.2.0
   sqflite: ^2.3.0
   path: ^1.9.0
+  crypto: ^3.0.5
 
   # State Management
   provider: ^6.1.1

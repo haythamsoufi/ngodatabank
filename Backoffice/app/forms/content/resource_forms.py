@@ -8,7 +8,7 @@ import logging
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, TextAreaField, SubmitField, SelectField, DateField
-from wtforms.validators import DataRequired, Optional, Length
+from wtforms.validators import DataRequired, Optional, Length, ValidationError
 from ..base import BaseForm, MultilingualForm, FileUploadForm, _get_language_display_name
 
 
@@ -83,8 +83,11 @@ class ResourceForm(MultilingualForm, FileUploadForm):
         default='publication'
     )
 
+    # Sentinel -1 = "+ Manage subcategories…" (client opens popup; must not be submitted)
+    MANAGE_SUBCATEGORIES_SENTINEL = -1
+
     resource_subcategory_id = SelectField(
-        "Subgroup",
+        "Subcategory",
         coerce=int,
         validators=[Optional()],
         default=0,
@@ -116,9 +119,17 @@ class ResourceForm(MultilingualForm, FileUploadForm):
                 ResourceSubcategory.name.asc(),
             ).all()
         )
-        self.resource_subcategory_id.choices = [(0, "— None —")] + [
-            (r.id, r.name) for r in rows
-        ]
+        self.resource_subcategory_id.choices = (
+            [(0, "— None —")]
+            + [(r.id, r.name) for r in rows]
+            + [(self.MANAGE_SUBCATEGORIES_SENTINEL, "+ Manage subcategories…")]
+        )
+
+    def validate_resource_subcategory_id(self, field):
+        if field.data is not None and field.data == self.MANAGE_SUBCATEGORIES_SENTINEL:
+            raise ValidationError(
+                "Choose a subcategory, “None”, or open “Manage subcategories” from the list without saving this form."
+            )
 
     @classmethod
     def _add_missing_language_fields_to_class(cls, languages):

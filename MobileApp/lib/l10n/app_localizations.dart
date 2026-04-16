@@ -633,6 +633,7 @@ class AppLocalizations {
       'resources_unified_planning_section_subtitle':
           'Plans, mid-year reports, and annual reports from IFRC GO (loaded in the app).',
       'unified_planning_empty': 'No unified planning documents match your search.',
+      'unified_planning_fresh_badge': 'Fresh',
       'unified_error_config':
           'Could not load unified planning settings from the server. Try again later.',
       'unified_error_credentials':
@@ -641,6 +642,28 @@ class AppLocalizations {
           'IFRC GO rejected the document credentials. Check IFRC_API_USER and IFRC_API_PASSWORD.',
       'unified_error_ifrc':
           'Could not load documents from IFRC GO. Check your connection and try again.',
+      'unified_planning_analytics_title': 'Plans & reports overview',
+      'unified_planning_analytics_tooltip': 'Overview and statistics',
+      'unified_planning_analytics_total': 'Total documents',
+      'unified_planning_analytics_countries': 'Countries',
+      'unified_planning_analytics_types': 'Document types',
+      'unified_planning_analytics_by_year_type': 'Document types by year',
+      'unified_planning_analytics_by_country': 'By country',
+      'unified_planning_analytics_recent': 'Published in last 3 days',
+      'unified_planning_analytics_unknown_year': 'Year not set',
+      'unified_planning_analytics_unknown_country': 'Country not set',
+      'unified_planning_analytics_unknown_type': 'Type not set',
+      'unified_planning_analytics_more': 'And %s more',
+      'unified_planning_analytics_filters_tooltip': 'Filters',
+      'unified_planning_analytics_filters_title': 'Filters',
+      'unified_planning_analytics_filter_years': 'Years',
+      'unified_planning_analytics_filter_rounds': 'Rounds (document types)',
+      'unified_planning_analytics_filter_all_years': 'All years',
+      'unified_planning_analytics_filter_all_rounds': 'All rounds',
+      'unified_planning_analytics_filter_reset': 'Reset',
+      'unified_planning_analytics_filter_apply': 'Apply',
+      'unified_planning_analytics_filter_invalid':
+          'Select at least one year (or year not set) and one round, or choose All.',
       'no_plugins_found': 'No plugins found',
       'no_translations_found': 'No translations found',
       'no_documents_found': 'No documents found',
@@ -1649,6 +1672,7 @@ class AppLocalizations {
           'Planes, informes de mitad de año e informes anuales desde IFRC GO (cargados en la app).',
       'unified_planning_empty':
           'Ningún documento de planificación unificada coincide con su búsqueda.',
+      'unified_planning_fresh_badge': 'Reciente',
       'unified_error_config':
           'No se pudieron cargar los ajustes de planificación unificada desde el servidor. Inténtelo más tarde.',
       'unified_error_credentials':
@@ -2554,6 +2578,7 @@ class AppLocalizations {
           'Plans, rapports de mi-parcours et rapports annuels depuis IFRC GO (chargés dans l’application).',
       'unified_planning_empty':
           'Aucun document de planification unifiée ne correspond à votre recherche.',
+      'unified_planning_fresh_badge': 'Récent',
       'unified_error_config':
           'Impossible de charger les paramètres de planification unifiée depuis le serveur. Réessayez plus tard.',
       'unified_error_credentials':
@@ -3446,6 +3471,7 @@ class AppLocalizations {
       'resources_unified_planning_section_subtitle':
           'خطط وتقارير منتصف العام والتقارير السنوية من IFRC GO (يتم تحميلها في التطبيق).',
       'unified_planning_empty': 'لا توجد وثائق تخطيط موحدة تطابق بحثك.',
+      'unified_planning_fresh_badge': 'جديد',
       'unified_error_config':
           'تعذر تحميل إعدادات التخطيط الموحد من الخادم. حاول مرة أخرى لاحقًا.',
       'unified_error_credentials':
@@ -4327,6 +4353,7 @@ class AppLocalizations {
           'IFRC GO से योजनाएँ, मध्यवर्ष रिपोर्ट और वार्षिक रिपोर्ट (ऐप में लोड)।',
       'unified_planning_empty':
           'आपकी खोज से मेल खाने वाली कोई एकीकृत योजना दस्तावेज़ नहीं।',
+      'unified_planning_fresh_badge': 'ताज़ा',
       'unified_error_config':
           'सर्वर से एकीकृत योजना सेटिंग लोड नहीं हो सकीं। बाद में पुनः प्रयास करें।',
       'unified_error_credentials':
@@ -5225,6 +5252,7 @@ class AppLocalizations {
           'Планы, полугодовые и годовые отчёты из IFRC GO (загружаются в приложении).',
       'unified_planning_empty':
           'Нет документов единого планирования по вашему запросу.',
+      'unified_planning_fresh_badge': 'Свежее',
       'unified_error_config':
           'Не удалось загрузить настройки единого планирования с сервера. Попробуйте позже.',
       'unified_error_credentials':
@@ -6094,6 +6122,7 @@ class AppLocalizations {
       'resources_unified_planning_section_subtitle':
           '来自 IFRC GO 的计划、年中报告和年度报告（在应用中加载）。',
       'unified_planning_empty': '没有符合您搜索条件的统一规划文件。',
+      'unified_planning_fresh_badge': '最新',
       'unified_error_config': '无法从服务器加载统一规划设置。请稍后重试。',
       'unified_error_credentials':
           '此应用版本未配置 IFRC 文档访问。请在应用环境中添加 IFRC_API_USER 和 IFRC_API_PASSWORD。',
@@ -7232,12 +7261,56 @@ class AppLocalizations {
   String get resourcesUnifiedPlanningSectionSubtitle =>
       translate('resources_unified_planning_section_subtitle');
   String get unifiedPlanningEmpty => translate('unified_planning_empty');
+  String get unifiedPlanningFreshBadge =>
+      translate('unified_planning_fresh_badge');
   String get unifiedPlanningErrorConfig => translate('unified_error_config');
   String get unifiedPlanningErrorCredentials =>
       translate('unified_error_credentials');
   String get unifiedPlanningErrorIfrcAuth =>
       translate('unified_error_ifrc_auth');
   String get unifiedPlanningErrorIfrc => translate('unified_error_ifrc');
+  String get unifiedPlanningAnalyticsTitle =>
+      translate('unified_planning_analytics_title');
+  String get unifiedPlanningAnalyticsTooltip =>
+      translate('unified_planning_analytics_tooltip');
+  String get unifiedPlanningAnalyticsTotal =>
+      translate('unified_planning_analytics_total');
+  String get unifiedPlanningAnalyticsCountries =>
+      translate('unified_planning_analytics_countries');
+  String get unifiedPlanningAnalyticsTypes =>
+      translate('unified_planning_analytics_types');
+  String get unifiedPlanningAnalyticsByYearType =>
+      translate('unified_planning_analytics_by_year_type');
+  String get unifiedPlanningAnalyticsByCountry =>
+      translate('unified_planning_analytics_by_country');
+  String get unifiedPlanningAnalyticsRecent =>
+      translate('unified_planning_analytics_recent');
+  String get unifiedPlanningAnalyticsUnknownYear =>
+      translate('unified_planning_analytics_unknown_year');
+  String get unifiedPlanningAnalyticsUnknownCountry =>
+      translate('unified_planning_analytics_unknown_country');
+  String get unifiedPlanningAnalyticsUnknownType =>
+      translate('unified_planning_analytics_unknown_type');
+  String unifiedPlanningAnalyticsMore(int n) =>
+      translate('unified_planning_analytics_more').replaceFirst('%s', '$n');
+  String get unifiedPlanningAnalyticsFiltersTooltip =>
+      translate('unified_planning_analytics_filters_tooltip');
+  String get unifiedPlanningAnalyticsFiltersTitle =>
+      translate('unified_planning_analytics_filters_title');
+  String get unifiedPlanningAnalyticsFilterYears =>
+      translate('unified_planning_analytics_filter_years');
+  String get unifiedPlanningAnalyticsFilterRounds =>
+      translate('unified_planning_analytics_filter_rounds');
+  String get unifiedPlanningAnalyticsFilterAllYears =>
+      translate('unified_planning_analytics_filter_all_years');
+  String get unifiedPlanningAnalyticsFilterAllRounds =>
+      translate('unified_planning_analytics_filter_all_rounds');
+  String get unifiedPlanningAnalyticsFilterReset =>
+      translate('unified_planning_analytics_filter_reset');
+  String get unifiedPlanningAnalyticsFilterApply =>
+      translate('unified_planning_analytics_filter_apply');
+  String get unifiedPlanningAnalyticsFilterInvalid =>
+      translate('unified_planning_analytics_filter_invalid');
   String get noPluginsFound => translate('no_plugins_found');
   String get noTranslationsFound => translate('no_translations_found');
   String get noDocumentsFound => translate('no_documents_found');

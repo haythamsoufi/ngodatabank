@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/routes.dart';
 import '../../l10n/app_localizations.dart';
-import '../../models/shared/unified_planning_document.dart';
 import '../../models/shared/resource.dart';
 import '../../models/shared/resource_list_section.dart';
 import '../../providers/public/public_resources_provider.dart';
@@ -183,6 +182,12 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                 onSelected: _applyType,
               ),
 
+              _UnifiedPlanningEntryRow(
+                onOpen: () => Navigator.of(context).pushNamed(
+                  AppRoutes.unifiedPlanningDocuments,
+                ),
+              ),
+
               // ── Content area ───────────────────────────────────────
               Expanded(
                 child: _buildBody(context, provider, loc, theme, language),
@@ -210,11 +215,6 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
     ThemeData theme,
     String language,
   ) {
-    final unifiedDocs = provider.unifiedPlanningDocuments;
-    final showUnifiedPlanningBlock = provider.unifiedPlanningLoading ||
-        unifiedDocs.isNotEmpty ||
-        provider.unifiedPlanningErrorCode != null;
-
     // ── Shimmer skeleton while loading ─────────────────────────────
     final bool loadingGrouped =
         provider.groupedMode && provider.sections.isEmpty;
@@ -276,14 +276,12 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
       );
     }
 
-    // ── Empty state (library only — unified planning section may still show) ─
+    // ── Empty state ────────────────────────────────────────────────
     final bool groupedEmpty =
         provider.groupedMode && provider.sections.isEmpty;
     final bool flatEmpty =
         !provider.groupedMode && provider.resources.isEmpty;
-    if (!provider.isLoading &&
-        (groupedEmpty || flatEmpty) &&
-        !showUnifiedPlanningBlock) {
+    if (!provider.isLoading && (groupedEmpty || flatEmpty)) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -316,18 +314,6 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
           controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
-            if (showUnifiedPlanningBlock)
-              SliverToBoxAdapter(
-                child: _UnifiedPlanningSection(
-                  loc: loc,
-                  theme: theme,
-                  isLoading: provider.unifiedPlanningLoading,
-                  errorCode: provider.unifiedPlanningErrorCode,
-                  documents: unifiedDocs,
-                  onOpen: (url, title) =>
-                      _openResource(context, url, title: title),
-                ),
-              ),
             if (provider.groupedCapped)
               SliverToBoxAdapter(
                 child: Padding(
@@ -376,29 +362,13 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
               loc,
               theme,
             ),
-            if (!provider.isLoading &&
-                provider.sections.isEmpty &&
-                showUnifiedPlanningBlock)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
-                  child: Text(
-                    loc.noResourcesFound,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: context.textSecondaryColor,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ),
             const SliverToBoxAdapter(child: SizedBox(height: 24)),
           ],
         ),
       );
     }
 
-    // ── Flat grid (search) + unified planning ─────────────────────
+    // ── Flat grid (search) ────────────────────────────────────────
     return RefreshIndicator(
       onRefresh: () => provider.loadResources(locale: language, refresh: true),
       color: Color(AppConstants.ifrcRed),
@@ -406,17 +376,6 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
         controller: _scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
-          if (showUnifiedPlanningBlock)
-            SliverToBoxAdapter(
-              child: _UnifiedPlanningSection(
-                loc: loc,
-                theme: theme,
-                isLoading: provider.unifiedPlanningLoading,
-                errorCode: provider.unifiedPlanningErrorCode,
-                documents: unifiedDocs,
-                onOpen: (url, title) => _openResource(context, url, title: title),
-              ),
-            ),
           if (provider.resources.isNotEmpty)
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(14, 10, 14, 0),
@@ -447,20 +406,6 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                   },
                   childCount:
                       provider.resources.length + (provider.isLoadingMore ? 2 : 0),
-                ),
-              ),
-            )
-          else if (!provider.isLoading && showUnifiedPlanningBlock)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
-                child: Text(
-                  loc.noResourcesFound,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: context.textSecondaryColor,
-                    fontSize: 14,
-                  ),
                 ),
               ),
             ),
@@ -619,168 +564,65 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
   }
 }
 
-// ── Unified planning (IFRC GO — client-side) ────────────────────────────────
+// ── Unified planning entry (full list on separate screen) ─────────────────
 
-class _UnifiedPlanningSection extends StatelessWidget {
-  final AppLocalizations loc;
-  final ThemeData theme;
-  final bool isLoading;
-  final String? errorCode;
-  final List<UnifiedPlanningDocument> documents;
-  final void Function(String url, String title) onOpen;
+class _UnifiedPlanningEntryRow extends StatelessWidget {
+  final VoidCallback onOpen;
 
-  const _UnifiedPlanningSection({
-    required this.loc,
-    required this.theme,
-    required this.isLoading,
-    required this.errorCode,
-    required this.documents,
-    required this.onOpen,
-  });
-
-  String? _errorMessage() {
-    switch (errorCode) {
-      case 'unified_error_config':
-        return loc.unifiedPlanningErrorConfig;
-      case 'unified_error_credentials':
-        return loc.unifiedPlanningErrorCredentials;
-      case 'unified_error_ifrc_auth':
-        return loc.unifiedPlanningErrorIfrcAuth;
-      case 'unified_error_ifrc':
-        return loc.unifiedPlanningErrorIfrc;
-      default:
-        return null;
-    }
-  }
+  const _UnifiedPlanningEntryRow({required this.onOpen});
 
   @override
   Widget build(BuildContext context) {
-    final err = _errorMessage();
-
+    final loc = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 6),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            loc.resourcesUnifiedPlanningSectionTitle,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: context.textColor,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            loc.resourcesUnifiedPlanningSectionSubtitle,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: context.textSecondaryColor,
-              height: 1.35,
-            ),
-          ),
-          const SizedBox(height: 12),
-          if (isLoading)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: Center(
-                child: SizedBox(
-                  width: 28,
-                  height: 28,
-                  child: CircularProgressIndicator(strokeWidth: 2.5),
+      padding: const EdgeInsets.fromLTRB(14, 4, 14, 8),
+      child: Material(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: onOpen,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.picture_as_pdf_outlined,
+                  color: Color(AppConstants.ifrcRed),
                 ),
-              ),
-            )
-          else if (err != null)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: const Color(AppConstants.errorColor).withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: const Color(AppConstants.errorColor).withValues(alpha: 0.25),
-                ),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.info_outline_rounded,
-                    size: 20,
-                    color: Color(AppConstants.errorColor),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      err,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: context.textColor,
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            )
-          else if (documents.isEmpty)
-            Text(
-              loc.unifiedPlanningEmpty,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: context.textSecondaryColor,
-              ),
-            )
-          else
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: documents.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
-              itemBuilder: (context, i) {
-                final d = documents[i];
-                final meta = <String>[
-                  if (d.documentTypeLabel != null && d.documentTypeLabel!.isNotEmpty)
-                    d.documentTypeLabel!,
-                  if (d.countryName != null && d.countryName!.isNotEmpty)
-                    d.countryName!,
-                  if (d.year != null) '${d.year}',
-                ].join(' · ');
-                return ListTile(
-                  contentPadding: const EdgeInsets.symmetric(vertical: 2),
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFB71C1C).withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(
-                      Icons.picture_as_pdf_rounded,
-                      color: Color(0xFFB71C1C),
-                      size: 22,
-                    ),
-                  ),
-                  title: Text(
-                    d.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  subtitle: meta.isEmpty
-                      ? null
-                      : Text(
-                          meta,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: context.textSecondaryColor,
-                          ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        loc.resourcesUnifiedPlanningSectionTitle,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
                         ),
-                  trailing: const Icon(Icons.chevron_right_rounded),
-                  onTap: () => onOpen(d.url, d.title),
-                );
-              },
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        loc.resourcesUnifiedPlanningSectionSubtitle,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: context.textSecondaryColor,
+                          height: 1.25,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: context.textSecondaryColor,
+                ),
+              ],
             ),
-        ],
+          ),
+        ),
       ),
     );
   }

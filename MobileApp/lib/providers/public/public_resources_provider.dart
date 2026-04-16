@@ -9,6 +9,7 @@ import '../../models/shared/resource_list_section.dart';
 import '../../models/shared/resource_subcategory.dart';
 import '../../services/api_service.dart';
 import '../../services/ifrc_unified_planning_service.dart';
+import '../../services/unified_planning_pdf_thumbnail_cache.dart';
 import '../../utils/debug_logger.dart';
 
 class PublicResourcesProvider with ChangeNotifier {
@@ -47,23 +48,18 @@ class PublicResourcesProvider with ChangeNotifier {
   String get searchQuery => _searchQuery;
   String? get selectedType => _selectedType;
 
-  List<UnifiedPlanningDocument> get unifiedPlanningDocuments {
-    final q = _searchQuery.trim().toLowerCase();
-    if (q.isEmpty) return List.unmodifiable(_unifiedPlanningDocuments);
-    return _unifiedPlanningDocuments
-        .where((d) {
-          final hay =
-              '${d.title} ${d.countryName ?? ''} ${d.documentTypeLabel ?? ''} ${d.countryCode ?? ''}'
-                  .toLowerCase();
-          return hay.contains(q);
-        })
-        .toList(growable: false);
-  }
+  List<UnifiedPlanningDocument> get unifiedPlanningDocuments =>
+      List.unmodifiable(_unifiedPlanningDocuments);
 
   bool get unifiedPlanningLoading => _unifiedPlanningLoading;
 
   /// Localization key (see [AppLocalizations]); null when there is no error.
   String? get unifiedPlanningErrorCode => _unifiedPlanningErrorCode;
+
+  /// IFRC GO unified planning PDFs — load from the unified planning screen only.
+  Future<void> loadUnifiedPlanningDocuments() async {
+    await _loadUnifiedPlanningDocuments();
+  }
 
   /// Load the first page, optionally replacing search/type/locale filters.
   Future<void> loadResources({
@@ -85,8 +81,6 @@ class PublicResourcesProvider with ChangeNotifier {
     _groupedMode = false;
     _groupedCapped = false;
     notifyListeners();
-
-    final unifiedFuture = _loadUnifiedPlanningDocuments();
 
     try {
       final useGrouped = _searchQuery.isEmpty;
@@ -116,8 +110,6 @@ class PublicResourcesProvider with ChangeNotifier {
       _groupedCapped = false;
       DebugLogger.logErrorWithTag('PUBLIC_RESOURCES', 'Load error: $e');
     }
-
-    await unifiedFuture;
 
     _isLoading = false;
     notifyListeners();
@@ -239,6 +231,8 @@ class PublicResourcesProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      // Resolve disk cache dir before IFRC fetch so grid cards can read JPEGs synchronously.
+      await UnifiedPlanningPdfThumbnailCache.instance.warmCacheDirectory();
       final config = await _ifrcUnified.fetchConfig();
       if (config == null) {
         _unifiedPlanningDocuments = [];
@@ -284,6 +278,7 @@ class PublicResourcesProvider with ChangeNotifier {
       DebugLogger.logErrorWithTag('PUBLIC_RESOURCES', 'Unified planning IFRC: $e');
     } finally {
       _unifiedPlanningLoading = false;
+      notifyListeners();
     }
   }
 

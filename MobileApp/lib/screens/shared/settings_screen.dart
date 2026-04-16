@@ -16,6 +16,7 @@ import '../../widgets/ios_settings_scaffold.dart';
 import '../../widgets/ios_settings_controls.dart';
 import '../../widgets/ios_dialog.dart';
 import '../../widgets/bottom_navigation_bar.dart';
+import '../../providers/shared/tab_customization_provider.dart';
 import '../../widgets/profile_color_picker_dialog.dart';
 import '../../widgets/settings_dialogs.dart';
 import '../../l10n/app_localizations.dart';
@@ -462,9 +463,21 @@ class SettingsScreen extends StatelessWidget {
         label: localizations.loginToAccount,
         textColor: Color(AppConstants.ifrcRed),
         onPressed: () {
+          final user = authProvider.user;
+          final tabProvider =
+              Provider.of<TabCustomizationProvider>(context, listen: false);
+          final settingsIdx = tabProvider.indexOfTab(
+            TabIds.settings,
+            isAdmin: user?.isAdmin ?? false,
+            isAuthenticated: false,
+            isFocalPoint: false,
+            chatbotEnabled: user?.chatbotEnabled ?? false,
+          );
           Navigator.of(context).pushNamed(
             AppRoutes.login,
-            arguments: AppBottomNavigationBar.settingsTabIndex,
+            arguments: settingsIdx >= 0
+                ? settingsIdx
+                : AppBottomNavigationBar.noTabSelected,
           );
         },
       );
