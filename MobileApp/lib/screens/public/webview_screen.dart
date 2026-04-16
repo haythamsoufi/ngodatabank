@@ -38,7 +38,7 @@ class WebViewScreenArgs {
       return WebViewScreenArgs(initialUrl: raw);
     }
     if (raw is Map) {
-      final map = Map<String, dynamic>.from(raw as Map);
+      final map = Map<String, dynamic>.from(raw);
       final url = (map['initialUrl'] ?? map['url'])?.toString().trim() ?? '';
       final offline = map['offline'] == true || map['force_offline'] == true;
       int? aid;
@@ -54,7 +54,7 @@ class WebViewScreenArgs {
         offlineAssignmentId: aid,
       );
     }
-    return WebViewScreenArgs(initialUrl: '');
+    return const WebViewScreenArgs(initialUrl: '');
   }
 }
 

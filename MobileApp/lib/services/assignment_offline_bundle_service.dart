@@ -158,7 +158,7 @@ class AssignmentOfflineBundleService {
           continue;
         }
         await localFile.writeAsBytes(r.data!, flush: true);
-        savedRelByAbsolute[absolute.toString()] = relPath.replaceAll('\\', '/');
+        savedRelByAbsolute[absolute.toString()] = relPath.replaceAll(r'\', '/');
         count++;
       } catch (e) {
         DebugLogger.logWarn('OFFLINE_BUNDLE', 'Failed asset $absolute: $e');
@@ -283,7 +283,7 @@ class AssignmentOfflineBundleService {
 
   /// Disables service worker registration and stubs `getStaticUrl` for disk layout.
   String _injectOfflineHead(String html) {
-    const patch = '''
+    const patch = r'''
 <script>
 (function () {
   try {
@@ -293,7 +293,7 @@ class AssignmentOfflineBundleService {
   } catch (e) {}
   try {
     window.getStaticUrl = function (filename) {
-      filename = String(filename || '').replace(/^\\/+/, '').replace(/^static\\/+/, '');
+      filename = String(filename || '').replace(/^\/+/, '').replace(/^static\/+/, '');
       return 'static/' + filename;
     };
   } catch (e) {}
