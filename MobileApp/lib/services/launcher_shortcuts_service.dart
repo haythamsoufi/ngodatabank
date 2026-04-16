@@ -8,7 +8,7 @@ import 'package:quick_actions/quick_actions.dart';
 import '../config/app_navigation.dart';
 import '../config/routes.dart';
 import '../models/shared/ai_chat_launch_args.dart';
-import '../providers/shared/auth_provider.dart';
+import '../utils/navigation_helper.dart';
 
 /// iOS: Home screen quick actions (long-press app icon).
 /// Android: App shortcuts (API 25+; long-press icon, can pin to home on many launchers).
@@ -66,14 +66,11 @@ class LauncherShortcutsService {
 
     _pendingRoute = null;
     if (pending == AppRoutes.aiChat) {
-      final chatbot = Provider.of<AuthProvider>(nav.context, listen: false)
-              .user
-              ?.chatbotEnabled ??
-          false;
       nav.pushNamed(
         pending,
         arguments: AiChatLaunchArgs(
-          bottomNavTabIndex: chatbot ? 3 : 2,
+          bottomNavTabIndex:
+              NavigationHelper.aiChatMainTabPageIndex(nav.context),
           startNewConversation: true,
         ),
       );

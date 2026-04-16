@@ -331,6 +331,26 @@ class AppConfig {
   static const String mobileSectorsSubsectorsEndpoint = '$mobileApiPrefix/data/sectors-subsectors';
   static const String mobilePublicIndicatorBankEndpoint = '$mobileApiPrefix/data/indicator-bank';
   static const String mobilePublicResourcesEndpoint = '$mobileApiPrefix/data/resources';
+  static const String mobileUnifiedPlanningConfigEndpoint =
+      '$mobileApiPrefix/data/unified-planning-config';
+  static const String mobileUnifiedPlanningThumbnailEndpoint =
+      '$mobileApiPrefix/data/unified-planning-thumbnail';
+
+  /// IFRC GO API credentials for client-side PublicSiteAppeals fetch (unified planning).
+  /// Set via `.env` or `--dart-define=IFRC_API_USER=...` / `IFRC_API_PASSWORD=...`.
+  static String get ifrcApiUser {
+    final v = dotenv.env['IFRC_API_USER'] ?? dotenv.env['IFRC_API_USERNAME'];
+    if (v != null && v.trim().isNotEmpty) return v.trim();
+    const d = String.fromEnvironment('IFRC_API_USER', defaultValue: '');
+    return d.trim();
+  }
+
+  static String get ifrcApiPassword {
+    final v = dotenv.env['IFRC_API_PASSWORD'];
+    if (v != null && v.trim().isNotEmpty) return v.trim();
+    const d = String.fromEnvironment('IFRC_API_PASSWORD', defaultValue: '');
+    return d.trim();
+  }
 
   /// `per_page` for public indicator bank list requests. Must stay within the
   /// Backoffice `public_indicator_bank` route `max_per_page` (currently 2000).
@@ -370,6 +390,10 @@ class AppConfig {
   static String get cachedDashboardKey   => '${_storagePrefix}cached_dashboard';
   static String get cachedUserProfileKey => '${_storagePrefix}cached_user_profile';
   static String get cachedEntitiesKey    => '${_storagePrefix}cached_entities';
+
+  /// SharedPreferences JSON for unified planning analytics year/type filters.
+  static String get unifiedPlanningAnalyticsFiltersKey =>
+      '${_storagePrefix}unified_planning_analytics_filters';
 
   // App Configuration (dynamic, loaded from organization config)
   static String get appName {

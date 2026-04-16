@@ -636,6 +636,41 @@ class AppLocalizations {
       'no_indicators_found': 'No indicators found',
       'no_organizations_found': 'No organizations found',
       'no_resources_found': 'No resources found',
+      'resources_unified_planning_section_title': 'Unified plans and reports',
+      'resources_unified_planning_section_subtitle':
+          'Plans, mid-year reports, and annual reports from IFRC GO (loaded in the app).',
+      'unified_planning_empty': 'No unified planning documents match your search.',
+      'unified_planning_fresh_badge': 'Fresh',
+      'unified_error_config':
+          'Could not load unified planning settings from the server. Try again later.',
+      'unified_error_credentials':
+          'IFRC document access is not configured in this app build. Add IFRC_API_USER and IFRC_API_PASSWORD to the app environment.',
+      'unified_error_ifrc_auth':
+          'IFRC GO rejected the document credentials. Check IFRC_API_USER and IFRC_API_PASSWORD.',
+      'unified_error_ifrc':
+          'Could not load documents from IFRC GO. Check your connection and try again.',
+      'unified_planning_analytics_title': 'Plans & reports overview',
+      'unified_planning_analytics_tooltip': 'Overview and statistics',
+      'unified_planning_analytics_total': 'Total documents',
+      'unified_planning_analytics_countries': 'Countries',
+      'unified_planning_analytics_types': 'Document types',
+      'unified_planning_analytics_by_year_type': 'Document types by year',
+      'unified_planning_analytics_by_country': 'By country',
+      'unified_planning_analytics_recent': 'Published in last 3 days',
+      'unified_planning_analytics_unknown_year': 'Year not set',
+      'unified_planning_analytics_unknown_country': 'Country not set',
+      'unified_planning_analytics_unknown_type': 'Type not set',
+      'unified_planning_analytics_more': 'And %s more',
+      'unified_planning_analytics_filters_tooltip': 'Filters',
+      'unified_planning_analytics_filters_title': 'Filters',
+      'unified_planning_analytics_filter_years': 'Years',
+      'unified_planning_analytics_filter_rounds': 'Rounds (document types)',
+      'unified_planning_analytics_filter_all_years': 'All years',
+      'unified_planning_analytics_filter_all_rounds': 'All rounds',
+      'unified_planning_analytics_filter_reset': 'Reset',
+      'unified_planning_analytics_filter_apply': 'Apply',
+      'unified_planning_analytics_filter_invalid':
+          'Select at least one year (or year not set) and one round, or choose All.',
       'no_plugins_found': 'No plugins found',
       'no_translations_found': 'No translations found',
       'no_documents_found': 'No documents found',
@@ -1073,6 +1108,9 @@ class AppLocalizations {
       'ai_score_confidence': 'Confidence',
       'ai_score_grounding': 'Grounding',
       'ai_default_assistant_title': 'AI Assistant',
+      'resources_other_subgroup': 'Other',
+      'resources_list_truncated_hint':
+          'Showing the most recent items. Use search to find a specific document.',
 
       // AI
       'ai_assistant': 'AI Assistant',
@@ -1643,6 +1681,20 @@ class AppLocalizations {
       'no_indicators_found': 'No se encontraron indicadores',
       'no_organizations_found': 'No se encontraron organizaciones',
       'no_resources_found': 'No se encontraron recursos',
+      'resources_unified_planning_section_title': 'Planes e informes unificados',
+      'resources_unified_planning_section_subtitle':
+          'Planes, informes de mitad de año e informes anuales desde IFRC GO (cargados en la app).',
+      'unified_planning_empty':
+          'Ningún documento de planificación unificada coincide con su búsqueda.',
+      'unified_planning_fresh_badge': 'Reciente',
+      'unified_error_config':
+          'No se pudieron cargar los ajustes de planificación unificada desde el servidor. Inténtelo más tarde.',
+      'unified_error_credentials':
+          'El acceso a documentos IFRC no está configurado en esta compilación. Añada IFRC_API_USER e IFRC_API_PASSWORD al entorno de la app.',
+      'unified_error_ifrc_auth':
+          'IFRC GO rechazó las credenciales de documentos. Compruebe IFRC_API_USER e IFRC_API_PASSWORD.',
+      'unified_error_ifrc':
+          'No se pudieron cargar documentos desde IFRC GO. Compruebe la conexión e inténtelo de nuevo.',
       'no_plugins_found': 'No se encontraron complementos',
       'no_translations_found': 'No se encontraron traducciones',
       'no_documents_found': 'No se encontraron documentos',
@@ -1968,6 +2020,9 @@ class AppLocalizations {
       'ai_score_confidence': 'Confianza',
       'ai_score_grounding': 'Fundamentación',
       'ai_default_assistant_title': 'Asistente de IA',
+      'resources_other_subgroup': 'Otros',
+      'resources_list_truncated_hint':
+          'Se muestran los elementos más recientes. Use la búsqueda para encontrar un documento concreto.',
       'ai_assistant': 'Asistente de IA',
     },
     'fr': {
@@ -2539,6 +2594,20 @@ class AppLocalizations {
       'no_indicators_found': 'Aucun indicateur trouvé',
       'no_organizations_found': 'Aucune organisation trouvée',
       'no_resources_found': 'Aucune ressource trouvée',
+      'resources_unified_planning_section_title': 'Plans et rapports unifiés',
+      'resources_unified_planning_section_subtitle':
+          'Plans, rapports de mi-parcours et rapports annuels depuis IFRC GO (chargés dans l’application).',
+      'unified_planning_empty':
+          'Aucun document de planification unifiée ne correspond à votre recherche.',
+      'unified_planning_fresh_badge': 'Récent',
+      'unified_error_config':
+          'Impossible de charger les paramètres de planification unifiée depuis le serveur. Réessayez plus tard.',
+      'unified_error_credentials':
+          'L’accès aux documents IFRC n’est pas configuré dans cette version de l’application. Ajoutez IFRC_API_USER et IFRC_API_PASSWORD à l’environnement de l’application.',
+      'unified_error_ifrc_auth':
+          'IFRC GO a rejeté les identifiants documentaires. Vérifiez IFRC_API_USER et IFRC_API_PASSWORD.',
+      'unified_error_ifrc':
+          'Impossible de charger les documents depuis IFRC GO. Vérifiez votre connexion et réessayez.',
       'no_plugins_found': 'Aucun plugin trouvé',
       'no_translations_found': 'Aucune traduction trouvée',
       'no_documents_found': 'Aucun document trouvé',
@@ -2865,6 +2934,9 @@ class AppLocalizations {
       'ai_score_confidence': 'Confiance',
       'ai_score_grounding': 'Ancrage',
       'ai_default_assistant_title': 'Assistant IA',
+      'resources_other_subgroup': 'Autres',
+      'resources_list_truncated_hint':
+          'Affichage des éléments les plus récents. Utilisez la recherche pour trouver un document précis.',
       'ai_assistant': 'Assistant IA',
     },
     'ar': {
@@ -3423,6 +3495,19 @@ class AppLocalizations {
       'no_indicators_found': 'لم يتم العثور على مؤشرات',
       'no_organizations_found': 'لم يتم العثور على منظمات',
       'no_resources_found': 'لم يتم العثور على موارد',
+      'resources_unified_planning_section_title': 'الخطط والتقارير الموحدة',
+      'resources_unified_planning_section_subtitle':
+          'خطط وتقارير منتصف العام والتقارير السنوية من IFRC GO (يتم تحميلها في التطبيق).',
+      'unified_planning_empty': 'لا توجد وثائق تخطيط موحدة تطابق بحثك.',
+      'unified_planning_fresh_badge': 'جديد',
+      'unified_error_config':
+          'تعذر تحميل إعدادات التخطيط الموحد من الخادم. حاول مرة أخرى لاحقًا.',
+      'unified_error_credentials':
+          'لم يتم تهيئة وصول وثائق الاتحاد في هذا الإصدار. أضف IFRC_API_USER و IFRC_API_PASSWORD إلى بيئة التطبيق.',
+      'unified_error_ifrc_auth':
+          'رفض IFRC GO بيانات اعتماد الوثائق. تحقق من IFRC_API_USER و IFRC_API_PASSWORD.',
+      'unified_error_ifrc':
+          'تعذر تحميل الوثائق من IFRC GO. تحقق من الاتصال وحاول مرة أخرى.',
       'no_plugins_found': 'لم يتم العثور على إضافات',
       'no_translations_found': 'لم يتم العثور على ترجمات',
       'no_documents_found': 'لم يتم العثور على مستندات',
@@ -3731,6 +3816,9 @@ class AppLocalizations {
       'ai_score_confidence': 'الثقة',
       'ai_score_grounding': 'التأسيس',
       'ai_default_assistant_title': 'مساعد الذكاء الاصطناعي',
+      'resources_other_subgroup': 'أخرى',
+      'resources_list_truncated_hint':
+          'عرض أحدث العناصر. استخدم البحث للعثور على مستند معيّن.',
       'ai_assistant': 'مساعد الذكاء الاصطناعي',
     },
     'hi': {
@@ -4295,6 +4383,20 @@ class AppLocalizations {
       'no_indicators_found': 'कोई संकेतक नहीं मिला',
       'no_organizations_found': 'कोई संगठन नहीं मिला',
       'no_resources_found': 'कोई संसाधन नहीं मिला',
+      'resources_unified_planning_section_title': 'एकीकृत योजनाएँ और रिपोर्ट',
+      'resources_unified_planning_section_subtitle':
+          'IFRC GO से योजनाएँ, मध्यवर्ष रिपोर्ट और वार्षिक रिपोर्ट (ऐप में लोड)।',
+      'unified_planning_empty':
+          'आपकी खोज से मेल खाने वाली कोई एकीकृत योजना दस्तावेज़ नहीं।',
+      'unified_planning_fresh_badge': 'ताज़ा',
+      'unified_error_config':
+          'सर्वर से एकीकृत योजना सेटिंग लोड नहीं हो सकीं। बाद में पुनः प्रयास करें।',
+      'unified_error_credentials':
+          'इस ऐप बिल्ड में IFRC दस्तावेज़ पहुँच कॉन्फ़िगर नहीं है। ऐप वातावरण में IFRC_API_USER और IFRC_API_PASSWORD जोड़ें।',
+      'unified_error_ifrc_auth':
+          'IFRC GO ने दस्तावेज़ क्रेडेंशियल अस्वीकार किए। IFRC_API_USER और IFRC_API_PASSWORD जाँचें।',
+      'unified_error_ifrc':
+          'IFRC GO से दस्तावेज़ लोड नहीं हो सके। कनेक्शन जाँचें और पुनः प्रयास करें।',
       'no_plugins_found': 'कोई प्लगइन नहीं मिला',
       'no_translations_found': 'कोई अनुवाद नहीं मिला',
       'no_documents_found': 'कोई दस्तावेज नहीं मिला',
@@ -4617,6 +4719,9 @@ class AppLocalizations {
       'ai_score_confidence': 'विश्वास',
       'ai_score_grounding': 'आधार',
       'ai_default_assistant_title': 'AI सहायक',
+      'resources_other_subgroup': 'अन्य',
+      'resources_list_truncated_hint':
+          'सबसे हाल के आइटम दिखाए जा रहे हैं। किसी विशिष्ट दस्तावेज़ के लिए खोज का उपयोग करें।',
       'ai_assistant': 'AI सहायक',
     },
     'ru': {
@@ -5184,6 +5289,20 @@ class AppLocalizations {
       'no_indicators_found': 'Индикаторы не найдены',
       'no_organizations_found': 'Организации не найдены',
       'no_resources_found': 'Ресурсы не найдены',
+      'resources_unified_planning_section_title': 'Единые планы и отчёты',
+      'resources_unified_planning_section_subtitle':
+          'Планы, полугодовые и годовые отчёты из IFRC GO (загружаются в приложении).',
+      'unified_planning_empty':
+          'Нет документов единого планирования по вашему запросу.',
+      'unified_planning_fresh_badge': 'Свежее',
+      'unified_error_config':
+          'Не удалось загрузить настройки единого планирования с сервера. Попробуйте позже.',
+      'unified_error_credentials':
+          'Доступ к документам IFRC не настроен в этой сборке. Добавьте IFRC_API_USER и IFRC_API_PASSWORD в окружение приложения.',
+      'unified_error_ifrc_auth':
+          'IFRC GO отклонил учётные данные для документов. Проверьте IFRC_API_USER и IFRC_API_PASSWORD.',
+      'unified_error_ifrc':
+          'Не удалось загрузить документы из IFRC GO. Проверьте соединение и повторите попытку.',
       'no_plugins_found': 'Плагины не найдены',
       'no_translations_found': 'Переводы не найдены',
       'no_documents_found': 'Документы не найдены',
@@ -5508,6 +5627,9 @@ class AppLocalizations {
       'ai_score_confidence': 'Уверенность',
       'ai_score_grounding': 'Обоснование',
       'ai_default_assistant_title': 'ИИ-помощник',
+      'resources_other_subgroup': 'Прочее',
+      'resources_list_truncated_hint':
+          'Показаны самые последние материалы. Используйте поиск, чтобы найти конкретный документ.',
       'ai_assistant': 'ИИ-помощник',
     },
     'zh': {
@@ -6045,6 +6167,17 @@ class AppLocalizations {
       'no_indicators_found': '未找到指标',
       'no_organizations_found': '未找到组织',
       'no_resources_found': '未找到资源',
+      'resources_unified_planning_section_title': '统一规划与报告',
+      'resources_unified_planning_section_subtitle':
+          '来自 IFRC GO 的计划、年中报告和年度报告（在应用中加载）。',
+      'unified_planning_empty': '没有符合您搜索条件的统一规划文件。',
+      'unified_planning_fresh_badge': '最新',
+      'unified_error_config': '无法从服务器加载统一规划设置。请稍后重试。',
+      'unified_error_credentials':
+          '此应用版本未配置 IFRC 文档访问。请在应用环境中添加 IFRC_API_USER 和 IFRC_API_PASSWORD。',
+      'unified_error_ifrc_auth':
+          'IFRC GO 拒绝了文档凭据。请检查 IFRC_API_USER 和 IFRC_API_PASSWORD。',
+      'unified_error_ifrc': '无法从 IFRC GO 加载文档。请检查网络连接后重试。',
       'no_plugins_found': '未找到插件',
       'no_translations_found': '未找到翻译',
       'no_documents_found': '未找到文档',
@@ -6354,6 +6487,9 @@ class AppLocalizations {
       'ai_score_confidence': '置信度',
       'ai_score_grounding': '依据度',
       'ai_default_assistant_title': 'AI 助手',
+      'resources_other_subgroup': '其他',
+      'resources_list_truncated_hint':
+          '仅显示最近的项目。请使用搜索查找特定文档。',
       'ai_assistant': 'AI 助手',
     },
   };
@@ -7180,6 +7316,61 @@ class AppLocalizations {
   String get noIndicatorsFound => translate('no_indicators_found');
   String get noOrganizationsFound => translate('no_organizations_found');
   String get noResourcesFound => translate('no_resources_found');
+  String get resourcesUnifiedPlanningSectionTitle =>
+      translate('resources_unified_planning_section_title');
+  String get resourcesUnifiedPlanningSectionSubtitle =>
+      translate('resources_unified_planning_section_subtitle');
+  String get unifiedPlanningEmpty => translate('unified_planning_empty');
+  String get unifiedPlanningFreshBadge =>
+      translate('unified_planning_fresh_badge');
+  String get unifiedPlanningErrorConfig => translate('unified_error_config');
+  String get unifiedPlanningErrorCredentials =>
+      translate('unified_error_credentials');
+  String get unifiedPlanningErrorIfrcAuth =>
+      translate('unified_error_ifrc_auth');
+  String get unifiedPlanningErrorIfrc => translate('unified_error_ifrc');
+  String get unifiedPlanningAnalyticsTitle =>
+      translate('unified_planning_analytics_title');
+  String get unifiedPlanningAnalyticsTooltip =>
+      translate('unified_planning_analytics_tooltip');
+  String get unifiedPlanningAnalyticsTotal =>
+      translate('unified_planning_analytics_total');
+  String get unifiedPlanningAnalyticsCountries =>
+      translate('unified_planning_analytics_countries');
+  String get unifiedPlanningAnalyticsTypes =>
+      translate('unified_planning_analytics_types');
+  String get unifiedPlanningAnalyticsByYearType =>
+      translate('unified_planning_analytics_by_year_type');
+  String get unifiedPlanningAnalyticsByCountry =>
+      translate('unified_planning_analytics_by_country');
+  String get unifiedPlanningAnalyticsRecent =>
+      translate('unified_planning_analytics_recent');
+  String get unifiedPlanningAnalyticsUnknownYear =>
+      translate('unified_planning_analytics_unknown_year');
+  String get unifiedPlanningAnalyticsUnknownCountry =>
+      translate('unified_planning_analytics_unknown_country');
+  String get unifiedPlanningAnalyticsUnknownType =>
+      translate('unified_planning_analytics_unknown_type');
+  String unifiedPlanningAnalyticsMore(int n) =>
+      translate('unified_planning_analytics_more').replaceFirst('%s', '$n');
+  String get unifiedPlanningAnalyticsFiltersTooltip =>
+      translate('unified_planning_analytics_filters_tooltip');
+  String get unifiedPlanningAnalyticsFiltersTitle =>
+      translate('unified_planning_analytics_filters_title');
+  String get unifiedPlanningAnalyticsFilterYears =>
+      translate('unified_planning_analytics_filter_years');
+  String get unifiedPlanningAnalyticsFilterRounds =>
+      translate('unified_planning_analytics_filter_rounds');
+  String get unifiedPlanningAnalyticsFilterAllYears =>
+      translate('unified_planning_analytics_filter_all_years');
+  String get unifiedPlanningAnalyticsFilterAllRounds =>
+      translate('unified_planning_analytics_filter_all_rounds');
+  String get unifiedPlanningAnalyticsFilterReset =>
+      translate('unified_planning_analytics_filter_reset');
+  String get unifiedPlanningAnalyticsFilterApply =>
+      translate('unified_planning_analytics_filter_apply');
+  String get unifiedPlanningAnalyticsFilterInvalid =>
+      translate('unified_planning_analytics_filter_invalid');
   String get noPluginsFound => translate('no_plugins_found');
   String get noTranslationsFound => translate('no_translations_found');
   String get noDocumentsFound => translate('no_documents_found');
@@ -7407,6 +7598,9 @@ class AppLocalizations {
 
   String get resourcesSearchTooltip => translate('resources_search_tooltip');
   String get resourcesCloseSearchTooltip => translate('resources_close_search_tooltip');
+  String get resourcesOtherSubgroup => translate('resources_other_subgroup');
+  String get resourcesListTruncatedHint =>
+      translate('resources_list_truncated_hint');
 
   String get countriesSearchHint => translate('countries_search_hint');
   String get countriesNoResults => translate('countries_no_results');

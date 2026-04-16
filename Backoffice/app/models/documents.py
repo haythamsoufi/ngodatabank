@@ -121,6 +121,25 @@ class SubmittedDocument(db.Model):
         return f'<SubmittedDocument "{self.filename}" for "{field_label}" ({country_name})>'
 
 
+class ResourceSubcategory(db.Model):
+    """Admin-managed subcategory for resources (e.g. publication series)."""
+    __tablename__ = 'resource_subcategory'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(120), nullable=False)
+    display_order = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+
+    resources = db.relationship('Resource', back_populates='resource_subcategory', lazy='dynamic')
+
+    __table_args__ = (
+        db.Index('ix_resource_subcategory_display_order', 'display_order'),
+    )
+
+    def __repr__(self):
+        return f'<ResourceSubcategory {self.name!r}>'
+
+
 class Resource(db.Model):
     __tablename__ = 'resource'
     id = Column(Integer, primary_key=True)
@@ -128,16 +147,23 @@ class Resource(db.Model):
     default_title = Column(String(255), nullable=False)
     default_description = Column(Text, nullable=True)
     publication_date = Column(Date, nullable=True)
+    resource_subcategory_id = Column(
+        Integer,
+        ForeignKey('resource_subcategory.id', ondelete='SET NULL'),
+        nullable=True,
+    )
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
 
     # Relationship to translations
     translations = db.relationship('ResourceTranslation', backref='resource', lazy='dynamic', cascade='all, delete-orphan')
+    resource_subcategory = db.relationship('ResourceSubcategory', back_populates='resources')
 
     __table_args__ = (
         db.Index('ix_resource_type', 'resource_type'),
         db.Index('ix_resource_pub_date', 'publication_date'),
         db.Index('ix_resource_created_at', 'created_at'),
+        db.Index('ix_resource_subcategory_id', 'resource_subcategory_id'),
     )
 
     def __repr__(self):

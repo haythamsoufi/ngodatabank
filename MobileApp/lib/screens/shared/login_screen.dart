@@ -160,12 +160,10 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  /// Route `arguments` may be an int **page** tab index (e.g. Settings page = 4).
-  /// Maps to bottom bar highlight when AI tab shifts indices.
-  int _bottomNavHighlightIndex(BuildContext context, bool chatbotEnabled) {
+  /// Route `arguments` may be an int **page** tab index (main shell PageView).
+  int _bottomNavHighlightIndex(BuildContext context) {
     final args = ModalRoute.of(context)?.settings.arguments;
-    if (args is int && args >= -1 && args < 5) {
-      if (chatbotEnabled && args >= 3) return args + 1;
+    if (args is int && args >= -1 && args < 32) {
       return args;
     }
     return AppBottomNavigationBar.noTabSelected;
@@ -379,7 +377,7 @@ class _LoginScreenState extends State<LoginScreen> {
         builder: (context, auth, _) {
           final chatbot = auth.user?.chatbotEnabled ?? false;
           return AppBottomNavigationBar(
-            currentIndex: _bottomNavHighlightIndex(context, chatbot),
+            currentIndex: _bottomNavHighlightIndex(context),
             chatbotEnabled: chatbot,
             onTap: (index) {
               Navigator.of(context).pushReplacementNamed(AppRoutes.dashboard);

@@ -15,7 +15,20 @@
 (function() {
     'use strict';
 
-    const fetchFn = (typeof window !== 'undefined' && window.getFetch && window.getFetch()) || (typeof window !== 'undefined' ? window.fetch : null);
+    /**
+     * Resolve fetch at call time (not module init). Head scripts use defer (e.g. csrf.js
+     * defines window.getFetch), while this file runs sync at end of body — binding fetch
+     * once at load would often capture plain fetch and omit CSRF headers on JSON POSTs.
+     */
+    function resolveFetchFn() {
+        if (typeof window === 'undefined') {
+            return typeof fetch !== 'undefined' ? fetch : null;
+        }
+        if (window.getFetch && typeof window.getFetch === 'function') {
+            return window.getFetch();
+        }
+        return typeof fetch !== 'undefined' ? fetch : null;
+    }
 
     /**
      * Parse HTTP error response and return an Error with the best available message.
@@ -80,6 +93,10 @@
     async function apiFetch(url, options = {}) {
         const { showAlertOnError = false, parseJson = true, ...fetchOptions } = options;
 
+        const fetchFn = resolveFetchFn();
+        if (!fetchFn) {
+            throw new Error('No fetch implementation available');
+        }
         const response = await fetchFn.call(null, url, fetchOptions);
 
         if (!response.ok) {

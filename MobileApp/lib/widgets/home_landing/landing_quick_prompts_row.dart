@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
-
 import '../../l10n/app_localizations.dart';
 import '../../models/shared/ai_chat_launch_args.dart';
-import '../../providers/shared/auth_provider.dart';
 import '../../config/routes.dart';
+import '../../utils/navigation_helper.dart';
 
 /// Horizontally scrollable quick prompts → AI chat with auto-send.
 class LandingQuickPromptsRow extends StatelessWidget {
@@ -22,13 +20,10 @@ class LandingQuickPromptsRow extends StatelessWidget {
 
   void _onTap(BuildContext context, String prompt) {
     HapticFeedback.selectionClick();
-    final chatbot =
-        Provider.of<AuthProvider>(context, listen: false).user?.chatbotEnabled ??
-            false;
     Navigator.of(context).pushNamed(
       AppRoutes.aiChat,
       arguments: AiChatLaunchArgs(
-        bottomNavTabIndex: chatbot ? 3 : 2,
+        bottomNavTabIndex: NavigationHelper.aiChatMainTabPageIndex(context),
         startNewConversation: true,
         initialText: prompt,
         sendImmediately: true,

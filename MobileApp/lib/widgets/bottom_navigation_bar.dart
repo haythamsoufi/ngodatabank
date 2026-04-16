@@ -13,17 +13,18 @@ class AppBottomNavigationBar extends StatelessWidget {
   /// Pass as [currentIndex] when no tab should appear selected.
   static const int noTabSelected = -1;
 
-  /// Settings **page** index on [MainNavigationScreen] PageView (always 4).
-  /// Not the bottom bar slot when AI is shown — nav index == page index, so
-  /// use the tab's position in [visibleTabs] directly for highlight comparisons.
-  static const int settingsTabIndex = 4;
+  /// Legacy: page index for Settings in an older 5-tab guest layout.
+  /// Prefer [TabCustomizationProvider.indexOfTab] with [TabIds.settings].
+  @Deprecated('Resolve settings tab index via TabCustomizationProvider')
+  static const int settingsTabIndex = 5;
 
-  /// Bottom bar index for the AI tab when [chatbotEnabled] is true.
-  static const int aiChatNavIndex = 3;
+  /// Bottom bar index for the AI tab when [chatbotEnabled] is true
+  /// (after home + unified planning in the default layout).
+  static const int aiChatNavIndex = 4;
 
   /// Bottom bar slot for the Admin/Analysis tab (shifts right when AI is shown).
   static int adminTabNavIndex({required bool chatbotEnabled}) =>
-      chatbotEnabled ? 4 : 3;
+      chatbotEnabled ? 5 : 4;
 
   final int currentIndex;
   final Function(int)? onTap;
@@ -151,16 +152,14 @@ class AppBottomNavigationBar extends StatelessWidget {
     final isFocalPoint = _isFocalPoint(context);
     final c = _effectiveChatbot(context);
 
-    // When chatbot is enabled, every index after the AI slot (3) shifts right by 1.
-    final int shiftedIdx = c ? 4 : 3;
-    final int settingsIdx = c ? 5 : 4;
+    // When chatbot is enabled, indices from the AI slot onward are +1 vs no-AI layout.
+    final int shiftedIdx = c ? 5 : 4;
+    final int settingsIdx = c ? 6 : 5;
 
     // Tab layout (visual left→right, indices match PageView pages):
-    // Admin:          Notifications(0) Dashboard(1) Home(2) [AI(3)] Admin(3/4)
-    // Focal point:    Notifications(0) Dashboard(1) Home(2) [AI(3)] Analysis(3/4) Settings(4/5)
-    // Auth user:      Resources(0)     Dashboard(1) Home(2) [AI(3)] Analysis(3/4) Settings(4/5)
-    // Guest:          Resources(0)     Indicators(1) Home(2) [AI(3)] Analysis(3/4) Settings(4/5)
-    final int itemCount = (isAdmin ? 4 : 5) + (c ? 1 : 0);
+    // Admin:          … Home(2) Unified planning(3) [AI(4)] Admin(4/5)
+    // Focal/Auth/Guest: … Home(2) Unified planning(3) [AI(4)] Analysis(4/5) Settings(5/6)
+    final int itemCount = (isAdmin ? 5 : 6) + (c ? 1 : 0);
 
     // Negative currentIndex → no tab highlighted (e.g. login overlay).
     // Do not coerce to 0 — that would incorrectly highlight the first tab.
@@ -236,6 +235,21 @@ class AppBottomNavigationBar extends StatelessWidget {
                 showBadge: false,
                 lightForegroundOnBar: lightForegroundOnBar,
                 onTap: () => _handleTap(context, 2),
+              ),
+            ),
+            // Unified planning documents (index 3)
+            Flexible(
+              flex: 1,
+              child: _buildNavItem(
+                context: context,
+                index: 3,
+                selectedTabIndex: selectedTabIndex,
+                icon: Icons.description_outlined,
+                activeIcon: Icons.description,
+                label: l10n.resourcesUnifiedPlanningSectionTitle,
+                showBadge: false,
+                lightForegroundOnBar: lightForegroundOnBar,
+                onTap: () => _handleTap(context, 3),
               ),
             ),
             if (c) aiTab(),
@@ -336,6 +350,21 @@ class AppBottomNavigationBar extends StatelessWidget {
                 showBadge: false,
                 lightForegroundOnBar: lightForegroundOnBar,
                 onTap: () => _handleTap(context, 2),
+              ),
+            ),
+            // Unified planning documents (index 3)
+            Flexible(
+              flex: 1,
+              child: _buildNavItem(
+                context: context,
+                index: 3,
+                selectedTabIndex: selectedTabIndex,
+                icon: Icons.description_outlined,
+                activeIcon: Icons.description,
+                label: l10n.resourcesUnifiedPlanningSectionTitle,
+                showBadge: false,
+                lightForegroundOnBar: lightForegroundOnBar,
+                onTap: () => _handleTap(context, 3),
               ),
             ),
             if (c) aiTab(),

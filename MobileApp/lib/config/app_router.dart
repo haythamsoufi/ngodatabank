@@ -16,6 +16,8 @@ import '../screens/public/indicator_bank_screen.dart';
 import '../screens/public/propose_indicator_screen.dart';
 import '../screens/public/indicator_detail_screen.dart';
 import '../screens/public/resources_screen.dart';
+import '../screens/public/unified_planning_documents_screen.dart';
+import '../screens/public/unified_planning_analytics_screen.dart';
 import '../screens/public/disaggregation_analysis_screen.dart';
 import '../screens/public/countries_screen.dart';
 import '../screens/public/ns_structure_screen.dart';
@@ -92,6 +94,10 @@ class AppRouter {
         AppRoutes.indicatorBank: (context) => const IndicatorBankScreen(),
         AppRoutes.proposeIndicator: (context) => const ProposeIndicatorScreen(),
         AppRoutes.resources: (context) => const ResourcesScreen(),
+        AppRoutes.unifiedPlanningDocuments: (context) =>
+            const UnifiedPlanningDocumentsScreen(),
+        AppRoutes.unifiedPlanningAnalytics: (context) =>
+            const UnifiedPlanningAnalyticsScreen(),
         AppRoutes.disaggregationAnalysis: (context) =>
             const DisaggregationAnalysisScreen(),
         AppRoutes.quizGame: (context) => const QuizGameScreen(),

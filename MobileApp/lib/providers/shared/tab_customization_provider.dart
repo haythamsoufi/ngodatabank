@@ -19,6 +19,7 @@ class TabIds {
   static const settings = 'settings';
   static const resources = 'resources';
   static const indicators = 'indicators';
+  static const unifiedPlanning = 'unified_planning';
 }
 
 // ---------------------------------------------------------------------------
@@ -100,6 +101,12 @@ final List<TabDefinition> allTabDefinitions = [
     activeIcon: Icons.library_books,
     getLabel: (l) => l.indicators,
   ),
+  TabDefinition(
+    id: TabIds.unifiedPlanning,
+    icon: Icons.description_outlined,
+    activeIcon: Icons.description,
+    getLabel: (l) => l.resourcesUnifiedPlanningSectionTitle,
+  ),
 ];
 
 final Map<String, TabDefinition> tabDefinitionMap = {
@@ -145,6 +152,7 @@ class TabCustomizationProvider extends ChangeNotifier {
         TabIds.notifications,
         TabIds.dashboard,
         TabIds.home,
+        TabIds.unifiedPlanning,
         if (chatbotEnabled) TabIds.aiChat,
         TabIds.admin,
       ];
@@ -154,6 +162,7 @@ class TabCustomizationProvider extends ChangeNotifier {
         TabIds.notifications,
         TabIds.dashboard,
         TabIds.home,
+        TabIds.unifiedPlanning,
         if (chatbotEnabled) TabIds.aiChat,
         TabIds.analysis,
         TabIds.settings,
@@ -164,6 +173,7 @@ class TabCustomizationProvider extends ChangeNotifier {
         TabIds.resources,
         TabIds.dashboard,
         TabIds.home,
+        TabIds.unifiedPlanning,
         if (chatbotEnabled) TabIds.aiChat,
         TabIds.analysis,
         TabIds.settings,
@@ -173,6 +183,7 @@ class TabCustomizationProvider extends ChangeNotifier {
       TabIds.resources,
       TabIds.indicators,
       TabIds.home,
+      TabIds.unifiedPlanning,
       if (chatbotEnabled) TabIds.aiChat,
       TabIds.analysis,
       TabIds.settings,
@@ -202,16 +213,18 @@ class TabCustomizationProvider extends ChangeNotifier {
       ids.addAll([
         TabIds.notifications, TabIds.dashboard, TabIds.admin,
         TabIds.analysis, TabIds.resources, TabIds.settings,
+        TabIds.unifiedPlanning,
       ]);
     } else if (isAuthenticated) {
       ids.addAll([
         TabIds.notifications, TabIds.dashboard, TabIds.resources,
         TabIds.analysis, TabIds.settings, TabIds.indicators,
+        TabIds.unifiedPlanning,
       ]);
     } else {
       ids.addAll([
         TabIds.resources, TabIds.indicators,
-        TabIds.analysis, TabIds.settings,
+        TabIds.analysis, TabIds.settings, TabIds.unifiedPlanning,
       ]);
     }
     if (chatbotEnabled) ids.add(TabIds.aiChat);

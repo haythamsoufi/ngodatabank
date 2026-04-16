@@ -3,14 +3,26 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
 import '../../config/app_config.dart';
+import '../../models/shared/unified_planning_document.dart';
 import '../../models/shared/resource.dart';
+import '../../models/shared/resource_list_section.dart';
+import '../../models/shared/resource_subcategory.dart';
 import '../../services/api_service.dart';
+import '../../services/ifrc_unified_planning_service.dart';
+import '../../services/unified_planning_pdf_thumbnail_cache.dart';
 import '../../utils/debug_logger.dart';
 
 class PublicResourcesProvider with ChangeNotifier {
   final ApiService _api = ApiService();
+  final IfrcUnifiedPlanningService _ifrcUnified = IfrcUnifiedPlanningService.instance;
 
   List<Resource> _resources = [];
+  List<ResourceListSection> _sections = [];
+  bool _groupedMode = false;
+  bool _groupedCapped = false;
+  List<UnifiedPlanningDocument> _unifiedPlanningDocuments = [];
+  bool _unifiedPlanningLoading = false;
+  String? _unifiedPlanningErrorCode;
   bool _isLoading = false;
   bool _isLoadingMore = false;
   String? _error;
@@ -25,6 +37,9 @@ class PublicResourcesProvider with ChangeNotifier {
   static const int _perPage = 20;
 
   List<Resource> get resources => _resources;
+  List<ResourceListSection> get sections => _sections;
+  bool get groupedMode => _groupedMode;
+  bool get groupedCapped => _groupedCapped;
   bool get isLoading => _isLoading;
   bool get isLoadingMore => _isLoadingMore;
   String? get error => _error;
@@ -32,6 +47,19 @@ class PublicResourcesProvider with ChangeNotifier {
   int get totalItems => _totalItems;
   String get searchQuery => _searchQuery;
   String? get selectedType => _selectedType;
+
+  List<UnifiedPlanningDocument> get unifiedPlanningDocuments =>
+      List.unmodifiable(_unifiedPlanningDocuments);
+
+  bool get unifiedPlanningLoading => _unifiedPlanningLoading;
+
+  /// Localization key (see [AppLocalizations]); null when there is no error.
+  String? get unifiedPlanningErrorCode => _unifiedPlanningErrorCode;
+
+  /// IFRC GO unified planning PDFs — load from the unified planning screen only.
+  Future<void> loadUnifiedPlanningDocuments() async {
+    await _loadUnifiedPlanningDocuments();
+  }
 
   /// Load the first page, optionally replacing search/type/locale filters.
   Future<void> loadResources({
@@ -49,23 +77,47 @@ class PublicResourcesProvider with ChangeNotifier {
     _currentPage = 1;
     _isLoading = true;
     _error = null;
+    _sections = [];
+    _groupedMode = false;
+    _groupedCapped = false;
     notifyListeners();
 
     try {
-      final items = await _fetchPage(_currentPage);
-      _resources = items;
+      final useGrouped = _searchQuery.isEmpty;
+      if (useGrouped) {
+        final parsed = await _fetchGrouped();
+        _sections = parsed.$1;
+        _groupedCapped = parsed.$2;
+        _resources = [];
+        _groupedMode = true;
+        _hasMore = false;
+        _totalItems = _sections.fold<int>(
+          0,
+          (sum, s) => sum + s.resources.length,
+        );
+      } else {
+        final items = await _fetchPage(_currentPage);
+        _resources = items;
+        _sections = [];
+        _groupedMode = false;
+        _groupedCapped = false;
+      }
     } catch (e) {
       _error = e.toString();
       _resources = [];
+      _sections = [];
+      _groupedMode = false;
+      _groupedCapped = false;
       DebugLogger.logErrorWithTag('PUBLIC_RESOURCES', 'Load error: $e');
-    } finally {
-      _isLoading = false;
-      notifyListeners();
     }
+
+    _isLoading = false;
+    notifyListeners();
   }
 
   /// Append the next page when the user scrolls to the bottom.
   Future<void> loadMore() async {
+    if (_groupedMode) return;
     if (_isLoadingMore || !_hasMore || _isLoading) return;
 
     _isLoadingMore = true;
@@ -120,6 +172,114 @@ class PublicResourcesProvider with ChangeNotifier {
 
     _hasMore = false;
     throw Exception('Failed to load resources (${response.statusCode}).');
+  }
+
+  Future<(List<ResourceListSection>, bool)> _fetchGrouped() async {
+    final params = <String, String>{
+      'locale': _locale,
+      'grouped': 'true',
+    };
+    if (_selectedType != null && _selectedType!.isNotEmpty) {
+      params['type'] = _selectedType!;
+    }
+
+    final response = await _api.get(
+      AppConfig.mobilePublicResourcesEndpoint,
+      queryParams: params,
+      includeAuth: false,
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load resources (${response.statusCode}).');
+    }
+
+    final json = jsonDecode(response.body) as Map<String, dynamic>;
+    if (json['success'] != true) {
+      throw Exception('Failed to load resources.');
+    }
+
+    final data = json['data'];
+    final meta = json['meta'] as Map<String, dynamic>? ?? {};
+    final capped = meta['capped'] == true;
+
+    if (data is! Map<String, dynamic>) {
+      return (<ResourceListSection>[], capped);
+    }
+
+    final rawSections = (data['sections'] as List<dynamic>?) ?? [];
+    final out = <ResourceListSection>[];
+    for (final s in rawSections) {
+      if (s is! Map<String, dynamic>) continue;
+      final subJson = s['subcategory'];
+      ResourceSubcategory? sub;
+      if (subJson is Map<String, dynamic>) {
+        sub = ResourceSubcategory.fromJson(subJson);
+      }
+      final rawList = (s['resources'] as List<dynamic>?) ?? [];
+      final items = rawList
+          .map((e) => Resource.fromJson(e as Map<String, dynamic>))
+          .toList();
+      if (items.isEmpty) continue;
+      out.add(ResourceListSection(subcategory: sub, resources: items));
+    }
+    return (out, capped);
+  }
+
+  Future<void> _loadUnifiedPlanningDocuments() async {
+    _unifiedPlanningLoading = true;
+    _unifiedPlanningErrorCode = null;
+    notifyListeners();
+
+    try {
+      // Resolve disk cache dir before IFRC fetch so grid cards can read JPEGs synchronously.
+      await UnifiedPlanningPdfThumbnailCache.instance.warmCacheDirectory();
+      final config = await _ifrcUnified.fetchConfig();
+      if (config == null) {
+        _unifiedPlanningDocuments = [];
+        _unifiedPlanningErrorCode = 'unified_error_config';
+        return;
+      }
+
+      final listUrl = (config['ifrc_public_site_appeals_url'] as String?)?.trim();
+      if (listUrl == null || listUrl.isEmpty) {
+        _unifiedPlanningDocuments = [];
+        _unifiedPlanningErrorCode = 'unified_error_config';
+        return;
+      }
+
+      if (AppConfig.ifrcApiUser.isEmpty || AppConfig.ifrcApiPassword.isEmpty) {
+        _unifiedPlanningDocuments = [];
+        _unifiedPlanningErrorCode = 'unified_error_credentials';
+        return;
+      }
+
+      final labels = IfrcUnifiedPlanningService.parseTypeLabels(config);
+      _unifiedPlanningDocuments = await _ifrcUnified.fetchDocuments(
+        ifrcListUrl: listUrl,
+        typeLabels: labels,
+      );
+      _unifiedPlanningErrorCode = null;
+    } on StateError catch (e) {
+      _unifiedPlanningDocuments = [];
+      switch (e.message) {
+        case 'missing_credentials':
+          _unifiedPlanningErrorCode = 'unified_error_credentials';
+          break;
+        case 'ifrc_auth_failed':
+          _unifiedPlanningErrorCode = 'unified_error_ifrc_auth';
+          break;
+        default:
+          _unifiedPlanningErrorCode = 'unified_error_ifrc';
+      }
+      DebugLogger.logErrorWithTag('PUBLIC_RESOURCES', 'Unified planning IFRC: $e');
+    } catch (e) {
+      _unifiedPlanningDocuments = [];
+      _unifiedPlanningErrorCode = 'unified_error_ifrc';
+      DebugLogger.logErrorWithTag('PUBLIC_RESOURCES', 'Unified planning IFRC: $e');
+    } finally {
+      _unifiedPlanningLoading = false;
+      notifyListeners();
+    }
   }
 
   void clearError() {

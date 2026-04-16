@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../config/routes.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/shared/resource.dart';
+import '../../models/shared/resource_list_section.dart';
 import '../../providers/public/public_resources_provider.dart';
 import '../../providers/shared/language_provider.dart';
 import '../../utils/constants.dart';
@@ -92,6 +93,20 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
     return Navigator.of(context).canPop();
   }
 
+  /// App bar title with total count from the API (omit count during first load).
+  String _resourcesAppBarTitle(
+    AppLocalizations loc,
+    PublicResourcesProvider provider,
+  ) {
+    final loadingNoData = provider.isLoading &&
+        ((provider.groupedMode && provider.sections.isEmpty) ||
+            (!provider.groupedMode && provider.resources.isEmpty));
+    if (loadingNoData) {
+      return loc.resources;
+    }
+    return '${loc.resources} (${provider.totalItems})';
+  }
+
   // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
@@ -100,53 +115,53 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
     final theme = Theme.of(context);
     final isStandalone = _isStandaloneScreen(context);
 
-    return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: AppAppBar(
-        title: loc.resources,
-        leading: Builder(
-          builder: (BuildContext scaffoldContext) {
-            return IOSIconButton(
-              icon: Icons.menu,
-              onPressed: () => Scaffold.of(scaffoldContext).openDrawer(),
-              tooltip: loc.navigation,
-              semanticLabel: loc.navigation,
-              semanticHint: loc.navigation,
-            );
-          },
-        ),
-        actions: [
-          IconButton(
-            icon: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: Icon(
-                _showSearch ? Icons.search_off : Icons.search,
-                key: ValueKey(_showSearch),
-              ),
+    return Consumer2<PublicResourcesProvider, LanguageProvider>(
+      builder: (context, provider, languageProvider, _) {
+        final language = languageProvider.currentLanguage;
+        return Scaffold(
+          backgroundColor: theme.scaffoldBackgroundColor,
+          appBar: AppAppBar(
+            title: _resourcesAppBarTitle(loc, provider),
+            leading: Builder(
+              builder: (BuildContext scaffoldContext) {
+                return IOSIconButton(
+                  icon: Icons.menu,
+                  onPressed: () => Scaffold.of(scaffoldContext).openDrawer(),
+                  tooltip: loc.navigation,
+                  semanticLabel: loc.navigation,
+                  semanticHint: loc.navigation,
+                );
+              },
             ),
-            tooltip: _showSearch
-                ? loc.resourcesCloseSearchTooltip
-                : loc.resourcesSearchTooltip,
-            onPressed: () {
-              setState(() {
-                _showSearch = !_showSearch;
-                if (!_showSearch) {
-                  _searchController.clear();
-                  _applySearch('');
-                }
-              });
-            },
+            actions: [
+              IconButton(
+                icon: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: Icon(
+                    _showSearch ? Icons.search_off : Icons.search,
+                    key: ValueKey(_showSearch),
+                  ),
+                ),
+                tooltip: _showSearch
+                    ? loc.resourcesCloseSearchTooltip
+                    : loc.resourcesSearchTooltip,
+                onPressed: () {
+                  setState(() {
+                    _showSearch = !_showSearch;
+                    if (!_showSearch) {
+                      _searchController.clear();
+                      _applySearch('');
+                    }
+                  });
+                },
+              ),
+            ],
           ),
-        ],
-      ),
-      drawer: AppNavigationDrawer(
-        activeScreen: ActiveDrawerScreen.resources,
-        onShowCountriesSheet: () => _showCountriesSheet(context, theme),
-      ),
-      body: Consumer2<PublicResourcesProvider, LanguageProvider>(
-        builder: (context, provider, languageProvider, _) {
-          final language = languageProvider.currentLanguage;
-          return Column(
+          drawer: AppNavigationDrawer(
+            activeScreen: ActiveDrawerScreen.resources,
+            onShowCountriesSheet: () => _showCountriesSheet(context, theme),
+          ),
+          body: Column(
             children: [
               // ── Search field ───────────────────────────────────────
               AnimatedSize(
@@ -167,22 +182,29 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                 onSelected: _applyType,
               ),
 
+              _UnifiedPlanningEntryRow(
+                onOpen: () => Navigator.of(context).pushNamed(
+                  AppRoutes.unifiedPlanningDocuments,
+                ),
+              ),
+
               // ── Content area ───────────────────────────────────────
               Expanded(
                 child: _buildBody(context, provider, loc, theme, language),
               ),
             ],
-          );
-        },
-      ),
-      bottomNavigationBar: isStandalone
-          ? AppBottomNavigationBar(
-              currentIndex: 2,
-              onTap: (index) {
-                NavigationHelper.popToMainThenOpenAiIfNeeded(context, index);
-              },
-            )
-          : null,
+          ),
+          bottomNavigationBar: isStandalone
+              ? AppBottomNavigationBar(
+                  currentIndex: 2,
+                  onTap: (index) {
+                    NavigationHelper.popToMainThenOpenAiIfNeeded(
+                        context, index);
+                  },
+                )
+              : null,
+        );
+      },
     );
   }
 
@@ -194,12 +216,18 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
     String language,
   ) {
     // ── Shimmer skeleton while loading ─────────────────────────────
-    if (provider.isLoading && provider.resources.isEmpty) {
+    final bool loadingGrouped =
+        provider.groupedMode && provider.sections.isEmpty;
+    final bool loadingFlat =
+        !provider.groupedMode && provider.resources.isEmpty;
+    if (provider.isLoading && (loadingGrouped || loadingFlat)) {
       return const _ShimmerGrid();
     }
 
     // ── Error state ────────────────────────────────────────────────
-    if (provider.error != null && provider.resources.isEmpty) {
+    if (provider.error != null &&
+        ((provider.groupedMode && provider.sections.isEmpty) ||
+            (!provider.groupedMode && provider.resources.isEmpty))) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -249,7 +277,11 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
     }
 
     // ── Empty state ────────────────────────────────────────────────
-    if (!provider.isLoading && provider.resources.isEmpty) {
+    final bool groupedEmpty =
+        provider.groupedMode && provider.sections.isEmpty;
+    final bool flatEmpty =
+        !provider.groupedMode && provider.resources.isEmpty;
+    if (!provider.isLoading && (groupedEmpty || flatEmpty)) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -273,41 +305,191 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
       );
     }
 
-    // ── Grid ───────────────────────────────────────────────────────
+    // ── Grouped by subgroup (no search) ─────────────────────────────
+    if (provider.groupedMode) {
+      return RefreshIndicator(
+        onRefresh: () => provider.loadResources(locale: language, refresh: true),
+        color: Color(AppConstants.ifrcRed),
+        child: CustomScrollView(
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            if (provider.groupedCapped)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 8, 14, 0),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surfaceContainerHighest
+                          .withValues(alpha: 0.65),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.info_outline_rounded,
+                            size: 18,
+                            color: context.textSecondaryColor,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              loc.resourcesListTruncatedHint,
+                              style: TextStyle(
+                                fontSize: 12,
+                                height: 1.35,
+                                color: context.textSecondaryColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            for (var sIdx = 0;
+                sIdx < provider.sections.length;
+                sIdx++) ..._sliversForSection(
+              context,
+              provider.sections[sIdx],
+              sIdx,
+              language,
+              loc,
+              theme,
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          ],
+        ),
+      );
+    }
+
+    // ── Flat grid (search) ────────────────────────────────────────
     return RefreshIndicator(
       onRefresh: () => provider.loadResources(locale: language, refresh: true),
       color: Color(AppConstants.ifrcRed),
-      child: GridView.builder(
+      child: CustomScrollView(
         controller: _scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(14, 10, 14, 24),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 0.66,
-        ),
-        itemCount:
-            provider.resources.length + (provider.isLoadingMore ? 2 : 0),
-        itemBuilder: (context, index) {
-          if (index >= provider.resources.length) {
-            return const _ShimmerCard();
-          }
-          final res = provider.resources[index];
-          return _ResourceCard(
-            key: ValueKey(res.id),
-            resource: res,
-            index: index,
-            currentLanguage: language,
-            onOpen: (url) => _openResource(
-              context,
-              url,
-              title: res.title ?? loc.document,
+        slivers: [
+          if (provider.resources.isNotEmpty)
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(14, 10, 14, 0),
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 0.66,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    if (index >= provider.resources.length) {
+                      return const _ShimmerCard();
+                    }
+                    final res = provider.resources[index];
+                    return _ResourceCard(
+                      key: ValueKey(res.id),
+                      resource: res,
+                      index: index,
+                      currentLanguage: language,
+                      onOpen: (url) => _openResource(
+                        context,
+                        url,
+                        title: res.title ?? loc.document,
+                      ),
+                    );
+                  },
+                  childCount:
+                      provider.resources.length + (provider.isLoadingMore ? 2 : 0),
+                ),
+              ),
             ),
-          );
-        },
+          const SliverToBoxAdapter(child: SizedBox(height: 24)),
+        ],
       ),
     );
+  }
+
+  List<Widget> _sliversForSection(
+    BuildContext context,
+    ResourceListSection section,
+    int sectionIndex,
+    String language,
+    AppLocalizations loc,
+    ThemeData theme,
+  ) {
+    final title = section.subcategory?.name ??
+        loc.resourcesOtherSubgroup;
+    final items = section.resources;
+
+    return [
+      SliverToBoxAdapter(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            14,
+            sectionIndex == 0 ? 10 : 20,
+            14,
+            10,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.2,
+                    color: context.textColor,
+                  ),
+                ),
+              ),
+              Text(
+                '${items.length}',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: context.textSecondaryColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      SliverPadding(
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        sliver: SliverGrid(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 0.66,
+          ),
+          delegate: SliverChildBuilderDelegate(
+            (context, i) {
+              final res = items[i];
+              final globalIndex = sectionIndex * 1000 + i;
+              return _ResourceCard(
+                key: ValueKey('${section.subcategory?.id ?? 'u'}-${res.id}'),
+                resource: res,
+                index: globalIndex,
+                currentLanguage: language,
+                onOpen: (url) => _openResource(
+                  context,
+                  url,
+                  title: res.title ?? loc.document,
+                ),
+              );
+            },
+            childCount: items.length,
+          ),
+        ),
+      ),
+    ];
   }
 
   void _openResource(
@@ -382,6 +564,70 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
   }
 }
 
+// ── Unified planning entry (full list on separate screen) ─────────────────
+
+class _UnifiedPlanningEntryRow extends StatelessWidget {
+  final VoidCallback onOpen;
+
+  const _UnifiedPlanningEntryRow({required this.onOpen});
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 4, 14, 8),
+      child: Material(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: onOpen,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.picture_as_pdf_outlined,
+                  color: Color(AppConstants.ifrcRed),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        loc.resourcesUnifiedPlanningSectionTitle,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        loc.resourcesUnifiedPlanningSectionSubtitle,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: context.textSecondaryColor,
+                          height: 1.25,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: context.textSecondaryColor,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 // ── Search bar ─────────────────────────────────────────────────────────────
 
 class _SearchBar extends StatelessWidget {
@@ -451,11 +697,12 @@ class _TypeFilterRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    // Matches Backoffice/Website resource types (see ResourceForm; Website uses `other` for non-publications).
     final filters = <String?, String>{
       null: loc.allCategories,
       'publication': loc.publication,
       'resource': loc.resource,
-      'document': loc.document,
+      'other': loc.other,
     };
 
     return SizedBox(
@@ -577,6 +824,8 @@ class _ResourceCardState extends State<_ResourceCard>
         return const Color(0xFF0D47A1);
       case 'document':
         return const Color(0xFF1B5E20);
+      case 'other':
+        return const Color(0xFFBF360C);
       default:
         return const Color(0xFF4A148C);
     }
@@ -588,6 +837,8 @@ class _ResourceCardState extends State<_ResourceCard>
         return [const Color(0xFF0D47A1), const Color(0xFF1976D2)];
       case 'document':
         return [const Color(0xFF1B5E20), const Color(0xFF388E3C)];
+      case 'other':
+        return [const Color(0xFFE65100), const Color(0xFFFF6D00)];
       default:
         return [const Color(0xFF4A148C), const Color(0xFF7B1FA2)];
     }
@@ -599,6 +850,8 @@ class _ResourceCardState extends State<_ResourceCard>
         return Icons.menu_book_rounded;
       case 'document':
         return Icons.description_rounded;
+      case 'other':
+        return Icons.widgets_outlined;
       default:
         return Icons.folder_rounded;
     }

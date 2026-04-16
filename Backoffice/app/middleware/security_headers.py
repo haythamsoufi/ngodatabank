@@ -4,6 +4,7 @@ from functools import wraps
 
 from app.models.embed_content import POWERBI_EMBED_DOMAINS, TABLEAU_EMBED_DOMAINS
 
+
 def add_security_headers(response):
     """Add comprehensive security headers to all responses.
 

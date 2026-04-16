@@ -4,8 +4,8 @@ import 'package:provider/provider.dart';
 
 import '../../providers/shared/language_provider.dart';
 import '../../config/routes.dart';
+import '../../utils/navigation_helper.dart';
 import '../../models/shared/ai_chat_launch_args.dart';
-import '../../providers/shared/auth_provider.dart';
 import '../../utils/constants.dart';
 import '../../utils/ios_constants.dart';
 import '../../l10n/app_localizations.dart';
@@ -121,14 +121,11 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   void _onPromptSelected(String prompt, BuildContext ctx) {
-    final chatbot =
-        Provider.of<AuthProvider>(ctx, listen: false).user?.chatbotEnabled ??
-            false;
     _onChatNavigated();
     Navigator.of(ctx).pushNamed(
       AppRoutes.aiChat,
       arguments: AiChatLaunchArgs(
-        bottomNavTabIndex: chatbot ? 3 : 2,
+        bottomNavTabIndex: NavigationHelper.aiChatMainTabPageIndex(ctx),
         startNewConversation: true,
         initialText: prompt,
         sendImmediately: true,

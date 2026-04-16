@@ -3,14 +3,19 @@
 
 Auth policy:
   - Truly public (no login required): countrymap, sectors-subsectors, indicator-bank,
-    indicator-suggestions, data/periods, data/fdrs-overview, data/resources.
+    indicator-suggestions, data/periods, data/fdrs-overview, data/resources,
+    data/unified-planning-config (IFRC GO URL + unified planning type IDs for the mobile app),
+    data/unified-planning-thumbnail (JPEG first page — server-rendered; IFRC URL allowlist).
     Rate-limited to prevent abuse.
   - Auth-required: quiz/leaderboard, quiz/submit-score (scores are tied to authenticated users).
 """
 
+from collections import OrderedDict
 from contextlib import suppress
+from hashlib import sha256
+from threading import Lock
 
-from flask import request, current_app
+from flask import request, current_app, make_response
 from flask_login import current_user
 
 from app.utils.api_pagination import validate_pagination_params
@@ -28,6 +33,12 @@ from app.utils.mobile_responses import (
 from app.utils.transactions import request_transaction_rollback
 from app.utils.sql_utils import safe_ilike_pattern
 from app.routes.api.mobile import mobile_bp
+from app.utils.constants import APPEALS_TYPE_DEFAULT_IDS_STR, APPEALS_TYPE_DISPLAY_NAMES
+
+# In-process JPEG cache for unified-planning thumbnails (key = sha256 of URL).
+_UNIFIED_PLANNING_THUMB_JPEG: "OrderedDict[str, bytes]" = OrderedDict()
+_UNIFIED_PLANNING_THUMB_LOCK = Lock()
+_UNIFIED_PLANNING_THUMB_MAX_ENTRIES = 128
 
 
 @mobile_bp.route('/data/countrymap', methods=['GET'])
@@ -689,6 +700,62 @@ def mobile_fdrs_overview():
         return mobile_server_error('Failed to load FDRS overview data.')
 
 
+def _serialize_public_resource(r, *, locale: str, base_url: str, storage) -> dict:
+    """Build the public JSON object for one Resource row (mobile /data/resources)."""
+    title = r.get_title(locale)
+    description = r.get_description(locale)
+
+    def _resolve_locale(get_path_attr):
+        """Return language code for the first lang with a real file."""
+        for lang in ([locale] if locale == 'en' else [locale, 'en']):
+            tr = r.get_translation(lang)
+            if not tr:
+                continue
+            rel = getattr(tr, get_path_attr, None)
+            if rel and storage.exists(storage.RESOURCES, rel):
+                return lang
+        return None
+
+    file_locale = _resolve_locale('file_relative_path')
+    thumb_locale = _resolve_locale('thumbnail_relative_path')
+
+    file_url = (
+        f"{base_url}/resources/download/{r.id}/{file_locale}"
+        if file_locale else None
+    )
+    thumbnail_url = (
+        f"{base_url}/resources/thumbnail/{r.id}/{thumb_locale}"
+        if thumb_locale else None
+    )
+
+    sub = r.resource_subcategory
+    sub_payload = None
+    if sub is not None:
+        sub_payload = {
+            'id': sub.id,
+            'name': sub.name,
+            'display_order': sub.display_order,
+        }
+
+    return {
+        'id': r.id,
+        'title': title,
+        'description': description,
+        'resource_type': r.resource_type,
+        'publication_date': r.publication_date.isoformat() if r.publication_date else None,
+        'created_at': r.created_at.isoformat() if r.created_at else None,
+        'file_url': file_url,
+        'thumbnail_url': thumbnail_url,
+        'available_languages': r.get_available_languages(),
+        'file_languages': [
+            t.language_code
+            for t in r.translations
+            if t.has_uploaded_document
+        ],
+        'subcategory': sub_payload,
+    }
+
+
 @mobile_bp.route('/data/resources', methods=['GET'])
 @mobile_rate_limit(requests_per_minute=60)
 def public_resources():
@@ -697,10 +764,14 @@ def public_resources():
     Query params:
       - page, per_page: pagination (default 20, max 100)
       - search: filter by title
-      - type: filter by resource_type ('publication' | 'resource' | 'document')
+      - type: filter by resource_type ('publication' | 'resource' | 'document' | 'other')
       - locale: language code for title/description (default 'en')
+      - grouped: when ``true`` and ``search`` is empty, return ``data.sections`` instead
+        of a flat list — each section is a subgroup with its resources (global sort preserved).
+        Response is capped (see ``meta.max_resources``) so the payload stays bounded.
     """
-    from app.models.documents import Resource
+    from sqlalchemy.orm import joinedload
+    from app.models.documents import Resource, ResourceSubcategory
 
     page, per_page = validate_pagination_params(
         request.args, default_per_page=20, max_per_page=100
@@ -708,70 +779,80 @@ def public_resources():
     search = request.args.get('search', '').strip()
     resource_type = request.args.get('type', '').strip()
     locale = (request.args.get('locale', 'en') or 'en').strip().lower()
+    grouped_raw = (request.args.get('grouped', '') or '').strip().lower()
+    grouped = grouped_raw in ('1', 'true', 'yes')
 
-    query = Resource.query.order_by(
+    filtered = Resource.query.options(joinedload(Resource.resource_subcategory))
+    if search:
+        filtered = filtered.filter(Resource.default_title.ilike(safe_ilike_pattern(search)))
+    if resource_type:
+        filtered = filtered.filter(Resource.resource_type == resource_type)
+
+    sorted_q = filtered.order_by(
         Resource.publication_date.desc(),
         Resource.created_at.desc(),
     )
-    if search:
-        query = query.filter(Resource.default_title.ilike(safe_ilike_pattern(search)))
-    if resource_type:
-        query = query.filter(Resource.resource_type == resource_type)
 
-    paginated = query.paginate(page=page, per_page=per_page, error_out=False)
     base_url = request.host_url.rstrip('/')
-
     from app.services import storage_service as storage
 
-    items = []
-    for r in paginated.items:
-        title = r.get_title(locale)
-        description = r.get_description(locale)
-
-        # Resolve the best available language whose file/thumbnail is
-        # confirmed to exist in storage (DB path + storage.exists check).
-        # Preferred order: requested locale → English fallback.
-        def _resolve_locale(get_path_attr):
-            """Return (locale_code, rel_path) for the first lang with a real file."""
-            for lang in ([locale] if locale == 'en' else [locale, 'en']):
-                tr = r.get_translation(lang)
-                if not tr:
-                    continue
-                rel = getattr(tr, get_path_attr, None)
-                if rel and storage.exists(storage.RESOURCES, rel):
-                    return lang
-            return None
-
-        file_locale = _resolve_locale('file_relative_path')
-        thumb_locale = _resolve_locale('thumbnail_relative_path')
-
-        file_url = (
-            f"{base_url}/resources/download/{r.id}/{file_locale}"
-            if file_locale else None
+    if grouped and not search:
+        max_resources = 400
+        total_in_db = filtered.count()
+        rows = sorted_q.limit(max_resources).all()
+        subcategories = (
+            ResourceSubcategory.query.order_by(
+                ResourceSubcategory.display_order.asc(),
+                ResourceSubcategory.name.asc(),
+            ).all()
         )
-        thumbnail_url = (
-            f"{base_url}/resources/thumbnail/{r.id}/{thumb_locale}"
-            if thumb_locale else None
+        known_ids = {s.id for s in subcategories}
+        buckets = {sid: [] for sid in known_ids}
+        uncategorized: list = []
+
+        for r in rows:
+            item = _serialize_public_resource(r, locale=locale, base_url=base_url, storage=storage)
+            sid = r.resource_subcategory_id
+            if sid and sid in known_ids:
+                buckets[sid].append(item)
+            else:
+                uncategorized.append(item)
+
+        sections = []
+        for s in subcategories:
+            items = buckets.get(s.id) or []
+            if not items:
+                continue
+            sections.append({
+                'subcategory': {
+                    'id': s.id,
+                    'name': s.name,
+                    'display_order': s.display_order,
+                },
+                'resources': items,
+            })
+        if uncategorized:
+            sections.append({
+                'subcategory': None,
+                'resources': uncategorized,
+            })
+
+        return mobile_ok(
+            data={'sections': sections},
+            meta={
+                'mode': 'grouped',
+                'total_resources': total_in_db,
+                'returned_resources': len(rows),
+                'max_resources': max_resources,
+                'capped': len(rows) >= max_resources and total_in_db > len(rows),
+            },
         )
 
-        items.append({
-            'id': r.id,
-            'title': title,
-            'description': description,
-            'resource_type': r.resource_type,
-            'publication_date': r.publication_date.isoformat() if r.publication_date else None,
-            'created_at': r.created_at.isoformat() if r.created_at else None,
-            'file_url': file_url,
-            'thumbnail_url': thumbnail_url,
-            'available_languages': r.get_available_languages(),
-            # Languages that have an actual uploaded document file (subset of available_languages).
-            # Mobile clients use this to pick the right language at tap time.
-            'file_languages': [
-                t.language_code
-                for t in r.translations
-                if t.has_uploaded_document
-            ],
-        })
+    paginated = sorted_q.paginate(page=page, per_page=per_page, error_out=False)
+    items = [
+        _serialize_public_resource(r, locale=locale, base_url=base_url, storage=storage)
+        for r in paginated.items
+    ]
 
     return mobile_paginated(
         items=items,
@@ -779,6 +860,146 @@ def public_resources():
         page=paginated.page,
         per_page=paginated.per_page,
     )
+
+
+@mobile_bp.route('/data/unified-planning-config', methods=['GET'])
+@mobile_rate_limit(requests_per_minute=60)
+def unified_planning_config():
+    """Public config for unified planning documents: IFRC GO API URL and type IDs.
+
+    The mobile app calls the IFRC API directly using credentials supplied in the app
+    build (not returned here). This endpoint only exposes the canonical base URL and
+    the three AppealsTypeId values (Plan, Mid-Year Report, Annual Report).
+    """
+    base = 'https://go-api.ifrc.org/Api/PublicSiteAppeals'
+    ids = APPEALS_TYPE_DEFAULT_IDS_STR
+    document_types = [
+        {'id': tid, 'label': APPEALS_TYPE_DISPLAY_NAMES[tid]}
+        for tid in sorted(APPEALS_TYPE_DISPLAY_NAMES.keys())
+    ]
+    return mobile_ok(
+        data={
+            'ifrc_public_site_appeals_base_url': base,
+            'appeals_type_ids': ids,
+            'ifrc_public_site_appeals_url': f'{base}?AppealsTypeId={ids}',
+            'document_types': document_types,
+        },
+    )
+
+
+@mobile_bp.route('/data/unified-planning-thumbnail', methods=['GET'])
+@mobile_rate_limit(requests_per_minute=45)
+def unified_planning_thumbnail():
+    """Return a small JPEG of the PDF first page for unified-planning grid tiles.
+
+    The mobile app should prefer this over downloading full PDFs on-device. The server
+    fetches the IFRC PDF (same allowlist / Basic auth as document import), renders with
+    PyMuPDF, and returns ``image/jpeg`` (not the usual mobile JSON envelope).
+
+    Query: ``url`` — full https URL of the PDF (must pass IFRC_DOCUMENT_ALLOWED_HOSTS checks).
+    """
+    from urllib.parse import unquote
+
+    import requests
+    import fitz  # PyMuPDF
+
+    from app.routes.ai_documents.helpers import (
+        _get_ifrc_basic_auth,
+        _validate_ifrc_fetch_url,
+    )
+
+    raw = (request.args.get('url') or '').strip()
+    url = unquote(raw).strip()
+    ok, err = _validate_ifrc_fetch_url(url)
+    if not ok:
+        return mobile_bad_request(err)
+
+    cache_key = sha256(url.encode('utf-8')).hexdigest()
+    with _UNIFIED_PLANNING_THUMB_LOCK:
+        cached = _UNIFIED_PLANNING_THUMB_JPEG.get(cache_key)
+        if cached is not None:
+            _UNIFIED_PLANNING_THUMB_JPEG.move_to_end(cache_key)
+            resp = make_response(cached)
+            resp.headers['Content-Type'] = 'image/jpeg'
+            resp.headers['Cache-Control'] = 'public, max-age=86400'
+            return resp
+
+    max_bytes = int(current_app.config.get('UNIFIED_PLANNING_THUMB_MAX_BYTES') or (12 * 1024 * 1024))
+    auth = _get_ifrc_basic_auth()
+    if auth is None:
+        current_app.logger.warning('unified_planning_thumbnail: IFRC basic auth not configured')
+        return mobile_bad_request('IFRC credentials are not configured on the server')
+
+    r = None
+    try:
+        r = requests.get(
+            url,
+            auth=auth,
+            timeout=(15, 90),
+            stream=True,
+            headers={'User-Agent': 'hum-databank-backoffice/1.0'},
+            allow_redirects=True,
+        )
+        if r.status_code != 200:
+            return mobile_bad_request(f'Upstream HTTP {r.status_code}')
+        cl = r.headers.get('Content-Length')
+        if cl is not None:
+            with suppress(ValueError):
+                if int(cl) > max_bytes:
+                    return mobile_bad_request('PDF too large for thumbnail')
+        chunks = []
+        total = 0
+        for chunk in r.iter_content(chunk_size=65536):
+            if not chunk:
+                continue
+            total += len(chunk)
+            if total > max_bytes:
+                return mobile_bad_request('PDF too large for thumbnail')
+            chunks.append(chunk)
+        pdf_bytes = b''.join(chunks)
+    except requests.RequestException as e:
+        current_app.logger.warning('unified_planning_thumbnail fetch: %s', e)
+        return mobile_server_error()
+    finally:
+        if r is not None:
+            with suppress(Exception):
+                r.close()
+
+    doc = None
+    jpeg_bytes = b''
+    try:
+        doc = fitz.open(stream=pdf_bytes, filetype='pdf')
+        if doc.page_count < 1:
+            return mobile_bad_request('PDF has no pages')
+        page = doc.load_page(0)
+        rect = page.rect
+        if rect.width <= 0:
+            return mobile_bad_request('Invalid PDF page size')
+        zoom = min(280.0 / float(rect.width), 2.5)
+        mat = fitz.Matrix(zoom, zoom)
+        pix = page.get_pixmap(matrix=mat, alpha=False)
+        jpeg_bytes = pix.tobytes('jpeg', jpg_quality=82)
+    except Exception as e:
+        current_app.logger.warning('unified_planning_thumbnail render: %s', e, exc_info=True)
+        return mobile_bad_request('Could not render PDF thumbnail')
+    finally:
+        if doc is not None:
+            with suppress(Exception):
+                doc.close()
+
+    if not jpeg_bytes:
+        return mobile_server_error()
+
+    with _UNIFIED_PLANNING_THUMB_LOCK:
+        _UNIFIED_PLANNING_THUMB_JPEG[cache_key] = jpeg_bytes
+        _UNIFIED_PLANNING_THUMB_JPEG.move_to_end(cache_key)
+        while len(_UNIFIED_PLANNING_THUMB_JPEG) > _UNIFIED_PLANNING_THUMB_MAX_ENTRIES:
+            _UNIFIED_PLANNING_THUMB_JPEG.popitem(last=False)
+
+    resp = make_response(jpeg_bytes)
+    resp.headers['Content-Type'] = 'image/jpeg'
+    resp.headers['Cache-Control'] = 'public, max-age=86400'
+    return resp
 
 
 @mobile_bp.route('/data/quiz/submit-score', methods=['POST'])

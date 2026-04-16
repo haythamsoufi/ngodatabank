@@ -17,6 +17,8 @@ import '../screens/public/indicator_bank_screen.dart';
 import '../screens/public/propose_indicator_screen.dart';
 import '../screens/public/indicator_detail_screen.dart';
 import '../screens/public/resources_screen.dart';
+import '../screens/public/unified_planning_documents_screen.dart';
+import '../screens/public/unified_planning_analytics_screen.dart';
 import '../screens/public/disaggregation_analysis_screen.dart';
 import '../screens/public/countries_screen.dart';
 import '../screens/public/ns_structure_screen.dart';
@@ -163,6 +165,18 @@ class AppGoRouter {
           path: '/resources',
           name: 'resources',
           builder: (context, state) => const ResourcesScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.unifiedPlanningDocuments,
+          name: 'unifiedPlanningDocuments',
+          builder: (context, state) =>
+              const UnifiedPlanningDocumentsScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.unifiedPlanningAnalytics,
+          name: 'unifiedPlanningAnalytics',
+          builder: (context, state) =>
+              const UnifiedPlanningAnalyticsScreen(),
         ),
         GoRoute(
           path: '/disaggregation-analysis',

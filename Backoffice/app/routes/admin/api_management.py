@@ -432,11 +432,26 @@ MOBILE_ENDPOINT_REGISTRY = [
     {'group': 'Public Data', 'path': '/api/mobile/v1/data/resources', 'methods': ['GET'],
      'auth': 'public', 'rate_limited': True,
      'description': (
-         'Paginated resources/publications library (search, type, locale). '
+         'Resources/publications library (search, type, locale). '
+         'Use grouped=true (no search) for subgroup sections; otherwise paginated list. '
          'No auth required; same content family as /api/v1/resources (API key there).'
      ),
      'flutter': 'PublicResourcesProvider',
      'overlaps': ['/api/v1/resources']},
+    {'group': 'Public Data', 'path': '/api/mobile/v1/data/unified-planning-config', 'methods': ['GET'],
+     'auth': 'public', 'rate_limited': True,
+     'description': (
+         'IFRC GO PublicSiteAppeals base URL and unified planning AppealsTypeId list '
+         '(Plan, Mid-Year Report, Annual Report) for client-side IFRC document fetch.'
+     ),
+     'flutter': 'PublicResourcesProvider'},
+    {'group': 'Public Data', 'path': '/api/mobile/v1/data/unified-planning-thumbnail', 'methods': ['GET'],
+     'auth': 'public', 'rate_limited': True,
+     'description': (
+         'JPEG first page of an IFRC PDF for grid thumbnails (query: url). '
+         'Server fetches PDF with IFRC credentials; returns image/jpeg, not JSON.'
+     ),
+     'flutter': 'UnifiedPlanningPdfThumbnailCache'},
     {'group': 'Public Data', 'path': '/api/mobile/v1/data/quiz/leaderboard', 'methods': ['GET'],
      'auth': 'public', 'rate_limited': True,
      'description': 'Quiz global leaderboard — publicly accessible, rate-limited',
