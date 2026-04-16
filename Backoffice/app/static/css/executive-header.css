@@ -320,7 +320,13 @@
     }
 
     .executive-page-header--pin-actions.is-header-pinned-compact .action-controls {
-        justify-content: flex-start;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 100%;
     }
 
     .executive-page-header--pin-actions.is-header-pinned-compact .action-controls button,
@@ -767,10 +773,31 @@
         font-size: 1.125rem;
     }
 
+    /*
+     * Keep actions in a horizontal flow (same as wider viewports); they wrap to the
+     * next line only when needed. Title is centered on small screens — center the
+     * action row to match. Form-wrapped POST buttons stay content-sized like siblings.
+     */
     .executive-page-header .action-controls {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 1rem;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .executive-page-header .action-controls > form {
+        display: inline-block;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .executive-page-header .action-controls > form button {
+        max-width: 100%;
+        box-sizing: border-box;
     }
 
     .breadcrumb-section {
