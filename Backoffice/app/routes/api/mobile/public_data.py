@@ -697,7 +697,7 @@ def public_resources():
     Query params:
       - page, per_page: pagination (default 20, max 100)
       - search: filter by title
-      - type: filter by resource_type ('publication' | 'resource' | 'document')
+      - type: filter by resource_type ('publication' | 'resource' | 'document' | 'other')
       - locale: language code for title/description (default 'en')
     """
     from app.models.documents import Resource

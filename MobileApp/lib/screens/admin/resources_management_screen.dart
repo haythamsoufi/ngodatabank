@@ -174,6 +174,13 @@ class _ResourcesManagementScreenState extends State<ResourcesManagementScreen> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  DropdownMenuItem<String?>(
+                    value: 'other',
+                    child: Text(
+                      loc.other,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ],
                 onChanged: (value) {
                   setState(() => _selectedCategoryFilter = value);

@@ -92,6 +92,17 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
     return Navigator.of(context).canPop();
   }
 
+  /// App bar title with total count from the API (omit count during first load).
+  String _resourcesAppBarTitle(
+    AppLocalizations loc,
+    PublicResourcesProvider provider,
+  ) {
+    if (provider.isLoading && provider.resources.isEmpty) {
+      return loc.resources;
+    }
+    return '${loc.resources} (${provider.totalItems})';
+  }
+
   // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
@@ -100,53 +111,53 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
     final theme = Theme.of(context);
     final isStandalone = _isStandaloneScreen(context);
 
-    return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: AppAppBar(
-        title: loc.resources,
-        leading: Builder(
-          builder: (BuildContext scaffoldContext) {
-            return IOSIconButton(
-              icon: Icons.menu,
-              onPressed: () => Scaffold.of(scaffoldContext).openDrawer(),
-              tooltip: loc.navigation,
-              semanticLabel: loc.navigation,
-              semanticHint: loc.navigation,
-            );
-          },
-        ),
-        actions: [
-          IconButton(
-            icon: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: Icon(
-                _showSearch ? Icons.search_off : Icons.search,
-                key: ValueKey(_showSearch),
-              ),
+    return Consumer2<PublicResourcesProvider, LanguageProvider>(
+      builder: (context, provider, languageProvider, _) {
+        final language = languageProvider.currentLanguage;
+        return Scaffold(
+          backgroundColor: theme.scaffoldBackgroundColor,
+          appBar: AppAppBar(
+            title: _resourcesAppBarTitle(loc, provider),
+            leading: Builder(
+              builder: (BuildContext scaffoldContext) {
+                return IOSIconButton(
+                  icon: Icons.menu,
+                  onPressed: () => Scaffold.of(scaffoldContext).openDrawer(),
+                  tooltip: loc.navigation,
+                  semanticLabel: loc.navigation,
+                  semanticHint: loc.navigation,
+                );
+              },
             ),
-            tooltip: _showSearch
-                ? loc.resourcesCloseSearchTooltip
-                : loc.resourcesSearchTooltip,
-            onPressed: () {
-              setState(() {
-                _showSearch = !_showSearch;
-                if (!_showSearch) {
-                  _searchController.clear();
-                  _applySearch('');
-                }
-              });
-            },
+            actions: [
+              IconButton(
+                icon: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: Icon(
+                    _showSearch ? Icons.search_off : Icons.search,
+                    key: ValueKey(_showSearch),
+                  ),
+                ),
+                tooltip: _showSearch
+                    ? loc.resourcesCloseSearchTooltip
+                    : loc.resourcesSearchTooltip,
+                onPressed: () {
+                  setState(() {
+                    _showSearch = !_showSearch;
+                    if (!_showSearch) {
+                      _searchController.clear();
+                      _applySearch('');
+                    }
+                  });
+                },
+              ),
+            ],
           ),
-        ],
-      ),
-      drawer: AppNavigationDrawer(
-        activeScreen: ActiveDrawerScreen.resources,
-        onShowCountriesSheet: () => _showCountriesSheet(context, theme),
-      ),
-      body: Consumer2<PublicResourcesProvider, LanguageProvider>(
-        builder: (context, provider, languageProvider, _) {
-          final language = languageProvider.currentLanguage;
-          return Column(
+          drawer: AppNavigationDrawer(
+            activeScreen: ActiveDrawerScreen.resources,
+            onShowCountriesSheet: () => _showCountriesSheet(context, theme),
+          ),
+          body: Column(
             children: [
               // ── Search field ───────────────────────────────────────
               AnimatedSize(
@@ -172,17 +183,18 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                 child: _buildBody(context, provider, loc, theme, language),
               ),
             ],
-          );
-        },
-      ),
-      bottomNavigationBar: isStandalone
-          ? AppBottomNavigationBar(
-              currentIndex: 2,
-              onTap: (index) {
-                NavigationHelper.popToMainThenOpenAiIfNeeded(context, index);
-              },
-            )
-          : null,
+          ),
+          bottomNavigationBar: isStandalone
+              ? AppBottomNavigationBar(
+                  currentIndex: 2,
+                  onTap: (index) {
+                    NavigationHelper.popToMainThenOpenAiIfNeeded(
+                        context, index);
+                  },
+                )
+              : null,
+        );
+      },
     );
   }
 
@@ -451,11 +463,12 @@ class _TypeFilterRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    // Matches Backoffice/Website resource types (see ResourceForm; Website uses `other` for non-publications).
     final filters = <String?, String>{
       null: loc.allCategories,
       'publication': loc.publication,
       'resource': loc.resource,
-      'document': loc.document,
+      'other': loc.other,
     };
 
     return SizedBox(
@@ -577,6 +590,8 @@ class _ResourceCardState extends State<_ResourceCard>
         return const Color(0xFF0D47A1);
       case 'document':
         return const Color(0xFF1B5E20);
+      case 'other':
+        return const Color(0xFFBF360C);
       default:
         return const Color(0xFF4A148C);
     }
@@ -588,6 +603,8 @@ class _ResourceCardState extends State<_ResourceCard>
         return [const Color(0xFF0D47A1), const Color(0xFF1976D2)];
       case 'document':
         return [const Color(0xFF1B5E20), const Color(0xFF388E3C)];
+      case 'other':
+        return [const Color(0xFFE65100), const Color(0xFFFF6D00)];
       default:
         return [const Color(0xFF4A148C), const Color(0xFF7B1FA2)];
     }
@@ -599,6 +616,8 @@ class _ResourceCardState extends State<_ResourceCard>
         return Icons.menu_book_rounded;
       case 'document':
         return Icons.description_rounded;
+      case 'other':
+        return Icons.widgets_outlined;
       default:
         return Icons.folder_rounded;
     }
