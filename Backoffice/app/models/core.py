@@ -532,6 +532,28 @@ class Country(db.Model):
             return f'<Country id={getattr(self, "id", "Unknown")}>'
 
 
+def _split_login_log_browser_field(browser):
+    """Split stored ``browser`` into display name vs version.
+
+    Values are stored as ``'{family} {version}'`` (e.g. ``Chrome 120.0``). Multi-word
+    names like ``Mobile Safari`` must split from the **right** so the version is the
+    last token. Product labels without a numeric trailing version (e.g.
+    ``Humanitarian Databank App``) must stay intact.
+    """
+    if not browser:
+        return None, None
+    s = str(browser).strip()
+    if not s:
+        return None, None
+    parts = s.rsplit(' ', 1)
+    if len(parts) == 1:
+        return parts[0], None
+    left, right = parts
+    if right and right[0].isdigit():
+        return left, right
+    return s, None
+
+
 class UserLoginLog(db.Model):
     """Tracks user login/logout activities and authentication attempts."""
     __tablename__ = 'user_login_log'
@@ -587,20 +609,14 @@ class UserLoginLog(db.Model):
     @property
     def browser_name(self):
         """Extract browser name from the browser field."""
-        if not self.browser:
-            return None
-        # Split on first space to separate name from version
-        parts = self.browser.split(' ', 1)
-        return parts[0] if parts else None
+        name, _ver = _split_login_log_browser_field(self.browser)
+        return name
 
     @property
     def browser_version(self):
         """Extract browser version from the browser field."""
-        if not self.browser:
-            return None
-        # Split on first space to separate name from version
-        parts = self.browser.split(' ', 1)
-        return parts[1] if len(parts) > 1 else None
+        _name, ver = _split_login_log_browser_field(self.browser)
+        return ver
 
     @property
     def device_name(self):
@@ -680,6 +696,8 @@ class UserActivityLog(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    # Matches UserSessionLog.session_id (Flask cookie sid or mobile JWT sid) when known
+    user_session_id = db.Column(db.String(255), nullable=True, index=True)
 
     # Activity details
     activity_type = db.Column(db.String(50), nullable=False, index=True)

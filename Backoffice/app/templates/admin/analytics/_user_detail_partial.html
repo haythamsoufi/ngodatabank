@@ -1,30 +1,47 @@
 {% from "macros/empty_state.html" import empty_state %}
-{# Embedded in user form Analytics tab — matches admin card/table patterns (border + shadow-sm). #}
+{# user_analytics_embedded: True when loaded via fetch into user form (default). False for /admin/analytics/user/<id> full page. #}
+{% set user_analytics_embedded = (user_analytics_embedded is not defined) or user_analytics_embedded %}
+{# Use <a href="#"> not <button> when embedded: HTML is inserted via SafeDom.sanitizeHtml() which strips buttons. #}
 <div class="space-y-6">
     <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 sm:p-5">
         <p class="text-sm font-semibold text-gray-800 mb-3">
             <i class="fas fa-calendar-alt mr-2 text-blue-600"></i>{{ _('Time period') }}
         </p>
         <div class="flex flex-wrap gap-2">
-            <button type="button"
+            {% if user_analytics_embedded %}
+            <a href="#"
                data-analytics-days="7"
                class="user-analytics-period-btn px-3 py-2 rounded-md text-sm font-medium border transition-colors {% if selected_days == 7 %}bg-blue-600 text-white border-blue-600{% else %}bg-white text-gray-700 border-gray-300 hover:bg-gray-50{% endif %}">
                 {{ _('Last 7 days') }}
-            </button>
-            <button type="button"
+            </a>
+            <a href="#"
                data-analytics-days="30"
                class="user-analytics-period-btn px-3 py-2 rounded-md text-sm font-medium border transition-colors {% if selected_days == 30 %}bg-blue-600 text-white border-blue-600{% else %}bg-white text-gray-700 border-gray-300 hover:bg-gray-50{% endif %}">
                 {{ _('Last 30 days') }}
-            </button>
-            <button type="button"
+            </a>
+            <a href="#"
                data-analytics-days="90"
                class="user-analytics-period-btn px-3 py-2 rounded-md text-sm font-medium border transition-colors {% if selected_days == 90 %}bg-blue-600 text-white border-blue-600{% else %}bg-white text-gray-700 border-gray-300 hover:bg-gray-50{% endif %}">
                 {{ _('Last 90 days') }}
-            </button>
+            </a>
+            {% else %}
+            <a href="{{ url_for('analytics.user_analytics', user_id=user.id, days=7) }}"
+               class="user-analytics-period-btn px-3 py-2 rounded-md text-sm font-medium border transition-colors {% if selected_days == 7 %}bg-blue-600 text-white border-blue-600{% else %}bg-white text-gray-700 border-gray-300 hover:bg-gray-50{% endif %}">
+                {{ _('Last 7 days') }}
+            </a>
+            <a href="{{ url_for('analytics.user_analytics', user_id=user.id, days=30) }}"
+               class="user-analytics-period-btn px-3 py-2 rounded-md text-sm font-medium border transition-colors {% if selected_days == 30 %}bg-blue-600 text-white border-blue-600{% else %}bg-white text-gray-700 border-gray-300 hover:bg-gray-50{% endif %}">
+                {{ _('Last 30 days') }}
+            </a>
+            <a href="{{ url_for('analytics.user_analytics', user_id=user.id, days=90) }}"
+               class="user-analytics-period-btn px-3 py-2 rounded-md text-sm font-medium border transition-colors {% if selected_days == 90 %}bg-blue-600 text-white border-blue-600{% else %}bg-white text-gray-700 border-gray-300 hover:bg-gray-50{% endif %}">
+                {{ _('Last 90 days') }}
+            </a>
+            {% endif %}
         </div>
     </div>
 
-    <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+    <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
         <div class="bg-white p-4 rounded-lg shadow border border-gray-200 hover:shadow-lg transition-all duration-200"
              title="{{ _('Number of successful login events recorded for this user in the selected period.') }}">
             <div class="flex items-center justify-between mb-2">
@@ -82,6 +99,22 @@
             <p class="text-2xl font-bold text-purple-600 tabular-nums">{{ total_sessions_count if total_sessions_count is defined else recent_sessions|length }}</p>
             <p class="text-xs text-gray-500 mt-1">{{ _('Login sessions in period') }}</p>
         </div>
+
+        <div class="bg-white p-4 rounded-lg shadow border border-gray-200 hover:shadow-lg transition-all duration-200"
+             title="{{ _('Sum of session page-view counters for this user in the selected period (same basis as page path analytics).') }}">
+            <div class="flex items-center justify-between gap-2 mb-2">
+                <h3 class="text-sm font-semibold text-gray-700 min-w-0">{{ _('Total page views') }}</h3>
+                <a href="{{ url_for('analytics.page_path_analytics', user_id=user.id, days=selected_days) }}"
+                   class="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-900"
+                   title="{{ _('View page path breakdown') }}"
+                   {% if user_analytics_embedded %}target="_blank" rel="noopener noreferrer"{% endif %}
+                   aria-label="{{ _('View page path breakdown') }}">
+                    <i class="fas fa-route" aria-hidden="true"></i>
+                </a>
+            </div>
+            <p class="text-2xl font-bold text-amber-600 tabular-nums">{{ total_page_views if total_page_views is defined else 0 }}</p>
+            <p class="text-xs text-gray-500 mt-1">{{ _('Session-tracked page loads') }}</p>
+        </div>
     </div>
 
     <div class="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
@@ -126,7 +159,7 @@
                                 <span class="text-sm text-gray-900">{{ session.page_views or 0 }}</span>
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap">
-                                <span class="text-sm text-gray-900">{{ session.actions_performed or 0 }}</span>
+                                <span class="text-sm text-gray-900">{{ session.audit_visible_activity_count if session.audit_visible_activity_count is defined else (session.actions_performed or 0) }}</span>
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap">
                                 {% if session.is_active %}

@@ -109,6 +109,14 @@ class AppLocalizations {
       'session_logs_duration': 'Duration',
       'session_logs_minutes': '%s min',
       'session_logs_page_views': 'Page views',
+      'session_logs_path_breakdown_title': 'Page views by path',
+      'session_logs_path_breakdown_open': 'View path breakdown',
+      'session_logs_path_breakdown_empty':
+          'No path breakdown recorded for this session.',
+      'session_logs_path_other_bucket': 'Other paths (aggregated)',
+      'session_logs_path_column': 'Path',
+      'session_logs_path_count_column': 'Count',
+      'session_logs_distinct_paths': 'Distinct paths',
       'session_logs_activities': 'Activities',
       'session_logs_last_activity': 'Last activity',
       'session_logs_status_active': 'Active',
@@ -1124,6 +1132,14 @@ class AppLocalizations {
       'session_logs_duration': 'Duración',
       'session_logs_minutes': '%s min',
       'session_logs_page_views': 'Vistas de página',
+      'session_logs_path_breakdown_title': 'Vistas por ruta',
+      'session_logs_path_breakdown_open': 'Ver desglose de rutas',
+      'session_logs_path_breakdown_empty':
+          'No hay desglose de rutas para esta sesión.',
+      'session_logs_path_other_bucket': 'Otras rutas (agregadas)',
+      'session_logs_path_column': 'Ruta',
+      'session_logs_path_count_column': 'Recuento',
+      'session_logs_distinct_paths': 'Rutas distintas',
       'session_logs_activities': 'Actividades',
       'session_logs_last_activity': 'Última actividad',
       'session_logs_status_active': 'Activa',
@@ -1998,6 +2014,14 @@ class AppLocalizations {
       'session_logs_duration': 'Durée',
       'session_logs_minutes': '%s min',
       'session_logs_page_views': 'Pages vues',
+      'session_logs_path_breakdown_title': 'Pages vues par chemin',
+      'session_logs_path_breakdown_open': 'Voir le détail des chemins',
+      'session_logs_path_breakdown_empty':
+          'Aucun détail de chemin pour cette session.',
+      'session_logs_path_other_bucket': 'Autres chemins (agrégés)',
+      'session_logs_path_column': 'Chemin',
+      'session_logs_path_count_column': 'Nombre',
+      'session_logs_distinct_paths': 'Chemins distincts',
       'session_logs_activities': 'Activités',
       'session_logs_last_activity': 'Dernière activité',
       'session_logs_status_active': 'Active',
@@ -2873,6 +2897,14 @@ class AppLocalizations {
       'session_logs_duration': 'المدة',
       'session_logs_minutes': '%s د',
       'session_logs_page_views': 'مشاهدات الصفحات',
+      'session_logs_path_breakdown_title': 'مشاهدات الصفحات حسب المسار',
+      'session_logs_path_breakdown_open': 'عرض تفصيل المسارات',
+      'session_logs_path_breakdown_empty':
+          'لا يوجد تفصيل مسارات مسجّل لهذه الجلسة.',
+      'session_logs_path_other_bucket': 'مسارات أخرى (مجمّعة)',
+      'session_logs_path_column': 'المسار',
+      'session_logs_path_count_column': 'العدد',
+      'session_logs_distinct_paths': 'مسارات مميّزة',
       'session_logs_activities': 'الأنشطة',
       'session_logs_last_activity': 'آخر نشاط',
       'session_logs_status_active': 'نشطة',
@@ -3720,6 +3752,14 @@ class AppLocalizations {
       'session_logs_duration': 'अवधि',
       'session_logs_minutes': '%s मि',
       'session_logs_page_views': 'पृष्ठ दृश्य',
+      'session_logs_path_breakdown_title': 'पथ के अनुसार पृष्ठ दृश्य',
+      'session_logs_path_breakdown_open': 'पथ विवरण देखें',
+      'session_logs_path_breakdown_empty':
+          'इस सत्र के लिए कोई पथ विवरण दर्ज नहीं है।',
+      'session_logs_path_other_bucket': 'अन्य पथ (समेकित)',
+      'session_logs_path_column': 'पथ',
+      'session_logs_path_count_column': 'गिनती',
+      'session_logs_distinct_paths': 'विभिन्न पथ',
       'session_logs_activities': 'गतिविधियाँ',
       'session_logs_last_activity': 'अंतिम गतिविधि',
       'session_logs_status_active': 'सक्रिय',
@@ -4584,6 +4624,14 @@ class AppLocalizations {
       'session_logs_duration': 'Длительность',
       'session_logs_minutes': '%s мин',
       'session_logs_page_views': 'Просмотры',
+      'session_logs_path_breakdown_title': 'Просмотры по путям',
+      'session_logs_path_breakdown_open': 'Разбивка по путям',
+      'session_logs_path_breakdown_empty':
+          'Для этого сеанса нет разбивки по путям.',
+      'session_logs_path_other_bucket': 'Прочие пути (агрегировано)',
+      'session_logs_path_column': 'Путь',
+      'session_logs_path_count_column': 'Счёт',
+      'session_logs_distinct_paths': 'Различные пути',
       'session_logs_activities': 'Действия',
       'session_logs_last_activity': 'Последняя активность',
       'session_logs_status_active': 'Активна',
@@ -5452,6 +5500,13 @@ class AppLocalizations {
       'session_logs_duration': '时长',
       'session_logs_minutes': '%s 分钟',
       'session_logs_page_views': '页面浏览',
+      'session_logs_path_breakdown_title': '按路径的页面浏览',
+      'session_logs_path_breakdown_open': '查看路径明细',
+      'session_logs_path_breakdown_empty': '此会话未记录路径明细。',
+      'session_logs_path_other_bucket': '其他路径（汇总）',
+      'session_logs_path_column': '路径',
+      'session_logs_path_count_column': '次数',
+      'session_logs_distinct_paths': '不同路径数',
       'session_logs_activities': '活动',
       'session_logs_last_activity': '最后活动',
       'session_logs_status_active': '活跃',
@@ -6327,6 +6382,18 @@ class AppLocalizations {
   String get sessionLogsSessionStart => translate('session_logs_session_start');
   String get sessionLogsDuration => translate('session_logs_duration');
   String get sessionLogsPageViews => translate('session_logs_page_views');
+  String get sessionLogsPathBreakdownTitle =>
+      translate('session_logs_path_breakdown_title');
+  String get sessionLogsPathBreakdownOpen =>
+      translate('session_logs_path_breakdown_open');
+  String get sessionLogsPathBreakdownEmpty =>
+      translate('session_logs_path_breakdown_empty');
+  String get sessionLogsPathOtherBucket =>
+      translate('session_logs_path_other_bucket');
+  String get sessionLogsPathColumn => translate('session_logs_path_column');
+  String get sessionLogsPathCountColumn =>
+      translate('session_logs_path_count_column');
+  String get sessionLogsDistinctPaths => translate('session_logs_distinct_paths');
   String get sessionLogsActivities => translate('session_logs_activities');
   String get sessionLogsLastActivity => translate('session_logs_last_activity');
   String get sessionLogsStatusActive => translate('session_logs_status_active');

@@ -182,7 +182,7 @@
                 },
                 cellRenderer: function(params) {
                     var d = params.data || {};
-                    var name = d.browser_name || (d.browser ? String(d.browser).split(' ')[0] : '');
+                    var name = d.browser_name || (d.browser ? String(d.browser) : '');
                     var ver = d.browser_version;
                     var row = 'min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
                     var line1 = name

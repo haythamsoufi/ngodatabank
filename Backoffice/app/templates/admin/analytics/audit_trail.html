@@ -188,7 +188,8 @@
     {# Expand filter pane when any filter is present in the query string (after Apply) #}
     {% set audit_filters_open = request.args.get('description') or request.args.get('date_from') or request.args.get('date_to')
           or request.args.get('requires_review') or request.args.getlist('user') or request.args.getlist('country')
-          or request.args.getlist('activity_type') or request.args.getlist('risk_level') %}
+          or request.args.getlist('activity_type') or request.args.getlist('risk_level')
+          or request.args.get('session_id') %}
     <!-- Audit entries: title → collapsible filters → table -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 relative">
         <div class="px-6 py-4 border-b border-gray-200 flex flex-wrap items-center justify-between gap-3">
@@ -211,7 +212,7 @@
         <div id="auditTrailFiltersPane" class="{% if not audit_filters_open %}hidden{% endif %} border-b border-gray-200 bg-gray-50">
         <form id="auditTrailFiltersForm" method="GET" class="px-6 py-3">
             <span class="text-sm font-medium text-gray-700 block mb-3">{{ _('Filters') }}:</span>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-4">
                 <div class="min-w-0">
                     <label class="block text-xs font-medium text-gray-700 mb-1">{{ _('User Email') }}</label>
                     <div id="user-multiselect-container"></div>
@@ -228,21 +229,22 @@
                     <label class="block text-xs font-medium text-gray-700 mb-1">{{ _('Activity Type') }}</label>
                     <div id="activity-type-multiselect-container"></div>
                 </div>
+                <div class="min-w-0">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">{{ _('Requires Review') }}</label>
+                    <div id="requires-review-multiselect-container"></div>
+                </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-4">
+                <div class="min-w-0">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">{{ _('Session ID') }}</label>
+                    <div id="session-log-id-multiselect-container"></div>
+                </div>
                 <div class="min-w-0">
                     <label for="description" class="block text-xs font-medium text-gray-700 mb-1">{{ _('Description') }}</label>
                     <input type="text" id="description" name="description"
                            value="{{ filters.description or '' }}" placeholder="{{ _('Search description (e.g., template name)') }}"
                            class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm py-1.5">
-                </div>
-                <div class="min-w-0 flex items-end pb-0.5">
-                    <label class="inline-flex items-center gap-2 cursor-pointer select-none">
-                        <input class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" type="checkbox" id="requires_review"
-                               name="requires_review" value="1" {% if filters.requires_review %}checked{% endif %}>
-                        <span class="text-sm font-medium text-gray-700">{{ _('Requires Review') }}</span>
-                    </label>
                 </div>
                 <div class="min-w-0">
                     <label for="date_from" class="block text-xs font-medium text-gray-700 mb-1">{{ _('From Date') }}</label>
@@ -707,7 +709,7 @@
 
 
     // Initialize multiselect dropdowns when DOM is loaded
-    let userMultiselect, activityTypeMultiselect, riskLevelMultiselect, countryMultiselect;
+    let userMultiselect, activityTypeMultiselect, riskLevelMultiselect, countryMultiselect, requiresReviewMultiselect, sessionLogMultiselect;
 
     document.addEventListener('DOMContentLoaded', function() {
         // Wait for the MultiselectDropdown class to be available
@@ -864,6 +866,51 @@
             selectedValues: selectedRiskLevels,
             searchable: false // Risk levels don't need search since there are few of them
         });
+
+        const requiresReviewData = [
+            { value: '1', label: '{{ _("Needs review only") }}' }
+        ];
+        const selectedRequiresReview = [
+            {% if filters.requires_review %}'1'{% endif %}
+        ];
+
+        requiresReviewMultiselect = new MultiselectDropdown({
+            containerId: 'requires-review-multiselect-container',
+            name: 'requires_review',
+            placeholder: '{{ _("Any") }}',
+            searchPlaceholder: '',
+            data: requiresReviewData,
+            selectedValues: selectedRequiresReview,
+            searchable: false,
+            showSelectAll: false
+        });
+
+        const sessionLogData = [
+{% for s in recent_session_logs %}
+            {
+                value: {{ s.id|string|tojson }},
+                label: {{ ('#' ~ (s.id|string) ~ ' — ' ~ (s.user.email if s.user and s.user.email else '—'))|tojson }},
+                sublabel: {{ ((s.session_start.strftime('%Y-%m-%d %H:%M') ~ ' UTC') if s.session_start else '')|tojson }}
+            }{% if not loop.last %},{% endif %}
+{% endfor %}
+        ];
+        const selectedSessionLogIds = [
+{% if filters.session_id %}
+            '{{ filters.session_id }}'
+{% endif %}
+        ];
+
+        sessionLogMultiselect = new MultiselectDropdown({
+            containerId: 'session-log-id-multiselect-container',
+            name: 'session_id',
+            placeholder: '{{ _("Select session…") }}',
+            searchPlaceholder: '{{ _("Filter by ID, user, or date…") }}',
+            data: sessionLogData,
+            selectedValues: selectedSessionLogIds,
+            searchable: true,
+            showSelectAll: false,
+            singleSelect: true
+        });
     }
 </script>
 
@@ -911,6 +958,8 @@ $(document).ready(function() {
         formData.delete('user');
         formData.delete('risk_level');
         formData.delete('country');
+        formData.delete('session_id');
+        formData.delete('requires_review');
 
         // Add multiselect values
         activityTypes.forEach(function(type) {
@@ -927,6 +976,16 @@ $(document).ready(function() {
 
         countries.forEach(function(country) {
             formData.append('country', country);
+        });
+
+        const sessionLogIds = sessionLogMultiselect ? sessionLogMultiselect.getSelectedValues() : [];
+        sessionLogIds.forEach(function(v) {
+            formData.append('session_id', v);
+        });
+
+        const requiresReviewVals = requiresReviewMultiselect ? requiresReviewMultiselect.getSelectedValues() : [];
+        requiresReviewVals.forEach(function(v) {
+            formData.append('requires_review', v);
         });
 
         const queryParams = new URLSearchParams(formData).toString();
@@ -1160,10 +1219,13 @@ $(document).ready(function() {
             type: {{ (entry.get('type', '') or '')|tojson|safe }},
             action_type: {{ (entry.get('action_type') or '')|tojson|safe }},
             requires_review: {{ entry.get('requires_review', False)|tojson|safe }},
-            response_status_code: {% if entry.get('response_status_code') is not none %}{{ entry.get('response_status_code')|tojson|safe }}{% else %}null{% endif %}
+            response_status_code: {% if entry.get('response_status_code') is not none %}{{ entry.get('response_status_code')|tojson|safe }}{% else %}null{% endif %},
+            user_session_id: {{ (entry.get('user_session_id') or '')|tojson|safe }}
         }{% if not loop.last %},{% endif %}
         {% endfor %}
     ];
+
+    const sessionLogsListUrl = {{ url_for('analytics.session_logs')|tojson }};
 
     // Column definitions for ag-grid
     const columnDefs = [
@@ -1293,6 +1355,26 @@ $(document).ready(function() {
             sortable: true,
             cellRenderer: function(params) {
                 return renderTextCell(params.value, { mono: true });
+            }
+        },
+        {
+            field: 'user_session_id',
+            headerName: '{{ _("Session") }}',
+            width: 130,
+            minWidth: 100,
+            maxWidth: 220,
+            filter: 'agTextColumnFilter',
+            sortable: true,
+            hide: true,
+            cellRenderer: function(params) {
+                var sid = params.value;
+                if (isNilOrEmpty(sid)) {
+                    return '<span class="text-sm text-gray-500">' + EMPTY_VALUE_PLACEHOLDER + '</span>';
+                }
+                var url = sessionLogsListUrl + '?session_id=' + encodeURIComponent(String(sid));
+                var shortId = String(sid).length > 14 ? String(sid).slice(0, 12) + '…' : String(sid);
+                return '<a href="' + escapeHtml(url) + '" class="text-xs font-mono text-teal-800 hover:underline" title="' + escapeHtml(String(sid)) + '">' +
+                    escapeHtml(shortId) + '</a>';
             }
         },
         {

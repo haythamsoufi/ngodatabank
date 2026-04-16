@@ -32,6 +32,8 @@ class MultiselectDropdown {
             showSelectAll: true,
             maxHeight: '240px', // max-h-60 equivalent
             searchable: true,
+            /** When true, only one option may be selected (e.g. single-ID filters). */
+            singleSelect: false,
             ...options
         };
 
@@ -319,7 +321,15 @@ class MultiselectDropdown {
     handleCheckboxChange(checkbox) {
         const value = checkbox.value;
 
-        if (checkbox.checked) {
+        if (this.options.singleSelect && checkbox.checked) {
+            this.selectedValues.clear();
+            this.elements.checkboxes().forEach((cb) => {
+                if (cb !== checkbox) {
+                    cb.checked = false;
+                }
+            });
+            this.selectedValues.add(value);
+        } else if (checkbox.checked) {
             this.selectedValues.add(value);
         } else {
             this.selectedValues.delete(value);
@@ -333,6 +343,18 @@ class MultiselectDropdown {
         const visibleCheckboxes = Array.from(this.elements.checkboxes()).filter(cb => {
             return cb.closest('.multiselect-option').style.display !== 'none';
         });
+
+        if (this.options.singleSelect && visibleCheckboxes.length > 0) {
+            const first = visibleCheckboxes[0];
+            this.selectedValues.clear();
+            this.elements.checkboxes().forEach((cb) => {
+                cb.checked = cb === first;
+            });
+            this.selectedValues.add(first.value);
+            this.updateSelectedText();
+            this.triggerSelectionChange();
+            return;
+        }
 
         visibleCheckboxes.forEach(checkbox => {
             if (!checkbox.checked) {

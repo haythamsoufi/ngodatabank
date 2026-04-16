@@ -123,17 +123,18 @@ def mobile_auth_required(f=None, *, permission: str | None = None):
                     )
 
             # Track session activity for JWT-authenticated mobile requests so that
-            # UserSessionLog.last_activity and page_views stay current.  Without this,
+            # UserSessionLog.last_activity stays current.  Without this,
             # cookie-based update_session_activity() is a no-op for JWT clients and
-            # the sessions page shows 0 activity for all mobile sessions.
+            # the sessions page shows stale activity for mobile sessions.
             if jwt_authenticated:
                 sid = getattr(g, '_mobile_jwt_sid', None)
                 if sid:
                     try:
                         from app.services.user_analytics_service import _update_session_activity_explicit
-                        # Always use 'action' here — actual screen navigations are
-                        # tracked explicitly via POST /analytics/screen-view, so counting
-                        # every background GET as a page_view inflates the counter.
+                        # Use 'action' (touch-only): refreshes last_activity without
+                        # incrementing actions_performed. Screen navigations are tracked
+                        # via POST /analytics/screen-view; we avoid counting every API
+                        # call as page_view or as a semantic "activity".
                         _update_session_activity_explicit(sid, 'action')
                     except Exception:
                         pass  # Never let tracking errors break the auth flow

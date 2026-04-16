@@ -368,6 +368,96 @@ IconData _sessionDeviceLeadingIcon(SessionLogItem log) {
   return Icons.smartphone;
 }
 
+Future<void> showSessionPathBreakdownSheet(
+  BuildContext context,
+  SessionLogItem log,
+  AppLocalizations loc,
+) async {
+  final scheme = Theme.of(context).colorScheme;
+  final textTheme = Theme.of(context).textTheme;
+  final entries = log.sortedPathEntries;
+
+  await showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    isScrollControlled: true,
+    builder: (ctx) {
+      final bottom = MediaQuery.paddingOf(ctx).bottom;
+      final maxH = MediaQuery.sizeOf(ctx).height * 0.55;
+      final Widget body = entries.isEmpty
+          ? Text(
+              loc.sessionLogsPathBreakdownEmpty,
+              style: textTheme.bodyMedium?.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
+            )
+          : ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: maxH),
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: entries.length,
+                separatorBuilder: (_, __) => Divider(
+                  height: 1,
+                  color: scheme.outlineVariant.withValues(alpha: 0.5),
+                ),
+                itemBuilder: (c, i) {
+                  final e = entries[i];
+                  final label = e.key == '_other'
+                      ? loc.sessionLogsPathOtherBucket
+                      : e.key;
+                  return ListTile(
+                    dense: true,
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                    title: Text(
+                      label,
+                      style: textTheme.bodySmall?.copyWith(
+                        fontFamily: 'monospace',
+                        fontSize: 12,
+                      ),
+                    ),
+                    trailing: Text(
+                      '${e.value}',
+                      style: textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            );
+      return SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(16, 8, 16, 16 + bottom),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                loc.sessionLogsPathBreakdownTitle,
+                style: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              if (entries.isEmpty && log.pageViews > 0) ...[
+                const SizedBox(height: 8),
+                Text(
+                  '${loc.sessionLogsPageViews}: ${log.pageViews}',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 12),
+              body,
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
 class _SessionTile extends StatefulWidget {
   const _SessionTile({
     required this.log,
@@ -680,11 +770,43 @@ class _SessionTileState extends State<_SessionTile>
                 durationStr,
                 leadingIcon: Icons.schedule_rounded,
               ),
-              _statChip(
-                context,
-                widget.localizations.sessionLogsPageViews,
-                '${widget.log.pageViews}',
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _statChip(
+                    context,
+                    widget.localizations.sessionLogsPageViews,
+                    '${widget.log.pageViews}',
+                  ),
+                  if (widget.log.pageViews > 0 ||
+                      widget.log.pageViewPathCounts.isNotEmpty)
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      visualDensity: VisualDensity.compact,
+                      constraints: const BoxConstraints(
+                        minWidth: 32,
+                        minHeight: 32,
+                      ),
+                      tooltip: widget.localizations.sessionLogsPathBreakdownOpen,
+                      icon: Icon(
+                        Icons.alt_route,
+                        size: 18,
+                        color: scheme.primary,
+                      ),
+                      onPressed: () => showSessionPathBreakdownSheet(
+                        context,
+                        widget.log,
+                        widget.localizations,
+                      ),
+                    ),
+                ],
               ),
+              if (widget.log.distinctPageViewPaths > 0)
+                _statChip(
+                  context,
+                  widget.localizations.sessionLogsDistinctPaths,
+                  '${widget.log.distinctPageViewPaths}',
+                ),
               _statChip(
                 context,
                 widget.localizations.sessionLogsActivities,

@@ -5,8 +5,11 @@ This module provides functions for tracking user activities, login attempts,
 session analytics, and security events for the platform.
 """
 
+from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import Optional, Tuple
+from io import StringIO
+from typing import Any, Dict, List, Optional, Tuple
+import csv
 from flask import request, session, current_app, has_request_context, g
 from flask_babel import gettext as _
 from flask_login import current_user
@@ -28,6 +31,38 @@ from app.utils.page_view_paths import (
     merge_page_view_path_count,
     page_view_path_key_from_request,
 )
+
+# Mobile JWT auth calls _update_session_activity_explicit(..., 'action') on every
+# API request to refresh last_activity only; device heartbeat uses 'heartbeat'.
+# These must not increment actions_performed (that counter is for form saves,
+# submits, file uploads, and other meaningful actions — not per-request pings).
+_SESSION_LOG_TOUCH_ONLY_TYPES = frozenset({'action', 'heartbeat'})
+
+# Legitimate native HTTP stacks (mobile apps, not web crawlers). These often omit
+# Mozilla/WebKit tokens; treat as non-bot before keyword/heuristic checks.
+_NATIVE_CLIENT_UA_MARKERS = frozenset({
+    'dart/',           # Dart dart:io HttpClient (Flutter, package:http)
+    '(dart:io)',
+    'okhttp',          # Android OkHttp (Flutter Android / common plugins)
+    'cfnetwork',       # iOS CFNetwork / URLSession
+    'alamofire',
+    'cronet',          # Chromium network stack (some Android builds)
+})
+
+
+def _resolve_user_session_id_for_logging() -> Optional[str]:
+    """Flask login session id or mobile JWT sid; correlates UserActivityLog with UserSessionLog."""
+    try:
+        sid = session.get('session_id')
+        if sid:
+            return str(sid)[:255]
+    except Exception:
+        pass
+    if has_request_context():
+        jwt_sid = getattr(g, '_mobile_jwt_sid', None)
+        if jwt_sid:
+            return str(jwt_sid)[:255]
+    return None
 
 
 def get_client_info():
@@ -252,9 +287,14 @@ def analyze_ua_for_bot(user_agent_string: Optional[str]) -> Tuple[bool, Optional
 
     user_agent_lower = user_agent_string.lower()
 
+    if any(marker in user_agent_lower for marker in _NATIVE_CLIENT_UA_MARKERS):
+        return False, None
+
     bot_patterns = [
         'bot', 'crawler', 'spider', 'scraper', 'wget', 'curl',
-        'python-requests', 'urllib', 'http', 'api', 'monitoring',
+        'python-requests', 'urllib',
+        # Do not use bare 'http' — it matches legitimate stacks like OkHttp.
+        'api', 'monitoring',
         'test', 'automation', 'script', 'tool', 'check',
         'postman', 'insomnia', 'httpie'
     ]
@@ -416,6 +456,7 @@ def log_user_activity(activity_type, description=None, context_data=None, respon
 
         activity_log = UserActivityLog(
             user_id=current_user.id,
+            user_session_id=_resolve_user_session_id_for_logging(),
             activity_type=normalized_activity_type,
             activity_description=description,
             endpoint=endpoint_val,
@@ -520,6 +561,9 @@ def _update_session_activity_explicit(
 
         normalized_activity_type = normalize_activity_type(activity_type)
 
+        if normalized_activity_type in _SESSION_LOG_TOUCH_ONLY_TYPES:
+            return
+
         if normalized_activity_type == 'page_view':
             session_log.page_views += 1
             merge_page_view_path_count(session_log, page_view_path_key or "/")
@@ -578,6 +622,7 @@ def log_user_activity_explicit(
         with atomic(remove_session=True):
             activity_log = UserActivityLog(
                 user_id=user_id,
+                user_session_id=(str(session_id)[:255] if session_id else None),
                 activity_type=normalized_activity_type,
                 activity_description=description,
                 endpoint=endpoint_val,
@@ -633,6 +678,7 @@ def log_user_activity_for_user(user_id, activity_type, description=None, context
 
         activity_log = UserActivityLog(
             user_id=user_id,
+            user_session_id=_resolve_user_session_id_for_logging(),
             activity_type=normalized_activity_type,
             activity_description=description,
             endpoint=endpoint_val,
@@ -703,6 +749,9 @@ def update_session_activity(activity_type, page_view_path_key: Optional[str] = N
         if session_log:
             session_log.last_activity = utcnow()
 
+            if normalized_activity_type in _SESSION_LOG_TOUCH_ONLY_TYPES:
+                return
+
             if normalized_activity_type == 'page_view':
                 session_log.page_views += 1
                 merge_page_view_path_count(
@@ -755,26 +804,29 @@ def effective_session_duration_minutes(session_log):
     """
     Minutes of session length for display and filtering.
 
-    - Uses stored ``duration_minutes`` when set (normal for ended sessions).
-    - For **active** sessions (no stored duration yet): elapsed time from
-      ``session_start`` to now (UTC).
-    - For ended rows missing ``duration_minutes``: ``session_end - session_start``
-      when both exist.
+    When ``session_end`` is set, duration is always derived from
+    ``session_end - session_start`` (UTC-normalized) so the value matches the
+    timestamps shown in the UI. Stored ``duration_minutes`` can be wrong (e.g.
+    legacy naive/aware subtraction or bad writes) and is only used as a fallback
+    when ``session_end`` is missing.
     """
     if session_log is None:
         return None
-    if session_log.duration_minutes is not None:
-        return session_log.duration_minutes
     if session_log.session_start is None:
         return None
     session_start_aware = ensure_utc(session_log.session_start)
-    if getattr(session_log, 'is_active', False):
-        delta = utcnow() - session_start_aware
-        return max(0, int(delta.total_seconds() / 60))
+
     if session_log.session_end is not None:
         session_end_aware = ensure_utc(session_log.session_end)
         delta = session_end_aware - session_start_aware
         return max(0, int(delta.total_seconds() / 60))
+
+    if getattr(session_log, 'is_active', False):
+        delta = utcnow() - session_start_aware
+        return max(0, int(delta.total_seconds() / 60))
+
+    if session_log.duration_minutes is not None:
+        return session_log.duration_minutes
     return None
 
 
@@ -1175,6 +1227,156 @@ def get_user_activity_analytics(user_id=None, days=30):
         analytics['average_response_time'] = sum(response_times) / len(response_times)
 
     return analytics
+
+
+PAGE_PATH_ANALYTICS_DISPLAY_LIMIT = 500
+
+
+def merge_page_view_path_histograms(
+    session_histograms: List[Optional[Dict[str, Any]]],
+) -> Tuple[Dict[str, int], Dict[str, int]]:
+    """
+    Merge per-session ``page_view_path_counts`` JSON dicts.
+
+    Returns:
+        total_views: path key -> sum of counts across sessions
+        session_hits: path key -> number of sessions where that key had count > 0
+    """
+    total_views: Dict[str, int] = defaultdict(int)
+    session_hits: Dict[str, int] = defaultdict(int)
+
+    for raw in session_histograms:
+        if not isinstance(raw, dict):
+            continue
+        seen_in_session = set()
+        for k, v in raw.items():
+            key = str(k) if k is not None else ""
+            try:
+                n = int(v)
+            except (TypeError, ValueError):
+                n = 0
+            if n <= 0:
+                continue
+            total_views[key] += n
+            if key not in seen_in_session:
+                seen_in_session.add(key)
+                session_hits[key] += 1
+
+    return dict(total_views), dict(session_hits)
+
+
+def aggregate_page_view_path_histogram(
+    *,
+    user_id: Optional[int] = None,
+    days: int = 30,
+    path_prefix: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Aggregate ``UserSessionLog.page_view_path_counts`` across sessions in a time window.
+
+    Uses ``session_start >= utcnow() - days`` (same window as user analytics).
+
+    Args:
+        user_id: If set, only sessions for this user.
+        days: Lookback days (clamped 1..3660).
+        path_prefix: If set, only include path keys whose lowercase string startswith this
+            (stripped, compared case-insensitively).
+
+    Returns:
+        paths: sorted list of {path, total_views, session_hits}
+        sessions_in_scope: session rows counted
+        period: {days, from_iso, to_iso}
+        distinct_path_count: len(paths)
+    """
+    try:
+        inspector = inspect(db.engine)
+        if not inspector.has_table(UserSessionLog.__tablename__):
+            return _empty_page_path_histogram(days)
+
+        d = max(1, min(int(days or 30), 3660))
+        from_dt = utcnow() - timedelta(days=d)
+
+        q = db.session.query(UserSessionLog.page_view_path_counts).filter(
+            UserSessionLog.session_start >= from_dt
+        )
+        if user_id is not None:
+            q = q.filter(UserSessionLog.user_id == int(user_id))
+
+        histograms: List[Optional[Dict[str, Any]]] = []
+        sessions_in_scope = 0
+        for (pvc,) in q.yield_per(500):
+            sessions_in_scope += 1
+            histograms.append(pvc if isinstance(pvc, dict) else None)
+
+        total_views, session_hits = merge_page_view_path_histograms(histograms)
+
+        prefix = (path_prefix or "").strip().lower()
+        if prefix:
+            keys = [k for k in total_views if str(k).lower().startswith(prefix)]
+        else:
+            keys = list(total_views.keys())
+
+        paths: List[Dict[str, Any]] = []
+        for key in keys:
+            tv = total_views.get(key, 0)
+            sh = session_hits.get(key, 0)
+            paths.append(
+                {
+                    "path": key,
+                    "total_views": int(tv),
+                    "session_hits": int(sh),
+                }
+            )
+        paths.sort(key=lambda row: (-row["total_views"], row["path"]))
+
+        now = utcnow()
+        return {
+            "paths": paths,
+            "sessions_in_scope": sessions_in_scope,
+            "period": {
+                "days": d,
+                "from_iso": from_dt.isoformat(),
+                "to_iso": now.isoformat(),
+            },
+            "distinct_path_count": len(paths),
+            "display_limit": PAGE_PATH_ANALYTICS_DISPLAY_LIMIT,
+        }
+    except Exception as e:
+        current_app.logger.error("aggregate_page_view_path_histogram: %s", e)
+        return _empty_page_path_histogram(days)
+
+
+def _empty_page_path_histogram(days: int) -> Dict[str, Any]:
+    d = max(1, min(int(days or 30), 3660))
+    from_dt = utcnow() - timedelta(days=d)
+    now = utcnow()
+    return {
+        "paths": [],
+        "sessions_in_scope": 0,
+        "period": {
+            "days": d,
+            "from_iso": from_dt.isoformat(),
+            "to_iso": now.isoformat(),
+        },
+        "distinct_path_count": 0,
+        "display_limit": PAGE_PATH_ANALYTICS_DISPLAY_LIMIT,
+    }
+
+
+def format_page_path_histogram_csv(paths: List[Dict[str, Any]]) -> str:
+    """CSV text for path, total_views, session_hits (UTF-8 with header)."""
+    buf = StringIO()
+    w = csv.writer(buf)
+    w.writerow(["path", "total_views", "sessions_with_path"])
+    for row in paths:
+        w.writerow(
+            [
+                row.get("path", ""),
+                row.get("total_views", 0),
+                row.get("session_hits", 0),
+            ]
+        )
+    return buf.getvalue()
 
 
 def get_security_events_summary(days=30):

@@ -279,6 +279,7 @@ def session_logs():
     from app.services.user_analytics_service import (
         effective_session_duration_minutes, session_log_device_icon_classes,
     )
+    from app.services.audit_trail_session_query import count_audit_visible_entries_for_session
 
     if not _has_table(UserSessionLog.__tablename__):
         return mobile_paginated(items=[], total=0, page=1, per_page=50)
@@ -326,7 +327,7 @@ def session_logs():
             'page_views': s.page_views or 0,
             'distinct_page_view_paths': distinct_page_view_path_count(s),
             'page_view_path_counts': pvc,
-            'activity_count': s.actions_performed or 0,
+            'activity_count': count_audit_visible_entries_for_session(s),
             'is_active': bool(s.is_active),
             'device_type': s.device_type,
             'browser': s.browser,

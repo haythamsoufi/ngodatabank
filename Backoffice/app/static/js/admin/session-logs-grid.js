@@ -27,8 +27,179 @@
         });
     }
 
-    function buildColumnDefs(t) {
+    var PATH_COUNT_OTHER_KEY = '_other';
+
+    /**
+     * Sorted [{ path, count }] from session page_view_path_counts (descending by count).
+     */
+    function sortPathCountEntries(pvc) {
+        if (!pvc || typeof pvc !== 'object') return [];
+        var keys = Object.keys(pvc);
+        var out = [];
+        for (var i = 0; i < keys.length; i++) {
+            var k = keys[i];
+            var n = parseInt(pvc[k], 10);
+            if (isNaN(n)) n = 0;
+            out.push({ path: k, count: n });
+        }
+        out.sort(function(a, b) {
+            return b.count - a.count || String(a.path).localeCompare(String(b.path));
+        });
+        return out;
+    }
+
+    function ensurePathBreakdownModal() {
+        var id = 'session-logs-path-breakdown-modal';
+        var el = document.getElementById(id);
+        if (el) return el;
+        el = document.createElement('div');
+        el.id = id;
+        el.className = 'fixed inset-0 z-50 hidden';
+        el.setAttribute('role', 'dialog');
+        el.setAttribute('aria-modal', 'true');
+        el.innerHTML =
+            '<div class="absolute inset-0 bg-black opacity-50" data-path-modal-backdrop></div>' +
+            '<div class="relative z-10 flex min-h-full items-center justify-center p-4 pointer-events-none">' +
+            '<div class="pointer-events-auto bg-white border border-gray-200 shadow-xl max-w-lg w-full max-h-[85vh] flex flex-col rounded-none">' +
+            '<div class="px-4 py-3 border-b border-gray-200 flex justify-between items-center gap-3 shrink-0">' +
+            '<h2 id="session-path-modal-title" class="text-base font-semibold text-gray-900 min-w-0"></h2>' +
+            '<button type="button" class="btn btn-secondary btn-sm" data-path-modal-close>' +
+            '<i class="fas fa-times mr-1" aria-hidden="true"></i><span data-path-modal-close-label></span>' +
+            '</button></div>' +
+            '<div id="session-path-modal-body" class="overflow-y-auto p-4 text-sm text-gray-800"></div>' +
+            '</div></div>';
+        document.body.appendChild(el);
+        function closeModal() {
+            el.classList.add('hidden');
+            document.removeEventListener('keydown', onKey);
+        }
+        function onKey(ev) {
+            if (ev.key === 'Escape') closeModal();
+        }
+        el.addEventListener('click', function(ev) {
+            if (ev.target && ev.target.getAttribute && ev.target.getAttribute('data-path-modal-backdrop') !== null) {
+                closeModal();
+            }
+            if (ev.target && ev.target.closest && ev.target.closest('[data-path-modal-close]')) {
+                closeModal();
+            }
+        });
+        el._openPathModal = function() {
+            el.classList.remove('hidden');
+            document.addEventListener('keydown', onKey);
+        };
+        el._closePathModal = closeModal;
+        return el;
+    }
+
+    function openPathBreakdownModal(t, pvc, pageViewsTotal, sessionId) {
+        var modal = ensurePathBreakdownModal();
+        var titleEl = modal.querySelector('#session-path-modal-title');
+        var bodyEl = modal.querySelector('#session-path-modal-body');
+        var closeLbl = modal.querySelector('[data-path-modal-close-label]');
+        if (closeLbl) closeLbl.textContent = t.close || 'Close';
+        var title = (t.pathBreakdownTitle || 'Page views by path');
+        if (sessionId) {
+            var sidStr = String(sessionId);
+            title += ' — ' + (sidStr.length > 24 ? sidStr.substring(0, 24) + '…' : sidStr);
+        }
+        if (titleEl) titleEl.textContent = title;
+
+        var rows = sortPathCountEntries(pvc);
+        var otherLabel = t.pathBucketOther || 'Other paths (aggregated)';
+        if (!bodyEl) return;
+
+        if (rows.length === 0) {
+            var empty = t.pathBreakdownEmpty || 'No path breakdown recorded for this session.';
+            if ((pageViewsTotal || 0) > 0) {
+                bodyEl.innerHTML = '<p class="text-gray-600">' + esc(empty) + '</p>' +
+                    '<p class="text-xs text-gray-500 mt-2">' + esc(t.pageViews || 'Page views') + ': ' + esc(String(pageViewsTotal)) + '</p>';
+            } else {
+                bodyEl.innerHTML = '<p class="text-gray-600">' + esc(empty) + '</p>';
+            }
+        } else {
+            var buf = '<table class="w-full border-collapse text-xs"><thead><tr class="border-b border-gray-200 text-left text-gray-600">' +
+                '<th class="py-2 pr-2 font-semibold">' + esc(t.pathColumn || 'Path') + '</th>' +
+                '<th class="py-2 pl-2 font-semibold w-20 text-right">' + esc(t.viewCount || 'Count') + '</th></tr></thead><tbody>';
+            for (var r = 0; r < rows.length; r++) {
+                var row = rows[r];
+                var pathLabel = row.path === PATH_COUNT_OTHER_KEY ? otherLabel : String(row.path);
+                buf += '<tr class="border-b border-gray-100"><td class="py-1.5 pr-2 font-mono break-all">' + esc(pathLabel) +
+                    '</td><td class="py-1.5 pl-2 text-right tabular-nums">' + esc(String(row.count)) + '</td></tr>';
+            }
+            buf += '</tbody></table>';
+            bodyEl.innerHTML = buf;
+        }
+        if (modal._openPathModal) modal._openPathModal();
+    }
+
+    /**
+     * Drill to audit trail: session_id + optional activity_type.
+     * Omit activityType to use default Activity Type behaviour (exclude page views until user applies filters).
+     */
+    function sessionAuditHref(config, sessionId, activityType) {
+        var base = (config && config.auditTrailUrl) || '/admin/analytics/audit-trail';
+        try {
+            var u = new URL(base, window.location.origin);
+            u.searchParams.set('session_id', sessionId);
+            if (activityType) {
+                u.searchParams.set('activity_type', activityType);
+            }
+            return u.pathname + u.search + u.hash;
+        } catch (e) {
+            var q = 'session_id=' + encodeURIComponent(sessionId);
+            if (activityType) {
+                q += '&activity_type=' + encodeURIComponent(activityType);
+            }
+            return base + (base.indexOf('?') === -1 ? '?' : '&') + q;
+        }
+    }
+
+    /** Canonical left-to-right order; ID column must stay before User (localStorage may restore old order). */
+    var SESSION_LOGS_COLUMN_ORDER = [
+        'session_log_id',
+        'user_display',
+        'device_type',
+        'operating_system',
+        'session_start',
+        'duration_minutes',
+        'page_views',
+        'distinct_page_view_paths',
+        'activity_count',
+        'is_active',
+        'last_activity',
+        'ip_address',
+        'actions'
+    ];
+
+    function applySessionLogsColumnOrder(api) {
+        if (!api || typeof AgGridHelper === 'undefined' || typeof AgGridHelper.pinActionsColumn !== 'function') {
+            return;
+        }
+        try {
+            AgGridHelper.pinActionsColumn(api, SESSION_LOGS_COLUMN_ORDER);
+        } catch (e) {
+            if (window.__clientWarn) window.__clientWarn('session logs column order', e);
+        }
+    }
+
+    function buildColumnDefs(t, config) {
+        config = config || {};
         return [
+            {
+                field: 'session_log_id',
+                headerName: t.shortSessionId || 'ID',
+                width: 110,
+                minWidth: 88,
+                maxWidth: 140,
+                filter: 'agNumberColumnFilter',
+                sortable: true,
+                cellClass: 'text-xs text-gray-800 tabular-nums',
+                valueFormatter: function(p) {
+                    if (p.value === null || p.value === undefined) return '—';
+                    return String(p.value);
+                }
+            },
             {
                 colId: 'user_display',
                 headerName: t.user || 'User',
@@ -105,14 +276,31 @@
             {
                 field: 'page_views',
                 headerName: t.pageViews || 'Page Views',
-                width: 120,
+                width: 140,
                 minWidth: 100,
                 filter: 'agNumberColumnFilter',
                 sortable: true,
                 cellRenderer: function(params) {
                     var v = params.value != null ? params.value : 0;
-                    return '<span class="px-2 inline-flex items-center text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">' +
+                    var sid = params.data && params.data.session_id;
+                    var pvc = (params.data && params.data.page_view_path_counts) || {};
+                    if (typeof pvc !== 'object' || pvc === null) pvc = {};
+                    var enc = '';
+                    try {
+                        enc = encodeURIComponent(JSON.stringify(pvc));
+                    } catch (e0) {
+                        enc = encodeURIComponent('{}');
+                    }
+                    var showBtn = (v > 0) || Object.keys(pvc).length > 0;
+                    var badge = '<span class="px-2 inline-flex items-center text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">' +
                         esc(v) + '</span>';
+                    if (showBtn) {
+                        var tip = esc(t.viewPathBreakdown || 'View path breakdown');
+                        badge += '<button type="button" class="ml-1.5 inline-flex items-center justify-center session-path-breakdown-btn text-teal-700 hover:text-teal-900 p-0.5 border-0 bg-transparent cursor-pointer" ' +
+                            'title="' + tip + '" aria-label="' + tip + '" data-path-counts="' + enc + '" data-page-views-total="' + esc(String(v)) + '" data-session-id="' + esc(sid || '') + '">' +
+                            '<i class="fas fa-route text-xs" aria-hidden="true"></i></button>';
+                    }
+                    return '<span class="inline-flex items-center">' + badge + '</span>';
                 }
             },
             {
@@ -122,7 +310,6 @@
                 minWidth: 100,
                 filter: 'agNumberColumnFilter',
                 sortable: true,
-                hide: true,
                 cellRenderer: function(params) {
                     var v = params.value != null ? params.value : 0;
                     return '<span class="px-2 inline-flex items-center text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-800">' +
@@ -132,14 +319,22 @@
             {
                 field: 'activity_count',
                 headerName: t.activities || 'Activities',
-                width: 120,
+                width: 140,
                 minWidth: 100,
                 filter: 'agNumberColumnFilter',
                 sortable: true,
                 cellRenderer: function(params) {
                     var v = params.value != null ? params.value : 0;
-                    return '<span class="px-2 inline-flex items-center text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">' +
+                    var sid = params.data && params.data.session_id;
+                    var badge = '<span class="px-2 inline-flex items-center text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">' +
                         esc(v) + '</span>';
+                    if (sid && config.auditTrailUrl) {
+                        var href = sessionAuditHref(config, String(sid), null);
+                        var title = esc(t.openActivitiesInAudit || 'Audit trail');
+                        badge += '<a href="' + esc(href) + '" class="ml-1.5 inline-flex text-teal-700 hover:text-teal-900" title="' + title +
+                            '" aria-label="' + title + '"><i class="fas fa-list-ul text-xs"></i></a>';
+                    }
+                    return '<span class="inline-flex items-center">' + badge + '</span>';
                 }
             },
             {
@@ -302,6 +497,18 @@
             return;
         }
 
+        if (config.initialSessionId) {
+            try {
+                var uFix = new URL(window.location.href);
+                if (!uFix.searchParams.get('session_id')) {
+                    uFix.searchParams.set('session_id', String(config.initialSessionId));
+                    window.history.replaceState({}, '', uFix.pathname + uFix.search + uFix.hash);
+                }
+            } catch (e1) {
+                if (window.__clientWarn) window.__clientWarn('session logs session_id replaceState', e1);
+            }
+        }
+
         var t = window.SESSION_LOGS_TRANSLATIONS || {};
         var loadingEl = document.getElementById('sessionLogs-loading');
         var gridHost = document.getElementById('sessionLogsGrid');
@@ -334,6 +541,22 @@
         if (nextBtn) nextBtn.addEventListener('click', function() { onPaginationClick(1); });
 
         gridHost.addEventListener('click', function(ev) {
+            var pathBtn = ev.target && ev.target.closest ? ev.target.closest('.session-path-breakdown-btn') : null;
+            if (pathBtn) {
+                ev.preventDefault();
+                ev.stopPropagation();
+                var raw = pathBtn.getAttribute('data-path-counts') || '';
+                var total = parseInt(pathBtn.getAttribute('data-page-views-total') || '0', 10);
+                var sid = pathBtn.getAttribute('data-session-id') || '';
+                var pvc = {};
+                try {
+                    if (raw) pvc = JSON.parse(decodeURIComponent(raw));
+                } catch (ePb) {
+                    if (window.__clientWarn) window.__clientWarn('session path breakdown parse', ePb);
+                }
+                openPathBreakdownModal(t, pvc, total, sid);
+                return;
+            }
             var btn = ev.target && ev.target.closest ? ev.target.closest('.session-force-logout-btn') : null;
             if (!btn) return;
             ev.preventDefault();
@@ -365,7 +588,7 @@
                     state.gridHelper = new AgGridHelper({
                         containerId: 'sessionLogsGrid',
                         templateId: 'admin-session-logs',
-                        columnDefs: buildColumnDefs(t),
+                        columnDefs: buildColumnDefs(t, config),
                         rowData: rowData,
                         options: {
                             pagination: false,
@@ -399,6 +622,7 @@
                             console.error('Session logs grid async init failed', e2);
                         }
                     }
+                    applySessionLogsColumnOrder(state.gridApi);
                 }
 
                 updatePaginationUi(state);

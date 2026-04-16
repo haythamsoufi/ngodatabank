@@ -29,10 +29,9 @@ def _is_duplicate(user_id: int, screen_name: str) -> bool:
 @mobile_rate_limit(requests_per_minute=60)
 @mobile_auth_required
 def screen_view():
-    """Record a mobile screen view in the audit trail."""
+    """Update session page-view histogram for a mobile screen (no UserActivityLog row)."""
     from app.services.user_analytics_service import (
-        log_user_activity_explicit,
-        get_client_ip,
+        increment_session_page_views_without_activity_log_deferred,
     )
 
     data = request.get_json(silent=True) or {}
@@ -40,7 +39,6 @@ def screen_view():
     if not screen_name:
         return mobile_bad_request('screen_name is required')
 
-    screen_class = (data.get('screen_class') or '').strip() or None
     route_path = (data.get('route_path') or '').strip() or None
 
     user_id = current_user.id
@@ -58,34 +56,8 @@ def screen_view():
         from app.utils.page_view_paths import mobile_page_view_path_key
 
         path_key = mobile_page_view_path_key(screen_name, route_path=route_path)
-        description = f"Viewed {screen_name} (Mobile)"
-        context_data = {
-            'page_view_path_key': path_key,
-            'method': 'POST',
-            'status_code': 200,
-            'source': 'mobile_app',
-            'screen_name': screen_name,
-        }
-        if screen_class:
-            context_data['screen_class'] = screen_class
-        if route_path:
-            context_data['route_path'] = route_path
-
-        log_user_activity_explicit(
-            user_id=user_id,
-            session_id=session_id,
-            activity_type='page_view',
-            description=description,
-            context_data=context_data,
-            response_time_ms=None,
-            status_code=200,
-            endpoint=None,
-            http_method='POST',
-            url_path=path_key[:500] if path_key else request.path,
-            referrer=None,
-            ip_address=get_client_ip(),
-            user_agent=request.headers.get('User-Agent'),
-            page_view_path_key=path_key,
+        increment_session_page_views_without_activity_log_deferred(
+            session_id, page_view_path_key=path_key
         )
     except Exception as e:
         current_app.logger.warning('mobile screen_view logging failed: %s', e)

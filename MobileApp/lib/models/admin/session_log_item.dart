@@ -7,6 +7,8 @@ class SessionLogItem {
     this.lastActivityIso,
     this.durationMinutes,
     required this.pageViews,
+    this.distinctPageViewPaths = 0,
+    this.pageViewPathCounts = const {},
     required this.activityCount,
     required this.isActive,
     this.deviceType,
@@ -24,6 +26,10 @@ class SessionLogItem {
   final String? lastActivityIso;
   final int? durationMinutes;
   final int pageViews;
+  /// Number of distinct canonical path keys in [pageViewPathCounts] (from API).
+  final int distinctPageViewPaths;
+  /// Histogram path key -> hit count (same source as web session logs).
+  final Map<String, int> pageViewPathCounts;
   final int activityCount;
   final bool isActive;
   final String? deviceType;
@@ -54,6 +60,10 @@ class SessionLogItem {
       pageViews: json['page_views'] is int
           ? json['page_views'] as int
           : int.tryParse('${json['page_views'] ?? 0}') ?? 0,
+      distinctPageViewPaths: json['distinct_page_view_paths'] is int
+          ? json['distinct_page_view_paths'] as int
+          : int.tryParse('${json['distinct_page_view_paths'] ?? 0}') ?? 0,
+      pageViewPathCounts: _parsePageViewPathCounts(json['page_view_path_counts']),
       activityCount: json['activity_count'] is int
           ? json['activity_count'] as int
           : int.tryParse('${json['activity_count'] ?? 0}') ?? 0,
@@ -66,5 +76,27 @@ class SessionLogItem {
       userName: uname,
       userEmail: uemail,
     );
+  }
+
+  static Map<String, int> _parsePageViewPathCounts(dynamic raw) {
+    if (raw is! Map) return const {};
+    final out = <String, int>{};
+    raw.forEach((dynamic k, dynamic v) {
+      final key = k?.toString() ?? '';
+      final n = v is int ? v : int.tryParse('$v') ?? 0;
+      out[key] = n;
+    });
+    return Map<String, int>.unmodifiable(out);
+  }
+
+  /// Entries sorted by count descending, then path key ascending.
+  List<MapEntry<String, int>> get sortedPathEntries {
+    final list = pageViewPathCounts.entries.toList();
+    list.sort((a, b) {
+      final c = b.value.compareTo(a.value);
+      if (c != 0) return c;
+      return a.key.compareTo(b.key);
+    });
+    return list;
   }
 }

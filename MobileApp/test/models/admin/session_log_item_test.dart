@@ -143,5 +143,40 @@ void main() {
       });
       expect(inactive.isActive, false);
     });
+
+    test('parses distinct_page_view_paths and page_view_path_counts', () {
+      final json = {
+        'session_id': 'sess-paths',
+        'page_views': 5,
+        'distinct_page_view_paths': 2,
+        'page_view_path_counts': {
+          '/admin/dashboard': 3,
+          '_other': 2,
+        },
+        'activity_count': 1,
+        'is_active': false,
+      };
+      final item = SessionLogItem.fromJson(json);
+      expect(item.distinctPageViewPaths, 2);
+      expect(item.pageViewPathCounts.length, 2);
+      expect(item.pageViewPathCounts['/admin/dashboard'], 3);
+      expect(item.pageViewPathCounts['_other'], 2);
+      final sorted = item.sortedPathEntries;
+      expect(sorted.first.key, '/admin/dashboard');
+      expect(sorted.first.value, 3);
+    });
+
+    test('sortedPathEntries orders by count descending', () {
+      final item = SessionLogItem(
+        sessionId: 'x',
+        pageViews: 10,
+        distinctPageViewPaths: 2,
+        pageViewPathCounts: {'/a': 1, '/b': 5},
+        activityCount: 0,
+        isActive: false,
+      );
+      final keys = item.sortedPathEntries.map((e) => e.key).toList();
+      expect(keys, ['/b', '/a']);
+    });
   });
 }

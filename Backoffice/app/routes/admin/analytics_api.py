@@ -31,6 +31,7 @@ from app.services.user_analytics_service import (
     effective_session_duration_minutes,
     session_log_device_icon_classes,
 )
+from app.services.audit_trail_session_query import count_audit_visible_entries_for_session
 from app.utils.page_view_paths import distinct_page_view_path_count
 
 
@@ -204,8 +205,12 @@ def session_logs_list_api():
     user_filter = request.args.get('user')
     active_only = request.args.get('active_only', type=bool)
     min_duration = request.args.get('min_duration', type=int)
+    session_id_exact = (request.args.get('session_id') or '').strip()
 
     query = UserSessionLog.query.options(joinedload(UserSessionLog.user)).join(User)
+
+    if session_id_exact:
+        query = query.filter(UserSessionLog.session_id == session_id_exact)
 
     if user_filter:
         query = query.filter(User.email.ilike(safe_ilike_pattern(user_filter)))
@@ -245,6 +250,7 @@ def session_logs_list_api():
 
         pvc = s.page_view_path_counts if isinstance(s.page_view_path_counts, dict) else {}
         items.append({
+            'session_log_id': s.id,
             'session_id': s.session_id,
             'session_start': s.session_start.isoformat() if s.session_start else None,
             'session_end': s.session_end.isoformat() if s.session_end else None,
@@ -253,7 +259,7 @@ def session_logs_list_api():
             'page_views': s.page_views or 0,
             'distinct_page_view_paths': distinct_page_view_path_count(s),
             'page_view_path_counts': pvc,
-            'activity_count': s.actions_performed or 0,
+            'activity_count': count_audit_visible_entries_for_session(s),
             'is_active': bool(s.is_active),
             'device_type': s.device_type,
             'browser': s.browser,
