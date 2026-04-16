@@ -211,7 +211,7 @@ class _UnifiedPlanningDocumentsScreenState
                   ),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<String?>(
-                    value: tempCountry,
+                    initialValue: tempCountry,
                     isExpanded: true,
                     decoration: _filterFieldDecoration(context),
                     items: [
@@ -238,7 +238,7 @@ class _UnifiedPlanningDocumentsScreenState
                   ),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<int?>(
-                    value: tempType,
+                    initialValue: tempType,
                     isExpanded: true,
                     decoration: _filterFieldDecoration(context),
                     items: [
@@ -265,7 +265,7 @@ class _UnifiedPlanningDocumentsScreenState
                   ),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<int?>(
-                    value: tempYear,
+                    initialValue: tempYear,
                     isExpanded: true,
                     decoration: _filterFieldDecoration(context),
                     items: [
@@ -494,7 +494,7 @@ class _UnifiedPlanningDocumentsScreenState
                 childAspectRatio: 0.66,
               ),
               delegate: SliverChildBuilderDelegate(
-                (_, __) => const _UnifiedPlanningShimmerCard(),
+                (context, index) => const _UnifiedPlanningShimmerCard(),
                 childCount: 6,
               ),
             ),
@@ -719,7 +719,8 @@ class _UnifiedPlanningDocCardState extends State<_UnifiedPlanningDocCard>
                     _thumbJpeg!,
                     fit: BoxFit.cover,
                     gaplessPlayback: true,
-                    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                    errorBuilder: (context, error, stackTrace) =>
+                        const SizedBox.shrink(),
                   ),
                 ),
               Positioned.fill(

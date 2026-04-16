@@ -379,7 +379,6 @@ class _UnifiedPlanningStats {
 
 class _AnalyticsLoading extends StatelessWidget {
   const _AnalyticsLoading({
-    super.key,
     required this.theme,
     required this.bottomPad,
   });
@@ -631,19 +630,19 @@ class _SummaryTile extends StatelessWidget {
 }
 
 class _YearTypeGroupedByYearSection extends StatelessWidget {
+  static const int _maxTypesPerYear = 14;
+
   const _YearTypeGroupedByYearSection({
     required this.entries,
     required this.maxBarCount,
     required this.loc,
     required this.theme,
-    this.maxTypesPerYear = 14,
   });
 
   final List<_YearTypeCount> entries;
   final int maxBarCount;
   final AppLocalizations loc;
   final ThemeData theme;
-  final int maxTypesPerYear;
 
   String _yearHeading(int? year) =>
       year != null ? '$year' : loc.unifiedPlanningAnalyticsUnknownYear;
@@ -724,7 +723,7 @@ class _YearTypeGroupedByYearSection extends StatelessWidget {
                     color: context.dividerColor.withValues(alpha: 0.45),
                   ),
                   const SizedBox(height: 12),
-                  for (var j = 0; j < groups[gi].rows.length && j < maxTypesPerYear; j++) ...[
+                  for (var j = 0; j < groups[gi].rows.length && j < _maxTypesPerYear; j++) ...[
                     if (j > 0) const SizedBox(height: 12),
                     _BarRow(
                       label: _typeLabel(groups[gi].rows[j].typeKey),
@@ -733,12 +732,12 @@ class _YearTypeGroupedByYearSection extends StatelessWidget {
                       theme: theme,
                     ),
                   ],
-                  if (groups[gi].rows.length > maxTypesPerYear)
+                  if (groups[gi].rows.length > _maxTypesPerYear)
                     Padding(
                       padding: const EdgeInsets.only(top: 10),
                       child: Text(
                         loc.unifiedPlanningAnalyticsMore(
-                          groups[gi].rows.length - maxTypesPerYear,
+                          groups[gi].rows.length - _maxTypesPerYear,
                         ),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: context.textSecondaryColor,
@@ -757,7 +756,6 @@ class _YearTypeGroupedByYearSection extends StatelessWidget {
 
 class _BarRow extends StatefulWidget {
   const _BarRow({
-    super.key,
     required this.label,
     required this.count,
     required this.max,
@@ -871,7 +869,6 @@ class _BarRowState extends State<_BarRow> with SingleTickerProviderStateMixin {
 /// Filled track with brand gradient; [widthFactor] is 0–1 (animated in [_BarRow]).
 class _GradientProgressTrack extends StatelessWidget {
   const _GradientProgressTrack({
-    super.key,
     required this.widthFactor,
     required this.theme,
   });

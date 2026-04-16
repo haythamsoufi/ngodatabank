@@ -2,7 +2,6 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/scheduler.dart';
-import 'package:provider/provider.dart';
 import 'package:quick_actions/quick_actions.dart';
 
 import '../config/app_navigation.dart';

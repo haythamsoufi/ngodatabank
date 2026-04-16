@@ -89,7 +89,7 @@ class IfrcUnifiedPlanningService {
     try {
       final parsed = Uri.parse(u);
       final scheme = (parsed.scheme.isEmpty ? 'https' : parsed.scheme).toLowerCase();
-      var host = parsed.host.toLowerCase();
+      final host = parsed.host.toLowerCase();
       if (host.isEmpty) return u;
       var port = parsed.hasPort ? parsed.port : null;
       if (scheme == 'https' && port == 443) port = null;
@@ -136,7 +136,7 @@ class IfrcUnifiedPlanningService {
       }
     }
 
-    var parsed = DateTime.tryParse(s);
+    final parsed = DateTime.tryParse(s);
     if (parsed != null) {
       return parsed.isUtc ? parsed.toLocal() : parsed;
     }

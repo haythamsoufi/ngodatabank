@@ -139,7 +139,7 @@ class AppRouter {
 
     if (settings.name == AppRoutes.pdfViewer) {
       final raw = settings.arguments;
-      final map = raw is Map ? Map<String, dynamic>.from(raw as Map) : <String, dynamic>{};
+      final map = raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
       final url = map['url']?.toString().trim();
       final filePath = map['filePath']?.toString().trim();
       final title = map['title']?.toString().trim() ?? 'Document';
@@ -149,7 +149,7 @@ class AppRouter {
         return MaterialPageRoute(
           settings: settings,
           builder: (context) => Scaffold(
-            appBar: AppAppBar(title: 'PDF'),
+            appBar: const AppAppBar(title: 'PDF'),
             body: Center(
               child: Text(
                 'Invalid PDF viewer arguments (need url or filePath).',
