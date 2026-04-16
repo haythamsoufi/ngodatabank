@@ -62,6 +62,7 @@ from .indicator_bank import (
 from .documents import (
     SubmittedDocument,
     Resource,
+    ResourceSubcategory,
     ResourceTranslation
 )
 
@@ -197,6 +198,7 @@ __all__ = [
     # Document models
     'SubmittedDocument',
     'Resource',
+    'ResourceSubcategory',
     'ResourceTranslation',
 
     # Embed content

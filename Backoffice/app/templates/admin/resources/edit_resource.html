@@ -119,6 +119,14 @@ img[data-thumbnail-preview]:hover { opacity:.8; }
             {% endfor %}
         </div>
         <div>
+            {{ form.resource_subcategory_id.label(class="block text-gray-700 text-sm font-semibold mb-1") }}
+            <p class="text-xs text-gray-500 mb-1">Used to group items on the mobile Resources screen. Manage the list under <a href="{{ url_for('content_management.manage_resource_subgroups') }}" class="text-blue-600 hover:underline">Resource subgroups</a>.</p>
+            {{ form.resource_subcategory_id(class="shadow-sm appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500") }}
+            {% for error in form.resource_subcategory_id.errors %}
+                <p class="mt-1 text-red-500 text-xs">{{ error }}</p>
+            {% endfor %}
+        </div>
+        <div>
             {{ form.publication_date.label(class="block text-gray-700 text-sm font-semibold mb-1") }}
             {{ form.publication_date(class="shadow-sm appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500") }}
             {% for error in form.publication_date.errors %}

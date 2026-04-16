@@ -1066,6 +1066,9 @@ class AppLocalizations {
       'ai_score_confidence': 'Confidence',
       'ai_score_grounding': 'Grounding',
       'ai_default_assistant_title': 'AI Assistant',
+      'resources_other_subgroup': 'Other',
+      'resources_list_truncated_hint':
+          'Showing the most recent items. Use search to find a specific document.',
 
       // AI
       'ai_assistant': 'AI Assistant',
@@ -1954,6 +1957,9 @@ class AppLocalizations {
       'ai_score_confidence': 'Confianza',
       'ai_score_grounding': 'Fundamentación',
       'ai_default_assistant_title': 'Asistente de IA',
+      'resources_other_subgroup': 'Otros',
+      'resources_list_truncated_hint':
+          'Se muestran los elementos más recientes. Use la búsqueda para encontrar un documento concreto.',
       'ai_assistant': 'Asistente de IA',
     },
     'fr': {
@@ -2844,6 +2850,9 @@ class AppLocalizations {
       'ai_score_confidence': 'Confiance',
       'ai_score_grounding': 'Ancrage',
       'ai_default_assistant_title': 'Assistant IA',
+      'resources_other_subgroup': 'Autres',
+      'resources_list_truncated_hint':
+          'Affichage des éléments les plus récents. Utilisez la recherche pour trouver un document précis.',
       'ai_assistant': 'Assistant IA',
     },
     'ar': {
@@ -3703,6 +3712,9 @@ class AppLocalizations {
       'ai_score_confidence': 'الثقة',
       'ai_score_grounding': 'التأسيس',
       'ai_default_assistant_title': 'مساعد الذكاء الاصطناعي',
+      'resources_other_subgroup': 'أخرى',
+      'resources_list_truncated_hint':
+          'عرض أحدث العناصر. استخدم البحث للعثور على مستند معيّن.',
       'ai_assistant': 'مساعد الذكاء الاصطناعي',
     },
     'hi': {
@@ -4582,6 +4594,9 @@ class AppLocalizations {
       'ai_score_confidence': 'विश्वास',
       'ai_score_grounding': 'आधार',
       'ai_default_assistant_title': 'AI सहायक',
+      'resources_other_subgroup': 'अन्य',
+      'resources_list_truncated_hint':
+          'सबसे हाल के आइटम दिखाए जा रहे हैं। किसी विशिष्ट दस्तावेज़ के लिए खोज का उपयोग करें।',
       'ai_assistant': 'AI सहायक',
     },
     'ru': {
@@ -5466,6 +5481,9 @@ class AppLocalizations {
       'ai_score_confidence': 'Уверенность',
       'ai_score_grounding': 'Обоснование',
       'ai_default_assistant_title': 'ИИ-помощник',
+      'resources_other_subgroup': 'Прочее',
+      'resources_list_truncated_hint':
+          'Показаны самые последние материалы. Используйте поиск, чтобы найти конкретный документ.',
       'ai_assistant': 'ИИ-помощник',
     },
     'zh': {
@@ -6305,6 +6323,9 @@ class AppLocalizations {
       'ai_score_confidence': '置信度',
       'ai_score_grounding': '依据度',
       'ai_default_assistant_title': 'AI 助手',
+      'resources_other_subgroup': '其他',
+      'resources_list_truncated_hint':
+          '仅显示最近的项目。请使用搜索查找特定文档。',
       'ai_assistant': 'AI 助手',
     },
   };
@@ -7347,6 +7368,9 @@ class AppLocalizations {
 
   String get resourcesSearchTooltip => translate('resources_search_tooltip');
   String get resourcesCloseSearchTooltip => translate('resources_close_search_tooltip');
+  String get resourcesOtherSubgroup => translate('resources_other_subgroup');
+  String get resourcesListTruncatedHint =>
+      translate('resources_list_truncated_hint');
 
   String get countriesSearchHint => translate('countries_search_hint');
   String get countriesNoResults => translate('countries_no_results');

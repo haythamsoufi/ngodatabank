@@ -1,3 +1,5 @@
+import 'resource_subcategory.dart';
+
 class Resource {
   final int id;
   final String? title;
@@ -14,6 +16,9 @@ class Resource {
   /// file to open so you don't try to download a translation that has no file.
   final List<String> fileLanguages;
 
+  /// Optional admin-defined subgroup (publications series, etc.).
+  final ResourceSubcategory? subcategory;
+
   final bool isPublished;
 
   Resource({
@@ -27,6 +32,7 @@ class Resource {
     this.fileUrl,
     this.availableLanguages = const [],
     this.fileLanguages = const [],
+    this.subcategory,
     this.isPublished = false,
   });
 
@@ -51,6 +57,11 @@ class Resource {
               ?.map((e) => e.toString())
               .toList() ??
           const [],
+      subcategory: json['subcategory'] != null
+          ? ResourceSubcategory.fromJson(
+              json['subcategory'] as Map<String, dynamic>,
+            )
+          : null,
       isPublished: json['is_published'] as bool? ?? true,
     );
   }

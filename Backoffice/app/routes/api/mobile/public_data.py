@@ -689,6 +689,62 @@ def mobile_fdrs_overview():
         return mobile_server_error('Failed to load FDRS overview data.')
 
 
+def _serialize_public_resource(r, *, locale: str, base_url: str, storage) -> dict:
+    """Build the public JSON object for one Resource row (mobile /data/resources)."""
+    title = r.get_title(locale)
+    description = r.get_description(locale)
+
+    def _resolve_locale(get_path_attr):
+        """Return language code for the first lang with a real file."""
+        for lang in ([locale] if locale == 'en' else [locale, 'en']):
+            tr = r.get_translation(lang)
+            if not tr:
+                continue
+            rel = getattr(tr, get_path_attr, None)
+            if rel and storage.exists(storage.RESOURCES, rel):
+                return lang
+        return None
+
+    file_locale = _resolve_locale('file_relative_path')
+    thumb_locale = _resolve_locale('thumbnail_relative_path')
+
+    file_url = (
+        f"{base_url}/resources/download/{r.id}/{file_locale}"
+        if file_locale else None
+    )
+    thumbnail_url = (
+        f"{base_url}/resources/thumbnail/{r.id}/{thumb_locale}"
+        if thumb_locale else None
+    )
+
+    sub = r.resource_subcategory
+    sub_payload = None
+    if sub is not None:
+        sub_payload = {
+            'id': sub.id,
+            'name': sub.name,
+            'display_order': sub.display_order,
+        }
+
+    return {
+        'id': r.id,
+        'title': title,
+        'description': description,
+        'resource_type': r.resource_type,
+        'publication_date': r.publication_date.isoformat() if r.publication_date else None,
+        'created_at': r.created_at.isoformat() if r.created_at else None,
+        'file_url': file_url,
+        'thumbnail_url': thumbnail_url,
+        'available_languages': r.get_available_languages(),
+        'file_languages': [
+            t.language_code
+            for t in r.translations
+            if t.has_uploaded_document
+        ],
+        'subcategory': sub_payload,
+    }
+
+
 @mobile_bp.route('/data/resources', methods=['GET'])
 @mobile_rate_limit(requests_per_minute=60)
 def public_resources():
@@ -699,8 +755,12 @@ def public_resources():
       - search: filter by title
       - type: filter by resource_type ('publication' | 'resource' | 'document' | 'other')
       - locale: language code for title/description (default 'en')
+      - grouped: when ``true`` and ``search`` is empty, return ``data.sections`` instead
+        of a flat list — each section is a subgroup with its resources (global sort preserved).
+        Response is capped (see ``meta.max_resources``) so the payload stays bounded.
     """
-    from app.models.documents import Resource
+    from sqlalchemy.orm import joinedload
+    from app.models.documents import Resource, ResourceSubcategory
 
     page, per_page = validate_pagination_params(
         request.args, default_per_page=20, max_per_page=100
@@ -708,70 +768,80 @@ def public_resources():
     search = request.args.get('search', '').strip()
     resource_type = request.args.get('type', '').strip()
     locale = (request.args.get('locale', 'en') or 'en').strip().lower()
+    grouped_raw = (request.args.get('grouped', '') or '').strip().lower()
+    grouped = grouped_raw in ('1', 'true', 'yes')
 
-    query = Resource.query.order_by(
+    filtered = Resource.query.options(joinedload(Resource.resource_subcategory))
+    if search:
+        filtered = filtered.filter(Resource.default_title.ilike(safe_ilike_pattern(search)))
+    if resource_type:
+        filtered = filtered.filter(Resource.resource_type == resource_type)
+
+    sorted_q = filtered.order_by(
         Resource.publication_date.desc(),
         Resource.created_at.desc(),
     )
-    if search:
-        query = query.filter(Resource.default_title.ilike(safe_ilike_pattern(search)))
-    if resource_type:
-        query = query.filter(Resource.resource_type == resource_type)
 
-    paginated = query.paginate(page=page, per_page=per_page, error_out=False)
     base_url = request.host_url.rstrip('/')
-
     from app.services import storage_service as storage
 
-    items = []
-    for r in paginated.items:
-        title = r.get_title(locale)
-        description = r.get_description(locale)
-
-        # Resolve the best available language whose file/thumbnail is
-        # confirmed to exist in storage (DB path + storage.exists check).
-        # Preferred order: requested locale → English fallback.
-        def _resolve_locale(get_path_attr):
-            """Return (locale_code, rel_path) for the first lang with a real file."""
-            for lang in ([locale] if locale == 'en' else [locale, 'en']):
-                tr = r.get_translation(lang)
-                if not tr:
-                    continue
-                rel = getattr(tr, get_path_attr, None)
-                if rel and storage.exists(storage.RESOURCES, rel):
-                    return lang
-            return None
-
-        file_locale = _resolve_locale('file_relative_path')
-        thumb_locale = _resolve_locale('thumbnail_relative_path')
-
-        file_url = (
-            f"{base_url}/resources/download/{r.id}/{file_locale}"
-            if file_locale else None
+    if grouped and not search:
+        max_resources = 400
+        total_in_db = filtered.count()
+        rows = sorted_q.limit(max_resources).all()
+        subcategories = (
+            ResourceSubcategory.query.order_by(
+                ResourceSubcategory.display_order.asc(),
+                ResourceSubcategory.name.asc(),
+            ).all()
         )
-        thumbnail_url = (
-            f"{base_url}/resources/thumbnail/{r.id}/{thumb_locale}"
-            if thumb_locale else None
+        known_ids = {s.id for s in subcategories}
+        buckets = {sid: [] for sid in known_ids}
+        uncategorized: list = []
+
+        for r in rows:
+            item = _serialize_public_resource(r, locale=locale, base_url=base_url, storage=storage)
+            sid = r.resource_subcategory_id
+            if sid and sid in known_ids:
+                buckets[sid].append(item)
+            else:
+                uncategorized.append(item)
+
+        sections = []
+        for s in subcategories:
+            items = buckets.get(s.id) or []
+            if not items:
+                continue
+            sections.append({
+                'subcategory': {
+                    'id': s.id,
+                    'name': s.name,
+                    'display_order': s.display_order,
+                },
+                'resources': items,
+            })
+        if uncategorized:
+            sections.append({
+                'subcategory': None,
+                'resources': uncategorized,
+            })
+
+        return mobile_ok(
+            data={'sections': sections},
+            meta={
+                'mode': 'grouped',
+                'total_resources': total_in_db,
+                'returned_resources': len(rows),
+                'max_resources': max_resources,
+                'capped': len(rows) >= max_resources and total_in_db > len(rows),
+            },
         )
 
-        items.append({
-            'id': r.id,
-            'title': title,
-            'description': description,
-            'resource_type': r.resource_type,
-            'publication_date': r.publication_date.isoformat() if r.publication_date else None,
-            'created_at': r.created_at.isoformat() if r.created_at else None,
-            'file_url': file_url,
-            'thumbnail_url': thumbnail_url,
-            'available_languages': r.get_available_languages(),
-            # Languages that have an actual uploaded document file (subset of available_languages).
-            # Mobile clients use this to pick the right language at tap time.
-            'file_languages': [
-                t.language_code
-                for t in r.translations
-                if t.has_uploaded_document
-            ],
-        })
+    paginated = sorted_q.paginate(page=page, per_page=per_page, error_out=False)
+    items = [
+        _serialize_public_resource(r, locale=locale, base_url=base_url, storage=storage)
+        for r in paginated.items
+    ]
 
     return mobile_paginated(
         items=items,

@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 
 import '../../config/app_config.dart';
 import '../../models/shared/resource.dart';
+import '../../models/shared/resource_list_section.dart';
+import '../../models/shared/resource_subcategory.dart';
 import '../../services/api_service.dart';
 import '../../utils/debug_logger.dart';
 
@@ -11,6 +13,10 @@ class PublicResourcesProvider with ChangeNotifier {
   final ApiService _api = ApiService();
 
   List<Resource> _resources = [];
+  List<ResourceListSection> _sections = [];
+  bool _groupedMode = false;
+  bool _groupedCapped = false;
+
   bool _isLoading = false;
   bool _isLoadingMore = false;
   String? _error;
@@ -25,6 +31,9 @@ class PublicResourcesProvider with ChangeNotifier {
   static const int _perPage = 20;
 
   List<Resource> get resources => _resources;
+  List<ResourceListSection> get sections => _sections;
+  bool get groupedMode => _groupedMode;
+  bool get groupedCapped => _groupedCapped;
   bool get isLoading => _isLoading;
   bool get isLoadingMore => _isLoadingMore;
   String? get error => _error;
@@ -49,14 +58,37 @@ class PublicResourcesProvider with ChangeNotifier {
     _currentPage = 1;
     _isLoading = true;
     _error = null;
+    _sections = [];
+    _groupedMode = false;
+    _groupedCapped = false;
     notifyListeners();
 
     try {
-      final items = await _fetchPage(_currentPage);
-      _resources = items;
+      final useGrouped = _searchQuery.isEmpty;
+      if (useGrouped) {
+        final parsed = await _fetchGrouped();
+        _sections = parsed.$1;
+        _groupedCapped = parsed.$2;
+        _resources = [];
+        _groupedMode = true;
+        _hasMore = false;
+        _totalItems = _sections.fold<int>(
+          0,
+          (sum, s) => sum + s.resources.length,
+        );
+      } else {
+        final items = await _fetchPage(_currentPage);
+        _resources = items;
+        _sections = [];
+        _groupedMode = false;
+        _groupedCapped = false;
+      }
     } catch (e) {
       _error = e.toString();
       _resources = [];
+      _sections = [];
+      _groupedMode = false;
+      _groupedCapped = false;
       DebugLogger.logErrorWithTag('PUBLIC_RESOURCES', 'Load error: $e');
     } finally {
       _isLoading = false;
@@ -66,6 +98,7 @@ class PublicResourcesProvider with ChangeNotifier {
 
   /// Append the next page when the user scrolls to the bottom.
   Future<void> loadMore() async {
+    if (_groupedMode) return;
     if (_isLoadingMore || !_hasMore || _isLoading) return;
 
     _isLoadingMore = true;
@@ -120,6 +153,57 @@ class PublicResourcesProvider with ChangeNotifier {
 
     _hasMore = false;
     throw Exception('Failed to load resources (${response.statusCode}).');
+  }
+
+  Future<(List<ResourceListSection>, bool)> _fetchGrouped() async {
+    final params = <String, String>{
+      'locale': _locale,
+      'grouped': 'true',
+    };
+    if (_selectedType != null && _selectedType!.isNotEmpty) {
+      params['type'] = _selectedType!;
+    }
+
+    final response = await _api.get(
+      AppConfig.mobilePublicResourcesEndpoint,
+      queryParams: params,
+      includeAuth: false,
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load resources (${response.statusCode}).');
+    }
+
+    final json = jsonDecode(response.body) as Map<String, dynamic>;
+    if (json['success'] != true) {
+      throw Exception('Failed to load resources.');
+    }
+
+    final data = json['data'];
+    final meta = json['meta'] as Map<String, dynamic>? ?? {};
+    final capped = meta['capped'] == true;
+
+    if (data is! Map<String, dynamic>) {
+      return (<ResourceListSection>[], capped);
+    }
+
+    final rawSections = (data['sections'] as List<dynamic>?) ?? [];
+    final out = <ResourceListSection>[];
+    for (final s in rawSections) {
+      if (s is! Map<String, dynamic>) continue;
+      final subJson = s['subcategory'];
+      ResourceSubcategory? sub;
+      if (subJson is Map<String, dynamic>) {
+        sub = ResourceSubcategory.fromJson(subJson);
+      }
+      final rawList = (s['resources'] as List<dynamic>?) ?? [];
+      final items = rawList
+          .map((e) => Resource.fromJson(e as Map<String, dynamic>))
+          .toList();
+      if (items.isEmpty) continue;
+      out.add(ResourceListSection(subcategory: sub, resources: items));
+    }
+    return (out, capped);
   }
 
   void clearError() {

@@ -7,6 +7,7 @@ Part of the /api/v1 blueprint.
 from flask import request, current_app, url_for
 import uuid
 from sqlalchemy import or_
+from sqlalchemy.orm import joinedload
 
 # Import the API blueprint from parent
 from app.routes.api import api_bp
@@ -85,7 +86,10 @@ def get_resources():
         resource_type_filter = request.args.get('resource_type', default='', type=str).strip()
         language = request.args.get('language', default='en', type=str).strip()
 
-        query = Resource.query.order_by(Resource.publication_date.desc(), Resource.created_at.desc())
+        query = (
+            Resource.query.options(joinedload(Resource.resource_subcategory))
+            .order_by(Resource.publication_date.desc(), Resource.created_at.desc())
+        )
 
         # Filter by resource type if specified
         if resource_type_filter:
@@ -109,9 +113,15 @@ def get_resources():
             translation = resource.get_translation(language)
 
             # Build resource data with multilingual support
+            sub = getattr(resource, 'resource_subcategory', None)
             resource_data = {
                 'id': resource.id,
                 'resource_type': resource.resource_type,
+                'subcategory': (
+                    {'id': sub.id, 'name': sub.name, 'display_order': sub.display_order}
+                    if sub is not None
+                    else None
+                ),
                 'publication_date': resource.publication_date.isoformat() if resource.publication_date else None,
                 'created_at': resource.created_at.isoformat(),
                 'updated_at': resource.updated_at.isoformat(),

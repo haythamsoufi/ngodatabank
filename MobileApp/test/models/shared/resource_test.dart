@@ -85,5 +85,22 @@ void main() {
       final r = Resource.fromJson({'id': 7, 'is_published': false});
       expect(r.isPublished, false);
     });
+
+    test('parses subcategory when present', () {
+      final r = Resource.fromJson({
+        'id': 8,
+        'title': 'Doc',
+        'subcategory': {'id': 3, 'name': 'Annual', 'display_order': 1},
+      });
+      expect(r.subcategory, isNotNull);
+      expect(r.subcategory!.id, 3);
+      expect(r.subcategory!.name, 'Annual');
+      expect(r.subcategory!.displayOrder, 1);
+    });
+
+    test('subcategory is null when absent', () {
+      final r = Resource.fromJson({'id': 9, 'title': 'No sub'});
+      expect(r.subcategory, isNull);
+    });
   });
 }

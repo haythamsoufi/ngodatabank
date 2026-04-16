@@ -45,6 +45,14 @@
             'icon': 'fas fa-plus',
             'classes': 'professional-action-btn professional-action-btn-green',
             'attributes': {'title': 'Upload a new resource'}
+        } if can_manage_resources else None,
+        {
+            'type': 'link',
+            'text': 'Subgroups',
+            'url': url_for('content_management.manage_resource_subgroups'),
+            'icon': 'fas fa-layer-group',
+            'classes': 'professional-action-btn',
+            'attributes': {'title': 'Manage resource subgroups for the mobile app'}
         } if can_manage_resources else None
     ]
     | reject('none') | list
@@ -69,6 +77,7 @@
                 <tr>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subgroup</th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Languages</th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Publication Date</th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Description</th>
@@ -84,6 +93,15 @@
                             {% if resource.resource_type == 'publication' %}bg-blue-100 text-blue-800{% else %}bg-green-100 text-green-800{% endif %}">
                             {{ resource.resource_type.title() }}
                         </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-700 align-top">
+                        {% if resource.resource_subcategory %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-50 text-purple-800 border border-purple-100">
+                                {{ resource.resource_subcategory.name }}
+                            </span>
+                        {% else %}
+                            <span class="text-gray-400 text-xs">—</span>
+                        {% endif %}
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-900 align-top">
                         {% set available_languages = resource.get_available_languages() %}
