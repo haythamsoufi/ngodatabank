@@ -167,7 +167,7 @@ void main() {
     });
 
     test('sortedPathEntries orders by count descending', () {
-      final item = SessionLogItem(
+      const item = SessionLogItem(
         sessionId: 'x',
         pageViews: 10,
         distinctPageViewPaths: 2,

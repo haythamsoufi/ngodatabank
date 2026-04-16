@@ -644,7 +644,6 @@ class _OverviewBody extends StatelessWidget {
                     choroplethPolygons: polys,
                     initialFit: initialFit,
                     maxZoom: 22,
-                    polygonSimplification: 2.2,
                     onCountryIso2Tapped: (iso2) {
                       showFdrsCountryInsightSheet(
                         context: context,

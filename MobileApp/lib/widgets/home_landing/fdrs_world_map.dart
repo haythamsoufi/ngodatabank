@@ -84,19 +84,42 @@ double? valueForIso2(GlobalOverviewDataset data, String iso2Upper) {
   return v;
 }
 
+/// Web Mercator without infinite horizontal wrapping — one world strip, no
+/// side-scroll clones (see flutter_map `Epsg3857.replicatesWorldLongitude`).
+final class _Epsg3857NoRepeat extends Epsg3857 {
+  const _Epsg3857NoRepeat() : super();
+
+  @override
+  bool get replicatesWorldLongitude => false;
+}
+
+/// Valid Web Mercator latitudes plus full longitude; used to keep the camera
+/// center over the map. [CameraConstraint.containCenter] always returns a
+/// camera from [constrain] (unlike [CameraConstraint.contain], which can
+/// return null), which matches flutter_map's assertion when [MapOptions] update.
+final LatLngBounds _fdrsWorldMapBounds = LatLngBounds.unsafe(
+  north: 85,
+  south: -85,
+  east: 180,
+  west: -180,
+);
+
 MapOptions fdrsWorldMapOptions(
   ThemeData theme,
   CameraFit? initialFit, {
   double maxZoom = 22,
-  MapController? mapController,
+  double minZoom = 1,
   void Function(TapPosition tapPosition, LatLng point)? onTap,
 }) {
   return MapOptions(
+    crs: const _Epsg3857NoRepeat(),
     backgroundColor: theme.colorScheme.surfaceContainerHigh,
     initialCenter: const LatLng(20, 10),
     initialZoom: initialFit != null ? 1.2 : 1.4,
     initialCameraFit: initialFit,
+    minZoom: minZoom,
     maxZoom: maxZoom,
+    cameraConstraint: CameraConstraint.containCenter(bounds: _fdrsWorldMapBounds),
     onTap: onTap,
     interactionOptions: const InteractionOptions(
       flags: InteractiveFlag.all,
@@ -199,7 +222,7 @@ class FdrsOverviewMap extends StatefulWidget {
     required this.initialFit,
     this.mapController,
     this.maxZoom = 22,
-    this.polygonSimplification = 1.2,
+    this.polygonSimplification = 0,
     this.onCountryIso2Tapped,
   });
 
@@ -235,32 +258,36 @@ class _FdrsOverviewMapState extends State<FdrsOverviewMap> {
 
   @override
   Widget build(BuildContext context) {
-    return FlutterMap(
-      mapController: widget.mapController,
-      options: fdrsWorldMapOptions(
-        widget.theme,
-        widget.initialFit,
-        maxZoom: widget.maxZoom,
-      ),
-      children: [
-        ...fdrsWorldMapTiles(widget.theme),
-        GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTap: _handleInteractTap,
-          child: widget.visualMode == FdrsMapVisualMode.bubble
-              ? CircleLayer<String>(
-                  hitNotifier: _hitNotifier,
-                  circles: widget.circles,
-                )
-              : PolygonLayer<String>(
-                  hitNotifier: _hitNotifier,
-                  simplificationTolerance: widget.polygonSimplification,
-                  polygons: widget.choroplethPolygons,
-                  drawLabelsLast: false,
-                  polygonLabels: false,
-                ),
+    return ClipRect(
+      clipBehavior: Clip.hardEdge,
+      child: FlutterMap(
+        mapController: widget.mapController,
+        options: fdrsWorldMapOptions(
+          widget.theme,
+          widget.initialFit,
+          maxZoom: widget.maxZoom,
         ),
-      ],
+        children: [
+          ...fdrsWorldMapTiles(widget.theme),
+          GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: _handleInteractTap,
+            child: widget.visualMode == FdrsMapVisualMode.bubble
+                ? CircleLayer<String>(
+                    hitNotifier: _hitNotifier,
+                    circles: widget.circles,
+                  )
+                : PolygonLayer<String>(
+                    hitNotifier: _hitNotifier,
+                    simplificationTolerance: widget.polygonSimplification,
+                    drawInSingleWorld: true,
+                    polygons: widget.choroplethPolygons,
+                    drawLabelsLast: false,
+                    polygonLabels: false,
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -453,6 +480,70 @@ class _FdrsWorldMapFullscreenPageState extends State<FdrsWorldMapFullscreenPage>
     _reload();
   }
 
+  void _showFullscreenMapOptionsSheet(
+    BuildContext context,
+    ThemeData theme,
+    AppLocalizations l10n,
+  ) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (BuildContext sheetContext) {
+        final sheetBottomPad =
+            MediaQuery.viewPaddingOf(sheetContext).bottom + 20;
+        return NativeModalSheetScaffold(
+          theme: theme,
+          title: l10n.homeLandingGlobalMapFiltersTitle,
+          closeTooltip: MaterialLocalizations.of(sheetContext).closeButtonTooltip,
+          maxHeightFraction: 0.88,
+          bodyExpands: false,
+          onClose: () => Navigator.of(sheetContext).pop(),
+          child: ListView(
+            shrinkWrap: true,
+            physics: const ClampingScrollPhysics(),
+            padding: EdgeInsets.fromLTRB(20, 4, 20, sheetBottomPad),
+            children: [
+              FdrsMapModeToggle(
+                l10n: l10n,
+                mode: _visualMode,
+                onChanged: (m) => setState(() => _visualMode = m),
+              ),
+              const SizedBox(height: 16),
+              _FullscreenIndicatorBar(
+                l10n: l10n,
+                indicatorBankId: _indicatorBankId,
+                onSelect: _selectIndicator,
+              ),
+              if (widget.periodOptions.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                if (widget.periodOptions.length > 1)
+                  ReportingPeriodPickerField(
+                    l10n: l10n,
+                    periods: widget.periodOptions,
+                    value: _selectedPeriod,
+                    onChanged: _onPeriodChanged,
+                    compact: false,
+                  )
+                else
+                  Text(
+                    l10n.homeLandingGlobalPeriod(
+                      _selectedPeriod ?? widget.periodOptions.first,
+                    ),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   CameraFit? _cameraFitForDataset(GlobalOverviewDataset data) {
     final cache = CountryCentroidsCache.instance;
     final points = data.geoPoints((iso) => cache[iso]);
@@ -462,7 +553,7 @@ class _FdrsWorldMapFullscreenPageState extends State<FdrsWorldMapFullscreenPage>
       );
       return CameraFit.bounds(
         bounds: bounds,
-        padding: const EdgeInsets.fromLTRB(48, 120, 48, 100),
+        padding: const EdgeInsets.fromLTRB(48, 64, 48, 100),
         maxZoom: 4.2,
       );
     }
@@ -494,264 +585,200 @@ class _FdrsWorldMapFullscreenPageState extends State<FdrsWorldMapFullscreenPage>
           Navigator.of(context).pop(_snapshot());
         }
       },
-      child: Scaffold(
-        backgroundColor: theme.colorScheme.surface,
-        appBar: AppBar(
-          title: Text(l10n.homeLandingExploreTitle),
-          leading: IconButton(
-            icon: const Icon(Icons.close),
-            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-            onPressed: () => Navigator.of(context).pop(_snapshot()),
-          ),
-        ),
-        body: FutureBuilder<GlobalOverviewDataset>(
-          future: _datasetFuture,
-          builder: (context, snap) {
-            if (snap.connectionState == ConnectionState.waiting) {
-              return Center(
-                child: CircularProgressIndicator(
-                  color: theme.colorScheme.secondary,
-                ),
-              );
-            }
-            if (snap.hasError || !snap.hasData) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        l10n.homeLandingGlobalLoadError,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 12),
-                      TextButton(
-                        onPressed: () => _reload(),
-                        child: Text(l10n.retry),
-                      ),
-                    ],
+      child: FutureBuilder<GlobalOverviewDataset>(
+        future: _datasetFuture,
+        builder: (context, snap) {
+          final showMapOptions =
+              snap.hasData && !snap.hasError && snap.data != null;
+
+          return Scaffold(
+            backgroundColor: theme.colorScheme.surface,
+            appBar: AppBar(
+              title: Text(l10n.homeLandingExploreTitle),
+              leading: IconButton(
+                icon: const Icon(Icons.close),
+                tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                onPressed: () => Navigator.of(context).pop(_snapshot()),
+              ),
+              actions: [
+                if (showMapOptions)
+                  IconButton(
+                    icon: const Icon(Icons.tune_rounded),
+                    tooltip: l10n.homeLandingGlobalMapFiltersTitle,
+                    onPressed: () =>
+                        _showFullscreenMapOptionsSheet(context, theme, l10n),
                   ),
-                ),
-              );
-            }
-            final data = snap.data!;
-
-            final maxVal = data.byCountryId.values.fold<double>(
-              0,
-              (a, b) => a > b ? a : b,
-            );
-
-            final cache = CountryCentroidsCache.instance;
-            final circles = <CircleMarker<String>>[];
-            for (final p in data.geoPoints((iso) => cache[iso])) {
-              final r = maxVal > 0
-                  ? 6 + math.sqrt(p.value / maxVal) * 28
-                  : 8.0;
-              circles.add(
-                CircleMarker<String>(
-                  point: p.point,
-                  radius: r.clamp(5, 36),
-                  color: Color(AppConstants.ifrcRed).withValues(alpha: 0.45),
-                  borderStrokeWidth: 1,
-                  borderColor: Colors.white24,
-                  hitValue: p.iso2,
-                ),
-              );
-            }
-
-            final valueByIso = <String, double>{};
-            for (final e in data.byCountryId.entries) {
-              final iso = data.countryIso2[e.key];
-              if (iso != null && e.value > 0) {
-                valueByIso[iso.toUpperCase()] = e.value;
+              ],
+            ),
+            body: () {
+              if (snap.connectionState == ConnectionState.waiting) {
+                return Center(
+                  child: CircularProgressIndicator(
+                    color: theme.colorScheme.secondary,
+                  ),
+                );
               }
-            }
-
-            final isDark = theme.brightness == Brightness.dark;
-            final border = theme.colorScheme.outlineVariant
-                .withValues(alpha: isDark ? 0.45 : 0.35);
-            final noData = theme.colorScheme.surfaceContainerHighest
-                .withValues(alpha: isDark ? 0.35 : 0.5);
-            final low = Color(AppConstants.ifrcRed).withValues(alpha: 0.12);
-            final high = Color(AppConstants.ifrcRed).withValues(alpha: 0.78);
-
-            final polys = WorldGeoJsonCache.instance.buildChoroplethPolygons(
-              fillNoData: noData,
-              fillLow: low,
-              fillHigh: high,
-              valueByIso2Upper: valueByIso,
-              maxValue: maxVal,
-              borderStrokeWidth: 0.5,
-              borderColor: border,
-            );
-
-            final initialFit = _cameraFitForDataset(data);
-            final indicatorLabel = fdrsIndicatorTitle(l10n, _indicatorBankId);
-
-            final filterCard = Material(
-              elevation: 3,
-              shadowColor: Colors.black26,
-              color: theme.colorScheme.surfaceContainerHigh,
-              surfaceTintColor: theme.colorScheme.surfaceTint.withValues(
-                alpha: theme.brightness == Brightness.dark ? 0.12 : 0.06,
-              ),
-              shape: RoundedRectangleBorder(
-                side: BorderSide(color: border),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      l10n.homeLandingGlobalMapFiltersTitle,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: theme.colorScheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    FdrsMapModeToggle(
-                      l10n: l10n,
-                      mode: _visualMode,
-                      onChanged: (m) {
-                        setState(() => _visualMode = m);
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    _FullscreenIndicatorBar(
-                      l10n: l10n,
-                      indicatorBankId: _indicatorBankId,
-                      onSelect: _selectIndicator,
-                    ),
-                    if (widget.periodOptions.isNotEmpty) ...[
-                      const SizedBox(height: 10),
-                      if (widget.periodOptions.length > 1)
-                        ReportingPeriodPickerField(
-                          l10n: l10n,
-                          periods: widget.periodOptions,
-                          value: _selectedPeriod,
-                          onChanged: _onPeriodChanged,
-                          compact: true,
-                        )
-                      else
-                        Text(
-                          l10n.homeLandingGlobalPeriod(
-                            _selectedPeriod ??
-                                widget.periodOptions.first,
-                          ),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                    ],
-                  ],
-                ),
-              ),
-            );
-
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-                  child: filterCard,
-                ),
-                Expanded(
+              if (snap.hasError || !snap.hasData) {
+                return Center(
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      clipBehavior: Clip.hardEdge,
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        FdrsOverviewMap(
-                          theme: theme,
-                          visualMode: _visualMode,
-                          circles: circles,
-                          choroplethPolygons: polys,
-                          initialFit: initialFit,
-                          mapController: _mapController,
-                          maxZoom: 18,
-                          polygonSimplification: 0.85,
-                          onCountryIso2Tapped: (iso2) {
-                            showFdrsCountryInsightSheet(
-                              context: context,
-                              l10n: l10n,
-                              locale: widget.locale,
-                              data: data,
-                              iso2: iso2,
-                              indicatorLabel: indicatorLabel,
-                            );
-                          },
+                        Text(
+                          l10n.homeLandingGlobalLoadError,
+                          textAlign: TextAlign.center,
                         ),
-                        PositionedDirectional(
-                          bottom: 24,
-                          end: 12,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              _MapToolButton(
-                                theme: theme,
-                                icon: Icons.add,
-                                tooltip: l10n.homeLandingGlobalMapZoomIn,
-                                onPressed: () {
-                                  final z = _mapController.camera.zoom + 1;
-                                  _mapController.move(
-                                    _mapController.camera.center,
-                                    z.clamp(1, 18),
-                                  );
-                                },
-                              ),
-                              const SizedBox(height: 8),
-                              _MapToolButton(
-                                theme: theme,
-                                icon: Icons.remove,
-                                tooltip: l10n.homeLandingGlobalMapZoomOut,
-                                onPressed: () {
-                                  final z = _mapController.camera.zoom - 1;
-                                  _mapController.move(
-                                    _mapController.camera.center,
-                                    z.clamp(1, 18),
-                                  );
-                                },
-                              ),
-                              const SizedBox(height: 8),
-                              _MapToolButton(
-                                theme: theme,
-                                icon: Icons.center_focus_strong_outlined,
-                                tooltip: l10n.homeLandingGlobalMapResetBounds,
-                                onPressed: () {
-                                  final fit = _cameraFitForDataset(data);
-                                  if (fit != null) {
-                                    _mapController.fitCamera(fit);
-                                  }
-                                },
-                              ),
-                            ],
-                          ),
+                        const SizedBox(height: 12),
+                        TextButton(
+                          onPressed: () => _reload(),
+                          child: Text(l10n.retry),
                         ),
-                        if (_visualMode == FdrsMapVisualMode.choropleth)
-                          PositionedDirectional(
-                            bottom: 16,
-                            start: 12,
-                            child: FdrsChoroplethLegend(
-                              l10n: l10n,
-                              lowColor: low,
-                              highColor: high,
-                            ),
-                          ),
                       ],
                     ),
                   ),
-                ),
-              ],
-            );
-          },
-        ),
+                );
+              }
+              final data = snap.data!;
+
+              final maxVal = data.byCountryId.values.fold<double>(
+                0,
+                (a, b) => a > b ? a : b,
+              );
+
+              final cache = CountryCentroidsCache.instance;
+              final circles = <CircleMarker<String>>[];
+              for (final p in data.geoPoints((iso) => cache[iso])) {
+                final r = maxVal > 0
+                    ? 6 + math.sqrt(p.value / maxVal) * 28
+                    : 8.0;
+                circles.add(
+                  CircleMarker<String>(
+                    point: p.point,
+                    radius: r.clamp(5, 36),
+                    color: Color(AppConstants.ifrcRed).withValues(alpha: 0.45),
+                    borderStrokeWidth: 1,
+                    borderColor: Colors.white24,
+                    hitValue: p.iso2,
+                  ),
+                );
+              }
+
+              final valueByIso = <String, double>{};
+              for (final e in data.byCountryId.entries) {
+                final iso = data.countryIso2[e.key];
+                if (iso != null && e.value > 0) {
+                  valueByIso[iso.toUpperCase()] = e.value;
+                }
+              }
+
+              final isDark = theme.brightness == Brightness.dark;
+              final border = theme.colorScheme.outlineVariant
+                  .withValues(alpha: isDark ? 0.45 : 0.35);
+              final noData = theme.colorScheme.surfaceContainerHighest
+                  .withValues(alpha: isDark ? 0.35 : 0.5);
+              final low = Color(AppConstants.ifrcRed).withValues(alpha: 0.12);
+              final high = Color(AppConstants.ifrcRed).withValues(alpha: 0.78);
+
+              final polys = WorldGeoJsonCache.instance.buildChoroplethPolygons(
+                fillNoData: noData,
+                fillLow: low,
+                fillHigh: high,
+                valueByIso2Upper: valueByIso,
+                maxValue: maxVal,
+                borderStrokeWidth: 0.5,
+                borderColor: border,
+              );
+
+              final initialFit = _cameraFitForDataset(data);
+              final indicatorLabel = fdrsIndicatorTitle(l10n, _indicatorBankId);
+              final safeBottom = MediaQuery.viewPaddingOf(context).bottom;
+
+              return Stack(
+                fit: StackFit.expand,
+                clipBehavior: Clip.hardEdge,
+                children: [
+                  FdrsOverviewMap(
+                    theme: theme,
+                    visualMode: _visualMode,
+                    circles: circles,
+                    choroplethPolygons: polys,
+                    initialFit: initialFit,
+                    mapController: _mapController,
+                    maxZoom: 18,
+                    polygonSimplification: 0,
+                    onCountryIso2Tapped: (iso2) {
+                      showFdrsCountryInsightSheet(
+                        context: context,
+                        l10n: l10n,
+                        locale: widget.locale,
+                        data: data,
+                        iso2: iso2,
+                        indicatorLabel: indicatorLabel,
+                      );
+                    },
+                  ),
+                  PositionedDirectional(
+                    bottom: 24 + safeBottom,
+                    end: 12,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _MapToolButton(
+                          theme: theme,
+                          icon: Icons.add,
+                          tooltip: l10n.homeLandingGlobalMapZoomIn,
+                          onPressed: () {
+                            final z = _mapController.camera.zoom + 1;
+                            _mapController.move(
+                              _mapController.camera.center,
+                              z.clamp(1, 18),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        _MapToolButton(
+                          theme: theme,
+                          icon: Icons.remove,
+                          tooltip: l10n.homeLandingGlobalMapZoomOut,
+                          onPressed: () {
+                            final z = _mapController.camera.zoom - 1;
+                            _mapController.move(
+                              _mapController.camera.center,
+                              z.clamp(1, 18),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        _MapToolButton(
+                          theme: theme,
+                          icon: Icons.center_focus_strong_outlined,
+                          tooltip: l10n.homeLandingGlobalMapResetBounds,
+                          onPressed: () {
+                            final fit = _cameraFitForDataset(data);
+                            if (fit != null) {
+                              _mapController.fitCamera(fit);
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (_visualMode == FdrsMapVisualMode.choropleth)
+                    PositionedDirectional(
+                      bottom: 16 + safeBottom,
+                      start: 12,
+                      child: FdrsChoroplethLegend(
+                        l10n: l10n,
+                        lowColor: low,
+                        highColor: high,
+                      ),
+                    ),
+                ],
+              );
+            }(),
+          );
+        },
       ),
     );
   }

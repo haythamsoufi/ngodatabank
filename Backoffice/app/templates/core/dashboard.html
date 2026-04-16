@@ -236,12 +236,13 @@
                                         </p>
                                     {% endif %}
 
-                                    {# Display Completion Rate (common to both) #}
+                                    {# Display Completion Rate (common to both) — tiers match MobileApp AssignmentCard._getCompletionColor #}
+                                    {% set cr = item.completion_rate|default(0)|float %}
                                     <p class="text-sm text-gray-600 relative inline-flex items-center group">
-                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1 align-middle text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1 align-middle {% if cr >= 80 %}text-green-600{% elif cr >= 50 %}text-amber-500{% elif cr >= 25 %}text-amber-500{% else %}text-red-500{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
-                                        {{ _('Completion') }}:&nbsp;<span class="font-medium text-black-700">{{ "{:.1f}%".format(item.completion_rate) }}</span>
+                                        {{ _('Completion') }}:&nbsp;<span class="font-medium {% if cr >= 80 %}text-green-700 font-semibold{% elif cr >= 50 %}text-amber-600 font-semibold{% elif cr >= 25 %}text-amber-600 font-semibold{% else %}text-red-600 font-semibold{% endif %}">{{ "{:.1f}%".format(item.completion_rate) }}</span>
                                     </p>
 
                                     {# NEW: Display public submission information for assignments with public submissions #}

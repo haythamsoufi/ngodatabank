@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -28,10 +30,15 @@ class NativeModalSheetDragHandle extends StatelessWidget {
   }
 }
 
-/// Rounded sheet from the bottom: handle, title row + close, divider, [Expanded] body.
+/// Rounded sheet from the bottom: handle, title row + close, divider, body.
 ///
 /// Use with [showModalBottomSheet] and `backgroundColor: Colors.transparent`,
 /// `isScrollControlled: true` — same pattern as [HomeScreen] country picker.
+///
+/// When [bodyExpands] is `true` (default), the body is in an [Expanded] and
+/// fills remaining height (e.g. long lists). When `false`, the sheet only grows
+/// to fit the body up to the max height — use with a [ScrollView] that has
+/// `shrinkWrap: true` so short content does not leave a large blank region.
 class NativeModalSheetScaffold extends StatelessWidget {
   const NativeModalSheetScaffold({
     super.key,
@@ -41,6 +48,7 @@ class NativeModalSheetScaffold extends StatelessWidget {
     required this.onClose,
     required this.child,
     this.maxHeightFraction = 0.9,
+    this.bodyExpands = true,
   });
 
   final ThemeData theme;
@@ -49,6 +57,14 @@ class NativeModalSheetScaffold extends StatelessWidget {
   final VoidCallback onClose;
   final Widget child;
   final double maxHeightFraction;
+
+  /// When `true`, body fills all space below the header (typical for lists).
+  /// When `false`, body height follows content until [maxHeightFraction] cap.
+  final bool bodyExpands;
+
+  /// Handle + title row + divider — used to size the scrollable region when
+  /// [bodyExpands] is `false`.
+  static const double _chromeHeightEstimate = 126;
 
   @override
   Widget build(BuildContext context) {
@@ -61,42 +77,57 @@ class NativeModalSheetScaffold extends StatelessWidget {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Align(
-              alignment: Alignment.center,
-              child: NativeModalSheetDragHandle(theme: theme),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: IOSSpacing.xl,
-                vertical: IOSSpacing.md,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.onSurface,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final bodyMax = math.max(
+              120.0,
+              constraints.maxHeight - _chromeHeightEstimate,
+            );
+            return Column(
+              mainAxisSize: bodyExpands ? MainAxisSize.max : MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Align(
+                  alignment: Alignment.center,
+                  child: NativeModalSheetDragHandle(theme: theme),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: IOSSpacing.xl,
+                    vertical: IOSSpacing.md,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
                       ),
-                    ),
+                      IOSIconButton(
+                        icon: Icons.close,
+                        onPressed: onClose,
+                        tooltip: closeTooltip,
+                        semanticLabel: closeTooltip,
+                      ),
+                    ],
                   ),
-                  IOSIconButton(
-                    icon: Icons.close,
-                    onPressed: onClose,
-                    tooltip: closeTooltip,
-                    semanticLabel: closeTooltip,
+                ),
+                const Divider(height: 1),
+                if (bodyExpands)
+                  Expanded(child: child)
+                else
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxHeight: bodyMax),
+                    child: child,
                   ),
-                ],
-              ),
-            ),
-            const Divider(height: 1),
-            Expanded(child: child),
-          ],
+              ],
+            );
+          },
         ),
       ),
     );

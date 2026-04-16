@@ -42,6 +42,9 @@ class _DashboardScreenState extends State<DashboardScreen>
   // Track if we've completed at least one load to avoid showing empty state prematurely
   bool _hasLoadedOnce = false;
 
+  /// Open-assignments [ExpansionTile] on the dashboard.
+  bool _currentAssignmentsExpanded = true;
+
   @override
   void initState() {
     super.initState();
@@ -135,6 +138,149 @@ class _DashboardScreenState extends State<DashboardScreen>
       return a.id.compareTo(b.id);
     });
     return copy;
+  }
+
+  /// Open assignments: collapsible "You have …" header + list or empty hint.
+  Widget _buildCurrentAssignmentsSection({
+    required DashboardProvider provider,
+    required AuthProvider authProvider,
+    required AppLocalizations localizations,
+  }) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final n = provider.currentAssignments.length;
+    final titleText = localizations.dashboardYouHaveOpenAssignmentsTitle(n);
+    final iconColor = context.isDarkTheme
+        ? scheme.tertiary
+        : context.navyIconColor;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Theme(
+          data: theme.copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
+            tilePadding: const EdgeInsets.symmetric(
+              horizontal: IOSSpacing.lg,
+              vertical: IOSSpacing.xs,
+            ),
+            minTileHeight: 44,
+            dense: true,
+            initiallyExpanded: _currentAssignmentsExpanded,
+            onExpansionChanged: (expanded) {
+              setState(() => _currentAssignmentsExpanded = expanded);
+              HapticFeedback.selectionClick();
+            },
+            backgroundColor: Colors.transparent,
+            collapsedBackgroundColor: Colors.transparent,
+            shape: const Border(),
+            collapsedShape: const Border(),
+            childrenPadding: EdgeInsets.zero,
+            title: Row(
+              children: [
+                Icon(Icons.assignment_rounded, size: 20, color: iconColor),
+                SizedBox(width: IOSSpacing.smOf(context)),
+                Expanded(
+                  child: Text(
+                    titleText,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: IOSTextStyle.subheadline(context).copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: scheme.onSurface.withValues(alpha: 0.92),
+                      height: 1.25,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            children: [
+              if (provider.currentAssignments.isNotEmpty)
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: IOSSpacing.lgOf(context),
+                  ),
+                  child: Column(
+                    children: provider.currentAssignments
+                        .asMap()
+                        .entries
+                        .map((entry) {
+                      final index = entry.key;
+                      final assignment = entry.value;
+                      return AppFadeInUp(
+                        staggerIndex: index,
+                        child: AssignmentCard(
+                          assignment: assignment,
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            Navigator.of(context).pushNamed(
+                              AppRoutes.webview,
+                              arguments: AppRoutes.formEntry(assignment.id),
+                            );
+                          },
+                          showEnterDataButton: _shouldShowEnterDataButton(
+                            authProvider.user?.role,
+                            assignment,
+                          ),
+                          enterDataButtonText: localizations.enterData,
+                          onEnterData: () {
+                            HapticFeedback.mediumImpact();
+                            Navigator.of(context).pushNamed(
+                              AppRoutes.webview,
+                              arguments: AppRoutes.formEntry(assignment.id),
+                            );
+                          },
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                )
+              else if (provider.pastAssignments.isNotEmpty)
+                Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    IOSSpacing.lgOf(context),
+                    0,
+                    IOSSpacing.lgOf(context),
+                    IOSSpacing.lgOf(context),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.check_circle_outline_rounded,
+                        size: 48,
+                        color: scheme.onSurface.withValues(alpha: 0.35),
+                      ),
+                      SizedBox(height: IOSSpacing.mdOf(context)),
+                      Text(
+                        localizations.noAssignmentsYet,
+                        style: IOSTextStyle.subheadline(context).copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: scheme.onSurface.withValues(alpha: 0.75),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: IOSSpacing.smOf(context)),
+                      Text(
+                        localizations.newAssignmentsWillAppear,
+                        style: IOSTextStyle.footnote(context).copyWith(
+                          color: scheme.onSurface.withValues(alpha: 0.55),
+                          height: 1.35,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+        if (provider.currentAssignments.isNotEmpty)
+          const SizedBox(height: IOSSpacing.xxl)
+        else if (provider.pastAssignments.isNotEmpty)
+          SizedBox(height: IOSSpacing.mdOf(context)),
+      ],
+    );
   }
 
   // Past section: filters + single list (same structure as dashboard.html table, not status sub-groups)
@@ -611,51 +757,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     EntitySelectorBottomSheet.show(context, provider);
   }
 
-  Widget _buildSectionHeader({
-    required String title,
-    required IconData icon,
-    required Color color,
-    int? count,
-  }) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        IOSSpacing.lgOf(context),
-        IOSSpacing.xlOf(context),
-        IOSSpacing.lgOf(context),
-        IOSSpacing.mdOf(context),
-      ),
-      child: Row(
-        children: [
-          Text(
-            title.toUpperCase(),
-            style: IOSTextStyle.footnote(context).copyWith(
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-            ),
-          ),
-          if (count != null && count > 0) ...[
-            SizedBox(width: IOSSpacing.smOf(context)),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: IOSSpacing.xs + 2, vertical: IOSSpacing.xs / 2),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                '$count',
-                style: IOSTextStyle.caption2(context).copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Consumer2<AuthProvider, LanguageProvider>(
@@ -803,116 +904,14 @@ class _DashboardScreenState extends State<DashboardScreen>
                               },
                             ),
 
-                          // Current assignments (same bucket as dashboard.html current_assignments)
+                          // Open assignments (collapsible; title: "You have …")
                           if (provider.currentAssignments.isNotEmpty ||
-                              provider.pastAssignments.isNotEmpty) ...[
-                            _buildSectionHeader(
-                              title: localizations.currentAssignments,
-                              icon: Icons.assignment_rounded,
-                              color: context.isDarkTheme
-                                  ? Theme.of(context)
-                                      .colorScheme.tertiary
-                                  : context.navyIconColor,
-                              count: provider.currentAssignments.isEmpty
-                                  ? null
-                                  : provider.currentAssignments.length,
+                              provider.pastAssignments.isNotEmpty)
+                            _buildCurrentAssignmentsSection(
+                              provider: provider,
+                              authProvider: authProvider,
+                              localizations: localizations,
                             ),
-                            if (provider.currentAssignments.isNotEmpty)
-                              Padding(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: IOSSpacing.lgOf(context)),
-                                child: Column(
-                                  children: provider.currentAssignments
-                                      .asMap()
-                                      .entries
-                                      .map((entry) {
-                                    final index = entry.key;
-                                    final assignment = entry.value;
-
-                                    return AppFadeInUp(
-                                      staggerIndex: index,
-                                      child: AssignmentCard(
-                                        assignment: assignment,
-                                        onTap: () {
-                                          HapticFeedback.lightImpact();
-                                          Navigator.of(context).pushNamed(
-                                            AppRoutes.webview,
-                                            arguments: AppRoutes.formEntry(
-                                                assignment.id),
-                                          );
-                                        },
-                                        showEnterDataButton:
-                                            _shouldShowEnterDataButton(
-                                          authProvider.user?.role,
-                                          assignment,
-                                        ),
-                                        enterDataButtonText:
-                                            localizations.enterData,
-                                        onEnterData: () {
-                                          HapticFeedback.mediumImpact();
-                                          Navigator.of(context).pushNamed(
-                                            AppRoutes.webview,
-                                            arguments: AppRoutes.formEntry(
-                                                assignment.id),
-                                          );
-                                        },
-                                      ),
-                                    );
-                                  }).toList(),
-                                ),
-                              )
-                            else if (provider.pastAssignments.isNotEmpty)
-                              Padding(
-                                padding: EdgeInsets.fromLTRB(
-                                  IOSSpacing.lgOf(context),
-                                  0,
-                                  IOSSpacing.lgOf(context),
-                                  IOSSpacing.lgOf(context),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Icon(
-                                      Icons.check_circle_outline_rounded,
-                                      size: 48,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface
-                                          .withValues(alpha: 0.35),
-                                    ),
-                                    SizedBox(height: IOSSpacing.mdOf(context)),
-                                    Text(
-                                      localizations.noAssignmentsYet,
-                                      style: IOSTextStyle.subheadline(context)
-                                          .copyWith(
-                                        fontWeight: FontWeight.w600,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface
-                                            .withValues(alpha: 0.75),
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    SizedBox(height: IOSSpacing.smOf(context)),
-                                    Text(
-                                      localizations.newAssignmentsWillAppear,
-                                      style: IOSTextStyle.footnote(context)
-                                          .copyWith(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface
-                                            .withValues(alpha: 0.55),
-                                        height: 1.35,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            if (provider.currentAssignments.isNotEmpty)
-                              const SizedBox(height: IOSSpacing.xxl)
-                            else if (provider.pastAssignments.isNotEmpty)
-                              SizedBox(height: IOSSpacing.mdOf(context)),
-                          ],
 
                           // Past assignments (dashboard.html: collapsible + slicers + one list)
                           if (provider.pastAssignments.isNotEmpty) ...[

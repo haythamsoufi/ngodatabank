@@ -173,6 +173,46 @@ void main() {
     });
   });
 
+  group('Assignment submission/approval detail visibility', () {
+    test('hides submitted/approved rows when reopened to In Progress', () {
+      final a = Assignment(
+        id: 1,
+        name: 'x',
+        status: 'In Progress',
+        completionRate: 0,
+        submittedByUserName: 'Bob',
+        approvedByUserName: 'Admin',
+      );
+      expect(a.showSubmittedByDetails, false);
+      expect(a.showApprovedByDetails, false);
+    });
+
+    test('shows submitted and approved when status is Approved', () {
+      final a = Assignment(
+        id: 1,
+        name: 'x',
+        status: 'Approved',
+        completionRate: 1,
+        submittedByUserName: 'Bob',
+        approvedByUserName: 'Admin',
+      );
+      expect(a.showSubmittedByDetails, true);
+      expect(a.showApprovedByDetails, true);
+    });
+
+    test('shows submitted but not approved for Requires Revision', () {
+      final a = Assignment(
+        id: 1,
+        name: 'x',
+        status: 'Requires Revision',
+        completionRate: 0.5,
+        submittedByUserName: 'Bob',
+      );
+      expect(a.showSubmittedByDetails, true);
+      expect(a.showApprovedByDetails, false);
+    });
+  });
+
   group('Assignment.isEffectivelyClosed', () {
     test('reflects the parsed value', () {
       final open = Assignment.fromJson({

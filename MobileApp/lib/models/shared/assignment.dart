@@ -110,4 +110,21 @@ class Assignment {
     if (dueDate == null) return false;
     return DateTime.now().isAfter(dueDate!) && status != 'Approved';
   }
+
+  /// Submitted/approved accountability fields may remain on the record after reopen;
+  /// only show them when the current status is still in that part of the workflow.
+  bool get showSubmittedByDetails {
+    switch (status.toLowerCase().trim()) {
+      case 'submitted':
+      case 'approved':
+      case 'requires revision':
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  bool get showApprovedByDetails {
+    return status.toLowerCase().trim() == 'approved';
+  }
 }

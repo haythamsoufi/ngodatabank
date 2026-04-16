@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart' as cupertino;
 import 'package:intl/intl.dart';
@@ -6,10 +8,9 @@ import '../l10n/app_localizations.dart';
 import '../models/shared/assignment.dart';
 import '../utils/constants.dart';
 import '../utils/ios_constants.dart';
-import '../utils/theme_extensions.dart';
 import 'shared/elevated_list_card.dart';
 
-class AssignmentCard extends StatelessWidget {
+class AssignmentCard extends StatefulWidget {
   final Assignment assignment;
   final VoidCallback onTap;
   final VoidCallback? onEnterData;
@@ -26,56 +27,199 @@ class AssignmentCard extends StatelessWidget {
   });
 
   @override
+  State<AssignmentCard> createState() => _AssignmentCardState();
+}
+
+class _AssignmentCardState extends State<AssignmentCard>
+    with SingleTickerProviderStateMixin {
+  /// Repeating 0→1→0 while overdue; drives halo / outline flash.
+  AnimationController? _overduePulse;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.assignment.isOverdue) {
+      _overduePulse = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 1350),
+      )..repeat(reverse: true);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant AssignmentCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final was = oldWidget.assignment.isOverdue;
+    final now = widget.assignment.isOverdue;
+    if (was == now) return;
+    if (now) {
+      _overduePulse ??= AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 1350),
+      )..repeat(reverse: true);
+    } else {
+      _overduePulse?.dispose();
+      _overduePulse = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _overduePulse?.dispose();
+    super.dispose();
+  }
+
+  /// Scales overdue glow intensity; [pulse] is 0..1 from [_overduePulse].
+  static double _flashScale(double? pulse) {
+    if (pulse == null) return 1.0;
+    return 0.52 + 0.48 * pulse;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ElevatedListCard(
+    if (widget.assignment.isOverdue && _overduePulse != null) {
+      return AnimatedBuilder(
+        animation: _overduePulse!,
+        builder: (context, _) => _buildCard(context, _overduePulse!.value),
+      );
+    }
+    return _buildCard(context, null);
+  }
+
+  /// [pulse] is null when not flashing; otherwise 0..1 for overdue modulation.
+  Widget _buildCard(BuildContext context, double? pulse) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final overdue = widget.assignment.isOverdue;
+    final baseSurface = elevatedListCardSurfaceColor(theme);
+
+    final error = scheme.error;
+    final isDark = theme.brightness == Brightness.dark;
+    final f = _flashScale(pulse);
+    final surfaceAlpha = (isDark ? 0.10 : 0.06) +
+        (pulse != null ? 0.035 * pulse : 0.0);
+
+    final cardPadEdge = IOSSpacing.mdOf(context) + 2;
+    final cardPadBottom = IOSSpacing.smOf(context) + 2;
+
+    Widget card = ElevatedListCard(
+      marginBottom: 12,
+      borderRadius: IOSDimensions.borderRadiusLargeOf(context),
+      backgroundColor: overdue
+          ? Color.alphaBlend(
+              error.withValues(alpha: surfaceAlpha.clamp(0.0, 1.0)),
+              baseSurface,
+            )
+          : null,
+      outlineColor: overdue
+          ? error.withValues(alpha: pulse != null ? 0.22 + 0.18 * f : 0.35)
+          : scheme.outlineVariant.withValues(alpha: 0.42),
+      boxShadow: overdue
+          ? <BoxShadow>[
+              BoxShadow(
+                color: error.withValues(
+                  alpha: (isDark ? 0.42 : 0.28) * f,
+                ),
+                blurRadius: 18,
+                spreadRadius: 0,
+                offset: const Offset(0, 2),
+              ),
+              BoxShadow(
+                color: error.withValues(
+                  alpha: (isDark ? 0.22 : 0.14) * f,
+                ),
+                blurRadius: 32,
+                spreadRadius: 3 + 2 * (pulse ?? 0.5),
+              ),
+              BoxShadow(
+                color: error.withValues(
+                  alpha: (isDark ? 0.12 : 0.08) * f,
+                ),
+                blurRadius: 48,
+                spreadRadius: 4 + 3 * (pulse ?? 0.5),
+              ),
+            ]
+          : null,
+      padding: EdgeInsets.fromLTRB(
+        cardPadEdge,
+        cardPadEdge,
+        cardPadEdge,
+        cardPadBottom,
+      ),
       child: FlipListCard(
         frontBuilder: (ctx) => _buildFrontFace(ctx),
         backBuilder: (ctx) => _buildBackFace(ctx),
         footerBuilder: (ctx, flip) {
           if (flip.value < 0.5) return const SizedBox.shrink();
-          // Front already has Enter data; back footer only for open-from-back (e.g. past rows).
-          if (showEnterDataButton && onEnterData != null) {
+          if (widget.showEnterDataButton && widget.onEnterData != null) {
             return const SizedBox.shrink();
           }
           return _buildBackFooterActions(ctx);
         },
       ),
     );
+
+    // Gentle horizontal + vertical nudge in sync with the pulse (overdue only).
+    if (pulse != null) {
+      final t = math.sin(pulse * math.pi);
+      card = Transform.translate(
+        offset: Offset(t * 2.6, t * 0.5),
+        child: card,
+      );
+    }
+
+    return card;
   }
 
-  /// Enter data below the flip ([ListCardFooterActions] matches session logs).
+  /// Enter data below the flip (tighter [ListCardFooterActions] than session logs).
   Widget _buildBackFooterActions(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
 
     return ListCardFooterActions(
-      child: _enterDataActionButton(
-        context,
-        onPressed: onTap,
-        label: enterDataButtonText ?? localizations.enterData,
+      dividerTopPadding: 10,
+      gapAfterDivider: 2,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 3),
+        child: _enterDataActionButton(
+          context,
+          onPressed: widget.onTap,
+          label: widget.enterDataButtonText ?? localizations.enterData,
+        ),
       ),
     );
   }
 
-  /// Blue compact [TextButton.icon] used on front (when applicable) and back footer.
+  /// Blue compact action — avoids [TextButton.icon] default label line height (too tall).
   Widget _enterDataActionButton(
     BuildContext context, {
     required VoidCallback onPressed,
     required String label,
   }) {
     final blue = IOSColors.getSystemBlue(context);
-    final buttonStyle = TextButton.styleFrom(
-      foregroundColor: blue,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      minimumSize: Size.zero,
-      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      visualDensity: VisualDensity.compact,
-      alignment: AlignmentDirectional.centerStart,
-    );
-    return TextButton.icon(
-      onPressed: onPressed,
-      icon: Icon(Icons.edit_note_rounded, size: 18, color: blue),
-      label: Text(label),
-      style: buttonStyle,
+    final theme = Theme.of(context);
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(6),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(2, 2, 2, 0),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(Icons.edit_note_rounded, size: 16, color: blue),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: blue,
+                fontSize: 14,
+                height: 1.05,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -195,14 +339,14 @@ class AssignmentCard extends StatelessWidget {
     final localizations = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
-    final titleText = assignment.periodName != null &&
-            assignment.periodName!.isNotEmpty
-        ? '${assignment.templateName ?? assignment.name} - ${assignment.periodName}'
-        : assignment.templateName ?? assignment.name;
+    final titleText = widget.assignment.periodName != null &&
+            widget.assignment.periodName!.isNotEmpty
+        ? '${widget.assignment.templateName ?? widget.assignment.name} - ${widget.assignment.periodName}'
+        : widget.assignment.templateName ?? widget.assignment.name;
 
-    final dueStr = assignment.dueDate != null
-        ? _formatDate(context, assignment.dueDate!)
+    final hasDueDate = widget.assignment.dueDate != null;
+    final dueStr = hasDueDate
+        ? _formatDate(context, widget.assignment.dueDate!)
         : localizations.noDueDate;
 
     return Column(
@@ -212,77 +356,88 @@ class AssignmentCard extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              Icons.assignment_rounded,
-              size: 18,
-              color: scheme.onSurfaceVariant,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                titleText,
-                style: textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  height: 1.25,
-                ),
+            Padding(
+              padding: EdgeInsets.only(top: IOSSpacing.xsOf(context) / 2),
+              child: Icon(
+                Icons.assignment_rounded,
+                size: 22,
+                color: scheme.onSurfaceVariant.withValues(alpha: 0.88),
               ),
             ),
-            const SizedBox(width: 4),
-            _StatusBadge(status: assignment.status),
+            SizedBox(width: IOSSpacing.mdOf(context)),
+            Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      titleText,
+                      style: IOSTextStyle.callout(context).copyWith(
+                        fontWeight: FontWeight.w600,
+                        height: 1.28,
+                        color: scheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: IOSSpacing.smOf(context)),
+                  _StatusBadge(status: widget.assignment.status),
+                ],
+              ),
+            ),
           ],
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: IOSSpacing.mdOf(context)),
         Wrap(
-          spacing: 8,
-          runSpacing: 6,
+          spacing: IOSSpacing.sm,
+          runSpacing: IOSSpacing.sm - 2,
           children: [
             ListMetricChip(
               label: localizations.completion,
-              value: '${assignment.completionRate.toStringAsFixed(0)}%',
+              value: '${widget.assignment.completionRate.toStringAsFixed(0)}%',
+              variant: ListMetricChipVariant.completion,
+              completionAccent: _getCompletionColor(
+                context,
+                widget.assignment.completionRate,
+              ),
             ),
             ListMetricChip(
               label: localizations.dueDate,
               value: dueStr,
+              variant: hasDueDate
+                  ? ListMetricChipVariant.dueDate
+                  : ListMetricChipVariant.dueDateMissing,
+              valueSuffix:
+                  widget.assignment.isOverdue ? localizations.overdue : null,
             ),
-            if (assignment.isOverdue)
-              ListMetricChip(
-                label: '',
-                value: localizations.overdue,
-              ),
           ],
         ),
         ListCardFooterActions(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              if (showEnterDataButton && onEnterData != null)
-                Expanded(
-                  child: Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: _enterDataActionButton(
-                      context,
-                      onPressed: onEnterData!,
-                      label: enterDataButtonText ?? localizations.enterData,
+          dividerTopPadding: 10,
+          gapAfterDivider: 2,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 3),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (widget.showEnterDataButton && widget.onEnterData != null)
+                  Expanded(
+                    child: Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: _enterDataActionButton(
+                        context,
+                        onPressed: widget.onEnterData!,
+                        label: widget.enterDataButtonText ?? localizations.enterData,
+                      ),
                     ),
-                  ),
-                )
-              else
-                const Spacer(),
-              IconButton(
-                onPressed: FlipListCardScope.of(context).toggleFlip,
-                icon: Icon(
-                  Icons.flip_outlined,
-                  size: 20,
+                  )
+                else
+                  const Spacer(),
+                _FlipCardButton(
                   color: scheme.onSurfaceVariant,
+                  onPressed: FlipListCardScope.of(context).toggleFlip,
                 ),
-                style: IconButton.styleFrom(
-                  padding: const EdgeInsets.all(4),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  visualDensity: VisualDensity.compact,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],
@@ -292,156 +447,210 @@ class AssignmentCard extends StatelessWidget {
   Widget _buildBackFace(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final isOverdue = assignment.isOverdue;
+    final scheme = theme.colorScheme;
+    final isOverdue = widget.assignment.isOverdue;
     final completionColor =
-        _getCompletionColor(context, assignment.completionRate);
+        _getCompletionColor(context, widget.assignment.completionRate);
 
     String submittedLine = '';
-    final submitter = assignment.submittedByUserName?.trim();
-    if (submitter != null && submitter.isNotEmpty) {
-      if (assignment.submittedAt != null) {
-        submittedLine =
-            '$submitter\n${localizations.atDatetime(_formatDateTime(context, assignment.submittedAt!))}';
-      } else {
-        submittedLine = submitter;
+    if (widget.assignment.showSubmittedByDetails) {
+      final submitter = widget.assignment.submittedByUserName?.trim();
+      if (submitter != null && submitter.isNotEmpty) {
+        if (widget.assignment.submittedAt != null) {
+          submittedLine =
+              '$submitter\n${localizations.atDatetime(_formatDateTime(context, widget.assignment.submittedAt!))}';
+        } else {
+          submittedLine = submitter;
+        }
+      } else if (widget.assignment.submittedAt != null) {
+        submittedLine = _formatDateTime(context, widget.assignment.submittedAt!);
       }
-    } else if (assignment.submittedAt != null) {
-      submittedLine = _formatDateTime(context, assignment.submittedAt!);
     }
 
     String contributorsValue = '';
-    if (assignment.contributorNames.isNotEmpty) {
-      contributorsValue = assignment.contributorNames.join(', ');
+    if (widget.assignment.contributorNames.isNotEmpty) {
+      contributorsValue = widget.assignment.contributorNames.join(', ');
     }
 
     final publicLines = <String>[];
-    if (assignment.isPublic) {
-      publicLines.add(localizations.publicLinkEnabled);
-    }
-    if (assignment.publicSubmissionCount != null &&
-        assignment.publicSubmissionCount! > 0) {
+    if (widget.assignment.publicSubmissionCount != null &&
+        widget.assignment.publicSubmissionCount! > 0) {
       publicLines.add(
         localizations.receivedCountSubmissionsUsingPublicLink(
-          assignment.publicSubmissionCount!,
+          widget.assignment.publicSubmissionCount!,
         ),
       );
-      if (assignment.latestPublicSubmissionAt != null) {
+      if (widget.assignment.latestPublicSubmissionAt != null) {
         publicLines.add(
           localizations.latestDatetime(
-            _formatDateTime(context, assignment.latestPublicSubmissionAt!),
+            _formatDateTime(context, widget.assignment.latestPublicSubmissionAt!),
           ),
         );
       }
     }
     final publicBlock = publicLines.join('\n');
 
+    final detailTiles = <Widget>[
+      if (widget.assignment.assignedAt != null)
+        _assignmentBackDetail(
+          context,
+          label: localizations.assignmentAssignedDate,
+          value: _formatDateTime(context, widget.assignment.assignedAt!),
+          icon: cupertino.CupertinoIcons.calendar,
+        ),
+      if (widget.assignment.statusTimestamp != null)
+        _assignmentBackDetail(
+          context,
+          label: localizations.assignmentStatusUpdated,
+          value: _formatDateTime(context, widget.assignment.statusTimestamp!),
+          icon: cupertino.CupertinoIcons.time,
+        ),
+      if (widget.assignment.dueDate != null)
+        _assignmentBackDetail(
+          context,
+          label: localizations.dueDate,
+          value: _formatDate(context, widget.assignment.dueDate!),
+          icon: cupertino.CupertinoIcons.flag,
+          valueColor: isOverdue
+              ? const Color(AppConstants.errorColor)
+              : null,
+          valueWeight: isOverdue ? FontWeight.w700 : FontWeight.w500,
+        ),
+      if (submittedLine.isNotEmpty)
+        _assignmentBackDetail(
+          context,
+          label: localizations.assignmentSubmittedBy,
+          value: submittedLine,
+          icon: cupertino.CupertinoIcons.paperplane,
+        ),
+      if (widget.assignment.showApprovedByDetails &&
+          widget.assignment.approvedByUserName != null &&
+          widget.assignment.approvedByUserName!.trim().isNotEmpty)
+        _assignmentBackDetail(
+          context,
+          label: localizations.assignmentApprovedBy,
+          value: widget.assignment.approvedByUserName!.trim(),
+          icon: cupertino.CupertinoIcons.check_mark_circled,
+        ),
+      if (contributorsValue.isNotEmpty)
+        _assignmentBackDetail(
+          context,
+          label: localizations.contributors,
+          value: contributorsValue,
+          icon: cupertino.CupertinoIcons.person_2,
+        )
+      else if (widget.assignment.lastModifiedUserName != null &&
+          widget.assignment.lastModifiedUserName!.trim().isNotEmpty)
+        _assignmentBackDetail(
+          context,
+          label: localizations.lastModifiedBy,
+          value: widget.assignment.lastModifiedUserName!.trim(),
+          icon: cupertino.CupertinoIcons.person,
+        ),
+      if (publicBlock.isNotEmpty)
+        _assignmentBackDetail(
+          context,
+          label: localizations.publicLink,
+          value: publicBlock,
+          icon: cupertino.CupertinoIcons.globe,
+          valueColor: IOSColors.getSystemBlue(context),
+          valueWeight: FontWeight.w600,
+        ),
+    ];
+
+    final colGap = IOSSpacing.smOf(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(
-                  '${assignment.completionRate.toStringAsFixed(0)}%',
-                  style: IOSTextStyle.title3(context).copyWith(
-                    color: completionColor,
+        Container(
+          padding: EdgeInsets.all(IOSSpacing.smOf(context) + 2),
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainerHighest.withValues(alpha: 0.45),
+            borderRadius: BorderRadius.circular(IOSDimensions.borderRadiusMediumOf(context)),
+            border: Border.all(
+              color: scheme.outlineVariant.withValues(alpha: 0.35),
+              width: 0.5,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    '${widget.assignment.completionRate.toStringAsFixed(0)}%',
+                    style: IOSTextStyle.title3(context).copyWith(
+                      color: completionColor,
+                    ),
+                  ),
+                  SizedBox(width: IOSSpacing.xsOf(context) + 2),
+                  Text(
+                    localizations.completion,
+                    style: IOSTextStyle.footnote(context).copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: IOSSpacing.smOf(context)),
+              Container(
+                height: 4,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(2),
+                  color: scheme.outlineVariant.withValues(alpha: 0.25),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(2),
+                  child: LinearProgressIndicator(
+                    value: widget.assignment.completionRate / 100,
+                    minHeight: 4,
+                    backgroundColor: Colors.transparent,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      completionColor,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 6),
-                Text(
-                  localizations.completion,
-                  style: IOSTextStyle.footnote(context),
-                ),
+              ),
+            ],
+          ),
+        ),
+        for (var i = 0; i < detailTiles.length; i += 2)
+          if (i + 1 >= detailTiles.length)
+            detailTiles[i]
+          else
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: detailTiles[i]),
+                SizedBox(width: colGap),
+                Expanded(child: detailTiles[i + 1]),
               ],
             ),
-            const SizedBox(height: 10),
-            Container(
-              height: 3,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(1.5),
-                color: theme.dividerColor.withValues(alpha: 0.2),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(1.5),
-                child: LinearProgressIndicator(
-                  value: assignment.completionRate / 100,
-                  minHeight: 3,
-                  backgroundColor: Colors.transparent,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    completionColor,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        if (assignment.assignedAt != null)
-          _assignmentBackDetail(
-            context,
-            label: localizations.assignmentAssignedDate,
-            value: _formatDateTime(context, assignment.assignedAt!),
-            icon: cupertino.CupertinoIcons.calendar,
-          ),
-        if (assignment.statusTimestamp != null)
-          _assignmentBackDetail(
-            context,
-            label: localizations.assignmentStatusUpdated,
-            value: _formatDateTime(context, assignment.statusTimestamp!),
-            icon: cupertino.CupertinoIcons.time,
-          ),
-        if (assignment.dueDate != null)
-          _assignmentBackDetail(
-            context,
-            label: localizations.dueDate,
-            value: _formatDate(context, assignment.dueDate!),
-            icon: cupertino.CupertinoIcons.flag,
-            valueColor: isOverdue
-                ? const Color(AppConstants.errorColor)
-                : null,
-            valueWeight: isOverdue ? FontWeight.w700 : FontWeight.w500,
-          ),
-        if (submittedLine.isNotEmpty)
-          _assignmentBackDetail(
-            context,
-            label: localizations.assignmentSubmittedBy,
-            value: submittedLine,
-            icon: cupertino.CupertinoIcons.paperplane,
-          ),
-        if (assignment.approvedByUserName != null &&
-            assignment.approvedByUserName!.trim().isNotEmpty)
-          _assignmentBackDetail(
-            context,
-            label: localizations.assignmentApprovedBy,
-            value: assignment.approvedByUserName!.trim(),
-            icon: cupertino.CupertinoIcons.check_mark_circled,
-          ),
-        if (contributorsValue.isNotEmpty)
-          _assignmentBackDetail(
-            context,
-            label: localizations.contributors,
-            value: contributorsValue,
-            icon: cupertino.CupertinoIcons.person_2,
-          )
-        else if (assignment.lastModifiedUserName != null &&
-            assignment.lastModifiedUserName!.trim().isNotEmpty)
-          _assignmentBackDetail(
-            context,
-            label: localizations.lastModifiedBy,
-            value: assignment.lastModifiedUserName!.trim(),
-            icon: cupertino.CupertinoIcons.person,
-          ),
-        if (publicBlock.isNotEmpty)
-          _assignmentBackDetail(
-            context,
-            label: localizations.submittedThroughPublicLink,
-            value: publicBlock,
-            icon: cupertino.CupertinoIcons.globe,
-            valueColor: IOSColors.getSystemBlue(context),
-            valueWeight: FontWeight.w600,
-          ),
       ],
+    );
+  }
+}
+
+/// Avoids [IconButton] default minimum height (~48px), which was stretching the footer row.
+class _FlipCardButton extends StatelessWidget {
+  const _FlipCardButton({
+    required this.color,
+    required this.onPressed,
+  });
+
+  final Color color;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(6),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
+        child: Icon(Icons.flip_outlined, size: 19, color: color),
+      ),
     );
   }
 }
@@ -458,7 +667,8 @@ class _StatusBadge extends StatelessWidget {
       case 'submitted':
         return const Color(0xFF0D9488);
       case 'in progress':
-        return context.navyTextColor;
+        // Yellow-500 — distinct from Pending (amber / [warningColor]).
+        return const Color(0xFFEAB308);
       case 'requires revision':
         return const Color(AppConstants.errorColor);
       case 'pending':
@@ -468,39 +678,82 @@ class _StatusBadge extends StatelessWidget {
     }
   }
 
+  IconData _iconForStatus() {
+    switch (status.toLowerCase().trim()) {
+      case 'approved':
+        return Icons.verified_rounded;
+      case 'submitted':
+        return Icons.task_alt_rounded;
+      case 'in progress':
+        return Icons.hourglass_top_rounded;
+      case 'requires revision':
+        return Icons.edit_note_rounded;
+      case 'pending':
+        return Icons.schedule_rounded;
+      default:
+        return Icons.flag_rounded;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
     final statusColor = _getStatusColor(context);
     final localizedStatus = localizations.localizeStatus(status);
+    final isDark = theme.brightness == Brightness.dark;
 
-    final fill = Color.alphaBlend(
-      statusColor.withValues(alpha: 0.26),
-      scheme.surface,
-    );
+    // Tinted fill only (no blend onto grey surfaces — avoids muddy grey in the pill).
+    final fill = statusColor.withValues(alpha: isDark ? 0.26 : 0.14);
+
+    final radius = IOSDimensions.borderRadiusMediumOf(context);
+    final gap = IOSSpacing.xsOf(context) + 1;
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 3,
+      padding: EdgeInsets.symmetric(
+        horizontal: IOSSpacing.xsOf(context) + 4,
+        vertical: IOSSpacing.xsOf(context) + 1,
       ),
       decoration: BoxDecoration(
         color: fill,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(radius),
         border: Border.all(
-          color: statusColor.withValues(alpha: 0.55),
+          color: statusColor.withValues(alpha: isDark ? 0.55 : 0.45),
           width: 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: statusColor.withValues(alpha: isDark ? 0.18 : 0.12),
+            blurRadius: 5,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
-      child: Text(
-        localizedStatus,
-        style: TextStyle(
-          color: statusColor,
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.2,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            _iconForStatus(),
+            size: IOSIconSize.scaled(context, 14),
+            color: statusColor,
+          ),
+          SizedBox(width: gap),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 104),
+            child: Text(
+              localizedStatus,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              softWrap: false,
+              style: IOSTextStyle.caption1(context).copyWith(
+                color: statusColor,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.15,
+                height: 1.15,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

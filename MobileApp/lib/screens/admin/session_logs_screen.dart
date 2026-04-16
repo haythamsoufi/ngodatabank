@@ -396,7 +396,7 @@ Future<void> showSessionPathBreakdownSheet(
               child: ListView.separated(
                 shrinkWrap: true,
                 itemCount: entries.length,
-                separatorBuilder: (_, __) => Divider(
+                separatorBuilder: (context, _) => Divider(
                   height: 1,
                   color: scheme.outlineVariant.withValues(alpha: 0.5),
                 ),

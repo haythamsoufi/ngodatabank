@@ -2,6 +2,9 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../utils/constants.dart';
+import '../../utils/ios_constants.dart';
+
 /// Surface fill for bordered list cards: white in light theme, elevated
 /// container tint in dark.
 Color elevatedListCardSurfaceColor(ThemeData theme) {
@@ -18,80 +21,215 @@ class ElevatedListCard extends StatelessWidget {
     required this.child,
     this.marginBottom = 10,
     this.padding = const EdgeInsets.fromLTRB(14, 12, 14, 12),
+    this.borderRadius = 12,
+    this.outlineColor,
+    this.backgroundColor,
+    this.boxShadow,
   });
 
   final Widget child;
   final double marginBottom;
   final EdgeInsetsGeometry padding;
+  final double borderRadius;
+  /// Optional hairline border (e.g. [ColorScheme.outlineVariant]) for definition on grouped backgrounds.
+  final Color? outlineColor;
+  /// When set, replaces the default elevated surface (e.g. overdue tint on assignment cards).
+  final Color? backgroundColor;
+  /// Soft outer glow (e.g. red halo for overdue). Drawn outside [Material] so radius matches the card.
+  final List<BoxShadow>? boxShadow;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final surfaceColor = elevatedListCardSurfaceColor(theme);
+    final surfaceColor =
+        backgroundColor ?? elevatedListCardSurfaceColor(theme);
+    final side = outlineColor != null
+        ? BorderSide(color: outlineColor!, width: 0.5)
+        : BorderSide.none;
+
+    final radius = BorderRadius.circular(borderRadius);
+    Widget material = Material(
+      color: surfaceColor,
+      elevation: 0,
+      shadowColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: radius,
+        side: side,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: padding,
+        child: child,
+      ),
+    );
+
+    final shadows = boxShadow;
+    if (shadows != null && shadows.isNotEmpty) {
+      material = DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: radius,
+          boxShadow: shadows,
+        ),
+        child: material,
+      );
+    }
 
     return Padding(
       padding: EdgeInsets.only(bottom: marginBottom),
-      child: Material(
-        color: surfaceColor,
-        elevation: 0,
-        shadowColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Padding(
-          padding: padding,
-          child: child,
-        ),
-      ),
+      child: material,
     );
   }
 }
 
-/// Compact label + value chip for list rows.
+/// Semantic styling for [ListMetricChip] (completion vs due date).
+enum ListMetricChipVariant {
+  neutral,
+  completion,
+  dueDate,
+  /// No due date set — lower contrast than [dueDate].
+  dueDateMissing,
+}
+
+/// Label above value, with a left accent stripe (assignment metrics).
 class ListMetricChip extends StatelessWidget {
   const ListMetricChip({
     super.key,
     required this.label,
     required this.value,
+    this.variant = ListMetricChipVariant.neutral,
+    this.valueSuffix,
+    /// When [variant] is [completion], drives stripe/fill/value (default: success green).
+    this.completionAccent,
   });
 
   final String label;
   final String value;
+  final ListMetricChipVariant variant;
+  /// Shown beside [value] (e.g. “Overdue” in error colour when past due).
+  final String? valueSuffix;
+  final Color? completionAccent;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final brightness = theme.brightness;
+    final suffix = valueSuffix;
+
+    final Color accent;
+    final Color fill;
+    final Color frame;
+    final Color valueColor;
+
+    switch (variant) {
+      case ListMetricChipVariant.completion:
+        accent = completionAccent ?? const Color(AppConstants.successColor);
+        fill = accent.withValues(alpha: brightness == Brightness.dark ? 0.16 : 0.09);
+        frame = accent.withValues(alpha: brightness == Brightness.dark ? 0.42 : 0.28);
+        valueColor = accent;
+      case ListMetricChipVariant.dueDate:
+        accent = IOSColors.getSystemBlue(context);
+        fill = accent.withValues(alpha: brightness == Brightness.dark ? 0.18 : 0.09);
+        frame = accent.withValues(alpha: brightness == Brightness.dark ? 0.45 : 0.28);
+        valueColor = accent;
+      case ListMetricChipVariant.dueDateMissing:
+        accent = scheme.outlineVariant.withValues(alpha: 0.9);
+        fill = scheme.surfaceContainerHighest.withValues(alpha: brightness == Brightness.dark ? 0.35 : 0.65);
+        frame = scheme.outlineVariant.withValues(alpha: 0.32);
+        valueColor = scheme.onSurfaceVariant.withValues(alpha: 0.72);
+      case ListMetricChipVariant.neutral:
+        accent = scheme.outline;
+        fill = scheme.surfaceContainerHigh.withValues(alpha: 0.88);
+        frame = scheme.outlineVariant.withValues(alpha: 0.45);
+        valueColor = scheme.onSurface;
+    }
+
+    final bool mutedDue = variant == ListMetricChipVariant.dueDateMissing;
+    final TextStyle? valueTextStyle = mutedDue
+        ? theme.textTheme.bodySmall?.copyWith(
+            fontWeight: FontWeight.w500,
+            letterSpacing: 0.05,
+            height: 1.2,
+            color: valueColor,
+          )
+        : theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.1,
+            height: 1.15,
+            color: valueColor,
+          );
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      constraints: const BoxConstraints(minWidth: 0),
       decoration: BoxDecoration(
-        color: scheme.surfaceContainerHigh.withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: scheme.outlineVariant.withValues(alpha: 0.35),
-        ),
+        color: fill,
+        borderRadius: BorderRadius.circular(10),
+        // Uniform border color so [borderRadius] is valid (Flutter forbids mixed colors + radius).
+        border: Border.all(color: frame, width: 0.5),
       ),
-      child: Text.rich(
-        TextSpan(
-          children: [
-            if (label.isNotEmpty)
-              TextSpan(
-                text: '$label ',
-                style: textTheme.labelSmall?.copyWith(
-                  color: scheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w500,
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        clipBehavior: Clip.hardEdge,
+        children: [
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 3,
+            child: ColoredBox(color: accent),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(10, 8, 12, 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (label.isNotEmpty) ...[
+                  Text(
+                    label,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: mutedDue
+                          ? scheme.onSurfaceVariant.withValues(alpha: 0.65)
+                          : scheme.onSurfaceVariant,
+                      fontWeight: mutedDue ? FontWeight.w500 : FontWeight.w600,
+                      letterSpacing: mutedDue ? 0.25 : 0.35,
+                      height: 1.1,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                ],
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 2,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(
+                      value,
+                      style: valueTextStyle,
+                    ),
+                    if (suffix != null && suffix.isNotEmpty)
+                      Text(
+                        suffix,
+                        style: mutedDue
+                            ? theme.textTheme.bodySmall?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.15,
+                                height: 1.2,
+                                color: scheme.error.withValues(alpha: 0.85),
+                              )
+                            : theme.textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.2,
+                                height: 1.15,
+                                color: scheme.error,
+                              ),
+                      ),
+                  ],
                 ),
-              ),
-            TextSpan(
-              text: value,
-              style: textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.2,
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -102,9 +240,15 @@ class ListCardFooterActions extends StatelessWidget {
   const ListCardFooterActions({
     super.key,
     required this.child,
+    this.dividerTopPadding = 10,
+    this.gapAfterDivider = 6,
   });
 
   final Widget child;
+  /// Space above the hairline (smaller values tighten the footer block).
+  final double dividerTopPadding;
+  /// Space between divider and [child].
+  final double gapAfterDivider;
 
   @override
   Widget build(BuildContext context) {
@@ -114,14 +258,14 @@ class ListCardFooterActions extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Padding(
-          padding: const EdgeInsets.only(top: 10),
+          padding: EdgeInsets.only(top: dividerTopPadding),
           child: Divider(
             height: 1,
             thickness: 1,
             color: scheme.outlineVariant.withValues(alpha: 0.45),
           ),
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: gapAfterDivider),
         child,
       ],
     );

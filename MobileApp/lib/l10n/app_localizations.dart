@@ -353,6 +353,9 @@ class AppLocalizations {
       'active': 'Active',
       'completed': 'Completed',
       'current_assignments': 'Current Assignments',
+      'dashboard_you_have_no_open_assignments': 'You have no open assignments',
+      'dashboard_you_have_one_open_assignment': 'You have 1 open assignment',
+      'dashboard_you_have_open_assignments_count': 'You have %s open assignments',
       'past_assignments': 'Past Assignments',
       'assignments_for': 'Assignments for',
       'past_submissions_for': 'Past Submissions for',
@@ -453,6 +456,7 @@ class AppLocalizations {
       'assignment_submitted_by': 'Submitted by',
       'assignment_approved_by': 'Approved by',
       'public_link_enabled': 'Public link enabled',
+      'public_link': 'Public link',
       'unknown': 'Unknown',
       'n_a': 'N/A',
       'enter_data': 'Enter Data',
@@ -1359,6 +1363,9 @@ class AppLocalizations {
       'active': 'Activo',
       'completed': 'Completado',
       'current_assignments': 'Asignaciones Actuales',
+      'dashboard_you_have_no_open_assignments': 'No tienes asignaciones abiertas',
+      'dashboard_you_have_one_open_assignment': 'Tienes 1 asignación abierta',
+      'dashboard_you_have_open_assignments_count': 'Tienes %s asignaciones abiertas',
       'past_assignments': 'Asignaciones Pasadas',
       'assignments_for': 'Asignaciones para',
       'past_submissions_for': 'Envíos Pasados para',
@@ -1461,6 +1468,7 @@ class AppLocalizations {
       'assignment_submitted_by': 'Enviado por',
       'assignment_approved_by': 'Aprobado por',
       'public_link_enabled': 'Enlace público activo',
+      'public_link': 'Enlace público',
       'unknown': 'Desconocido',
       'n_a': 'N/A',
       'enter_data': 'Ingresar Datos',
@@ -2239,6 +2247,12 @@ class AppLocalizations {
       'active': 'Actif',
       'completed': 'Terminé',
       'current_assignments': 'Assignations Actuelles',
+      'dashboard_you_have_no_open_assignments':
+          'Vous n\'avez aucune assignation ouverte',
+      'dashboard_you_have_one_open_assignment':
+          'Vous avez 1 assignation ouverte',
+      'dashboard_you_have_open_assignments_count':
+          'Vous avez %s assignations ouvertes',
       'past_assignments': 'Assignations Passées',
       'assignments_for': 'Assignations pour',
       'past_submissions_for': 'Soumissions Passées pour',
@@ -2341,6 +2355,7 @@ class AppLocalizations {
       'assignment_submitted_by': 'Soumis par',
       'assignment_approved_by': 'Approuvé par',
       'public_link_enabled': 'Lien public activé',
+      'public_link': 'Lien public',
       'unknown': 'Inconnu',
       'n_a': 'N/A',
       'enter_data': 'Saisir les Données',
@@ -3120,6 +3135,9 @@ class AppLocalizations {
       'active': 'نشط',
       'completed': 'مكتمل',
       'current_assignments': 'المهام الحالية',
+      'dashboard_you_have_no_open_assignments': 'ليس لديك مهام مفتوحة',
+      'dashboard_you_have_one_open_assignment': 'لديك مهمة مفتوحة واحدة',
+      'dashboard_you_have_open_assignments_count': 'لديك %s مهام مفتوحة',
       'past_assignments': 'المهام السابقة',
       'assignments_for': 'المهام لـ',
       'past_submissions_for': 'التقديمات السابقة لـ',
@@ -3218,6 +3236,7 @@ class AppLocalizations {
       'assignment_submitted_by': 'مُرسل من قبل',
       'assignment_approved_by': 'اعتمد من قبل',
       'public_link_enabled': 'رابط عام مفعّل',
+      'public_link': 'رابط عام',
       'unknown': 'غير معروف',
       'n_a': 'غير متاح',
       'enter_data': 'إدخال البيانات',
@@ -3976,6 +3995,12 @@ class AppLocalizations {
       'active': 'सक्रिय',
       'completed': 'पूर्ण',
       'current_assignments': 'वर्तमान असाइनमेंट',
+      'dashboard_you_have_no_open_assignments':
+          'आपके पास कोई खुला असाइनमेंट नहीं है',
+      'dashboard_you_have_one_open_assignment':
+          'आपके पास 1 खुला असाइनमेंट है',
+      'dashboard_you_have_open_assignments_count':
+          'आपके पास %s खुले असाइनमेंट हैं',
       'past_assignments': 'पिछले असाइनमेंट',
       'assignments_for': 'के लिए असाइनमेंट',
       'past_submissions_for': 'के लिए पिछले सबमिशन',
@@ -4075,6 +4100,7 @@ class AppLocalizations {
       'assignment_submitted_by': 'जमा किया गया',
       'assignment_approved_by': 'अनुमोदित किया गया',
       'public_link_enabled': 'सार्वजनिक लिंक सक्रिय',
+      'public_link': 'सार्वजनिक लिंक',
       'unknown': 'अज्ञात',
       'n_a': 'अनुपलब्ध',
       'enter_data': 'डेटा दर्ज करें',
@@ -4847,6 +4873,12 @@ class AppLocalizations {
       'active': 'Активный',
       'completed': 'Завершен',
       'current_assignments': 'Текущие Назначения',
+      'dashboard_you_have_no_open_assignments':
+          'У вас нет открытых назначений',
+      'dashboard_you_have_one_open_assignment':
+          'У вас 1 открытое назначение',
+      'dashboard_you_have_open_assignments_count':
+          'У вас %s открытых назначений',
       'past_assignments': 'Прошлые Назначения',
       'assignments_for': 'Назначения для',
       'past_submissions_for': 'Прошлые Отправки для',
@@ -4949,6 +4981,7 @@ class AppLocalizations {
       'assignment_submitted_by': 'Отправил(а)',
       'assignment_approved_by': 'Утвердил(а)',
       'public_link_enabled': 'Публичная ссылка включена',
+      'public_link': 'Публичная ссылка',
       'unknown': 'Неизвестно',
       'n_a': 'Н/Д',
       'enter_data': 'Ввести Данные',
@@ -5714,6 +5747,9 @@ class AppLocalizations {
       'active': '活跃',
       'completed': '已完成',
       'current_assignments': '当前任务',
+      'dashboard_you_have_no_open_assignments': '您没有进行中的任务',
+      'dashboard_you_have_one_open_assignment': '您有 1 个进行中的任务',
+      'dashboard_you_have_open_assignments_count': '您有 %s 个进行中的任务',
       'past_assignments': '过往任务',
       'assignments_for': '的任务',
       'past_submissions_for': '的过往提交',
@@ -5804,6 +5840,7 @@ class AppLocalizations {
       'assignment_submitted_by': '提交者',
       'assignment_approved_by': '审批者',
       'public_link_enabled': '公开链接已启用',
+      'public_link': '公开链接',
       'unknown': '未知',
       'n_a': '不适用',
       'enter_data': '输入数据',
@@ -6760,6 +6797,19 @@ class AppLocalizations {
   String get active => translate('active');
   String get completed => translate('completed');
   String get currentAssignments => translate('current_assignments');
+
+  /// Short title for the open-assignments group (e.g. "You have 3 open assignments").
+  String dashboardYouHaveOpenAssignmentsTitle(int count) {
+    if (count <= 0) {
+      return translate('dashboard_you_have_no_open_assignments');
+    }
+    if (count == 1) {
+      return translate('dashboard_you_have_one_open_assignment');
+    }
+    return translate('dashboard_you_have_open_assignments_count')
+        .replaceAll('%s', '$count');
+  }
+
   String get pastAssignments => translate('past_assignments');
   String get assignmentsFor => translate('assignments_for');
   String get pastSubmissionsFor => translate('past_submissions_for');
@@ -6887,6 +6937,7 @@ class AppLocalizations {
   String get assignmentSubmittedBy => translate('assignment_submitted_by');
   String get assignmentApprovedBy => translate('assignment_approved_by');
   String get publicLinkEnabled => translate('public_link_enabled');
+  String get publicLink => translate('public_link');
   String get unknown => translate('unknown');
   String get nA => translate('n_a');
   String get enterData => translate('enter_data');
