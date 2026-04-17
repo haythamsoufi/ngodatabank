@@ -12,14 +12,24 @@ class AppRoutes {
   static const String adminDashboard = '/admin/dashboard';
   static const String templates = '/admin/templates';
   static const String assignments = '/admin/assignments';
+
+  /// Native assignment summary (pass `AdminAssignment` as route `arguments`).
+  static String assignmentDetail(int assignmentId) =>
+      '/admin/assignments/$assignmentId';
   static const String users = '/admin/users';
   static const String accessRequests = '/admin/access-requests';
   static const String documentManagement = '/admin/documents';
+
+  /// Native document summary (pass [Document] as route `arguments`).
+  static String documentDetail(int documentId) => '/admin/documents/$documentId';
   static const String translationManagement = '/admin/translations/manage';
   static const String translationEntryDetail = '/admin/translations/entry';
   static const String pluginManagement = '/admin/plugins';
   static const String systemConfiguration = '/admin/settings';
   static const String resourcesManagement = '/admin/resources';
+
+  /// Native resource summary (pass [Resource] as route `arguments`).
+  static String resourceDetail(int resourceId) => '/admin/resources/$resourceId';
   static const String organizationalStructure = '/admin/organization';
   static String editEntity(int id, [String? entityType]) => entityType != null
       ? '/admin/organization/edit/$entityType/$id'
@@ -90,6 +100,13 @@ class AppRoutes {
       return id != null;
     }
 
+    if (path.startsWith('/admin/assignments/')) {
+      final parts = path.split('/');
+      if (parts.length == 4) {
+        return int.tryParse(parts[3]) != null;
+      }
+    }
+
     if (path.startsWith('/admin/organization/edit/')) {
       final parts = path.split('/');
       if (parts.length == 6) {
@@ -97,6 +114,22 @@ class AppRoutes {
       }
       if (parts.length == 5) {
         return int.tryParse(parts[4]) != null;
+      }
+    }
+
+    // Document detail: /admin/documents/{id} (not edit/serve/download/…)
+    if (path.startsWith('/admin/documents/')) {
+      final parts = path.split('/').where((s) => s.isNotEmpty).toList();
+      if (parts.length == 3 && parts[0] == 'admin' && parts[1] == 'documents') {
+        return int.tryParse(parts[2]) != null;
+      }
+    }
+
+    // Resource detail: /admin/resources/{id} (not new/edit/…)
+    if (path.startsWith('/admin/resources/')) {
+      final parts = path.split('/').where((s) => s.isNotEmpty).toList();
+      if (parts.length == 3 && parts[0] == 'admin' && parts[1] == 'resources') {
+        return int.tryParse(parts[2]) != null;
       }
     }
     return false;

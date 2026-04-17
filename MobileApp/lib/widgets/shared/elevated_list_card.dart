@@ -90,7 +90,7 @@ enum ListMetricChipVariant {
   dueDateMissing,
 }
 
-/// Label above value, with a left accent stripe (assignment metrics).
+/// Label + value on one line (wraps when narrow), with a left accent stripe.
 class ListMetricChip extends StatelessWidget {
   const ListMetricChip({
     super.key,
@@ -180,11 +180,12 @@ class ListMetricChip extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(10, 8, 12, 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 2,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                if (label.isNotEmpty) ...[
+                if (label.isNotEmpty)
                   Text(
                     label,
                     style: theme.textTheme.labelSmall?.copyWith(
@@ -196,36 +197,27 @@ class ListMetricChip extends StatelessWidget {
                       height: 1.1,
                     ),
                   ),
-                  const SizedBox(height: 3),
-                ],
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 2,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text(
-                      value,
-                      style: valueTextStyle,
-                    ),
-                    if (suffix != null && suffix.isNotEmpty)
-                      Text(
-                        suffix,
-                        style: mutedDue
-                            ? theme.textTheme.bodySmall?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.15,
-                                height: 1.2,
-                                color: scheme.error.withValues(alpha: 0.85),
-                              )
-                            : theme.textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.2,
-                                height: 1.15,
-                                color: scheme.error,
-                              ),
-                      ),
-                  ],
+                Text(
+                  value,
+                  style: valueTextStyle,
                 ),
+                if (suffix != null && suffix.isNotEmpty)
+                  Text(
+                    suffix,
+                    style: mutedDue
+                        ? theme.textTheme.bodySmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.15,
+                            height: 1.2,
+                            color: scheme.error.withValues(alpha: 0.85),
+                          )
+                        : theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.2,
+                            height: 1.15,
+                            color: scheme.error,
+                          ),
+                  ),
               ],
             ),
           ),

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/admin/templates_provider.dart';
 import '../../providers/shared/auth_provider.dart';
-import '../../models/shared/template.dart';
 import '../../utils/theme_extensions.dart';
 import '../../config/routes.dart';
 import '../../utils/navigation_helper.dart';
@@ -29,76 +28,6 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
 
   void _loadTemplates() {
     Provider.of<TemplatesProvider>(context, listen: false).loadTemplates();
-  }
-
-  Future<void> _handleDelete(Template template) async {
-    final localizations = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(localizations.deleteTemplate),
-        content: Text(
-          template.dataCount != null && template.dataCount! > 0
-              ? localizations.templateDeleteHasData(template.dataCount!)
-              : localizations.templateDeleteSimple,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(localizations.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
-            child: Text(localizations.delete),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      if (!mounted) return;
-      final provider = Provider.of<TemplatesProvider>(context, listen: false);
-      final success = await provider.deleteTemplate(template.id);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(success
-                ? localizations.templateDeletedSuccessfully
-                : localizations.failedToDeleteTemplate),
-            backgroundColor: success ? Colors.green : Colors.red,
-          ),
-        );
-
-        if (success) {
-          _loadTemplates();
-        }
-      }
-    }
-  }
-
-  Future<void> _handleDuplicate(Template template) async {
-    final provider = Provider.of<TemplatesProvider>(context, listen: false);
-    final success = await provider.duplicateTemplate(template.id);
-
-    if (mounted) {
-      final loc = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(success
-              ? loc.templateDuplicatedSuccess
-              : loc.templateDuplicateFailed),
-          backgroundColor: success ? Colors.green : Colors.red,
-        ),
-      );
-
-      if (success) {
-        _loadTemplates();
-      }
-    }
   }
 
   @override
@@ -294,18 +223,12 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
                                           '/admin/templates/edit/${template.id}',
                                     );
                                     break;
-                                  case 'duplicate':
-                                    _handleDuplicate(template);
-                                    break;
                                   case 'preview':
                                     Navigator.of(context).pushNamed(
                                       AppRoutes.webview,
                                       arguments:
-                                          '/forms/preview-template/${template.id}',
+                                          '/forms/templates/preview/${template.id}',
                                     );
-                                    break;
-                                  case 'delete':
-                                    _handleDelete(template);
                                     break;
                                 }
                               },
@@ -324,17 +247,6 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
                                     ),
                                   ),
                                   PopupMenuItem(
-                                    value: 'duplicate',
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.copy,
-                                            size: 20, color: context.iconColor),
-                                        const SizedBox(width: 8),
-                                        Text(localizations.duplicate),
-                                      ],
-                                    ),
-                                  ),
-                                  PopupMenuItem(
                                     value: 'preview',
                                     child: Row(
                                       children: [
@@ -342,17 +254,6 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
                                             size: 20, color: Colors.green),
                                         const SizedBox(width: 8),
                                         Text(localizations.preview),
-                                      ],
-                                    ),
-                                  ),
-                                  PopupMenuItem(
-                                    value: 'delete',
-                                    child: Row(
-                                      children: [
-                                        const Icon(Icons.delete,
-                                            size: 20, color: Colors.red),
-                                        const SizedBox(width: 8),
-                                        Text(localizations.delete),
                                       ],
                                     ),
                                   ),

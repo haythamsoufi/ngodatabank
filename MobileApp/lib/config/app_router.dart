@@ -26,9 +26,16 @@ import '../screens/public/leaderboard_screen.dart';
 // Admin screens
 import '../screens/admin/templates_screen.dart';
 import '../screens/admin/assignments_screen.dart';
+import '../screens/admin/assignment_detail_screen.dart';
+import '../models/admin/admin_assignment.dart';
+import '../l10n/app_localizations.dart';
 import '../screens/admin/admin_screen.dart';
 import '../screens/admin/admin_dashboard_screen.dart';
 import '../screens/admin/document_management_screen.dart';
+import '../screens/admin/document_detail_screen.dart';
+import '../screens/admin/resource_detail_screen.dart';
+import '../models/shared/document.dart';
+import '../models/shared/resource.dart';
 import '../screens/admin/translation_management_screen.dart';
 import '../screens/admin/translation_entry_detail_screen.dart';
 import '../screens/admin/resources_management_screen.dart';
@@ -208,6 +215,162 @@ class AppRouter {
           settings: settings,
           builder: (context) => NSStructureScreen(countryId: countryId),
         );
+      }
+    }
+
+    // Document detail: /admin/documents/{id} (requires `Document` in arguments)
+    if (settings.name != null &&
+        settings.name!.startsWith('/admin/documents/')) {
+      final parts =
+          settings.name!.split('/').where((s) => s.isNotEmpty).toList();
+      if (parts.length == 3 &&
+          parts[0] == 'admin' &&
+          parts[1] == 'documents') {
+        final id = int.tryParse(parts[2]);
+        if (id != null) {
+          final args = settings.arguments;
+          Document? document;
+          if (args is Document) {
+            document = args;
+          } else if (args is Map) {
+            try {
+              document = Document.fromJson(
+                Map<String, dynamic>.from(args),
+              );
+            } catch (_) {
+              document = null;
+            }
+          }
+          if (document != null) {
+            return MaterialPageRoute<void>(
+              settings: settings,
+              builder: (context) =>
+                  DocumentDetailScreen(document: document!),
+            );
+          }
+          return MaterialPageRoute<void>(
+            settings: settings,
+            builder: (context) => Scaffold(
+              appBar: AppAppBar(
+                title: AppLocalizations.of(context)?.indicatorDetailDetails ??
+                    'Details',
+              ),
+              body: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(
+                    AppLocalizations.of(context)?.assignmentDetailMissingData ??
+                        'Open this item from the list.',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+      }
+    }
+
+    // Resource detail: /admin/resources/{id} (requires `Resource` in arguments)
+    if (settings.name != null &&
+        settings.name!.startsWith('/admin/resources/')) {
+      final parts =
+          settings.name!.split('/').where((s) => s.isNotEmpty).toList();
+      if (parts.length == 3 &&
+          parts[0] == 'admin' &&
+          parts[1] == 'resources') {
+        final id = int.tryParse(parts[2]);
+        if (id != null) {
+          final args = settings.arguments;
+          Resource? resource;
+          if (args is Resource) {
+            resource = args;
+          } else if (args is Map) {
+            try {
+              resource = Resource.fromJson(
+                Map<String, dynamic>.from(args),
+              );
+            } catch (_) {
+              resource = null;
+            }
+          }
+          if (resource != null) {
+            return MaterialPageRoute<void>(
+              settings: settings,
+              builder: (context) =>
+                  ResourceDetailScreen(resource: resource!),
+            );
+          }
+          return MaterialPageRoute<void>(
+            settings: settings,
+            builder: (context) => Scaffold(
+              appBar: AppAppBar(
+                title: AppLocalizations.of(context)?.indicatorDetailDetails ??
+                    'Details',
+              ),
+              body: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(
+                    AppLocalizations.of(context)?.assignmentDetailMissingData ??
+                        'Open this item from the list.',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+      }
+    }
+
+    // Assignment detail: /admin/assignments/{id} (requires `AdminAssignment` in arguments)
+    if (settings.name != null &&
+        settings.name!.startsWith('/admin/assignments/')) {
+      final parts = settings.name!.split('/');
+      if (parts.length >= 4) {
+        final id = int.tryParse(parts[3]);
+        if (id != null) {
+          final args = settings.arguments;
+          AdminAssignment? assignment;
+          if (args is AdminAssignment) {
+            assignment = args;
+          } else if (args is Map) {
+            try {
+              assignment = AdminAssignment.fromJson(
+                Map<String, dynamic>.from(args),
+              );
+            } catch (_) {
+              assignment = null;
+            }
+          }
+          if (assignment != null) {
+            return MaterialPageRoute<void>(
+              settings: settings,
+              builder: (context) =>
+                  AssignmentDetailScreen(assignment: assignment!),
+            );
+          }
+          return MaterialPageRoute<void>(
+            settings: settings,
+            builder: (context) => Scaffold(
+              appBar: AppAppBar(
+                title: AppLocalizations.of(context)?.assignmentDetails ??
+                    'Assignment details',
+              ),
+              body: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(
+                    AppLocalizations.of(context)?.assignmentDetailMissingData ??
+                        'Open this assignment from the list.',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
       }
     }
 

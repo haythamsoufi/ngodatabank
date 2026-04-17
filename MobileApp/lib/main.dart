@@ -48,12 +48,13 @@ import 'utils/theme.dart';
 import 'utils/layout_scale.dart';
 import 'widgets/session_expiration_warning.dart';
 import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:home_widget/home_widget.dart';
 import 'services/audit_trail_home_widget_sync.dart';
 import 'services/launcher_shortcuts_service.dart';
 import 'services/deep_link_service.dart';
+import 'services/app_build_metadata.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 // Sentry import - use prefix to avoid conflicts
 import 'package:sentry_flutter/sentry_flutter.dart' as sentry;
@@ -80,6 +81,17 @@ void main() async {
 
   // Load environment variables (e.g., MOBILE_APP_API_KEY, BACKEND_URL)
   await dotenv.load(fileName: '.env', isOptional: true);
+
+  await AppBuildMetadata.ensureInitialized();
+
+  if (kDebugMode && AppConfig.isImplicitProductionBackendDefault) {
+    DebugLogger.logWarn(
+        'CONFIG',
+        'Using default production backoffice URL (${AppConfig.backendUrl}). '
+        'For local or staging, set BACKEND_URL in .env or --dart-define, or use '
+        '--dart-define=DEVELOPMENT=true, STAGING=true, or DEMO=true. '
+        'See MobileApp/run_mobile_with_urls.bat and MobileApp/README.md.');
+  }
 
   DebugLogger.applyStartupLogPolicy(
     envVerboseLogs: dotenv.env['VERBOSE_LOGS']?.toLowerCase() == 'true',

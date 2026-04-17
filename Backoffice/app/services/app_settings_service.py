@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Sequence
@@ -967,6 +968,104 @@ def set_chatbot_name(name: str, user_id: Optional[int] = None) -> bool:
     data = read_settings()
     data[CHATBOT_NAME_KEY] = normalized
     return write_settings(data, user_id=user_id)
+
+
+# ---------------------------------------------------------------------------
+# Mobile app minimum version (/api/mobile/v1 X-App-Version enforcement)
+# ---------------------------------------------------------------------------
+
+MOBILE_MIN_APP_VERSION_KEY = "mobile_min_app_version"
+_MOBILE_MIN_SEMVER_PATTERN = re.compile(r"^\d+(\.\d+)*$")
+
+
+def get_mobile_min_app_version() -> Optional[str]:
+    """Minimum mobile app semver enforced for ``/api/mobile/v1`` (426 below min).
+
+    Precedence: database (admin System Configuration) → ``MOBILE_MIN_APP_VERSION``
+    env → :data:`current_app.config['MOBILE_MIN_APP_VERSION']` (tests / legacy).
+
+    Returns ``None`` when unset (no enforcement).
+    """
+    if SystemSettings is not None and has_app_context():
+        try:
+            raw = SystemSettings.get_value(MOBILE_MIN_APP_VERSION_KEY)
+            if isinstance(raw, str) and raw.strip():
+                return raw.strip()
+        except Exception as e:
+            logger.debug("get_mobile_min_app_version DB read failed: %s", e)
+
+    env_v = (os.environ.get("MOBILE_MIN_APP_VERSION") or "").strip()
+    if env_v:
+        return env_v
+
+    try:
+        if has_app_context() and current_app is not None:
+            cfg = current_app.config.get("MOBILE_MIN_APP_VERSION")
+            if isinstance(cfg, str) and cfg.strip():
+                return cfg.strip()
+    except Exception:
+        pass
+    return None
+
+
+def set_mobile_min_app_version(version: str, *, user_id: Optional[int] = None) -> bool:
+    """Persist minimum mobile semver. Empty string removes enforcement (deletes row)."""
+    if version is None:
+        version = ""
+    if not isinstance(version, str):
+        raise ValueError("mobile_min_app_version must be a string")
+
+    normalized = version.strip()
+    if normalized:
+        if len(normalized) > 32:
+            raise ValueError("Version is too long (max 32 characters)")
+        if not _MOBILE_MIN_SEMVER_PATTERN.match(normalized):
+            raise ValueError("Use numeric semver segments only (e.g. 1.2.0)")
+
+    if SystemSettings is None or db is None or not has_app_context():
+        data = read_settings()
+        if normalized:
+            data[MOBILE_MIN_APP_VERSION_KEY] = normalized
+        else:
+            data.pop(MOBILE_MIN_APP_VERSION_KEY, None)
+        return write_settings(data, user_id=user_id)
+
+    try:
+        from app.utils.datetime_helpers import utcnow
+
+        existing = SystemSettings.query.filter_by(
+            setting_key=MOBILE_MIN_APP_VERSION_KEY
+        ).first()
+        if not normalized:
+            if existing:
+                db.session.delete(existing)
+                db.session.commit()
+            return True
+        if existing:
+            existing.setting_value = normalized
+            existing.description = (
+                "Minimum mobile app version for /api/mobile/v1 (X-App-Version)."
+            )
+            if user_id:
+                existing.updated_by_user_id = user_id
+            existing.updated_at = utcnow()
+        else:
+            db.session.add(
+                SystemSettings(
+                    setting_key=MOBILE_MIN_APP_VERSION_KEY,
+                    setting_value=normalized,
+                    description=(
+                        "Minimum mobile app version for /api/mobile/v1 (X-App-Version)."
+                    ),
+                    updated_by_user_id=user_id,
+                )
+            )
+        db.session.commit()
+        return True
+    except Exception as e:
+        logger.error("set_mobile_min_app_version failed: %s", e, exc_info=True)
+        db.session.rollback()
+        return False
 
 
 # ---------------------------------------------------------------------------

@@ -54,7 +54,7 @@ class Resource {
               .toList() ??
           const [],
       fileLanguages: (json['file_languages'] as List<dynamic>?)
-              ?.map((e) => e.toString())
+              ?.map((e) => e.toString().toLowerCase())
               .toList() ??
           const [],
       subcategory: json['subcategory'] != null
@@ -64,5 +64,23 @@ class Resource {
           : null,
       isPublished: json['is_published'] as bool? ?? true,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'default_title': title,
+      'resource_type': resourceType,
+      'language': language,
+      'publication_date': publicationDate?.toUtc().toIso8601String().split('T').first,
+      'description': description,
+      'thumbnail_url': thumbnailUrl,
+      'file_url': fileUrl,
+      'available_languages': availableLanguages,
+      'file_languages': fileLanguages,
+      'subcategory': subcategory?.toJson(),
+      'is_published': isPublished,
+    };
   }
 }

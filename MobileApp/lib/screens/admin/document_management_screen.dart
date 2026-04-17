@@ -5,6 +5,8 @@ import '../../providers/shared/auth_provider.dart';
 import '../../models/shared/document.dart';
 import '../../widgets/app_bar.dart';
 import '../../widgets/bottom_navigation_bar.dart';
+import '../../widgets/admin_filter_panel.dart';
+import '../../widgets/admin_filters_bottom_sheet.dart';
 import '../../config/routes.dart';
 import '../../utils/constants.dart';
 import '../../utils/theme_extensions.dart';
@@ -28,7 +30,7 @@ class _DocumentManagementScreenState extends State<DocumentManagementScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadDocuments();
+      _applyFilters();
     });
   }
 
@@ -38,7 +40,7 @@ class _DocumentManagementScreenState extends State<DocumentManagementScreen> {
     super.dispose();
   }
 
-  void _loadDocuments() {
+  void _applyFilters() {
     final provider =
         Provider.of<DocumentManagementProvider>(context, listen: false);
     provider.loadDocuments(
@@ -48,69 +50,198 @@ class _DocumentManagementScreenState extends State<DocumentManagementScreen> {
     );
   }
 
-  void _showDocumentActions(BuildContext context, Document document) {
+  void _clearFilters() {
+    setState(() {
+      _searchQuery = '';
+      _searchController.clear();
+      _selectedStatusFilter = null;
+      _selectedTypeFilter = null;
+    });
+    Provider.of<DocumentManagementProvider>(context, listen: false)
+        .loadDocuments();
+  }
+
+  Future<void> _openFiltersBottomSheet() async {
+    final loc = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final localizations = AppLocalizations.of(context)!;
-    showModalBottomSheet(
+    await showAdminFiltersBottomSheet<void>(
       context: context,
-      backgroundColor: theme.cardTheme.color,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 12, bottom: 8),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: context.textSecondaryColor.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            ListTile(
-              leading:
-                  Icon(Icons.edit, color: Color(AppConstants.ifrcRed)),
-              title: Text(localizations.editDocument),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.of(context).pushNamed(
-                  AppRoutes.webview,
-                  arguments: '/admin/documents/edit/${document.id}',
-                );
-              },
-            ),
-            ListTile(
-              leading:
-                  Icon(Icons.preview, color: Color(AppConstants.ifrcRed)),
-              title: Text(localizations.previewDocument),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.of(context).pushNamed(
-                  AppRoutes.webview,
-                  arguments: '/admin/documents/serve/${document.id}',
-                );
-              },
-            ),
-            if (document.fileName != null)
-              ListTile(
-                leading: Icon(Icons.download,
-                    color: Color(AppConstants.ifrcRed)),
-                title: Text(localizations.downloadDocument),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.of(context).pushNamed(
-                    AppRoutes.webview,
-                    arguments: '/admin/documents/download/${document.id}',
-                  );
+      builder: (sheetContext, setModalState) {
+        return AdminFilterPanel(
+          title: loc.adminFilters,
+          surfaceCard: false,
+          actions: AdminFilterPanelActions(
+            applyLabel: loc.adminFiltersApply,
+            clearLabel: loc.adminFiltersClear,
+            onApply: () {
+              _applyFilters();
+              Navigator.of(sheetContext).pop();
+            },
+            onClear: () {
+              _clearFilters();
+              setModalState(() {});
+              Navigator.of(sheetContext).pop();
+            },
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextField(
+                controller: _searchController,
+                style: theme.textTheme.bodyLarge,
+                decoration: InputDecoration(
+                  labelText: loc.searchDocuments,
+                  hintStyle: TextStyle(color: sheetContext.textSecondaryColor),
+                  prefixIcon:
+                      Icon(Icons.search, color: sheetContext.iconColor),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: Icon(Icons.clear, color: sheetContext.iconColor),
+                          onPressed: () {
+                            setState(() {
+                              _searchQuery = '';
+                              _searchController.clear();
+                            });
+                            setModalState(() {});
+                          },
+                        )
+                      : null,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: sheetContext.borderColor),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: sheetContext.borderColor),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Color(AppConstants.ifrcRed),
+                      width: 2,
+                    ),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
+                onChanged: (v) {
+                  setState(() => _searchQuery = v);
+                  setModalState(() {});
                 },
               ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
+              AdminFilterPanel.fieldGap,
+              DropdownButtonFormField<String?>(
+                initialValue: _selectedStatusFilter,
+                isExpanded: true,
+                decoration: InputDecoration(
+                  labelText: loc.status,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
+                  ),
+                  isDense: true,
+                ),
+                items: [
+                  DropdownMenuItem<String?>(
+                    value: null,
+                    child: Text(
+                      loc.allStatus,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  DropdownMenuItem<String?>(
+                    value: 'approved',
+                    child: Text(
+                      loc.approved,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const DropdownMenuItem<String?>(
+                    value: 'pending',
+                    child: Text(
+                      'Pending',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const DropdownMenuItem<String?>(
+                    value: 'rejected',
+                    child: Text(
+                      'Rejected',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+                onChanged: (value) {
+                  setState(() => _selectedStatusFilter = value);
+                  setModalState(() {});
+                },
+              ),
+              AdminFilterPanel.fieldGap,
+              DropdownButtonFormField<String?>(
+                initialValue: _selectedTypeFilter,
+                isExpanded: true,
+                decoration: InputDecoration(
+                  labelText: loc.type,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
+                  ),
+                  isDense: true,
+                ),
+                items: [
+                  DropdownMenuItem<String?>(
+                    value: null,
+                    child: Text(
+                      loc.allTypes,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const DropdownMenuItem<String?>(
+                    value: 'report',
+                    child: Text(
+                      'Report',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  DropdownMenuItem<String?>(
+                    value: 'publication',
+                    child: Text(
+                      loc.publication,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const DropdownMenuItem<String?>(
+                    value: 'cover_image',
+                    child: Text(
+                      'Cover Image',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+                onChanged: (value) {
+                  setState(() => _selectedTypeFilter = value);
+                  setModalState(() {});
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _openDocumentDetail(Document document) {
+    Navigator.of(context).pushNamed(
+      AppRoutes.documentDetail(document.id),
+      arguments: document,
     );
   }
 
@@ -124,309 +255,124 @@ class _DocumentManagementScreenState extends State<DocumentManagementScreen> {
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppAppBar(
         title: localizations.documentManagement,
-        actions: const [
-          // Add actions if needed
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.tune),
+            tooltip: localizations.adminFilters,
+            onPressed: _openFiltersBottomSheet,
+          ),
         ],
       ),
       body: ColoredBox(
         color: theme.scaffoldBackgroundColor,
-        child: Column(
-          children: [
-            // Search and Filters
-            Container(
-              padding: const EdgeInsets.all(16),
-              color: theme.cardTheme.color,
-              child: Column(
-                children: [
-                  TextField(
-                    controller: _searchController,
-                    style: theme.textTheme.bodyLarge,
-                    decoration: InputDecoration(
-                      hintText: localizations.searchDocuments,
-                      hintStyle: TextStyle(color: context.textSecondaryColor),
-                      prefixIcon: Icon(Icons.search, color: context.iconColor),
-                      suffixIcon: _searchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: Icon(Icons.clear, color: context.iconColor),
-                              onPressed: () {
-                                setState(() {
-                                  _searchQuery = '';
-                                  _searchController.clear();
-                                });
-                              },
-                            )
-                          : null,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: context.borderColor),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: context.borderColor),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                          color: Color(AppConstants.ifrcRed),
-                          width: 2,
-                        ),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+        child: Consumer<DocumentManagementProvider>(
+          builder: (context, provider, child) {
+            if (provider.isLoading && provider.documents.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Color(AppConstants.ifrcRed),
                       ),
                     ),
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value;
-                      });
-                      _loadDocuments();
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  // Filters Row
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: DropdownButtonFormField<String>(
-                          initialValue: _selectedStatusFilter,
-                          isExpanded: true,
-                          decoration: InputDecoration(
-                            labelText: localizations.status,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 12,
-                            ),
-                            isDense: true,
-                          ),
-                          items: [
-                            DropdownMenuItem<String>(
-                              value: null,
-                              child: Text(
-                                localizations.allStatus,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            DropdownMenuItem<String>(
-                              value: 'approved',
-                              child: Text(
-                                localizations.approved,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const DropdownMenuItem<String>(
-                              value: 'pending',
-                              child: Text(
-                                'Pending',
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const DropdownMenuItem<String>(
-                              value: 'rejected',
-                              child: Text(
-                                'Rejected',
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedStatusFilter = value;
-                            });
-                            _loadDocuments();
-                          },
-                        ),
+                    const SizedBox(height: 16),
+                    Text(
+                      AppLocalizations.of(context)!.loadingDocuments,
+                      style: TextStyle(
+                        color: context.textSecondaryColor,
+                        fontSize: 14,
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        flex: 1,
-                        child: DropdownButtonFormField<String>(
-                          initialValue: _selectedTypeFilter,
-                          isExpanded: true,
-                          decoration: InputDecoration(
-                            labelText: localizations.type,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 12,
-                            ),
-                            isDense: true,
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            if (provider.error != null && provider.documents.isEmpty) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: Color(AppConstants.errorColor),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        provider.error!,
+                        style: TextStyle(
+                          color: context.textSecondaryColor,
+                          fontSize: 14,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          provider.clearError();
+                          _applyFilters();
+                        },
+                        icon: const Icon(Icons.refresh, size: 18),
+                        label: Text(localizations.retry),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Color(AppConstants.ifrcRed),
+                          side: BorderSide(
+                            color: Color(AppConstants.ifrcRed),
                           ),
-                          items: [
-                            DropdownMenuItem<String>(
-                              value: null,
-                              child: Text(
-                                localizations.allTypes,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const DropdownMenuItem<String>(
-                              value: 'report',
-                              child: Text(
-                                'Report',
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            DropdownMenuItem<String>(
-                              value: 'publication',
-                              child: Text(
-                                localizations.publication,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const DropdownMenuItem<String>(
-                              value: 'cover_image',
-                              child: Text(
-                                'Cover Image',
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedTypeFilter = value;
-                            });
-                            _loadDocuments();
-                          },
                         ),
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
-            // Documents List
-            Expanded(
-              child: Consumer<DocumentManagementProvider>(
-                builder: (context, provider, child) {
-                  if (provider.isLoading && provider.documents.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Color(AppConstants.ifrcRed),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            AppLocalizations.of(context)!.loadingDocuments,
-                            style: TextStyle(
-                              color: context.textSecondaryColor,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
+                ),
+              );
+            }
 
-                  if (provider.error != null && provider.documents.isEmpty) {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.error_outline,
-                              size: 48,
-                              color: Color(AppConstants.errorColor),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              provider.error!,
-                              style: TextStyle(
-                                color: context.textSecondaryColor,
-                                fontSize: 14,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 24),
-                            OutlinedButton.icon(
-                              onPressed: () {
-                                provider.clearError();
-                                _loadDocuments();
-                              },
-                              icon: const Icon(Icons.refresh, size: 18),
-                              label: Text(localizations.retry),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor:
-                                    Color(AppConstants.ifrcRed),
-                                side: BorderSide(
-                                  color: Color(AppConstants.ifrcRed),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-
-                  if (provider.documents.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.description_outlined,
-                            size: 56,
-                            color: context.textSecondaryColor,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            localizations.noDocumentsFound,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: context.textColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  return RefreshIndicator(
-                    onRefresh: () async => _loadDocuments(),
-                    color: Color(AppConstants.ifrcRed),
-                    child: ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: provider.documents.length,
-                      itemBuilder: (context, index) {
-                        final document = provider.documents[index];
-                        return _DocumentCard(
-                          document: document,
-                          onTap: () => _showDocumentActions(context, document),
-                        );
-                      },
+            if (provider.documents.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.description_outlined,
+                      size: 56,
+                      color: context.textSecondaryColor,
                     ),
+                    const SizedBox(height: 16),
+                    Text(
+                      localizations.noDocumentsFound,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: context.textColor,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            return RefreshIndicator(
+              onRefresh: () async => _applyFilters(),
+              color: Color(AppConstants.ifrcRed),
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: provider.documents.length,
+                itemBuilder: (context, index) {
+                  final document = provider.documents[index];
+                  return _DocumentCard(
+                    document: document,
+                    onTap: () => _openDocumentDetail(document),
                   );
                 },
               ),
-            ),
-          ],
+            );
+          },
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'document_management_upload_button',
-        onPressed: () {
-          Navigator.of(context).pushNamed(
-            AppRoutes.webview,
-            arguments: '/admin/documents/upload',
-          );
-        },
-        backgroundColor: Color(AppConstants.ifrcRed),
-        icon: const Icon(Icons.upload),
-        label: Text(localizations.uploadDocument),
       ),
       bottomNavigationBar: AppBottomNavigationBar(
         currentIndex: AppBottomNavigationBar.adminTabNavIndex(

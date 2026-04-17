@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -69,18 +71,26 @@ class AppNavigationDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final languageProvider =
-        Provider.of<LanguageProvider>(context, listen: false);
+    final languageProvider = Provider.of<LanguageProvider>(
+      context,
+      listen: false,
+    );
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final user = authProvider.user;
     final isAuthenticated = authProvider.isAuthenticated;
     final isFocalPoint = user?.isFocalPoint ?? false;
     final language = languageProvider.currentLanguage;
 
+    final drawerWidth = math.min(
+      MediaQuery.sizeOf(context).width * 0.88,
+      320.0,
+    );
+
     return Drawer(
+      width: drawerWidth,
       backgroundColor: theme.colorScheme.surface,
-      elevation: 1,
-      shadowColor: Colors.black.withValues(alpha: 0.1),
+      elevation: 2,
+      shadowColor: Colors.black.withValues(alpha: 0.14),
       surfaceTintColor: Colors.transparent,
       shape: modernDrawerShape(),
       child: SafeArea(
@@ -90,17 +100,24 @@ class AppNavigationDrawer extends StatelessWidget {
             ModernDrawerHeader(
               title: localizations.navigation,
               user: isAuthenticated ? user : null,
-              onProfileTap:
-                  isAuthenticated ? () => _openUserSettings(context) : null,
+              onProfileTap: isAuthenticated
+                  ? () => _openUserSettings(context)
+                  : null,
               profileTapSemanticLabel: localizations.settings,
             ),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.only(bottom: IOSSpacing.lg),
+                padding: const EdgeInsets.fromLTRB(
+                  0,
+                  IOSSpacing.sm,
+                  0,
+                  IOSSpacing.lg,
+                ),
                 children: [
                   ModernDrawerTile(
                     icon: Icons.home_rounded,
                     title: localizations.home,
+                    selected: activeScreen == ActiveDrawerScreen.home,
                     onTap: () {
                       if (activeScreen == ActiveDrawerScreen.home) {
                         Navigator.pop(context);
@@ -117,6 +134,7 @@ class AppNavigationDrawer extends StatelessWidget {
                   ModernDrawerTile(
                     icon: Icons.library_books_rounded,
                     title: localizations.indicatorBank,
+                    selected: activeScreen == ActiveDrawerScreen.indicatorBank,
                     onTap: () {
                       if (activeScreen == ActiveDrawerScreen.indicatorBank) {
                         Navigator.pop(context);
@@ -152,16 +170,15 @@ class AppNavigationDrawer extends StatelessWidget {
                     ModernDrawerTile(
                       icon: Icons.notifications_rounded,
                       title: localizations.notifications,
-                      onTap: () => _closeAndNavigate(
-                        context,
-                        AppRoutes.notifications,
-                      ),
+                      onTap: () =>
+                          _closeAndNavigate(context, AppRoutes.notifications),
                     )
                   else
-                  ModernDrawerTile(
-                    icon: Icons.folder_rounded,
-                    title: localizations.resources,
-                    onTap: () {
+                    ModernDrawerTile(
+                      icon: Icons.folder_rounded,
+                      title: localizations.resources,
+                      selected: activeScreen == ActiveDrawerScreen.resources,
+                      onTap: () {
                         if (activeScreen == ActiveDrawerScreen.resources) {
                           Navigator.pop(context);
                         } else {
@@ -191,8 +208,9 @@ class AppNavigationDrawer extends StatelessWidget {
                       if (idx >= 0) {
                         NavigationHelper.navigateToMainTab(context, idx);
                       } else {
-                        Navigator.of(context)
-                            .pushNamed(AppRoutes.unifiedPlanningDocuments);
+                        Navigator.of(
+                          context,
+                        ).pushNamed(AppRoutes.unifiedPlanningDocuments);
                       }
                     },
                   ),
@@ -227,10 +245,9 @@ class AppNavigationDrawer extends StatelessWidget {
                         '/dataviz',
                         language,
                       );
-                      Navigator.of(context).pushNamed(
-                        AppRoutes.webview,
-                        arguments: fullUrl,
-                      );
+                      Navigator.of(
+                        context,
+                      ).pushNamed(AppRoutes.webview, arguments: fullUrl);
                     },
                   ),
                 ],

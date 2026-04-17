@@ -16,4 +16,10 @@ class ResourceSubcategory {
       displayOrder: json['display_order'] as int? ?? 0,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'display_order': displayOrder,
+      };
 }

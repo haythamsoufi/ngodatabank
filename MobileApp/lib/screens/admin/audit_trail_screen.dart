@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+
+import '../../config/routes.dart';
 import '../../l10n/app_localizations.dart';
 import '../../providers/admin/audit_trail_provider.dart';
+import '../../providers/admin/manage_users_provider.dart';
 import '../../providers/shared/auth_provider.dart';
+import '../../utils/admin_screen_view_logging_mixin.dart';
+import '../../utils/constants.dart';
+import '../../utils/theme_extensions.dart';
 import '../../widgets/admin_filter_panel.dart';
 import '../../widgets/admin_filters_bottom_sheet.dart';
 import '../../widgets/app_bar.dart';
 import '../../widgets/bottom_navigation_bar.dart';
-import '../../config/routes.dart';
-import '../../utils/admin_screen_view_logging_mixin.dart';
-import '../../utils/constants.dart';
-import '../../utils/theme_extensions.dart';
 
 class AuditTrailScreen extends StatefulWidget {
   const AuditTrailScreen({super.key});
@@ -21,10 +24,11 @@ class AuditTrailScreen extends StatefulWidget {
 
 class _AuditTrailScreenState extends State<AuditTrailScreen>
     with AdminScreenViewLoggingMixin {
-  final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
-  String? _selectedActionFilter;
-  String? _selectedUserFilter;
+  final TextEditingController _userEmailController = TextEditingController();
+  /// Picked from directory dropdown; combined with [ _userEmailController ] in
+  /// [_effectiveUserEmailForApi].
+  String? _selectedUserEmail;
+  String? _activityTypeFilter;
   DateTime? _selectedDateFrom;
   DateTime? _selectedDateTo;
 
@@ -35,25 +39,49 @@ class _AuditTrailScreenState extends State<AuditTrailScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _applyFilters();
+      if (!mounted) return;
+      context.read<ManageUsersProvider>().loadUsers();
+      _applyFilters();
     });
   }
 
   @override
   void dispose() {
-    _searchController.dispose();
+    _userEmailController.dispose();
     super.dispose();
   }
 
   static String _formatDate(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
+  /// Prefer partial text when it diverges from the dropdown pick; otherwise
+  /// directory email, then free-text email filter.
+  String? _effectiveUserEmailForApi() {
+    final text = _userEmailController.text.trim();
+    final sel = _selectedUserEmail;
+    if (text.isNotEmpty && sel != null && text != sel) {
+      return text;
+    }
+    if (sel != null && sel.isNotEmpty) return sel;
+    if (text.isNotEmpty) return text;
+    return null;
+  }
+
   void _applyFilters() {
     final provider = Provider.of<AuditTrailProvider>(context, listen: false);
     provider.loadAuditLogs(
-      search: _searchQuery.isNotEmpty ? _searchQuery : null,
-      actionFilter: _selectedActionFilter,
-      userFilter: _selectedUserFilter,
+      userEmailContains: _effectiveUserEmailForApi(),
+      activityTypeFilter: _activityTypeFilter,
+      dateFrom: _selectedDateFrom,
+      dateTo: _selectedDateTo,
+    );
+  }
+
+  void _loadMore() {
+    final provider = Provider.of<AuditTrailProvider>(context, listen: false);
+    provider.loadMoreAuditLogs(
+      userEmailContains: _effectiveUserEmailForApi(),
+      activityTypeFilter: _activityTypeFilter,
       dateFrom: _selectedDateFrom,
       dateTo: _selectedDateTo,
     );
@@ -61,10 +89,9 @@ class _AuditTrailScreenState extends State<AuditTrailScreen>
 
   void _clearFilters() {
     setState(() {
-      _searchQuery = '';
-      _searchController.clear();
-      _selectedActionFilter = null;
-      _selectedUserFilter = null;
+      _selectedUserEmail = null;
+      _userEmailController.clear();
+      _activityTypeFilter = null;
       _selectedDateFrom = null;
       _selectedDateTo = null;
     });
@@ -74,6 +101,10 @@ class _AuditTrailScreenState extends State<AuditTrailScreen>
 
   Future<void> _openFiltersBottomSheet() async {
     final loc = AppLocalizations.of(context)!;
+    final usersProv = context.read<ManageUsersProvider>();
+    if (usersProv.users.isEmpty && !usersProv.isLoading) {
+      await usersProv.loadUsers();
+    }
     await showAdminFiltersBottomSheet<void>(
       context: context,
       builder: (sheetContext, setModalState) {
@@ -96,51 +127,131 @@ class _AuditTrailScreenState extends State<AuditTrailScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Consumer<ManageUsersProvider>(
+                builder: (context, usersProv, _) {
+                  if (usersProv.isLoading && usersProv.users.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: LinearProgressIndicator(
+                        minHeight: 3,
+                        color: Color(AppConstants.ifrcRed),
+                        backgroundColor:
+                            Theme.of(context).colorScheme.surfaceContainerHighest,
+                      ),
+                    );
+                  }
+                  if (usersProv.error != null && usersProv.users.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        usersProv.error!,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    );
+                  }
+                  if (usersProv.users.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+                  final sorted = [...usersProv.users]..sort(
+                      (a, b) => a.email.toLowerCase().compareTo(b.email.toLowerCase()),
+                    );
+                  final knownEmails = sorted.map((u) => u.email).toSet();
+                  final dropdownValue = _selectedUserEmail != null &&
+                          knownEmails.contains(_selectedUserEmail)
+                      ? _selectedUserEmail
+                      : null;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      DropdownButtonFormField<String?>(
+                        value: dropdownValue,
+                        isExpanded: true,
+                        menuMaxHeight: 360,
+                        decoration: InputDecoration(
+                          labelText: loc.user,
+                        ),
+                        items: [
+                          DropdownMenuItem<String?>(
+                            value: null,
+                            child: Text(loc.allUsers),
+                          ),
+                          ...sorted.map((u) {
+                            final name = u.name?.trim();
+                            final label = (name != null && name.isNotEmpty)
+                                ? '$name (${u.email})'
+                                : u.email;
+                            return DropdownMenuItem<String?>(
+                              value: u.email,
+                              child: Text(
+                                label,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            );
+                          }),
+                        ],
+                        onChanged: (v) {
+                          setState(() {
+                            _selectedUserEmail = v;
+                            if (v != null) {
+                              _userEmailController.text = v;
+                            } else {
+                              _userEmailController.clear();
+                            }
+                          });
+                          setModalState(() {});
+                        },
+                      ),
+                      AdminFilterPanel.fieldGap,
+                    ],
+                  );
+                },
+              ),
               TextField(
-                controller: _searchController,
+                controller: _userEmailController,
                 decoration: InputDecoration(
-                  labelText: loc.searchAuditLogs,
-                  prefixIcon: const Icon(Icons.search),
+                  labelText: loc.loginLogsEmailHint,
+                  hintText: loc.sessionLogsEmailHint,
+                  prefixIcon: const Icon(Icons.person_search_outlined),
                 ),
-                onChanged: (v) {
-                  setState(() => _searchQuery = v);
-                  setModalState(() {});
-                },
+                keyboardType: TextInputType.emailAddress,
+                autocorrect: false,
+                onChanged: (_) => setModalState(() {}),
               ),
               AdminFilterPanel.fieldGap,
-              DropdownButtonFormField<String>(
-                initialValue: _selectedActionFilter,
-                decoration: InputDecoration(labelText: loc.action),
+              DropdownButtonFormField<String?>(
+                value: _activityTypeFilter,
+                decoration:
+                    InputDecoration(labelText: loc.auditTrailActivityLabel),
                 items: [
-                  DropdownMenuItem(
+                  DropdownMenuItem<String?>(
                       value: null, child: Text(loc.allActions)),
-                  DropdownMenuItem(
-                      value: 'create', child: Text(loc.create)),
-                  DropdownMenuItem(
-                      value: 'update', child: Text(loc.update)),
-                  DropdownMenuItem(
-                      value: 'delete', child: Text(loc.delete)),
-                  DropdownMenuItem(
-                      value: 'login', child: Text(loc.login)),
-                  DropdownMenuItem(
-                      value: 'logout', child: Text(loc.logout)),
+                  DropdownMenuItem<String?>(
+                    value: 'login',
+                    child: Text(loc.loginLogsEventLogin),
+                  ),
+                  DropdownMenuItem<String?>(
+                    value: 'logout',
+                    child: Text(loc.loginLogsEventLogout),
+                  ),
+                  DropdownMenuItem<String?>(
+                    value: 'page_view',
+                    child: Text(loc.sessionLogsPageViews),
+                  ),
+                  DropdownMenuItem<String?>(
+                    value: 'password_change',
+                    child: Text(loc.changePassword),
+                  ),
+                  DropdownMenuItem<String?>(
+                    value: 'profile_update',
+                    child: Text(loc.profile),
+                  ),
                 ],
                 onChanged: (v) {
-                  setState(() => _selectedActionFilter = v);
-                  setModalState(() {});
-                },
-              ),
-              AdminFilterPanel.fieldGap,
-              DropdownButtonFormField<String>(
-                initialValue: _selectedUserFilter,
-                decoration: InputDecoration(labelText: loc.user),
-                items: [
-                  DropdownMenuItem(
-                      value: null, child: Text(loc.allUsers)),
-                  // User list populated from API
-                ],
-                onChanged: (v) {
-                  setState(() => _selectedUserFilter = v);
+                  setState(() => _activityTypeFilter = v);
                   setModalState(() {});
                 },
               ),
@@ -200,7 +311,6 @@ class _AuditTrailScreenState extends State<AuditTrailScreen>
                   ),
                 ),
               ),
-
             ],
           ),
         );
@@ -208,10 +318,38 @@ class _AuditTrailScreenState extends State<AuditTrailScreen>
     );
   }
 
+  String _primaryLine(Map<String, dynamic> log, AppLocalizations loc) {
+    final desc = (log['description'] ?? '').toString().trim();
+    if (desc.isNotEmpty) return desc;
+    final at = (log['activity_type'] ?? log['action'] ?? '').toString();
+    final ep = (log['endpoint'] ?? '').toString();
+    if (at.isNotEmpty && ep.isNotEmpty) return '$at · $ep';
+    if (at.isNotEmpty) return at;
+    if (ep.isNotEmpty) return ep;
+    return loc.noDescription;
+  }
+
+  String _humanizeActivityType(String? raw) {
+    if (raw == null || raw.isEmpty) return '';
+    return raw.replaceAll('_', ' ');
+  }
+
+  String _formatTimestamp(String? iso, String localeName) {
+    if (iso == null || iso.isEmpty) return '—';
+    final dt = DateTime.tryParse(iso);
+    if (dt == null) return iso;
+    try {
+      return DateFormat.yMMMd(localeName).add_Hm().format(dt.toLocal());
+    } catch (_) {
+      return iso;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final localeName = Localizations.localeOf(context).toString();
     final chatbot = context.watch<AuthProvider>().user?.chatbotEnabled ?? false;
 
     return Scaffold(
@@ -294,20 +432,21 @@ class _AuditTrailScreenState extends State<AuditTrailScreen>
           }
 
           if (provider.auditLogs.isEmpty) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.history_outlined,
                     size: 56,
                     color: Color(AppConstants.textSecondary),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Text(
-                    'No audit logs found',
-                    style: TextStyle(
-                      fontSize: 18,
+                    localizations.auditTrailNoEntries,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: Color(AppConstants.textColor),
                     ),
@@ -322,9 +461,47 @@ class _AuditTrailScreenState extends State<AuditTrailScreen>
             color: Color(AppConstants.ifrcRed),
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: provider.auditLogs.length,
+              itemCount: (provider.totalCount > 0 ? 1 : 0) +
+                  provider.auditLogs.length +
+                  (provider.hasMore ? 1 : 0),
               itemBuilder: (context, index) {
-                final log = provider.auditLogs[index];
+                final headerRows = provider.totalCount > 0 ? 1 : 0;
+                if (headerRows == 1 && index == 0) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Text(
+                      localizations.sessionLogsTotalCount(provider.totalCount),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: context.textSecondaryColor,
+                      ),
+                    ),
+                  );
+                }
+
+                final logIndex = index - headerRows;
+                if (logIndex == provider.auditLogs.length) {
+                  return _AuditTrailLoadMoreFooter(
+                    provider: provider,
+                    onLoadMore: _loadMore,
+                  );
+                }
+
+                final log = provider.auditLogs[logIndex];
+                final title = _primaryLine(log, localizations);
+                final activityRaw =
+                    (log['activity_type'] ?? log['action'])?.toString();
+                final activityLabel = _humanizeActivityType(activityRaw);
+                final userLine =
+                    (log['user_display'] ?? log['user'] ?? '').toString();
+                final userSubtitle =
+                    (log['user_subtitle'] ?? '').toString().trim();
+                final ts = _formatTimestamp(
+                  log['timestamp']?.toString(),
+                  localeName,
+                );
+
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
                   elevation: 0,
@@ -336,63 +513,104 @@ class _AuditTrailScreenState extends State<AuditTrailScreen>
                     ),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
                               child: Text(
-                                log['description']?.toString() ??
-                                    localizations.noDescription,
+                                title,
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 15,
                                   fontWeight: FontWeight.w600,
                                   color: context.textColor,
                                 ),
                               ),
                             ),
-                            if (log['action'] != null)
+                            if (activityRaw != null &&
+                                activityRaw.isNotEmpty) ...[
+                              const SizedBox(width: 8),
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 8,
                                   vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: context.navyBackgroundColor(
-                                      opacity: 0.1),
+                                  color: context.navyBackgroundColor(opacity: 0.1),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
-                                  log['action'].toString(),
+                                  activityLabel.isNotEmpty
+                                      ? activityLabel
+                                      : activityRaw,
                                   style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
                                     color: context.navyTextColor,
                                   ),
                                 ),
                               ),
+                            ],
                           ],
                         ),
-                        if (log['user'] != null) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            'User: ${log['user']}',
-                            style: TextStyle(
-                              fontSize: 14,
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.schedule,
+                              size: 14,
                               color: context.textSecondaryColor,
                             ),
-                          ),
-                        ],
-                        if (log['timestamp'] != null) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            'Time: ${log['timestamp']}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: context.textSecondaryColor,
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                ts,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: context.textSecondaryColor,
+                                ),
+                              ),
                             ),
+                          ],
+                        ),
+                        if (userLine.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(
+                                Icons.person_outline,
+                                size: 16,
+                                color: context.textSecondaryColor,
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      userLine,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                        color: context.textColor,
+                                      ),
+                                    ),
+                                    if (userSubtitle.isNotEmpty)
+                                      Text(
+                                        userSubtitle,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: context.textSecondaryColor,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ],
@@ -414,6 +632,40 @@ class _AuditTrailScreenState extends State<AuditTrailScreen>
             return route.isFirst || route.settings.name == AppRoutes.dashboard;
           });
         },
+      ),
+    );
+  }
+}
+
+class _AuditTrailLoadMoreFooter extends StatelessWidget {
+  const _AuditTrailLoadMoreFooter({
+    required this.provider,
+    required this.onLoadMore,
+  });
+
+  final AuditTrailProvider provider;
+  final VoidCallback onLoadMore;
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    if (provider.isLoadingMore) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 20),
+        child: Center(
+          child: SizedBox(
+            width: 28,
+            height: 28,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 8, 0, 24),
+      child: OutlinedButton(
+        onPressed: onLoadMore,
+        child: Text(loc.sessionLogsLoadMore),
       ),
     );
   }

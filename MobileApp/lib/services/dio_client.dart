@@ -1,9 +1,14 @@
 import 'package:dio/dio.dart';
+
+import '../config/api_timeouts.dart';
 import '../config/app_config.dart';
 import '../utils/debug_logger.dart';
+import 'api_service.dart';
+import 'app_build_metadata.dart';
 import 'jwt_token_service.dart';
-import 'storage_service.dart';
+import 'mobile_platform_headers.dart';
 import 'push_notification_service.dart';
+import 'storage_service.dart';
 
 /// Dio-based HTTP client with built-in auth, retry, and logging interceptors.
 ///
@@ -25,9 +30,9 @@ class DioClient {
   DioClient._internal() {
     dio = Dio(BaseOptions(
       baseUrl: AppConfig.baseApiUrl,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 30),
-      sendTimeout: const Duration(seconds: 30),
+      connectTimeout: ApiTimeouts.connect,
+      receiveTimeout: ApiTimeouts.receive,
+      sendTimeout: ApiTimeouts.send,
       headers: {
         'Accept': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
@@ -36,6 +41,7 @@ class DioClient {
 
     dio.interceptors.addAll([
       _AuthInterceptor(),
+      _UnauthorizedInterceptor(),
       _RetryInterceptor(),
       _LoggingInterceptor(),
     ]);
@@ -105,6 +111,18 @@ class _AuthInterceptor extends Interceptor {
   @override
   Future<void> onRequest(
       RequestOptions options, RequestInterceptorHandler handler) async {
+    await MobilePlatformHeaders.ensureInitialized();
+    await AppBuildMetadata.ensureInitialized();
+
+    for (final e in MobilePlatformHeaders.map.entries) {
+      options.headers[e.key] = e.value;
+    }
+
+    final semver = AppBuildMetadata.appVersionSemver;
+    if (semver.isNotEmpty) {
+      options.headers['X-App-Version'] = semver;
+    }
+
     final accessToken = await _jwtService.getAccessToken();
     if (accessToken != null && accessToken.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $accessToken';
@@ -127,6 +145,62 @@ class _AuthInterceptor extends Interceptor {
     options.headers['Accept-Language'] = lang;
 
     handler.next(options);
+  }
+}
+
+/// One silent JWT refresh + retry when the server returns 401 (mirrors [ApiService]).
+class _UnauthorizedInterceptor extends Interceptor {
+  final JwtTokenService _jwtService = JwtTokenService();
+
+  static bool _isAuthRefreshExemptPath(String path) {
+    return path == AppConfig.mobileTokenEndpoint ||
+        path == AppConfig.mobileRefreshEndpoint;
+  }
+
+  @override
+  Future<void> onError(
+      DioException err, ErrorInterceptorHandler handler) async {
+    if (err.response?.statusCode != 401) {
+      handler.next(err);
+      return;
+    }
+    final ro = err.requestOptions;
+    if (ro.extra['_dio401Retried'] == true) {
+      handler.next(err);
+      return;
+    }
+    if (_isAuthRefreshExemptPath(ro.path)) {
+      handler.next(err);
+      return;
+    }
+    final auth = ro.headers['Authorization']?.toString();
+    if (auth == null || !auth.startsWith('Bearer ')) {
+      handler.next(err);
+      return;
+    }
+    final cb = ApiService.tokenRefreshCallback;
+    if (cb == null) {
+      handler.next(err);
+      return;
+    }
+    final ok = await cb();
+    if (!ok) {
+      handler.next(err);
+      return;
+    }
+    final token = await _jwtService.getAccessToken();
+    if (token == null || token.isEmpty) {
+      handler.next(err);
+      return;
+    }
+    ro.headers['Authorization'] = 'Bearer $token';
+    ro.extra['_dio401Retried'] = true;
+    try {
+      final response = await DioClient.instance.dio.fetch(ro);
+      handler.resolve(response);
+    } on DioException catch (e) {
+      handler.next(e);
+    }
   }
 }
 

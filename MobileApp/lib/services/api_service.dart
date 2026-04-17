@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'dart:async';
-import 'dart:io';
 import 'dart:math' show pow;
 import 'package:http/http.dart' as http;
-import 'package:device_info_plus/device_info_plus.dart';
+import '../config/api_timeouts.dart';
 import '../config/app_config.dart';
+import 'app_build_metadata.dart';
+import 'mobile_platform_headers.dart';
 import 'storage_service.dart';
 import 'session_service.dart';
 import 'jwt_token_service.dart';
@@ -64,6 +65,8 @@ class ApiService {
 
   /// Register the JWT refresh callback.  Call this once from [AuthService]
   /// after the first successful login (or on app start when tokens exist).
+  static Future<bool> Function()? get tokenRefreshCallback => _tokenRefreshCallback;
+
   static set tokenRefreshCallback(Future<bool> Function() callback) {
     _tokenRefreshCallback = callback;
   }
@@ -79,39 +82,6 @@ class ApiService {
   // Legacy secure storage key for CSRF tokens. Mobile uses JWT Bearer auth only;
   // CSRF is not needed when requests are authenticated with JWT (no session-cookie form posts).
   static const String _csrfTokenStorageKey = 'csrf_token_v1';
-
-  // Cached platform identity headers sent on every request so the backend can
-  // correctly classify sessions as Mobile (iOS/Android) instead of Desktop.
-  static Map<String, String> _platformHeaders = {};
-  static bool _platformHeadersInitialized = false;
-
-  /// Populate [_platformHeaders] once per app launch using device_info_plus.
-  static Future<void> _ensurePlatformHeaders() async {
-    if (_platformHeadersInitialized) return;
-    try {
-      final platform =
-          Platform.isIOS ? 'ios' : (Platform.isAndroid ? 'android' : 'unknown');
-      String osVersion = 'unknown';
-      final deviceInfo = DeviceInfoPlugin();
-      if (Platform.isIOS) {
-        final info = await deviceInfo.iosInfo;
-        osVersion = 'iOS ${info.systemVersion}';
-      } else if (Platform.isAndroid) {
-        final info = await deviceInfo.androidInfo;
-        osVersion = 'Android ${info.version.release}';
-      }
-      _platformHeaders = {
-        'X-Platform': platform,
-        'X-OS-Version': osVersion,
-      };
-    } catch (_) {
-      _platformHeaders = {
-        'X-Platform':
-            Platform.isIOS ? 'ios' : (Platform.isAndroid ? 'android' : 'unknown'),
-      };
-    }
-    _platformHeadersInitialized = true;
-  }
 
   Future<String?> _getCachedCsrfToken() async {
     return _storage.getSecure(_csrfTokenStorageKey);
@@ -223,13 +193,19 @@ class ApiService {
     String? httpMethod,
     String? endpoint,
   }) async {
-    await _ensurePlatformHeaders();
+    await MobilePlatformHeaders.ensureInitialized();
+    await AppBuildMetadata.ensureInitialized();
 
     final headers = <String, String>{
       'Accept': 'application/json',
       'X-Requested-With': 'XMLHttpRequest', // Helps backend identify API requests
-      ..._platformHeaders,
+      ...MobilePlatformHeaders.map,
     };
+
+    final semver = AppBuildMetadata.appVersionSemver;
+    if (semver.isNotEmpty) {
+      headers['X-App-Version'] = semver;
+    }
 
     // Only set Content-Type for requests with a body (POST, PUT, PATCH)
     // GET requests shouldn't have Content-Type header
@@ -401,8 +377,7 @@ class ApiService {
       DebugLogger.logApi('Query params: $queryParams');
     }
 
-    // Use default timeout of 10 seconds if not specified
-    final requestTimeout = timeout ?? const Duration(seconds: 10);
+    final requestTimeout = timeout ?? ApiTimeouts.defaultGet;
 
     // For cacheable GETs, a single live attempt then cache fallback keeps the
     // UI responsive when the server is stopped but the radio still shows online.
@@ -753,7 +728,7 @@ class ApiService {
       backoffMultiplier: 2.0,
     );
 
-    final requestTimeout = const Duration(seconds: 30); // Longer timeout for POST
+    final requestTimeout = ApiTimeouts.receive;
     var usedLiveNetwork = false;
     final client = http.Client();
     usedLiveNetwork = true;
@@ -974,7 +949,7 @@ class ApiService {
         await _scopeService.getScope(includeAuth: includeAuth);
     final isOnline = _connectivity.isOnline;
     final uri = Uri.parse('${AppConfig.baseApiUrl}$endpoint');
-    const requestTimeout = Duration(seconds: 30);
+    const requestTimeout = ApiTimeouts.receive;
     final encodedPut = body != null ? jsonEncode(body) : null;
 
     final client = http.Client();
@@ -1117,7 +1092,7 @@ class ApiService {
         await _scopeService.getScope(includeAuth: includeAuth);
     final isOnline = _connectivity.isOnline;
     final uri = Uri.parse('${AppConfig.baseApiUrl}$endpoint');
-    const requestTimeout = Duration(seconds: 30);
+    const requestTimeout = ApiTimeouts.receive;
 
     final client = http.Client();
     try {

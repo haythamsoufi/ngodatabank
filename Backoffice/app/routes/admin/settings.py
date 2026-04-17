@@ -424,6 +424,8 @@ def manage_settings():
         get_template_metadata,
         get_notification_priorities,
         set_notification_priorities,
+        get_mobile_min_app_version,
+        set_mobile_min_app_version,
     )
 
     # Offer the full ISO-639-1 list in the UI (searchable multi-select in template).
@@ -562,6 +564,17 @@ def manage_settings():
 
             entity_type_choices = data.getlist("enabled_entity_types[]")
             entity_types_ok = set_enabled_entity_types(entity_type_choices or ['countries'], user_id=user_id)
+
+            # Minimum mobile app version (optional; stored in system_settings)
+            mobile_min_ok = True
+            try:
+                mobile_min_ok = set_mobile_min_app_version(
+                    (data.get("mobile_min_app_version") or "").strip(),
+                    user_id=user_id,
+                )
+            except ValueError as e:
+                flash(str(e), "danger")
+                mobile_min_ok = False
 
             # Chatbot display name
             chatbot_name_ok = True
@@ -840,7 +853,20 @@ def manage_settings():
                 current_app.logger.debug("set_ai_beta_access_settings failed: %s", e)
                 ai_beta_ok = False
 
-            if langs_ok and flags_ok and docs_ok and ages_ok and sex_ok and entity_types_ok and chatbot_name_ok and branding_ok and templates_ok and ai_ok and ai_beta_ok:
+            if (
+                langs_ok
+                and flags_ok
+                and docs_ok
+                and ages_ok
+                and sex_ok
+                and entity_types_ok
+                and mobile_min_ok
+                and chatbot_name_ok
+                and branding_ok
+                and templates_ok
+                and ai_ok
+                and ai_beta_ok
+            ):
                 # Update live app config for immediate effect
                 current_app.config['SUPPORTED_LANGUAGES'] = get_supported_languages(default=Config.LANGUAGES)
                 current_app.config['TRANSLATABLE_LANGUAGES'] = [c for c in current_app.config['SUPPORTED_LANGUAGES'] if c != 'en']
@@ -961,6 +987,7 @@ def manage_settings():
         ai_beta_user_options=ai_beta_user_options,
         notification_type_labels=notification_type_labels,
         notification_priorities=notification_priorities,
+        current_mobile_min_app_version=current_mobile_min_app_version,
         title="System Configuration",
     )
 

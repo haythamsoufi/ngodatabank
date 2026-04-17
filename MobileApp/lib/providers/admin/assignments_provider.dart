@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../config/app_config.dart';
 import '../../models/admin/admin_assignment.dart';
+import '../../models/admin/admin_assignment_detail.dart';
+import '../../utils/mobile_api_json.dart';
 import '../../services/api_service.dart';
 import '../../services/error_handler.dart';
 import '../../utils/debug_logger.dart';
@@ -172,6 +174,40 @@ class AssignmentsProvider with ChangeNotifier {
     }
 
     return assignments;
+  }
+
+  /// Loads full assignment detail (entities, deadlines, flags). Returns null on failure.
+  Future<AdminAssignmentDetail?> fetchAssignmentDetail(int assignmentId) async {
+    if (shouldDeferRemoteFetch) {
+      return null;
+    }
+    final response =
+        await _errorHandler.executeWithErrorHandling<http.Response>(
+      apiCall: () => _api.get(
+        AppConfig.mobileAssignmentDetailEndpoint(assignmentId),
+      ),
+      context: 'Load Assignment Detail',
+      defaultValue: null,
+      maxRetries: 1,
+      handleAuthErrors: true,
+    );
+
+    if (response == null || response.statusCode != 200) {
+      return null;
+    }
+    try {
+      final root = decodeJsonObject(response.body);
+      final data = unwrapMobileDataMap(root);
+      if (data == null) return null;
+      return AdminAssignmentDetail.fromJson(data);
+    } catch (e, stackTrace) {
+      _errorHandler.parseError(
+        error: e,
+        stackTrace: stackTrace,
+        context: 'Parse Assignment Detail',
+      );
+      return null;
+    }
   }
 
   Future<bool> deleteAssignment(int assignmentId) async {

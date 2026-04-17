@@ -18,21 +18,21 @@ class TestMobileAuthDecorator:
 
     def test_no_auth_returns_401(self, client, db_session):
         resp = client.get(f'{PREFIX}/auth/session')
-        assert resp.status_code == 401
+        assert_mobile_error(resp, 401, error_code='AUTH_REQUIRED')
 
     def test_expired_jwt_returns_401(self, client, expired_jwt_headers, db_session):
         resp = client.get(f'{PREFIX}/auth/session', headers=expired_jwt_headers)
-        assert resp.status_code == 401
+        assert_mobile_error(resp, 401, error_code='AUTH_REQUIRED')
 
     def test_invalid_bearer_returns_401(self, client, db_session):
         headers = {'Authorization': 'Bearer totally-invalid-token', 'Content-Type': 'application/json'}
         resp = client.get(f'{PREFIX}/auth/session', headers=headers)
-        assert resp.status_code == 401
+        assert_mobile_error(resp, 401, error_code='AUTH_REQUIRED')
 
     def test_permission_denied_returns_403(self, client, jwt_headers, db_session):
         """Regular user hitting an admin-only endpoint gets 403."""
         resp = client.get(f'{PREFIX}/admin/users', headers=jwt_headers)
-        assert resp.status_code == 403
+        assert_mobile_error(resp, 403, error_code='FORBIDDEN')
 
     def test_admin_permission_passes(self, client, admin_jwt_headers, db_session):
         """Admin user can access admin.users.view endpoints."""

@@ -46,10 +46,8 @@ class UserAnalyticsProvider with ChangeNotifier {
 
       if (response.statusCode == 200) {
         final decoded = decodeJsonObject(response.body);
-        // Match AdminDashboardProvider: Flask json_ok(status=..., data={...}) merges
-        // stats at the top level — there is often no nested `data` key.
         if (mobileResponseIsSuccess(decoded)) {
-          final data = mergeMobileOrJsonOkPayload(decoded);
+          final data = unwrapMobileDataMap(decoded) ?? {};
           _analyticsData = {
             ...data,
             'total_users': data['user_count'],
@@ -92,7 +90,7 @@ class UserAnalyticsProvider with ChangeNotifier {
       if (response.statusCode == 200) {
         final decoded = decodeJsonObject(response.body);
         if (mobileResponseIsSuccess(decoded)) {
-          final activityPayload = mergeMobileOrJsonOkPayload(decoded);
+          final activityPayload = unwrapMobileDataMap(decoded) ?? {};
           _analyticsData ??= {};
           _analyticsData!['activity'] = activityPayload;
           notifyListeners();

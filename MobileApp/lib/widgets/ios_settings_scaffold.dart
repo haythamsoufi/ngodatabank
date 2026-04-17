@@ -11,6 +11,7 @@ class IOSSettingsPageScaffold extends StatelessWidget {
     required this.title,
     required this.children,
     this.materialAppBarActions,
+    this.bottomNavigationBar,
   });
 
   /// Shown in the navigation bar on iOS and as [AppAppBar] title on other platforms.
@@ -19,6 +20,9 @@ class IOSSettingsPageScaffold extends StatelessWidget {
   final List<Widget> children;
 
   final List<Widget>? materialAppBarActions;
+
+  /// Optional bottom bar (e.g. [AppBottomNavigationBar] when this page is not inside tab shell).
+  final Widget? bottomNavigationBar;
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +34,41 @@ class IOSSettingsPageScaffold extends StatelessWidget {
       // the correct iOS pattern for settings sub-pages. CupertinoSliverNavigationBar
       // with largeTitle puts the title on a second row; without largeTitle it
       // mis-behaves as a sliver (content hidden / grey screen).
+      final scroll = ListView(
+        padding: EdgeInsets.zero,
+        physics: IOSSettingsStyle.pageScrollPhysics(),
+        children: children,
+      );
+
+      final Widget body;
+      if (bottomNavigationBar != null) {
+        body = Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: SafeArea(
+                bottom: false,
+                child: ColoredBox(
+                  color: bg,
+                  child: scroll,
+                ),
+              ),
+            ),
+            SafeArea(
+              top: false,
+              child: bottomNavigationBar!,
+            ),
+          ],
+        );
+      } else {
+        body = SafeArea(
+          child: ColoredBox(
+            color: bg,
+            child: scroll,
+          ),
+        );
+      }
+
       return cupertino.CupertinoPageScaffold(
         backgroundColor: bg,
         navigationBar: cupertino.CupertinoNavigationBar(
@@ -42,16 +81,7 @@ class IOSSettingsPageScaffold extends StatelessWidget {
           backgroundColor: bg,
           border: IOSSettingsStyle.navigationBarBottomBorder(context),
         ),
-        child: SafeArea(
-          child: ColoredBox(
-            color: bg,
-            child: ListView(
-              padding: EdgeInsets.zero,
-              physics: IOSSettingsStyle.pageScrollPhysics(),
-              children: children,
-            ),
-          ),
-        ),
+        child: body,
       );
     }
 
@@ -60,7 +90,10 @@ class IOSSettingsPageScaffold extends StatelessWidget {
         title: title,
         actions: materialAppBarActions,
       ),
+      backgroundColor: bg,
+      bottomNavigationBar: bottomNavigationBar,
       body: SafeArea(
+        bottom: bottomNavigationBar == null,
         child: ColoredBox(
           color: bg,
           child: ListView(

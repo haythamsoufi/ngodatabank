@@ -160,6 +160,18 @@ class AppConfig {
     return productionBackendUrl;
   }
 
+  /// True when no `BACKEND_URL` (`--dart-define` or `.env`) and no `STAGING` /
+  /// `DEMO` / `PRODUCTION` / `DEVELOPMENT` flag — [backendUrl] uses
+  /// [productionBackendUrl]. Used to warn in debug when that default is easy to mistake for a local build.
+  static bool get isImplicitProductionBackendDefault {
+    const fromDefine = String.fromEnvironment('BACKEND_URL', defaultValue: '');
+    if (fromDefine.trim().isNotEmpty) return false;
+    final envUrl = dotenv.env['BACKEND_URL']?.trim();
+    if (envUrl != null && envUrl.isNotEmpty) return false;
+    if (isStaging || isDemo || isProduction || isDevelopment) return false;
+    return true;
+  }
+
   static String get baseApiUrl => backendUrl;
 
   // Website Configuration
@@ -311,6 +323,9 @@ class AppConfig {
   // Admin -- Content
   static const String mobileTemplatesEndpoint = '$mobileApiPrefix/admin/content/templates';
   static const String mobileAssignmentsEndpoint = '$mobileApiPrefix/admin/content/assignments';
+
+  static String mobileAssignmentDetailEndpoint(int assignmentId) =>
+      '$mobileApiPrefix/admin/content/assignments/$assignmentId';
   static const String mobileDocumentsEndpoint = '$mobileApiPrefix/admin/content/documents';
   static const String mobileResourcesEndpoint = '$mobileApiPrefix/admin/content/resources';
   static const String mobileIndicatorBankEndpoint = '$mobileApiPrefix/admin/content/indicator-bank';

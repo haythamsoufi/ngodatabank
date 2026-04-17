@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/admin/resources_management_provider.dart';
 import '../../providers/shared/auth_provider.dart';
+import '../../models/shared/resource.dart';
 import '../../widgets/app_bar.dart';
 import '../../widgets/bottom_navigation_bar.dart';
 import '../../widgets/admin_filter_panel.dart';
@@ -46,6 +47,13 @@ class _ResourcesManagementScreenState extends State<ResourcesManagementScreen> {
       search: _searchQuery.isNotEmpty ? _searchQuery : null,
       categoryFilter: _selectedCategoryFilter,
       languageFilter: _selectedLanguageFilter,
+    );
+  }
+
+  void _openResourceDetail(Resource resource) {
+    Navigator.of(context).pushNamed(
+      AppRoutes.resourceDetail(resource.id),
+      arguments: resource,
     );
   }
 
@@ -380,41 +388,58 @@ class _ResourcesManagementScreenState extends State<ResourcesManagementScreen> {
                       width: 1,
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          resource.title ??
-                              AppLocalizations.of(context)!.genericUntitledResource,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: context.textColor,
-                          ),
-                        ),
-                        if (resource.resourceType != null) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            'Type: ${resource.resourceType}',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: context.textSecondaryColor,
+                  child: InkWell(
+                    onTap: () => _openResourceDetail(resource),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  resource.title ??
+                                      AppLocalizations.of(context)!
+                                          .genericUntitledResource,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: context.textColor,
+                                  ),
+                                ),
+                                if (resource.resourceType != null) ...[
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Type: ${resource.resourceType}',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: context.textSecondaryColor,
+                                    ),
+                                  ),
+                                ],
+                                if (resource.publicationDate != null) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Published: ${_formatDate(resource.publicationDate!)}',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: context.textSecondaryColor,
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                           ),
-                        ],
-                        if (resource.publicationDate != null) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            'Published: ${_formatDate(resource.publicationDate!)}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: context.textSecondaryColor,
-                            ),
+                          Icon(
+                            Icons.chevron_right,
+                            color: context.textSecondaryColor,
+                            size: 22,
                           ),
                         ],
-                      ],
+                      ),
                     ),
                   ),
                 );
@@ -422,18 +447,6 @@ class _ResourcesManagementScreenState extends State<ResourcesManagementScreen> {
             ),
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'resources_management_add_button',
-        onPressed: () {
-          Navigator.of(context).pushNamed(
-            AppRoutes.webview,
-            arguments: '/admin/resources/new',
-          );
-        },
-        backgroundColor: Color(AppConstants.ifrcRed),
-        icon: const Icon(Icons.add),
-        label: Text(localizations.newResource),
       ),
       bottomNavigationBar: AppBottomNavigationBar(
         currentIndex: AppBottomNavigationBar.adminTabNavIndex(

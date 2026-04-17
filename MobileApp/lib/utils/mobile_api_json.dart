@@ -8,7 +8,7 @@ import 'dart:convert';
 Map<String, dynamic> decodeJsonObject(String body) {
   final decoded = jsonDecode(body);
   if (decoded is! Map<String, dynamic>) {
-    throw FormatException('Expected JSON object');
+    throw const FormatException('Expected JSON object');
   }
   return decoded;
 }

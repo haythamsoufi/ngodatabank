@@ -21,11 +21,6 @@ class TestTemplateRoutes:
                            headers=admin_jwt_headers)
         assert resp.status_code == 404
 
-    def test_duplicate_not_found(self, client, admin_jwt_headers, db_session):
-        resp = client.post(f'{PREFIX}/admin/content/templates/999999/duplicate',
-                           headers=admin_jwt_headers)
-        assert resp.status_code == 404
-
 
 @pytest.mark.api
 @pytest.mark.integration
@@ -37,6 +32,20 @@ class TestAssignmentRoutes:
     def test_list_assignments(self, client, admin_jwt_headers, db_session):
         resp = client.get(f'{PREFIX}/admin/content/assignments', headers=admin_jwt_headers)
         assert_mobile_ok(resp, has_data=True)
+
+    def test_get_assignment_not_found(self, client, admin_jwt_headers, db_session):
+        resp = client.get(
+            f'{PREFIX}/admin/content/assignments/999999',
+            headers=admin_jwt_headers,
+        )
+        assert resp.status_code == 404
+
+    def test_get_assignment_requires_permission(self, client, jwt_headers, db_session):
+        resp = client.get(
+            f'{PREFIX}/admin/content/assignments/1',
+            headers=jwt_headers,
+        )
+        assert resp.status_code == 403
 
     def test_delete_not_found(self, client, admin_jwt_headers, db_session):
         resp = client.post(f'{PREFIX}/admin/content/assignments/999999/delete',
@@ -55,6 +64,17 @@ class TestDocumentRoutes:
         resp = client.get(f'{PREFIX}/admin/content/documents', headers=admin_jwt_headers)
         assert_mobile_paginated(resp)
 
+    def test_get_file_unauthenticated(self, client, db_session):
+        resp = client.get(f'{PREFIX}/admin/content/documents/1/file')
+        assert resp.status_code == 401
+
+    def test_get_file_not_found(self, client, admin_jwt_headers, db_session):
+        resp = client.get(
+            f'{PREFIX}/admin/content/documents/999999/file',
+            headers=admin_jwt_headers,
+        )
+        assert resp.status_code == 404
+
     def test_delete_not_found(self, client, admin_jwt_headers, db_session):
         resp = client.post(f'{PREFIX}/admin/content/documents/999999/delete',
                            headers=admin_jwt_headers)
@@ -71,6 +91,17 @@ class TestResourceRoutes:
     def test_list_resources(self, client, admin_jwt_headers, db_session):
         resp = client.get(f'{PREFIX}/admin/content/resources', headers=admin_jwt_headers)
         assert_mobile_paginated(resp)
+
+    def test_get_file_unauthenticated(self, client, db_session):
+        resp = client.get(f'{PREFIX}/admin/content/resources/1/file')
+        assert resp.status_code == 401
+
+    def test_get_file_not_found(self, client, admin_jwt_headers, db_session):
+        resp = client.get(
+            f'{PREFIX}/admin/content/resources/999999/file',
+            headers=admin_jwt_headers,
+        )
+        assert resp.status_code == 404
 
     def test_delete_not_found(self, client, admin_jwt_headers, db_session):
         resp = client.post(f'{PREFIX}/admin/content/resources/999999/delete',

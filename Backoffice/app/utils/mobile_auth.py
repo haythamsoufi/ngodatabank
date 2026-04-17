@@ -16,7 +16,7 @@ from functools import wraps
 from flask import current_app, g, request
 from flask_login import current_user, login_user
 
-from app.utils.api_responses import json_auth_required, json_forbidden
+from app.utils.mobile_responses import mobile_auth_error, mobile_forbidden
 from app.utils.request_validation import enforce_api_or_csrf_protection
 
 
@@ -105,12 +105,14 @@ def mobile_auth_required(f=None, *, permission: str | None = None):
                 # 400 for POST requests even though the blueprint is exempt,
                 # forcing an unnecessary CSRF retry round-trip.
                 if not jwt_authenticated:
-                    return json_auth_required("Access token invalid or expired. Please refresh.")
+                    return mobile_auth_error(
+                        "Access token invalid or expired. Please refresh."
+                    )
             else:
                 jwt_authenticated = getattr(g, '_mobile_jwt_auth', False)
 
             if not current_user.is_authenticated:
-                return json_auth_required()
+                return mobile_auth_error()
 
             if not jwt_authenticated and request.method in ('POST', 'PUT', 'PATCH', 'DELETE'):
                 enforce_api_or_csrf_protection()
@@ -118,7 +120,7 @@ def mobile_auth_required(f=None, *, permission: str | None = None):
             if permission:
                 from app.routes.admin.shared import user_has_permission
                 if not user_has_permission(permission):
-                    return json_forbidden(
+                    return mobile_forbidden(
                         f'{permission.replace("_", " ").title()} permission required.'
                     )
 

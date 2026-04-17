@@ -179,18 +179,4 @@ class TemplatesProvider with ChangeNotifier {
       return false;
     }
   }
-
-  Future<bool> duplicateTemplate(int templateId) async {
-    try {
-      final response = await _api.post(
-        '${AppConfig.mobileTemplatesEndpoint}/$templateId/duplicate',
-        body: {},
-      );
-
-      return response.statusCode == 200 || response.statusCode == 302;
-    } catch (e) {
-      DebugLogger.logErrorWithTag('TEMPLATES', 'Error duplicating template: $e');
-      return false;
-    }
-  }
 }

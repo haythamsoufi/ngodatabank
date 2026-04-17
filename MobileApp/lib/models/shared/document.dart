@@ -42,4 +42,20 @@ class Document {
       isPublic: json['is_public'] as bool? ?? false,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'file_name': fileName,
+      'document_type': documentType,
+      'language': language,
+      'year': year,
+      'status': status,
+      'country_name': countryName,
+      'uploaded_by_name': uploadedByName,
+      'uploaded_at': uploadedAt?.toUtc().toIso8601String(),
+      'assignment_period': assignmentPeriod,
+      'is_public': isPublic,
+    };
+  }
 }

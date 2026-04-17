@@ -39,10 +39,7 @@ class IOSListTile extends StatelessWidget {
 
     Widget content = Container(
       color: bgColor,
-      padding: contentPadding ?? const EdgeInsets.symmetric(
-        horizontal: IOSSpacing.md,
-        vertical: IOSSpacing.sm,
-      ),
+      padding: contentPadding ?? IOSSettingsStyle.listRowContentPadding,
       child: Row(
         children: [
           if (leading != null) ...[
@@ -162,7 +159,9 @@ class IOSGroupedList extends StatelessWidget {
         ? IOSColors.secondarySystemBackgroundDark
         : IOSColors.secondarySystemBackground;
 
-    final separatorColor = theme.dividerColor;
+    final separatorColor = IOSSettingsStyle.useIosSettingsChrome
+        ? cupertino.CupertinoColors.separator.resolveFrom(context)
+        : theme.dividerColor;
 
     // Build items with separators (except last one)
     // iOS uses subtle separators between items
@@ -203,6 +202,20 @@ class IOSGroupedList extends StatelessWidget {
               )
             : null);
 
+    // iOS Settings–style inset groups: visibly rounded card; clip row backgrounds
+    // to the curve (Material tiles do not respect parent radius without clipping).
+    final double groupCornerRadius = IOSSettingsStyle.useIosSettingsChrome
+        ? IOSDimensions.borderRadiusLargeOf(context)
+        : IOSDimensions.borderRadiusMediumOf(context);
+    final Border? groupBorder = IOSSettingsStyle.useIosSettingsChrome
+        ? Border.all(
+            color: cupertino.CupertinoColors.separator
+                .resolveFrom(context)
+                .withValues(alpha: isDark ? 0.4 : 0.72),
+            width: 0.5,
+          )
+        : null;
+
     return Container(
       margin: margin ?? const EdgeInsets.only(bottom: IOSSpacing.xl),
       child: Column(
@@ -211,8 +224,8 @@ class IOSGroupedList extends StatelessWidget {
           if (effectiveHeader != null)
             Padding(
               padding: const EdgeInsets.only(
-                left: IOSSpacing.xl,
-                right: IOSSpacing.xl,
+                left: IOSSpacing.md,
+                right: IOSSpacing.md,
                 bottom: IOSSpacing.sm,
                 top: IOSSpacing.sm,
               ),
@@ -221,18 +234,23 @@ class IOSGroupedList extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               color: bgColor,
-              borderRadius:
-                  BorderRadius.circular(IOSDimensions.borderRadiusMedium),
+              borderRadius: BorderRadius.circular(groupCornerRadius),
+              border: groupBorder,
             ),
-            child: Column(
-              children: itemsWithSeparators,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(groupCornerRadius),
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: itemsWithSeparators,
+              ),
             ),
           ),
           if (footer != null)
             Padding(
               padding: const EdgeInsets.only(
-                left: IOSSpacing.xl,
-                right: IOSSpacing.xl,
+                left: IOSSpacing.md,
+                right: IOSSpacing.md,
                 top: IOSSpacing.sm,
               ),
               child: Text(

@@ -82,6 +82,8 @@ Generic Flutter mobile application for Humanitarian Databank ecosystems. Point i
    2. `--dart-define` flags
    3. Empty string (default)
 
+   **API version header:** Every request to the backoffice includes `X-App-Version` (semver from the app package). When the server sets `MOBILE_MIN_APP_VERSION`, clients at or below the minimum receive HTTP 426 with `error_code: APP_UPDATE_REQUIRED` (only applies to requests that send this header).
+
 5. **Add IFRC logo asset**
    - Place `ifrc_logo.png` in `assets/images/` directory
    - Or update the asset path in `lib/screens/login_screen.dart`

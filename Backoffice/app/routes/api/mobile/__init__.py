@@ -25,7 +25,12 @@ def _parse_version(version_str):
 
 @mobile_bp.before_request
 def _check_minimum_app_version():
-    min_version = current_app.config.get('MOBILE_MIN_APP_VERSION')
+    try:
+        from app.services.app_settings_service import get_mobile_min_app_version
+
+        min_version = get_mobile_min_app_version()
+    except Exception:
+        min_version = current_app.config.get("MOBILE_MIN_APP_VERSION")
     if not min_version:
         return None
     client_version = request.headers.get('X-App-Version', '')

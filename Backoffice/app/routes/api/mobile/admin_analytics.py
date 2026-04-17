@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from flask import request, current_app, session
 from flask_login import current_user, logout_user
 from sqlalchemy import func, desc, and_, or_, inspect
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, contains_eager
 
 from app import db
 from app.utils.api_helpers import get_json_safe
@@ -421,11 +421,16 @@ def audit_trail():
         entries = []
 
         if _has_table(UserActivityLog.__tablename__):
-            q = UserActivityLog.query.options(joinedload(UserActivityLog.user))
-
+            q = UserActivityLog.query
             if user_filter:
                 from app.models import User
-                q = q.join(User).filter(User.email.ilike(safe_ilike_pattern(user_filter)))
+                q = (
+                    q.join(User, UserActivityLog.user_id == User.id)
+                    .filter(User.email.ilike(safe_ilike_pattern(user_filter)))
+                    .options(contains_eager(UserActivityLog.user))
+                )
+            else:
+                q = q.options(joinedload(UserActivityLog.user))
             if activity_type_filter:
                 q = q.filter(UserActivityLog.activity_type == activity_type_filter)
             if date_from:

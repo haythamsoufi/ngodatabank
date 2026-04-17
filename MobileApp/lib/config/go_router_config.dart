@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../config/app_navigation.dart';
+import '../l10n/app_localizations.dart';
 import '../utils/constants.dart';
 import 'routes.dart';
 // Shared screens
@@ -27,9 +28,16 @@ import '../screens/public/leaderboard_screen.dart';
 // Admin screens
 import '../screens/admin/templates_screen.dart';
 import '../screens/admin/assignments_screen.dart';
+import '../screens/admin/assignment_detail_screen.dart';
+import '../models/admin/admin_assignment.dart';
+import '../widgets/app_bar.dart';
 import '../screens/admin/admin_screen.dart';
 import '../screens/admin/admin_dashboard_screen.dart';
 import '../screens/admin/document_management_screen.dart';
+import '../screens/admin/resource_detail_screen.dart';
+import '../models/shared/resource.dart';
+import '../screens/admin/document_detail_screen.dart';
+import '../models/shared/document.dart';
 import '../screens/admin/translation_management_screen.dart';
 import '../screens/admin/translation_entry_detail_screen.dart';
 import '../screens/admin/resources_management_screen.dart';
@@ -231,6 +239,45 @@ class AppGoRouter {
               builder: (context, state) => const TemplatesScreen(),
             ),
             GoRoute(
+              path: 'assignments/:assignmentId',
+              name: 'assignmentDetail',
+              builder: (context, state) {
+                final extra = state.extra;
+                AdminAssignment? assignment;
+                if (extra is AdminAssignment) {
+                  assignment = extra;
+                } else if (extra is Map) {
+                  try {
+                    assignment = AdminAssignment.fromJson(
+                      Map<String, dynamic>.from(extra),
+                    );
+                  } catch (_) {
+                    assignment = null;
+                  }
+                }
+                if (assignment == null) {
+                  return Scaffold(
+                    appBar: AppAppBar(
+                      title: AppLocalizations.of(context)?.assignmentDetails ??
+                          'Assignment details',
+                    ),
+                    body: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Text(
+                          AppLocalizations.of(context)
+                                  ?.assignmentDetailMissingData ??
+                              'Open this assignment from the list.',
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                return AssignmentDetailScreen(assignment: assignment);
+              },
+            ),
+            GoRoute(
               path: 'assignments',
               name: 'assignments',
               builder: (context, state) => const AssignmentsScreen(),
@@ -244,6 +291,45 @@ class AppGoRouter {
               path: 'access-requests',
               name: 'accessRequests',
               builder: (context, state) => const AccessRequestsScreen(),
+            ),
+            GoRoute(
+              path: 'documents/:documentId',
+              name: 'documentDetail',
+              builder: (context, state) {
+                final extra = state.extra;
+                Document? document;
+                if (extra is Document) {
+                  document = extra;
+                } else if (extra is Map) {
+                  try {
+                    document = Document.fromJson(
+                      Map<String, dynamic>.from(extra),
+                    );
+                  } catch (_) {
+                    document = null;
+                  }
+                }
+                if (document == null) {
+                  return Scaffold(
+                    appBar: AppAppBar(
+                      title: AppLocalizations.of(context)?.indicatorDetailDetails ??
+                          'Details',
+                    ),
+                    body: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Text(
+                          AppLocalizations.of(context)
+                                  ?.assignmentDetailMissingData ??
+                              'Open this item from the list.',
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                return DocumentDetailScreen(document: document);
+              },
             ),
             GoRoute(
               path: 'documents',
@@ -272,6 +358,45 @@ class AppGoRouter {
                   );
                 }
                 return TranslationEntryDetailScreen(entry: map);
+              },
+            ),
+            GoRoute(
+              path: 'resources/:resourceId',
+              name: 'resourceDetail',
+              builder: (context, state) {
+                final extra = state.extra;
+                Resource? resource;
+                if (extra is Resource) {
+                  resource = extra;
+                } else if (extra is Map) {
+                  try {
+                    resource = Resource.fromJson(
+                      Map<String, dynamic>.from(extra),
+                    );
+                  } catch (_) {
+                    resource = null;
+                  }
+                }
+                if (resource == null) {
+                  return Scaffold(
+                    appBar: AppAppBar(
+                      title: AppLocalizations.of(context)?.indicatorDetailDetails ??
+                          'Details',
+                    ),
+                    body: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Text(
+                          AppLocalizations.of(context)
+                                  ?.assignmentDetailMissingData ??
+                              'Open this item from the list.',
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                return ResourceDetailScreen(resource: resource);
               },
             ),
             GoRoute(

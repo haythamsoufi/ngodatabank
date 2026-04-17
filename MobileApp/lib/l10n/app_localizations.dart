@@ -136,6 +136,27 @@ class AppLocalizations {
       'form_data_management': 'Form & Data Management',
       'manage_templates': 'Manage Templates',
       'manage_assignments': 'Manage Assignments',
+      'assignment_details': 'Assignment details',
+      'assignment_reporting_period': 'Reporting period',
+      'assignment_template_id': 'Template ID',
+      'assignment_has_public_link': 'Public link available',
+      'assignment_detail_missing_data':
+          'Open this assignment from the assignments list.',
+      'copy_link': 'Copy link',
+      'assignment_schedule_section': 'Schedule & deadlines',
+      'assignment_state_section': 'Assignment status',
+      'assignment_expiry_date': 'Assignment expiry',
+      'assignment_earliest_entity_due': 'Earliest entity due date',
+      'assignment_multiple_due_dates_hint':
+          'Entities use different due dates; check each entity below.',
+      'assignment_flag_active': 'Assignment active',
+      'assignment_flag_closed': 'Marked closed',
+      'assignment_flag_effective_closed': 'Closed (incl. past expiry)',
+      'assignment_load_detail_failed': 'Could not load full details.',
+      'assignment_closed': 'Closed',
+      'assignment_open': 'Open',
+      'entity_public_reporting': 'Public reporting available',
+      'entity_submitted_at': 'Submitted',
       'frontend_management': 'Website Management',
       'manage_resources': 'Manage Resources',
       'reference_data': 'Reference Data',
@@ -568,6 +589,8 @@ class AppLocalizations {
       'self_report_created': 'Self Report Created',
       'deadline_reminder': 'Deadline Reminder',
       'search_audit_logs': 'Search audit logs...',
+      'audit_trail_no_entries': 'No activity matches your filters.',
+      'audit_trail_activity_label': 'Activity',
       'home_screen_widget_title': 'Home screen widget',
       'audit_widget_activity_types_hint':
           'Choose activity types for the widget. Leave all unchecked to show every type. Saved on this device.',
@@ -6693,6 +6716,33 @@ class AppLocalizations {
   String get formDataManagement => translate('form_data_management');
   String get manageTemplates => translate('manage_templates');
   String get manageAssignments => translate('manage_assignments');
+  String get assignmentDetails => translate('assignment_details');
+  String get assignmentReportingPeriod =>
+      translate('assignment_reporting_period');
+  String get assignmentTemplateId => translate('assignment_template_id');
+  String get assignmentHasPublicLink =>
+      translate('assignment_has_public_link');
+  String get assignmentDetailMissingData =>
+      translate('assignment_detail_missing_data');
+  String get copyLink => translate('copy_link');
+  String get assignmentScheduleSection =>
+      translate('assignment_schedule_section');
+  String get assignmentStateSection => translate('assignment_state_section');
+  String get assignmentExpiryDate => translate('assignment_expiry_date');
+  String get assignmentEarliestEntityDue =>
+      translate('assignment_earliest_entity_due');
+  String get assignmentMultipleDueDatesHint =>
+      translate('assignment_multiple_due_dates_hint');
+  String get assignmentFlagActive => translate('assignment_flag_active');
+  String get assignmentFlagClosed => translate('assignment_flag_closed');
+  String get assignmentFlagEffectiveClosed =>
+      translate('assignment_flag_effective_closed');
+  String get assignmentLoadDetailFailed =>
+      translate('assignment_load_detail_failed');
+  String get assignmentClosed => translate('assignment_closed');
+  String get assignmentOpen => translate('assignment_open');
+  String get entityPublicReporting => translate('entity_public_reporting');
+  String get entitySubmittedAt => translate('entity_submitted_at');
   String get frontendManagement => translate('frontend_management');
   String get manageResources => translate('manage_resources');
   String get referenceData => translate('reference_data');
@@ -7298,6 +7348,8 @@ class AppLocalizations {
   String get selfReportCreated => translate('self_report_created');
   String get deadlineReminder => translate('deadline_reminder');
   String get searchAuditLogs => translate('search_audit_logs');
+  String get auditTrailNoEntries => translate('audit_trail_no_entries');
+  String get auditTrailActivityLabel => translate('audit_trail_activity_label');
   String get homeScreenWidgetTitle => translate('home_screen_widget_title');
   String get auditWidgetActivityTypesHint =>
       translate('audit_widget_activity_types_hint');

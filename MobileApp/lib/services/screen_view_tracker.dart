@@ -99,7 +99,20 @@ class ScreenViewTracker {
     if (raw.startsWith('/indicator-bank/')) return 'Indicator Detail';
     if (raw.startsWith('/ns-structure/')) return 'NS Structure';
     if (raw.startsWith('/admin/indicator_bank/edit/')) return 'Edit Indicator';
+    if (raw.startsWith('/admin/assignments/')) return 'Assignment detail';
     if (raw.startsWith('/admin/organization/edit/')) return 'Edit Entity';
+    if (raw.startsWith('/admin/documents/')) {
+      final parts = raw.split('/').where((s) => s.isNotEmpty).toList();
+      if (parts.length == 3 && int.tryParse(parts[2]) != null) {
+        return 'Document detail';
+      }
+    }
+    if (raw.startsWith('/admin/resources/')) {
+      final parts = raw.split('/').where((s) => s.isNotEmpty).toList();
+      if (parts.length == 3 && int.tryParse(parts[2]) != null) {
+        return 'Resource detail';
+      }
+    }
 
     final segment = raw.split('/').where((s) => s.isNotEmpty).lastOrNull ?? raw;
     return segment

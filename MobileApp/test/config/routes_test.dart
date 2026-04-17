@@ -72,6 +72,18 @@ void main() {
     });
   });
 
+  group('AppRoutes.documentDetail', () {
+    test('produces correct path', () {
+      expect(AppRoutes.documentDetail(42), '/admin/documents/42');
+    });
+  });
+
+  group('AppRoutes.resourceDetail', () {
+    test('produces correct path', () {
+      expect(AppRoutes.resourceDetail(42), '/admin/resources/42');
+    });
+  });
+
   group('AppRoutes.isNativeAdminPath', () {
     test('returns true for exact admin paths', () {
       expect(AppRoutes.isNativeAdminPath('/admin'), true);
@@ -81,8 +93,15 @@ void main() {
       expect(AppRoutes.isNativeAdminPath('/admin/users'), true);
       expect(AppRoutes.isNativeAdminPath('/admin/access-requests'), true);
       expect(AppRoutes.isNativeAdminPath('/admin/documents'), true);
+      expect(AppRoutes.isNativeAdminPath('/admin/documents/12'), true);
+      expect(AppRoutes.isNativeAdminPath('/admin/documents/edit/12'), false);
+      expect(AppRoutes.isNativeAdminPath('/admin/documents/serve/3'), false);
+      expect(AppRoutes.isNativeAdminPath('/admin/documents/not-a-number'), false);
       expect(AppRoutes.isNativeAdminPath('/admin/translations/manage'), true);
       expect(AppRoutes.isNativeAdminPath('/admin/resources'), true);
+      expect(AppRoutes.isNativeAdminPath('/admin/resources/12'), true);
+      expect(AppRoutes.isNativeAdminPath('/admin/resources/new'), false);
+      expect(AppRoutes.isNativeAdminPath('/admin/resources/edit/5'), false);
       expect(AppRoutes.isNativeAdminPath('/admin/organization'), true);
       expect(AppRoutes.isNativeAdminPath('/admin/indicator_bank'), true);
       expect(AppRoutes.isNativeAdminPath('/admin/analytics/dashboard'), true);

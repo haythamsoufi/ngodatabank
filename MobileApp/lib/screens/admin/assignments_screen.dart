@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart' as cupertino;
 import 'package:provider/provider.dart';
 import '../../providers/admin/assignments_provider.dart';
 import '../../providers/shared/auth_provider.dart';
-import '../../models/admin/admin_assignment.dart';
 import '../../utils/theme_extensions.dart';
 import '../../config/routes.dart';
 import '../../utils/constants.dart';
@@ -11,7 +9,6 @@ import '../../widgets/app_bar.dart';
 import '../../widgets/bottom_navigation_bar.dart';
 import '../../widgets/loading_indicator.dart';
 import '../../widgets/error_state.dart';
-import '../../widgets/ios_dialog.dart';
 import '../../l10n/app_localizations.dart';
 
 class AssignmentsScreen extends StatefulWidget {
@@ -33,47 +30,6 @@ class _AssignmentsScreenState extends State<AssignmentsScreen> {
   Future<void> _loadAssignments() async {
     await Provider.of<AssignmentsProvider>(context, listen: false)
         .loadAssignments();
-  }
-
-  Future<void> _handleDelete(AdminAssignment assignment) async {
-    final localizations = AppLocalizations.of(context)!;
-    final confirmed = await IOSAlertDialog.show<bool>(
-      context: context,
-      title: localizations.deleteAssignment,
-      message: localizations.deleteAssignmentConfirmMessage,
-      actions: [
-        cupertino.CupertinoDialogAction(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: Text(localizations.cancel),
-        ),
-        cupertino.CupertinoDialogAction(
-          isDestructiveAction: true,
-          onPressed: () => Navigator.of(context).pop(true),
-          child: Text(localizations.delete),
-        ),
-      ],
-    );
-
-    if (confirmed == true) {
-      if (!mounted) return;
-      final provider = Provider.of<AssignmentsProvider>(context, listen: false);
-      final success = await provider.deleteAssignment(assignment.id);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(success
-                ? localizations.assignmentDeletedSuccessfully
-                : localizations.failedToDeleteAssignment),
-            backgroundColor: success ? Colors.green : Colors.red,
-          ),
-        );
-
-        if (success) {
-          _loadAssignments();
-        }
-      }
-    }
   }
 
   @override
@@ -151,50 +107,47 @@ class _AssignmentsScreenState extends State<AssignmentsScreen> {
                       width: 1,
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    assignment.periodName,
-                                    style: theme.textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: theme.colorScheme.onSurface,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    assignment.templateName ??
-                                        localizations.templateMissing,
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: theme.colorScheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(8),
+                    onTap: () {
+                      Navigator.of(context).pushNamed(
+                        AppRoutes.assignmentDetail(assignment.id),
+                        arguments: assignment,
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                IconButton(
-                                  icon: const Icon(Icons.delete, size: 20),
-                                  color: Colors.red,
-                                  onPressed: () => _handleDelete(assignment),
-                                  tooltip: localizations.delete,
+                                Text(
+                                  assignment.periodName,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: theme.colorScheme.onSurface,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  assignment.templateName ??
+                                      localizations.templateMissing,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
                                 ),
                               ],
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                      ],
+                          ),
+                          Icon(
+                            Icons.chevron_right,
+                            color: context.textSecondaryColor,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 );

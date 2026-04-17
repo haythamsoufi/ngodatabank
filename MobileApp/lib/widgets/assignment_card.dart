@@ -356,9 +356,6 @@ class _AssignmentCardState extends State<AssignmentCard>
         : widget.assignment.templateName ?? widget.assignment.name;
 
     final hasDueDate = widget.assignment.dueDate != null;
-    final dueStr = hasDueDate
-        ? _formatDate(context, widget.assignment.dueDate!)
-        : localizations.noDueDate;
 
     final canEnter =
         widget.showEnterDataButton && widget.onEnterData != null;
@@ -423,13 +420,16 @@ class _AssignmentCardState extends State<AssignmentCard>
               ),
             ),
             ListMetricChip(
-              label: localizations.dueDate,
-              value: dueStr,
+              label: hasDueDate ? localizations.dueDate : '',
+              value: hasDueDate
+                  ? _formatDate(context, widget.assignment.dueDate!)
+                  : localizations.noDueDate,
               variant: hasDueDate
                   ? ListMetricChipVariant.dueDate
                   : ListMetricChipVariant.dueDateMissing,
-              valueSuffix:
-                  widget.assignment.isOverdue ? localizations.overdue : null,
+              valueSuffix: hasDueDate && widget.assignment.isOverdue
+                  ? localizations.overdue
+                  : null,
             ),
           ],
         ),

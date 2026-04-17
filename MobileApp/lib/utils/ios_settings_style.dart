@@ -24,6 +24,20 @@ abstract final class IOSSettingsStyle {
   /// Space between grouped sections on settings-style pages.
   static double get sectionSpacing => AppSpacing.xxl;
 
+  /// Vertical padding for grouped list rows on iPhone (≈44pt row height with body text).
+  static EdgeInsets get listRowContentPadding {
+    if (useIosSettingsChrome) {
+      return const EdgeInsets.symmetric(
+        horizontal: IOSSpacing.md,
+        vertical: 12,
+      );
+    }
+    return const EdgeInsets.symmetric(
+      horizontal: IOSSpacing.md,
+      vertical: IOSSpacing.sm,
+    );
+  }
+
   /// Horizontal inset for full-width controls (e.g. grouped buttons) and cards.
   static double get pageHorizontalInset => AppSpacing.md;
 
@@ -66,6 +80,16 @@ abstract final class IOSSettingsStyle {
       color: Theme.of(context).colorScheme.onSurface.withValues(
             alpha: 0.6,
           ),
+    );
+  }
+
+  /// Small label above a grouped table (matches [IOSGroupedList] headers).
+  static TextStyle sectionHeaderStyle(BuildContext context) {
+    final theme = Theme.of(context);
+    return IOSTextStyle.footnote(context).copyWith(
+      fontWeight: FontWeight.w600,
+      color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+      letterSpacing: 0.2,
     );
   }
 

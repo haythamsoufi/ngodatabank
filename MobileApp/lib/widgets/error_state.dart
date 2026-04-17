@@ -220,7 +220,7 @@ class _RetryButton extends StatelessWidget {
               HapticFeedback.mediumImpact();
               onPressed();
             },
-            icon: Icon(Icons.refresh_rounded, size: 18, color: Colors.white),
+            icon: const Icon(Icons.refresh_rounded, size: 18, color: Colors.white),
             label: Text(label),
             style: FilledButton.styleFrom(
               backgroundColor: ifrcRedColor,

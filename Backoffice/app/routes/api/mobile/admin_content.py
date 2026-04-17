@@ -10,7 +10,7 @@ from app.utils.api_helpers import get_json_safe
 from app.utils.api_pagination import validate_pagination_params
 from app.utils.mobile_auth import mobile_auth_required
 from app.utils.mobile_responses import (
-    mobile_ok, mobile_bad_request, mobile_not_found,
+    mobile_ok, mobile_bad_request, mobile_not_found, mobile_forbidden,
     mobile_server_error, mobile_paginated,
 )
 from app.utils.sql_utils import safe_ilike_pattern
@@ -78,37 +78,6 @@ def delete_template(template_id):
         return mobile_server_error()
 
 
-@mobile_bp.route('/admin/content/templates/<int:template_id>/duplicate', methods=['POST'])
-@mobile_auth_required(permission='admin.templates.duplicate')
-def duplicate_template(template_id):
-    """Duplicate a form template."""
-    from app.models import FormTemplate
-
-    template = FormTemplate.query.get(template_id)
-    if not template:
-        return mobile_not_found('Template not found')
-
-    try:
-        new_template = FormTemplate(name=f'{template.name} (Copy)')
-        db.session.add(new_template)
-        db.session.flush()
-
-        from app.services.user_analytics_service import log_admin_action
-        log_admin_action(
-            action_type='duplicate_template',
-            description=f'Duplicated template "{template.name}" via mobile API',
-            target_type='template',
-            target_id=new_template.id,
-            risk_level='low',
-        )
-        return mobile_ok(message='Template duplicated', data={'new_template_id': new_template.id})
-    except Exception as e:
-        current_app.logger.error("duplicate_template: %s", e, exc_info=True)
-        from app.utils.transactions import request_transaction_rollback
-        request_transaction_rollback()
-        return mobile_server_error()
-
-
 # ---------------------------------------------------------------------------
 # Assignments
 # ---------------------------------------------------------------------------
@@ -141,6 +110,70 @@ def list_assignments():
         })
 
     return mobile_ok(data={'assignments': items}, meta={'total': len(items)})
+
+
+@mobile_bp.route('/admin/content/assignments/<int:assignment_id>', methods=['GET'])
+@mobile_auth_required(permission='admin.assignments.view')
+def get_assignment(assignment_id):
+    """Return one assignment with entity rows and deadline-related fields."""
+    from app.models import AssignedForm, AssignmentEntityStatus
+    from app.services.entity_service import EntityService
+
+    a = AssignedForm.query.options(
+        db.joinedload(AssignedForm.template),
+    ).get(assignment_id)
+    if not a:
+        return mobile_not_found('Assignment not found')
+
+    public_submission_count = None
+    if hasattr(a, 'public_submissions'):
+        public_submission_count = a.public_submissions.count()
+
+    public_url = None
+    if a.has_public_url():
+        try:
+            public_url = a.get_public_url(external=True)
+        except Exception:
+            public_url = None
+
+    entities = []
+    for aes in a.entity_statuses.order_by(AssignmentEntityStatus.id).all():
+        entities.append({
+            'id': aes.id,
+            'entity_type': aes.entity_type,
+            'entity_id': aes.entity_id,
+            'display_name': EntityService.get_entity_display_name(
+                aes.entity_type, aes.entity_id
+            ),
+            'status': aes.status,
+            'due_date': aes.due_date.isoformat() if aes.due_date else None,
+            'is_public_available': bool(aes.is_public_available),
+            'submitted_at': aes.submitted_at.isoformat() if aes.submitted_at else None,
+            'status_timestamp': aes.status_timestamp.isoformat()
+            if aes.status_timestamp else None,
+        })
+
+    earliest = a.earliest_due_date
+    data = {
+        'id': a.id,
+        'period_name': a.period_name or 'Unnamed Assignment',
+        'template_id': a.template_id,
+        'template_name': a.template.name if a.template else None,
+        'assigned_at': a.assigned_at.isoformat() if a.assigned_at else None,
+        'is_active': bool(a.is_active),
+        'is_closed': bool(a.is_closed),
+        'is_effectively_closed': bool(a.is_effectively_closed),
+        'expiry_date': a.expiry_date.isoformat() if a.expiry_date else None,
+        'earliest_due_date': earliest.isoformat() if earliest else None,
+        'has_multiple_due_dates': bool(a.has_multiple_due_dates),
+        'has_public_url': a.has_public_url() if hasattr(a, 'has_public_url') else False,
+        'is_public_active': bool(a.is_public_active)
+        if hasattr(a, 'is_public_active') else False,
+        'public_url': public_url,
+        'public_submission_count': public_submission_count,
+        'entities': entities,
+    }
+    return mobile_ok(data=data)
 
 
 @mobile_bp.route('/admin/content/assignments/<int:assignment_id>/delete', methods=['POST'])
@@ -259,6 +292,55 @@ def list_documents():
     return mobile_paginated(items=items, total=paginated.total, page=paginated.page, per_page=paginated.per_page)
 
 
+@mobile_bp.route('/admin/content/documents/<int:document_id>/file', methods=['GET'])
+@mobile_auth_required
+def get_submitted_document_file(document_id):
+    """Stream submitted document bytes (JWT or session).
+
+    Query ``attachment=1`` (or ``true`` / ``yes``) sets ``Content-Disposition``
+    to attachment for save/share clients; default is inline for in-app preview.
+
+    Authorization matches the web download rules (admin document managers or
+    focal points with entity access via ``_check_document_access``).
+    """
+    import mimetypes
+
+    from app.models import SubmittedDocument
+    from app.routes.admin.content_management import (
+        _check_document_access,
+        _storage_category_for_submitted_document,
+    )
+    from app.services import storage_service as storage
+
+    document = SubmittedDocument.query.get(document_id)
+    if not document:
+        return mobile_not_found('Document not found')
+
+    allowed, msg = _check_document_access(document, current_user, action='download')
+    if not allowed:
+        return mobile_forbidden(msg or 'Access denied')
+
+    try:
+        main_cat = _storage_category_for_submitted_document(document)
+        if not storage.exists(main_cat, document.storage_path):
+            return mobile_not_found('File not found on server')
+
+        guessed, _ = mimetypes.guess_type(document.filename or '')
+        mimetype = guessed or 'application/octet-stream'
+        raw_attachment = (request.args.get('attachment') or '').strip().lower()
+        as_attachment = raw_attachment in {'1', 'true', 'yes'}
+        return storage.stream_response(
+            main_cat,
+            document.storage_path,
+            filename=document.filename or f'document_{document_id}',
+            mimetype=mimetype,
+            as_attachment=as_attachment,
+        )
+    except Exception as e:
+        current_app.logger.error('get_submitted_document_file: %s', e, exc_info=True)
+        return mobile_server_error()
+
+
 @mobile_bp.route('/admin/content/documents/<int:document_id>/delete', methods=['POST'])
 @mobile_auth_required(permission='admin.documents.manage')
 def delete_document(document_id):
@@ -298,7 +380,7 @@ def delete_document(document_id):
 @mobile_auth_required(permission='admin.resources.manage')
 def list_resources():
     """List resources with pagination."""
-    from app.models import Resource
+    from app.models import Resource, ResourceTranslation
 
     page, per_page = validate_pagination_params(request.args, default_per_page=10, max_per_page=100)
     search = request.args.get('search', '').strip()
@@ -309,16 +391,87 @@ def list_resources():
 
     paginated = query.paginate(page=page, per_page=per_page, error_out=False)
 
+    resource_ids = [r.id for r in paginated.items]
+    translations_by_resource: dict[int, list] = {}
+    if resource_ids:
+        for t in ResourceTranslation.query.filter(
+            ResourceTranslation.resource_id.in_(resource_ids),
+        ).all():
+            translations_by_resource.setdefault(t.resource_id, []).append(t)
+
     items = []
     for r in paginated.items:
+        trs = translations_by_resource.get(r.id, [])
+        file_langs = [t.language_code for t in trs if t.has_uploaded_document]
+        default_lang = file_langs[0] if len(file_langs) == 1 else None
         items.append({
             'id': r.id,
             'default_title': getattr(r, 'default_title', None),
+            'resource_type': getattr(r, 'resource_type', None),
             'publication_date': r.publication_date.isoformat() if hasattr(r, 'publication_date') and r.publication_date else None,
             'created_at': r.created_at.isoformat() if hasattr(r, 'created_at') and r.created_at else None,
+            'file_languages': file_langs,
+            'language': default_lang,
         })
 
     return mobile_paginated(items=items, total=paginated.total, page=paginated.page, per_page=paginated.per_page)
+
+
+@mobile_bp.route('/admin/content/resources/<int:resource_id>/file', methods=['GET'])
+@mobile_auth_required(permission='admin.resources.manage')
+def get_resource_file(resource_id):
+    """Stream a resource translation file (JWT or session).
+
+    Query ``language`` selects the translation (required if multiple exist).
+    When omitted, the first translation with an uploaded file is used.
+    Query ``attachment=1`` (or ``true`` / ``yes``) sets download disposition.
+    """
+    import mimetypes
+
+    from app.models import Resource, ResourceTranslation
+    from app.services import storage_service as storage
+
+    resource = Resource.query.get(resource_id)
+    if not resource:
+        return mobile_not_found('Resource not found')
+
+    language = (request.args.get('language') or '').strip().lower()
+    if language:
+        translation = ResourceTranslation.query.filter_by(
+            resource_id=resource_id,
+            language_code=language,
+        ).first()
+        if not translation or not translation.has_uploaded_document:
+            return mobile_not_found('No file for this language')
+    else:
+        translation = next(
+            (
+                t for t in ResourceTranslation.query.filter_by(resource_id=resource_id).all()
+                if t.has_uploaded_document
+            ),
+            None,
+        )
+        if not translation:
+            return mobile_not_found('No file for this resource')
+
+    try:
+        if not storage.exists(storage.RESOURCES, translation.file_relative_path):
+            return mobile_not_found('File not found on server')
+
+        guessed, _ = mimetypes.guess_type(translation.filename or '')
+        mimetype = guessed or 'application/octet-stream'
+        raw_attachment = (request.args.get('attachment') or '').strip().lower()
+        as_attachment = raw_attachment in {'1', 'true', 'yes'}
+        return storage.stream_response(
+            storage.RESOURCES,
+            translation.file_relative_path,
+            filename=translation.filename or f'resource_{resource_id}_{translation.language_code}',
+            mimetype=mimetype,
+            as_attachment=as_attachment,
+        )
+    except Exception as e:
+        current_app.logger.error('get_resource_file: %s', e, exc_info=True)
+        return mobile_server_error()
 
 
 @mobile_bp.route('/admin/content/resources/<int:resource_id>/delete', methods=['POST'])
