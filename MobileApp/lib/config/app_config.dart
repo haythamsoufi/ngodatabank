@@ -417,6 +417,33 @@ class AppConfig {
   static String get cachedUnifiedPlanningSnapshotKey =>
       '${_storagePrefix}cached_unified_planning_snapshot';
 
+  // ── Durable prefs (SharedPreferences) — env-prefixed for staging/dev isolation ──
+
+  static String get themeModeKey => '${_storagePrefix}theme_mode';
+  static String get selectedLanguageKey => '${_storagePrefix}selected_language';
+  static String get arabicTextFontKey => '${_storagePrefix}arabic_text_font';
+
+  static String get chatbotAiPolicyAcknowledgedKey =>
+      '${_storagePrefix}humdb_chatbot_ai_policy_acknowledged';
+  static String get chatbotSourcesKey =>
+      '${_storagePrefix}humdb_chatbot_sources';
+  static String get chatbotPinnedConversationIdsKey =>
+      '${_storagePrefix}humdb_chatbot_pinned_conversation_ids';
+
+  static String get lastSyncedTimestampKey =>
+      '${_storagePrefix}last_synced_timestamp';
+
+  static String get auditTrailWidgetActivityFiltersKey =>
+      '${_storagePrefix}audit_trail_widget_activity_filters_v1';
+
+  /// Keys are `$tabCustomizationKeyPrefix$roleKey` (admin|focal|auth|guest).
+  static String get tabCustomizationKeyPrefix =>
+      '${_storagePrefix}tab_customization_';
+
+  /// On-disk JSON snapshot for Indicator Bank (large payload; not in SharedPreferences).
+  static String get indicatorBankSnapshotFilename =>
+      '${_storagePrefix}indicator_bank_snapshot_v1.json';
+
   // App Configuration (dynamic, loaded from organization config)
   static String get appName {
     try {

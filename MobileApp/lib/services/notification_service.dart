@@ -68,7 +68,8 @@ class NotificationService {
       String? currentLanguage = language;
       if (currentLanguage == null || currentLanguage.isEmpty) {
         try {
-          currentLanguage = await _storage.getString('selected_language');
+          currentLanguage =
+              await _storage.getString(AppConfig.selectedLanguageKey);
         } catch (e) {
           DebugLogger.logNotifications('Could not get language from storage: $e');
         }

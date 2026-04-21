@@ -86,6 +86,7 @@ class ScreenViewTracker {
     '/resources': 'Resources',
     '/unified-planning-documents': 'Unified Planning Documents',
     '/unified-planning-analytics': 'Unified Planning Analytics',
+    '/unified-planning-participation-map': 'Unified Planning Participation Map',
     '/disaggregation-analysis': 'Disaggregation Analysis',
     '/countries': 'Countries',
     '/ns-structure': 'NS Structure',

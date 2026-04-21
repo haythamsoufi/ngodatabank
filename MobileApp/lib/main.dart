@@ -39,6 +39,7 @@ import 'providers/shared/ai_chat_provider.dart';
 import 'providers/shared/tab_customization_provider.dart';
 import 'config/app_router.dart';
 import 'services/storage_service.dart';
+import 'services/prefs_migration.dart';
 import 'services/push_notification_service.dart';
 import 'services/auth_error_handler.dart';
 import 'services/connectivity_service.dart';
@@ -145,6 +146,7 @@ void main() async {
 
   // Wait for critical services to initialize
   await Future.wait(initFutures);
+  await migrateLegacySharedPreferencesKeys(sl<StorageService>());
   performanceService.endInit('critical_services');
 
   await LauncherShortcutsService.install();
@@ -227,7 +229,7 @@ Future<Map<String, String>> _languageHeaderInterceptor(
   try {
     final storage = StorageService();
     final languageCode =
-        await storage.getString('selected_language') ?? 'en';
+        await storage.getString(AppConfig.selectedLanguageKey) ?? 'en';
     headers['Accept-Language'] = languageCode;
   } catch (e) {
     // If we can't get the language, default to English

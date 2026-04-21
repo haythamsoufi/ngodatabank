@@ -756,25 +756,9 @@ class _UnifiedPlanningDocCardState extends State<_UnifiedPlanningDocCard>
               ),
               if (d.isPublishedWithinLastThreeDays)
                 Positioned(
-                  top: 10,
-                  left: 10,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2E7D32),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Text(
-                      loc.unifiedPlanningFreshBadge,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 8,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
+                  top: 8,
+                  left: 8,
+                  child: _FreshPillBadge(label: loc.unifiedPlanningFreshBadge),
                 ),
               Positioned(
                 top: 10,
@@ -868,6 +852,72 @@ class _UnifiedPlanningDocCardState extends State<_UnifiedPlanningDocCard>
                     ),
                   ],
                 ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Retail "NEW"–style pill using organization / IFRC brand reds (dynamic from config).
+class _FreshPillBadge extends StatelessWidget {
+  final String label;
+
+  const _FreshPillBadge({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = Color(AppConstants.ifrcDarkRed);
+    final red = Color(AppConstants.ifrcRed);
+    final highlight = Color.lerp(red, Colors.white, 0.14)!;
+    final glow = red.withValues(alpha: 0.48);
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [dark, red, highlight],
+          stops: const [0.0, 0.5, 1.0],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: glow,
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.5),
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
+        child: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 1.15,
+            height: 1,
+            shadows: [
+              Shadow(
+                color: Color(0x73000000),
+                blurRadius: 2,
+                offset: Offset(0, 1),
               ),
             ],
           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'dart:async';
+import '../../config/app_config.dart';
 import '../../services/connectivity_service.dart';
 import '../../services/offline_queue_service.dart';
 import '../../services/api_service.dart';
@@ -109,7 +110,8 @@ class OfflineProvider with ChangeNotifier {
   /// Load last synced timestamp
   Future<void> _loadLastSynced() async {
     try {
-      final timestampStr = await _storage.getString('last_synced_timestamp');
+      final timestampStr =
+          await _storage.getString(AppConfig.lastSyncedTimestampKey);
       if (timestampStr != null) {
         _lastSynced = DateTime.parse(timestampStr);
         notifyListeners();
@@ -124,7 +126,7 @@ class OfflineProvider with ChangeNotifier {
     try {
       _lastSynced = DateTime.now();
       await _storage.setString(
-          'last_synced_timestamp', _lastSynced!.toIso8601String());
+          AppConfig.lastSyncedTimestampKey, _lastSynced!.toIso8601String());
       notifyListeners();
     } catch (e) {
       DebugLogger.logError('Failed to save last synced timestamp: $e');

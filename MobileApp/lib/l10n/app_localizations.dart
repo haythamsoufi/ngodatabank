@@ -744,6 +744,19 @@ class AppLocalizations {
       'unified_planning_analytics_filter_apply': 'Apply',
       'unified_planning_analytics_filter_invalid':
           'Select at least one year (or year not set) and one round, or choose All.',
+      'unified_planning_analytics_map_tooltip': 'Participation world map',
+      'unified_planning_participation_map_title': 'Participation by country',
+      'unified_planning_participation_map_hint':
+          'Use the filter control to choose years and rounds. “Full” participation means the country published at least one document for every year × document-type slot that appears in the filtered list.',
+      'unified_planning_participation_slots_label': '%s slots (year × round)',
+      'unified_planning_participation_no_slots': 'No slots match the current filters.',
+      'unified_planning_participation_stats': '%s full · %s partial · %s off map',
+      'unified_planning_participation_sheet_slots': '%s of %s slots covered',
+      'unified_planning_participation_sheet_full': 'Full participation',
+      'unified_planning_participation_sheet_partial': 'Partial participation',
+      'unified_planning_participation_sheet_none': 'No coverage for these slots',
+      'unified_planning_participation_legend_low': 'Fewer slots covered',
+      'unified_planning_participation_legend_high': 'All slots covered',
       'no_plugins_found': 'No plugins found',
       'no_translations_found': 'No translations found',
       'no_documents_found': 'No documents found',
@@ -7847,6 +7860,40 @@ class AppLocalizations {
       translate('unified_planning_analytics_filter_apply');
   String get unifiedPlanningAnalyticsFilterInvalid =>
       translate('unified_planning_analytics_filter_invalid');
+  String get unifiedPlanningAnalyticsMapTooltip =>
+      translate('unified_planning_analytics_map_tooltip');
+  String get unifiedPlanningParticipationMapTitle =>
+      translate('unified_planning_participation_map_title');
+  String get unifiedPlanningParticipationMapHint =>
+      translate('unified_planning_participation_map_hint');
+  String unifiedPlanningParticipationSlotsLabel(String n) =>
+      translate('unified_planning_participation_slots_label')
+          .replaceFirst('%s', n);
+  String get unifiedPlanningParticipationNoSlots =>
+      translate('unified_planning_participation_no_slots');
+  String unifiedPlanningParticipationStats(int full, int partial, int offMap) {
+    var s = translate('unified_planning_participation_stats');
+    s = s.replaceFirst('%s', '$full');
+    s = s.replaceFirst('%s', '$partial');
+    return s.replaceFirst('%s', '$offMap');
+  }
+
+  String unifiedPlanningParticipationSheetSlots(String covered, String total) {
+    var s = translate('unified_planning_participation_sheet_slots');
+    s = s.replaceFirst('%s', covered);
+    return s.replaceFirst('%s', total);
+  }
+
+  String get unifiedPlanningParticipationSheetFull =>
+      translate('unified_planning_participation_sheet_full');
+  String get unifiedPlanningParticipationSheetPartial =>
+      translate('unified_planning_participation_sheet_partial');
+  String get unifiedPlanningParticipationSheetNone =>
+      translate('unified_planning_participation_sheet_none');
+  String get unifiedPlanningParticipationLegendLow =>
+      translate('unified_planning_participation_legend_low');
+  String get unifiedPlanningParticipationLegendHigh =>
+      translate('unified_planning_participation_legend_high');
   String get noPluginsFound => translate('no_plugins_found');
   String get noTranslationsFound => translate('no_translations_found');
   String get noDocumentsFound => translate('no_documents_found');

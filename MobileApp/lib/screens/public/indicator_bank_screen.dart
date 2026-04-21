@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -930,20 +931,21 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
                                     children: [
                                       const SizedBox(height: 4),
                                       if (sector.logoUrl != null)
-                                        Image.network(
-                                          sector.logoUrl!,
+                                        CachedNetworkImage(
+                                          imageUrl: sector.logoUrl!,
                                           width: 48,
                                           height: 48,
                                           fit: BoxFit.contain,
-                                          errorBuilder:
-                                              (context, error, stackTrace) {
-                                                return Text(
-                                                  _getSectorIcon(sector.name),
-                                                  style: const TextStyle(
-                                                    fontSize: 36,
-                                                  ),
-                                                );
-                                              },
+                                          memCacheWidth: 96,
+                                          memCacheHeight: 96,
+                                          errorWidget: (context, url, error) {
+                                            return Text(
+                                              _getSectorIcon(sector.name),
+                                              style: const TextStyle(
+                                                fontSize: 36,
+                                              ),
+                                            );
+                                          },
                                         )
                                       else
                                         Text(

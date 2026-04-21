@@ -52,6 +52,25 @@ class Indicator {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      if (localizedName != null) 'localized_name': localizedName,
+      if (definition != null) 'definition': definition,
+      if (localizedDefinition != null) 'localized_definition': localizedDefinition,
+      if (type != null) 'type': type,
+      if (localizedType != null) 'localized_type': localizedType,
+      if (unit != null) 'unit': unit,
+      if (localizedUnit != null) 'localized_unit': localizedUnit,
+      if (sector != null) 'sector': sector,
+      if (subSector != null) 'sub_sector': subSector,
+      if (emergency != null) 'emergency': emergency,
+      if (relatedPrograms != null) 'related_programs': relatedPrograms,
+      'archived': archived,
+    };
+  }
+
   String get displayName => localizedName ?? name;
   String get displayType => localizedType ?? type ?? '';
   String get displayUnit => localizedUnit ?? unit ?? '';

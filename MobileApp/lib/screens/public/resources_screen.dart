@@ -1,5 +1,6 @@
 import 'dart:math' show min;
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/routes.dart';
@@ -893,22 +894,16 @@ class _ResourceCardState extends State<_ResourceCard>
                 children: [
                   // ── Background image or gradient ─────────────────
                   if (hasThumbnail)
-                    Image.network(
-                      resource.thumbnailUrl!,
+                    CachedNetworkImage(
+                      imageUrl: resource.thumbnailUrl!,
                       fit: BoxFit.cover,
-                      frameBuilder:
-                          (ctx, child, frame, wasSynchronouslyLoaded) {
-                        if (wasSynchronouslyLoaded) return child;
-                        return AnimatedOpacity(
-                          opacity: frame == null ? 0.0 : 1.0,
-                          duration: const Duration(milliseconds: 300),
-                          child: frame == null
-                              ? _GradientBackground(
-                                  colors: gradient, icon: icon)
-                              : child,
-                        );
-                      },
-                      errorBuilder: (_, _, _) =>
+                      memCacheWidth: 600,
+                      fadeInDuration: const Duration(milliseconds: 300),
+                      placeholder: (context, url) => _GradientBackground(
+                        colors: gradient,
+                        icon: icon,
+                      ),
+                      errorWidget: (context, url, error) =>
                           _GradientBackground(colors: gradient, icon: icon),
                     )
                   else

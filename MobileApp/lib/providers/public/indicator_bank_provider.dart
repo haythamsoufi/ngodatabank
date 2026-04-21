@@ -8,6 +8,7 @@ import '../../utils/debug_logger.dart';
 import '../../utils/mobile_api_json.dart';
 import '../../utils/network_availability.dart';
 import '../../di/service_locator.dart';
+import '../../services/indicator_bank_snapshot_store.dart';
 
 class RateLimitException implements Exception {
   final String message;
@@ -117,12 +118,17 @@ class IndicatorBankProvider with ChangeNotifier {
       {String locale = 'en', bool forceRefresh = false}) async {
     _currentLocale = locale;
 
-    // If we already have fresh data for this locale and refresh is not forced, reuse it
-    if (!forceRefresh && _hasFreshDataForLocale(locale)) {
-      _error = null;
-      _applyFilters();
-      notifyListeners();
-      return;
+    if (!forceRefresh) {
+      if (_allIndicators.isEmpty && _sectors.isEmpty) {
+        await _restoreFromDiskSnapshotIfFresh(locale);
+      }
+      // If we already have fresh data for this locale and refresh is not forced, reuse it
+      if (_hasFreshDataForLocale(locale)) {
+        _error = null;
+        _applyFilters();
+        notifyListeners();
+        return;
+      }
     }
 
     // If the most recent load already failed, don't fire another identical
@@ -162,6 +168,9 @@ class IndicatorBankProvider with ChangeNotifier {
 
     if (shouldDeferRemoteFetch) {
       _isLoading = false;
+      if (_allIndicators.isEmpty && _sectors.isEmpty) {
+        await _restoreFromDiskSnapshotIfFresh(locale);
+      }
       if (_allIndicators.isNotEmpty) {
         _error = null;
         _applyFilters();
@@ -199,6 +208,15 @@ class IndicatorBankProvider with ChangeNotifier {
       _applyFilters();
       _lastFullLoad = DateTime.now();
       _lastLoadedLocale = locale;
+      await IndicatorBankSnapshotStore.save(
+        IndicatorBankSnapshotPayload(
+          version: 1,
+          locale: locale,
+          savedAt: _lastFullLoad!,
+          sectors: _sectors,
+          indicators: _allIndicators,
+        ),
+      );
       _clearRateLimitState();
     } on RateLimitException catch (e) {
       _error = e.message;
@@ -535,6 +553,20 @@ class IndicatorBankProvider with ChangeNotifier {
     if (_lastFullLoad == null) return false;
     if (_lastLoadedLocale != locale) return false;
     return DateTime.now().difference(_lastFullLoad!) < _cacheDuration;
+  }
+
+  Future<void> _restoreFromDiskSnapshotIfFresh(String locale) async {
+    final snap = await IndicatorBankSnapshotStore.loadIfValid(
+      locale: locale,
+      maxAge: _cacheDuration,
+    );
+    if (snap == null) return;
+    _sectors = snap.sectors;
+    _allIndicators = snap.indicators;
+    _filteredIndicators = List<Indicator>.from(snap.indicators);
+    _lastFullLoad = snap.savedAt;
+    _lastLoadedLocale = snap.locale;
+    _error = null;
   }
 
   bool _isRateLimited() {

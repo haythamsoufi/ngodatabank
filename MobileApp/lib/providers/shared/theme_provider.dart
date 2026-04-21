@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../config/app_config.dart';
 import '../../services/storage_service.dart';
 
 class ThemeProvider with ChangeNotifier {
   final StorageService _storage = StorageService();
-
-  static const String _themeModeKey = 'theme_mode';
   static const String _defaultThemeMode =
       'system'; // 'light', 'dark', or 'system'
 
@@ -38,7 +37,7 @@ class ThemeProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final savedThemeMode = await _storage.getString(_themeModeKey);
+      final savedThemeMode = await _storage.getString(AppConfig.themeModeKey);
       if (savedThemeMode != null &&
           (savedThemeMode == 'light' ||
               savedThemeMode == 'dark' ||
@@ -67,7 +66,7 @@ class ThemeProvider with ChangeNotifier {
     }
 
     try {
-      await _storage.setString(_themeModeKey, themeMode);
+      await _storage.setString(AppConfig.themeModeKey, themeMode);
       _currentThemeMode = themeMode;
       notifyListeners();
     } catch (e) {

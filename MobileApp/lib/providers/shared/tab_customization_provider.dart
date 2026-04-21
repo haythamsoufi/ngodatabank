@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../../config/app_config.dart';
 import '../../services/storage_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../../di/service_locator.dart';
@@ -118,7 +119,7 @@ final Map<String, TabDefinition> tabDefinitionMap = {
 // ---------------------------------------------------------------------------
 
 class TabCustomizationProvider extends ChangeNotifier {
-  static const _prefsKeyPrefix = 'tab_customization_';
+  static String get _prefsKeyPrefix => AppConfig.tabCustomizationKeyPrefix;
   static const int minVisibleTabs = 2;
 
   final StorageService _storage = sl<StorageService>();

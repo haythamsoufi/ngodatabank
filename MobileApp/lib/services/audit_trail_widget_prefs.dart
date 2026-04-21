@@ -1,16 +1,16 @@
 import 'dart:convert';
 
+import '../config/app_config.dart';
 import 'storage_service.dart';
 
 /// Persisted on this device. Empty set = widget shows all activity types.
 class AuditTrailWidgetPrefs {
   AuditTrailWidgetPrefs._();
 
-  static const _key = 'audit_trail_widget_activity_filters_v1';
-
   /// Canonical filter slugs: create, update, delete, login, logout.
   static Future<Set<String>> getActivityTypeFilter() async {
-    final raw = await StorageService().getString(_key);
+    final raw =
+        await StorageService().getString(AppConfig.auditTrailWidgetActivityFiltersKey);
     if (raw == null || raw.isEmpty) return {};
     try {
       final decoded = jsonDecode(raw);
@@ -31,9 +31,11 @@ class AuditTrailWidgetPrefs {
         .toList()
       ..sort();
     if (normalized.isEmpty) {
-      await StorageService().remove(_key);
+      await StorageService()
+          .remove(AppConfig.auditTrailWidgetActivityFiltersKey);
     } else {
-      await StorageService().setString(_key, jsonEncode(normalized));
+      await StorageService().setString(
+          AppConfig.auditTrailWidgetActivityFiltersKey, jsonEncode(normalized));
     }
   }
 }

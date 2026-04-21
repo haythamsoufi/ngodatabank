@@ -13,6 +13,7 @@ import '../../services/unified_planning_analytics_filter_cache.dart';
 import '../../utils/constants.dart';
 import '../../utils/theme_extensions.dart';
 import '../../widgets/app_bar.dart';
+import 'unified_planning_participation_map_screen.dart';
 
 /// Dashboard aggregating IFRC unified planning documents, with document types
 /// grouped under each calendar year.
@@ -78,28 +79,30 @@ class _UnifiedPlanningAnalyticsScreenState
     final years = allDocs.map((e) => e.year).whereType<int>().toSet().toList()
       ..sort((a, b) => b.compareTo(a));
     final hasUnknown = allDocs.any((e) => e.year == null);
-    final typeKeys = allDocs.map(UnifiedPlanningDocument.typeKey).toSet().toList()
-      ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    final typeKeys =
+        allDocs.map(UnifiedPlanningDocument.typeKey).toSet().toList()
+          ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
 
     final screenH = MediaQuery.sizeOf(context).height;
-    final result = await showModalBottomSheet<UnifiedPlanningAnalyticsFilterCriteria>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      showDragHandle: true,
-      constraints: BoxConstraints(
-        maxWidth: MediaQuery.sizeOf(context).width,
-        maxHeight: screenH * 0.88,
-      ),
-      builder: (ctx) => _AnalyticsFilterSheet(
-        loc: loc,
-        theme: theme,
-        initial: _criteria,
-        yearOptions: years,
-        hasUnknownYear: hasUnknown,
-        typeKeys: typeKeys,
-      ),
-    );
+    final result =
+        await showModalBottomSheet<UnifiedPlanningAnalyticsFilterCriteria>(
+          context: context,
+          isScrollControlled: true,
+          useSafeArea: true,
+          showDragHandle: true,
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.sizeOf(context).width,
+            maxHeight: screenH * 0.88,
+          ),
+          builder: (ctx) => _AnalyticsFilterSheet(
+            loc: loc,
+            theme: theme,
+            initial: _criteria,
+            yearOptions: years,
+            hasUnknownYear: hasUnknown,
+            typeKeys: typeKeys,
+          ),
+        );
     if (result != null && mounted) {
       setState(() => _criteria = result);
       await _filterCache.save(result);
@@ -157,14 +160,13 @@ class _UnifiedPlanningAnalyticsScreenState
             ),
             child: ListView(
               padding: EdgeInsets.fromLTRB(24, 24, 24, bottomPad),
-              children: [
-                _ErrorCard(message: err, theme: theme),
-              ],
+              children: [_ErrorCard(message: err, theme: theme)],
             ),
           );
         } else {
-          final filtered =
-              docs.where(_criteria.matches).toList(growable: false);
+          final filtered = docs
+              .where(_criteria.matches)
+              .toList(growable: false);
           final stats = _UnifiedPlanningStats.from(filtered);
 
           body = RefreshIndicator(
@@ -191,7 +193,10 @@ class _UnifiedPlanningAnalyticsScreenState
                 children: [
                   _SummaryGrid(loc: loc, stats: stats, theme: theme),
                   const SizedBox(height: 22),
-                  _SectionTitle(loc.unifiedPlanningAnalyticsByYearType, theme: theme),
+                  _SectionTitle(
+                    loc.unifiedPlanningAnalyticsByYearType,
+                    theme: theme,
+                  ),
                   const SizedBox(height: 10),
                   _YearTypeGroupedByYearSection(
                     entries: stats.byYearType,
@@ -217,15 +222,35 @@ class _UnifiedPlanningAnalyticsScreenState
             automaticallyImplyLeading: false,
             actions: [
               IconButton(
+                tooltip: loc.unifiedPlanningAnalyticsMapTooltip,
+                onPressed: docs.isEmpty
+                    ? null
+                    : () {
+                        Navigator.of(context).push<void>(
+                          MaterialPageRoute<void>(
+                            settings: const RouteSettings(
+                              name: '/unified-planning-participation-map',
+                            ),
+                            builder: (ctx) =>
+                                UnifiedPlanningParticipationMapScreen(
+                                  documents: docs,
+                                  initialCriteria: _criteria,
+                                ),
+                          ),
+                        );
+                      },
+                icon: const Icon(Icons.public_rounded),
+              ),
+              IconButton(
                 tooltip: loc.unifiedPlanningAnalyticsFiltersTooltip,
                 onPressed: docs.isEmpty
                     ? null
                     : () => _openFilterSheet(
-                          context,
-                          loc: loc,
-                          theme: theme,
-                          allDocs: docs,
-                        ),
+                        context,
+                        loc: loc,
+                        theme: theme,
+                        allDocs: docs,
+                      ),
                 icon: Badge(
                   isLabelVisible: _criteria.isRestricted,
                   smallSize: 7,
@@ -319,7 +344,9 @@ class _UnifiedPlanningStats {
     final seenKeys = <String>{};
     final uniqueDocs = <UnifiedPlanningDocument>[];
     for (final d in docs) {
-      if (seenKeys.add(IfrcUnifiedPlanningService.unifiedPlanningListDedupeKey(d.url))) {
+      if (seenKeys.add(
+        IfrcUnifiedPlanningService.unifiedPlanningListDedupeKey(d.url),
+      )) {
         uniqueDocs.add(d);
       }
     }
@@ -342,35 +369,40 @@ class _UnifiedPlanningStats {
       if (idKey != null) distinctCountryIds.add(idKey);
     }
 
-    final byYearType = yearTypeCounts.entries
-        .map(
-          (e) => _YearTypeCount(
-            year: e.key.year,
-            typeKey: e.key.typeKey,
-            count: e.value,
-          ),
-        )
-        .toList()
-      ..sort((a, b) {
-        final ay = a.year;
-        final by = b.year;
-        if (ay != null && by != null) {
-          final cy = by.compareTo(ay);
-          if (cy != 0) return cy;
-        } else if (ay == null && by != null) {
-          return 1;
-        } else if (ay != null && by == null) {
-          return -1;
-        }
-        final ct = a.typeKey.toLowerCase().compareTo(b.typeKey.toLowerCase());
-        if (ct != 0) return ct;
-        return b.count.compareTo(a.count);
-      });
+    final byYearType =
+        yearTypeCounts.entries
+            .map(
+              (e) => _YearTypeCount(
+                year: e.key.year,
+                typeKey: e.key.typeKey,
+                count: e.value,
+              ),
+            )
+            .toList()
+          ..sort((a, b) {
+            final ay = a.year;
+            final by = b.year;
+            if (ay != null && by != null) {
+              final cy = by.compareTo(ay);
+              if (cy != 0) return cy;
+            } else if (ay == null && by != null) {
+              return 1;
+            } else if (ay != null && by == null) {
+              return -1;
+            }
+            final ct = a.typeKey.toLowerCase().compareTo(
+              b.typeKey.toLowerCase(),
+            );
+            if (ct != 0) return ct;
+            return b.count.compareTo(a.count);
+          });
 
     return _UnifiedPlanningStats(
       total: uniqueDocs.length,
       distinctCountries: distinctCountryIds.length,
-      distinctTypes: distinctTypeKeys.where((k) => k != '__type_unknown__').length,
+      distinctTypes: distinctTypeKeys
+          .where((k) => k != '__type_unknown__')
+          .length,
       recentCount: recent,
       byYearType: byYearType,
     );
@@ -378,10 +410,7 @@ class _UnifiedPlanningStats {
 }
 
 class _AnalyticsLoading extends StatelessWidget {
-  const _AnalyticsLoading({
-    required this.theme,
-    required this.bottomPad,
-  });
+  const _AnalyticsLoading({required this.theme, required this.bottomPad});
 
   final ThemeData theme;
   final double bottomPad;
@@ -446,7 +475,8 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final top = theme.colorScheme.primary;
-    final bottom = Color.lerp(
+    final bottom =
+        Color.lerp(
           top,
           Color(AppConstants.ifrcNavy),
           theme.brightness == Brightness.dark ? 0.35 : 0.55,
@@ -479,10 +509,10 @@ class _SectionTitle extends StatelessWidget {
           child: Text(
             text,
             style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.2,
-                  color: context.textColor,
-                ),
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.2,
+              color: context.textColor,
+            ),
           ),
         ),
       ],
@@ -503,51 +533,62 @@ class _SummaryGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final w = constraints.maxWidth;
-        final cross = w >= 520 ? 3 : 2;
-        return GridView.count(
-          crossAxisCount: cross,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 10,
-          childAspectRatio: 1.35,
+    final gap = 10.0;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _SummaryTile(
-              label: loc.unifiedPlanningAnalyticsTotal,
-              value: '${stats.total}',
-              icon: Icons.description_outlined,
-              theme: theme,
+            Expanded(
+              child: _SummaryMetricTile(
+                label: loc.unifiedPlanningAnalyticsTotal,
+                value: '${stats.total}',
+                icon: Icons.description_outlined,
+                theme: theme,
+              ),
             ),
-            _SummaryTile(
-              label: loc.unifiedPlanningAnalyticsCountries,
-              value: '${stats.distinctCountries}',
-              icon: Icons.public_rounded,
-              theme: theme,
-            ),
-            _SummaryTile(
-              label: loc.unifiedPlanningAnalyticsTypes,
-              value: '${stats.distinctTypes}',
-              icon: Icons.category_outlined,
-              theme: theme,
-            ),
-            _SummaryTile(
-              label: loc.unifiedPlanningAnalyticsRecent,
-              value: '${stats.recentCount}',
-              icon: Icons.fiber_new_rounded,
-              theme: theme,
+            SizedBox(width: gap),
+            Expanded(
+              child: _SummaryMetricTile(
+                label: loc.unifiedPlanningAnalyticsCountries,
+                value: '${stats.distinctCountries}',
+                icon: Icons.flag_outlined,
+                theme: theme,
+              ),
             ),
           ],
-        );
-      },
+        ),
+        SizedBox(height: gap),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: _SummaryMetricTile(
+                label: loc.unifiedPlanningAnalyticsTypes,
+                value: '${stats.distinctTypes}',
+                icon: Icons.category_outlined,
+                theme: theme,
+              ),
+            ),
+            SizedBox(width: gap),
+            Expanded(
+              child: _SummaryMetricTile(
+                label: loc.unifiedPlanningAnalyticsRecent,
+                value: '${stats.recentCount}',
+                icon: Icons.fiber_new_rounded,
+                theme: theme,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
 
-class _SummaryTile extends StatelessWidget {
-  const _SummaryTile({
+class _SummaryMetricTile extends StatelessWidget {
+  const _SummaryMetricTile({
     required this.label,
     required this.value,
     required this.icon,
@@ -562,75 +603,75 @@ class _SummaryTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = theme.colorScheme.primary;
+    final isDark = theme.brightness == Brightness.dark;
     final fill = Color.alphaBlend(
-      accent.withValues(alpha: theme.brightness == Brightness.dark ? 0.06 : 0.04),
+      accent.withValues(alpha: isDark ? 0.07 : 0.05),
       theme.colorScheme.surfaceContainerHighest.withValues(
-        alpha: theme.brightness == Brightness.dark ? 0.42 : 0.55,
+        alpha: isDark ? 0.38 : 0.5,
       ),
     );
     return DecoratedBox(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         color: fill,
         border: Border.all(
-          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.38),
         ),
         boxShadow: [
           BoxShadow(
             color: theme.ambientShadow(),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
             spreadRadius: -2,
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             DecoratedBox(
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(10),
                 color: theme.colorScheme.primaryContainer.withValues(
-                  alpha: theme.brightness == Brightness.dark ? 0.55 : 0.65,
+                  alpha: isDark ? 0.48 : 0.62,
                 ),
-                border: Border.all(
-                  color: accent.withValues(alpha: 0.18),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: accent.withValues(alpha: 0.08),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                border: Border.all(color: accent.withValues(alpha: 0.16)),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(8),
-                child: Icon(icon, size: 22, color: accent),
+                child: Icon(icon, size: 20, color: accent),
               ),
             ),
-            const Spacer(),
-            Text(
-              value,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.5,
-                color: context.textColor,
-                height: 1.05,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    value,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.4,
+                      color: context.textColor,
+                      height: 1.1,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    label,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: context.textSecondaryColor,
+                      height: 1.2,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              label,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: context.textSecondaryColor,
-                height: 1.25,
-                fontWeight: FontWeight.w500,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -657,8 +698,9 @@ class _YearTypeGroupedByYearSection extends StatelessWidget {
   String _yearHeading(int? year) =>
       year != null ? '$year' : loc.unifiedPlanningAnalyticsUnknownYear;
 
-  String _typeLabel(String typeKey) =>
-      typeKey == '__type_unknown__' ? loc.unifiedPlanningAnalyticsUnknownType : typeKey;
+  String _typeLabel(String typeKey) => typeKey == '__type_unknown__'
+      ? loc.unifiedPlanningAnalyticsUnknownType
+      : typeKey;
 
   @override
   Widget build(BuildContext context) {
@@ -708,14 +750,21 @@ class _YearTypeGroupedByYearSection extends StatelessWidget {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
                           color: theme.colorScheme.primaryContainer.withValues(
-                            alpha: theme.brightness == Brightness.dark ? 0.5 : 0.72,
+                            alpha: theme.brightness == Brightness.dark
+                                ? 0.5
+                                : 0.72,
                           ),
                           border: Border.all(
-                            color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.2,
+                            ),
                           ),
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 5,
+                          ),
                           child: Text(
                             '${groups[gi].yearTotal}',
                             style: theme.textTheme.labelLarge?.copyWith(
@@ -735,7 +784,11 @@ class _YearTypeGroupedByYearSection extends StatelessWidget {
                     color: context.dividerColor.withValues(alpha: 0.45),
                   ),
                   const SizedBox(height: 12),
-                  for (var j = 0; j < groups[gi].rows.length && j < _maxTypesPerYear; j++) ...[
+                  for (
+                    var j = 0;
+                    j < groups[gi].rows.length && j < _maxTypesPerYear;
+                    j++
+                  ) ...[
                     if (j > 0) const SizedBox(height: 12),
                     _BarRow(
                       label: _typeLabel(groups[gi].rows[j].typeKey),
@@ -849,11 +902,16 @@ class _BarRowState extends State<_BarRow> with SingleTickerProviderStateMixin {
                     color: theme.colorScheme.surface.withValues(alpha: 0.65),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.35),
+                      color: theme.colorScheme.outlineVariant.withValues(
+                        alpha: 0.35,
+                      ),
                     ),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     child: Text(
                       '${widget.count}',
                       style: theme.textTheme.labelLarge?.copyWith(
@@ -867,10 +925,7 @@ class _BarRowState extends State<_BarRow> with SingleTickerProviderStateMixin {
               ],
             ),
             const SizedBox(height: 8),
-            _GradientProgressTrack(
-              widthFactor: widthFactor,
-              theme: theme,
-            ),
+            _GradientProgressTrack(widthFactor: widthFactor, theme: theme),
           ],
         );
       },
@@ -923,10 +978,7 @@ class _GradientProgressTrack extends StatelessWidget {
                       gradient: LinearGradient(
                         begin: Alignment.centerLeft,
                         end: Alignment.centerRight,
-                        colors: [
-                          brand,
-                          Color.lerp(brand, brandDeep, 0.55)!,
-                        ],
+                        colors: [brand, Color.lerp(brand, brandDeep, 0.55)!],
                       ),
                       boxShadow: [
                         BoxShadow(
@@ -949,10 +1001,7 @@ class _GradientProgressTrack extends StatelessWidget {
 }
 
 class _ErrorCard extends StatelessWidget {
-  const _ErrorCard({
-    required this.message,
-    required this.theme,
-  });
+  const _ErrorCard({required this.message, required this.theme});
 
   final String message;
   final ThemeData theme;
@@ -963,7 +1012,9 @@ class _ErrorCard extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        color: err.withValues(alpha: theme.brightness == Brightness.dark ? 0.14 : 0.08),
+        color: err.withValues(
+          alpha: theme.brightness == Brightness.dark ? 0.14 : 0.08,
+        ),
         border: Border.all(color: err.withValues(alpha: 0.28)),
         boxShadow: [
           BoxShadow(
@@ -1014,11 +1065,11 @@ class _ErrorCard extends StatelessWidget {
 
 class _AnalyticsFilterDraft {
   _AnalyticsFilterDraft.fromCriteria(UnifiedPlanningAnalyticsFilterCriteria c)
-      : allYears = c.allYears,
-        years = Set<int>.from(c.years),
-        includeUnknownYear = c.includeUnknownYear,
-        allTypes = c.allTypes,
-        typeKeys = Set<String>.from(c.typeKeys);
+    : allYears = c.allYears,
+      years = Set<int>.from(c.years),
+      includeUnknownYear = c.includeUnknownYear,
+      allTypes = c.allTypes,
+      typeKeys = Set<String>.from(c.typeKeys);
 
   bool allYears;
   Set<int> years;
@@ -1075,8 +1126,9 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
     _draft = _AnalyticsFilterDraft.fromCriteria(widget.initial);
   }
 
-  String _typeLabel(String key) =>
-      key == '__type_unknown__' ? widget.loc.unifiedPlanningAnalyticsUnknownType : key;
+  String _typeLabel(String key) => key == '__type_unknown__'
+      ? widget.loc.unifiedPlanningAnalyticsUnknownType
+      : key;
 
   @override
   Widget build(BuildContext context) {
@@ -1197,7 +1249,8 @@ class _AnalyticsFilterSheetState extends State<_AnalyticsFilterSheet> {
                     for (final tk in widget.typeKeys)
                       FilterChip(
                         label: Text(_typeLabel(tk)),
-                        selected: !_draft.allTypes && _draft.typeKeys.contains(tk),
+                        selected:
+                            !_draft.allTypes && _draft.typeKeys.contains(tk),
                         onSelected: (sel) => setState(() {
                           _draft.allTypes = false;
                           if (sel) {

@@ -29,10 +29,24 @@ class Sector {
       logoUrl: json['logo_url'] as String?,
       displayOrder: json['display_order'] as int? ?? 0,
       subsectors: (json['subsectors'] as List<dynamic>?)
-              ?.map((s) => SubSector.fromJson(s))
+              ?.map((s) => SubSector.fromJson(s as Map<String, dynamic>))
               .toList() ??
           [],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      if (localizedName != null) 'localized_name': localizedName,
+      if (description != null) 'description': description,
+      if (localizedDescription != null)
+        'localized_description': localizedDescription,
+      if (logoUrl != null) 'logo_url': logoUrl,
+      'display_order': displayOrder,
+      'subsectors': subsectors.map((s) => s.toJson()).toList(),
+    };
   }
 
   String get displayName => localizedName ?? name;
@@ -71,6 +85,20 @@ class SubSector {
       displayOrder: json['display_order'] as int? ?? 0,
       sectorId: json['sector_id'] as int?,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      if (localizedName != null) 'localized_name': localizedName,
+      if (description != null) 'description': description,
+      if (localizedDescription != null)
+        'localized_description': localizedDescription,
+      if (logoUrl != null) 'logo_url': logoUrl,
+      'display_order': displayOrder,
+      if (sectorId != null) 'sector_id': sectorId,
+    };
   }
 
   String get displayName => localizedName ?? name;

@@ -16,10 +16,7 @@ import 'country_centroids_cache.dart';
 import 'world_geojson_cache.dart';
 
 /// Bubble markers vs filled country polygons (choropleth).
-enum FdrsMapVisualMode {
-  bubble,
-  choropleth,
-}
+enum FdrsMapVisualMode { bubble, choropleth }
 
 /// Returned from fullscreen so the home section can stay in sync.
 class FdrsMapSessionSnapshot {
@@ -132,11 +129,11 @@ MapOptions fdrsWorldMapOptions(
     initialCameraFit: initialFit,
     minZoom: minZoom,
     maxZoom: maxZoom,
-    cameraConstraint: CameraConstraint.containCenter(bounds: _fdrsWorldMapBounds),
-    onTap: onTap,
-    interactionOptions: const InteractionOptions(
-      flags: InteractiveFlag.all,
+    cameraConstraint: CameraConstraint.containCenter(
+      bounds: _fdrsWorldMapBounds,
     ),
+    onTap: onTap,
+    interactionOptions: const InteractionOptions(flags: InteractiveFlag.all),
   );
 }
 
@@ -149,10 +146,7 @@ List<Widget> fdrsWorldMapTiles(ThemeData theme) {
     final url =
         'https://api.mapbox.com/styles/v1/$stylePath/tiles/{z}/{x}/{y}?access_token=$token';
     return [
-      TileLayer(
-        urlTemplate: url,
-        userAgentPackageName: 'hum_databank_app',
-      ),
+      TileLayer(urlTemplate: url, userAgentPackageName: 'hum_databank_app'),
     ];
   }
   return [
@@ -335,7 +329,9 @@ class FdrsMapModeToggle extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
-    final track = cs.surfaceContainerHighest.withValues(alpha: isDark ? 0.55 : 0.65);
+    final track = cs.surfaceContainerHighest.withValues(
+      alpha: isDark ? 0.55 : 0.65,
+    );
     final border = cs.outlineVariant.withValues(alpha: isDark ? 0.35 : 0.28);
 
     Widget pill({
@@ -378,7 +374,9 @@ class FdrsMapModeToggle extends StatelessWidget {
                   Icon(
                     icon,
                     size: 18,
-                    color: selected ? cs.onSecondaryContainer : cs.onSurfaceVariant,
+                    color: selected
+                        ? cs.onSecondaryContainer
+                        : cs.onSurfaceVariant,
                   ),
                   const SizedBox(width: 6),
                   Flexible(
@@ -387,8 +385,12 @@ class FdrsMapModeToggle extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.labelLarge?.copyWith(
-                        fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                        color: selected ? cs.onSecondaryContainer : cs.onSurfaceVariant,
+                        fontWeight: selected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: selected
+                            ? cs.onSecondaryContainer
+                            : cs.onSurfaceVariant,
                         letterSpacing: 0.1,
                       ),
                     ),
@@ -479,11 +481,7 @@ class FdrsIndicatorScrollBar extends StatelessWidget {
                   child: SizedBox(
                     height: 28,
                     child: Center(
-                      child: Container(
-                        width: 1,
-                        height: 22,
-                        color: baseLine,
-                      ),
+                      child: Container(width: 1, height: 22, color: baseLine),
                     ),
                   ),
                 ),
@@ -570,31 +568,36 @@ class FdrsChoroplethLegend extends StatelessWidget {
     required this.l10n,
     required this.lowColor,
     required this.highColor,
+    this.lowLabel,
+    this.highLabel,
   });
 
   final AppLocalizations l10n;
   final Color lowColor;
   final Color highColor;
+  final String? lowLabel;
+  final String? highLabel;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final border = theme.colorScheme.outlineVariant
-        .withValues(alpha: isDark ? 0.55 : 0.4);
+    final border = theme.colorScheme.outlineVariant.withValues(
+      alpha: isDark ? 0.55 : 0.4,
+    );
+    final lowText = lowLabel ?? l10n.homeLandingGlobalMapLegendLow;
+    final highText = highLabel ?? l10n.homeLandingGlobalMapLegendHigh;
     return Material(
       color: theme.colorScheme.surface.withValues(alpha: 0.92),
       surfaceTintColor: Colors.transparent,
-      shape: RoundedRectangleBorder(
-        side: BorderSide(color: border),
-      ),
+      shape: RoundedRectangleBorder(side: BorderSide(color: border)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              l10n.homeLandingGlobalMapLegendLow,
+              lowText,
               style: theme.textTheme.labelSmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -605,14 +608,12 @@ class FdrsChoroplethLegend extends StatelessWidget {
               height: 8,
               decoration: BoxDecoration(
                 border: Border.all(color: border, width: 0.5),
-                gradient: LinearGradient(
-                  colors: [lowColor, highColor],
-                ),
+                gradient: LinearGradient(colors: [lowColor, highColor]),
               ),
             ),
             const SizedBox(width: 8),
             Text(
-              l10n.homeLandingGlobalMapLegendHigh,
+              highText,
               style: theme.textTheme.labelSmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -649,14 +650,16 @@ class FdrsWorldMapFullscreenPage extends StatefulWidget {
   final Future<GlobalOverviewDataset> Function({
     required int indicatorBankId,
     required String? periodName,
-  }) reloadDataset;
+  })
+  reloadDataset;
 
   @override
   State<FdrsWorldMapFullscreenPage> createState() =>
       _FdrsWorldMapFullscreenPageState();
 }
 
-class _FdrsWorldMapFullscreenPageState extends State<FdrsWorldMapFullscreenPage> {
+class _FdrsWorldMapFullscreenPageState
+    extends State<FdrsWorldMapFullscreenPage> {
   late int _indicatorBankId;
   late String? _selectedPeriod;
   late FdrsMapVisualMode _visualMode;
@@ -673,10 +676,10 @@ class _FdrsWorldMapFullscreenPageState extends State<FdrsWorldMapFullscreenPage>
   }
 
   FdrsMapSessionSnapshot _snapshot() => FdrsMapSessionSnapshot(
-        indicatorBankId: _indicatorBankId,
-        selectedPeriod: _selectedPeriod,
-        visualMode: _visualMode,
-      );
+    indicatorBankId: _indicatorBankId,
+    selectedPeriod: _selectedPeriod,
+    visualMode: _visualMode,
+  );
 
   Future<void> _reload() {
     final f = widget.reloadDataset(
@@ -716,7 +719,9 @@ class _FdrsWorldMapFullscreenPageState extends State<FdrsWorldMapFullscreenPage>
         return NativeModalSheetScaffold(
           theme: theme,
           title: l10n.homeLandingGlobalMapFiltersTitle,
-          closeTooltip: MaterialLocalizations.of(sheetContext).closeButtonTooltip,
+          closeTooltip: MaterialLocalizations.of(
+            sheetContext,
+          ).closeButtonTooltip,
           maxHeightFraction: 0.88,
           bodyExpands: false,
           onClose: () => Navigator.of(sheetContext).pop(),
@@ -898,8 +903,9 @@ class _FdrsWorldMapFullscreenPageState extends State<FdrsWorldMapFullscreenPage>
               }
 
               final isDark = theme.brightness == Brightness.dark;
-              final border = theme.colorScheme.outlineVariant
-                  .withValues(alpha: isDark ? 0.45 : 0.35);
+              final border = theme.colorScheme.outlineVariant.withValues(
+                alpha: isDark ? 0.45 : 0.35,
+              );
               final noData = theme.colorScheme.surfaceContainerHighest
                   .withValues(alpha: isDark ? 0.35 : 0.5);
               final low = Color(AppConstants.ifrcRed).withValues(alpha: 0.12);
@@ -1037,4 +1043,3 @@ class _MapToolButton extends StatelessWidget {
     );
   }
 }
-

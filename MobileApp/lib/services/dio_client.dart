@@ -143,7 +143,8 @@ class _AuthInterceptor extends Interceptor {
       }
     } catch (_) {}
 
-    final lang = await _storage.getString('selected_language') ?? 'en';
+    final lang =
+        await _storage.getString(AppConfig.selectedLanguageKey) ?? 'en';
     options.headers['Accept-Language'] = lang;
 
     handler.next(options);
