@@ -19,6 +19,10 @@ class Assignment {
   /// Matches AssignedForm.is_effectively_closed (dashboard Enter Data / reopen rules).
   final bool isEffectivelyClosed;
 
+  /// Server timestamp of the published form template version ([FormTemplateVersion.updated_at]).
+  /// Used to detect outdated offline bundles vs the live form definition.
+  final DateTime? formDefinitionUpdatedAt;
+
   Assignment({
     required this.id,
     required this.name,
@@ -38,6 +42,7 @@ class Assignment {
     this.approvedByUserName,
     this.latestPublicSubmissionAt,
     this.isEffectivelyClosed = false,
+    this.formDefinitionUpdatedAt,
   });
 
   factory Assignment.fromJson(Map<String, dynamic> json) {
@@ -79,6 +84,9 @@ class Assignment {
           ? DateTime.parse(json['latest_public_submission_at'])
           : null,
       isEffectivelyClosed: json['is_effectively_closed'] == true,
+      formDefinitionUpdatedAt: json['form_definition_updated_at'] != null
+          ? DateTime.tryParse(json['form_definition_updated_at'].toString())
+          : null,
     );
   }
 
@@ -103,6 +111,8 @@ class Assignment {
       'latest_public_submission_at':
           latestPublicSubmissionAt?.toIso8601String(),
       'is_effectively_closed': isEffectivelyClosed,
+      'form_definition_updated_at':
+          formDefinitionUpdatedAt?.toUtc().toIso8601String(),
     };
   }
 

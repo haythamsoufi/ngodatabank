@@ -309,6 +309,26 @@ class AppLocalizations {
       'no_notifications': 'No notifications',
       'all_caught_up': 'You\'re all caught up',
       'notifications_load_more': 'Load more',
+      'notifications_filter': 'Filters',
+      'notifications_filter_title': 'Filter notifications',
+      'notifications_filter_read_status': 'Read status',
+      'notifications_filter_all': 'All',
+      'notifications_filter_unread_only': 'Unread only',
+      'notifications_filter_type': 'Notification type',
+      'notifications_filter_type_any': 'All types',
+      'notifications_filter_from': 'From',
+      'notifications_filter_from_any': 'Anyone',
+      'notifications_filter_from_empty_hint':
+          'People appear here when their notifications are in the loaded list. Use Load more to find others.',
+      'notifications_filter_priority': 'Priority',
+      'notifications_filter_priority_any': 'Any priority',
+      'notifications_filter_priority_normal': 'Normal',
+      'notifications_filter_priority_high': 'High',
+      'notifications_filter_priority_urgent': 'Urgent',
+      'notifications_filter_apply': 'Apply',
+      'notifications_filter_reset': 'Reset all',
+      'notifications_filter_no_matches_loaded':
+          'No notifications match these filters in the loaded list. Load more or adjust filters.',
       'mark_all_read': 'Mark all as read',
       'mark_read': 'Mark as read',
       'mark_unread': 'Mark as unread',
@@ -501,6 +521,23 @@ class AppLocalizations {
       'offline_open_saved_copy': 'Open saved offline copy',
       'remove_offline_copy': 'Remove offline copy',
       'offline_form_removed': 'Offline copy removed. Download again when online.',
+      'offline_saved_copy_details_tooltip':
+          'Offline copy — details and remove',
+      'offline_copy_sheet_title': 'Offline form copy',
+      'offline_copy_saved_on_label': 'Saved on',
+      'offline_copy_files_cached': '%(count)d cached resources',
+      'offline_stale_bundle_banner_title': 'Offline forms need updating',
+      'offline_stale_bundle_banner_body_online':
+          'The online form changed. Your device refreshes offline copies automatically when connected. If that fails, open each form with the warning badge and tap Update offline copy.',
+      'offline_stale_bundle_banner_body_offline':
+          'The online form changed. Connect to the internet so your device can refresh offline copies automatically.',
+      'offline_stale_bundle_updates_snackbar':
+          'Offline copies were updated to the latest version.',
+      'offline_stale_bundle_partial_refresh':
+          'Some offline copies could not be updated. Tap the warning badge on a form, then Update offline copy.',
+      'offline_stale_bundle_sheet_notice':
+          'This offline copy may not match the current online form. Update it to avoid version issues.',
+      'offline_stale_bundle_update_now': 'Update offline copy',
       'approve': 'Approve',
       'reopen': 'Reopen',
       'view_public_submissions': 'View Public Submissions',
@@ -1390,6 +1427,26 @@ class AppLocalizations {
       'no_notifications': 'No hay notificaciones',
       'all_caught_up': 'Estás al día',
       'notifications_load_more': 'Cargar más',
+      'notifications_filter': 'Filtros',
+      'notifications_filter_title': 'Filtrar notificaciones',
+      'notifications_filter_read_status': 'Estado de lectura',
+      'notifications_filter_all': 'Todas',
+      'notifications_filter_unread_only': 'No leídas',
+      'notifications_filter_type': 'Tipo',
+      'notifications_filter_type_any': 'Todos los tipos',
+      'notifications_filter_from': 'De',
+      'notifications_filter_from_any': 'Cualquiera',
+      'notifications_filter_from_empty_hint':
+          'Las personas aparecen cuando sus notificaciones están en la lista cargada. Use Cargar más para encontrar otras.',
+      'notifications_filter_priority': 'Prioridad',
+      'notifications_filter_priority_any': 'Cualquier prioridad',
+      'notifications_filter_priority_normal': 'Normal',
+      'notifications_filter_priority_high': 'Alta',
+      'notifications_filter_priority_urgent': 'Urgente',
+      'notifications_filter_apply': 'Aplicar',
+      'notifications_filter_reset': 'Restablecer',
+      'notifications_filter_no_matches_loaded':
+          'Ninguna notificación coincide con los filtros en la lista cargada. Cargue más o ajuste los filtros.',
       'mark_all_read': 'Marcar todo como leído',
       'mark_read': 'Marcar como leído',
       'mark_unread': 'Marcar como no leído',
@@ -1573,6 +1630,24 @@ class AppLocalizations {
       'remove_offline_copy': 'Quitar copia sin conexión',
       'offline_form_removed':
           'Copia sin conexión eliminada. Vuelva a descargar cuando tenga conexión.',
+      'offline_saved_copy_details_tooltip':
+          'Copia sin conexión — detalles y eliminar',
+      'offline_copy_sheet_title': 'Copia de formulario sin conexión',
+      'offline_copy_saved_on_label': 'Guardada el',
+      'offline_copy_files_cached': '%(count)d recursos en caché',
+      'offline_stale_bundle_banner_title':
+          'Los formularios sin conexión necesitan actualización',
+      'offline_stale_bundle_banner_body_online':
+          'El formulario en línea cambió. El dispositivo actualiza las copias sin conexión automáticamente cuando hay conexión. Si falla, abra cada formulario con la advertencia y pulse Actualizar copia sin conexión.',
+      'offline_stale_bundle_banner_body_offline':
+          'El formulario en línea cambió. Conéctese a internet para que el dispositivo pueda actualizar las copias sin conexión automáticamente.',
+      'offline_stale_bundle_updates_snackbar':
+          'Las copias sin conexión se actualizaron a la última versión.',
+      'offline_stale_bundle_partial_refresh':
+          'No se pudieron actualizar algunas copias sin conexión. Pulse la advertencia en un formulario y luego Actualizar copia sin conexión.',
+      'offline_stale_bundle_sheet_notice':
+          'Esta copia sin conexión puede no coincidir con el formulario en línea actual. Actualícela para evitar problemas de versión.',
+      'offline_stale_bundle_update_now': 'Actualizar copia sin conexión',
       'approve': 'Aprobar',
       'reopen': 'Reabrir',
       'view_public_submissions': 'Ver Envíos Públicos',
@@ -2314,6 +2389,26 @@ class AppLocalizations {
       'no_notifications': 'Aucune notification',
       'all_caught_up': 'Vous êtes à jour',
       'notifications_load_more': 'Charger plus',
+      'notifications_filter': 'Filtres',
+      'notifications_filter_title': 'Filtrer les notifications',
+      'notifications_filter_read_status': 'État de lecture',
+      'notifications_filter_all': 'Toutes',
+      'notifications_filter_unread_only': 'Non lues seulement',
+      'notifications_filter_type': 'Type',
+      'notifications_filter_type_any': 'Tous les types',
+      'notifications_filter_from': 'De',
+      'notifications_filter_from_any': 'Tout le monde',
+      'notifications_filter_from_empty_hint':
+          'Les personnes apparaissent lorsque leurs notifications figurent dans la liste chargée. Utilisez Charger plus.',
+      'notifications_filter_priority': 'Priorité',
+      'notifications_filter_priority_any': 'Toute priorité',
+      'notifications_filter_priority_normal': 'Normale',
+      'notifications_filter_priority_high': 'Haute',
+      'notifications_filter_priority_urgent': 'Urgente',
+      'notifications_filter_apply': 'Appliquer',
+      'notifications_filter_reset': 'Réinitialiser',
+      'notifications_filter_no_matches_loaded':
+          'Aucune notification ne correspond aux filtres dans la liste chargée. Chargez plus ou modifiez les filtres.',
       'mark_all_read': 'Tout marquer comme lu',
       'mark_read': 'Marquer comme lu',
       'mark_unread': 'Marquer comme non lu',
@@ -2498,6 +2593,24 @@ class AppLocalizations {
       'remove_offline_copy': 'Supprimer la copie hors ligne',
       'offline_form_removed':
           'Copie hors ligne supprimée. Téléchargez à nouveau en ligne.',
+      'offline_saved_copy_details_tooltip':
+          'Copie hors ligne — détails et suppression',
+      'offline_copy_sheet_title': 'Copie hors ligne du formulaire',
+      'offline_copy_saved_on_label': 'Enregistrée le',
+      'offline_copy_files_cached': '%(count)d ressources mises en cache',
+      'offline_stale_bundle_banner_title':
+          'Mise à jour des formulaires hors ligne requise',
+      'offline_stale_bundle_banner_body_online':
+          'Le formulaire en ligne a changé. L’appareil actualise les copies hors ligne automatiquement lorsqu’il est connecté. Sinon, ouvrez chaque formulaire avec l’avertissement puis appuyez sur Mettre à jour la copie hors ligne.',
+      'offline_stale_bundle_banner_body_offline':
+          'Le formulaire en ligne a changé. Connectez-vous à Internet pour que l’appareil puisse actualiser les copies hors ligne automatiquement.',
+      'offline_stale_bundle_updates_snackbar':
+          'Les copies hors ligne ont été mises à jour vers la dernière version.',
+      'offline_stale_bundle_partial_refresh':
+          'Certaines copies hors ligne n’ont pas pu être mises à jour. Touchez l’avertissement sur un formulaire, puis Mettre à jour la copie hors ligne.',
+      'offline_stale_bundle_sheet_notice':
+          'Cette copie hors ligne peut ne plus correspondre au formulaire en ligne actuel. Mettez-la à jour pour éviter des problèmes de version.',
+      'offline_stale_bundle_update_now': 'Mettre à jour la copie hors ligne',
       'approve': 'Approuver',
       'reopen': 'Rouvrir',
       'view_public_submissions': 'Voir les Soumissions Publiques',
@@ -3241,6 +3354,26 @@ class AppLocalizations {
       'no_notifications': 'لا توجد إشعارات',
       'all_caught_up': 'لقد انتهيت من جميع الإشعارات',
       'notifications_load_more': 'تحميل المزيد',
+      'notifications_filter': 'عوامل التصفية',
+      'notifications_filter_title': 'تصفية الإشعارات',
+      'notifications_filter_read_status': 'حالة القراءة',
+      'notifications_filter_all': 'الكل',
+      'notifications_filter_unread_only': 'غير المقروءة فقط',
+      'notifications_filter_type': 'النوع',
+      'notifications_filter_type_any': 'كل الأنواع',
+      'notifications_filter_from': 'من',
+      'notifications_filter_from_any': 'أي شخص',
+      'notifications_filter_from_empty_hint':
+          'يظهر الأشخاص عندما تكون إشعاراتهم في القائمة المحمّلة. استخدم تحميل المزيد.',
+      'notifications_filter_priority': 'الأولوية',
+      'notifications_filter_priority_any': 'أي أولوية',
+      'notifications_filter_priority_normal': 'عادية',
+      'notifications_filter_priority_high': 'مرتفعة',
+      'notifications_filter_priority_urgent': 'عاجلة',
+      'notifications_filter_apply': 'تطبيق',
+      'notifications_filter_reset': 'إعادة التعيين',
+      'notifications_filter_no_matches_loaded':
+          'لا توجد إشعارات تطابق عوامل التصفية في القائمة المحمّلة. حمّل المزيد أو عدّل عوامل التصفية.',
       'mark_all_read': 'تعليم الكل كمقروء',
       'mark_read': 'تعليم كمقروء',
       'mark_unread': 'تعليم كغير مقروء',
@@ -3417,6 +3550,23 @@ class AppLocalizations {
       'remove_offline_copy': 'إزالة النسخة دون اتصال',
       'offline_form_removed':
           'تمت إزالة النسخة دون اتصال. أعد التنزيل عند الاتصال بالإنترنت.',
+      'offline_saved_copy_details_tooltip':
+          'نسخة دون اتصال — التفاصيل والإزالة',
+      'offline_copy_sheet_title': 'نسخة النموذج دون اتصال',
+      'offline_copy_saved_on_label': 'تم الحفظ في',
+      'offline_copy_files_cached': '%(count)d موارد مخزنة مؤقتًا',
+      'offline_stale_bundle_banner_title': 'النماذج دون اتصال تحتاج إلى تحديث',
+      'offline_stale_bundle_banner_body_online':
+          'تغيّر النموذج على الخادم. يُحدّث الجهاز النسخ دون اتصال تلقائيًا عند الاتصال. إذا تعذّر ذلك، افتح كل نموذج يظهر عليه التحذير ثم اضغط تحديث النسخة دون اتصال.',
+      'offline_stale_bundle_banner_body_offline':
+          'تغيّر النموذج على الخادم. اتصل بالإنترنت ليتمكن الجهاز من تحديث النسخ دون اتصال تلقائيًا.',
+      'offline_stale_bundle_updates_snackbar':
+          'تم تحديث النسخ دون اتصال إلى أحدث إصدار.',
+      'offline_stale_bundle_partial_refresh':
+          'تعذّر تحديث بعض النسخ دون اتصال. اضغط رمز التحذير على النموذج ثم تحديث النسخة دون اتصال.',
+      'offline_stale_bundle_sheet_notice':
+          'قد لا تطابق هذه النسخة دون اتصال النموذج الحالي على الخادم. حدّثها لتجنب مشاكل الإصدارات.',
+      'offline_stale_bundle_update_now': 'تحديث النسخة دون اتصال',
       'approve': 'الموافقة',
       'reopen': 'إعادة الفتح',
       'view_public_submissions': 'عرض التقديمات العامة',
@@ -4138,6 +4288,26 @@ class AppLocalizations {
       'no_notifications': 'कोई सूचना नहीं',
       'all_caught_up': 'आप सभी को पकड़ लिया है',
       'notifications_load_more': 'और लोड करें',
+      'notifications_filter': 'फ़िल्टर',
+      'notifications_filter_title': 'सूचनाएँ फ़िल्टर करें',
+      'notifications_filter_read_status': 'पढ़ने की स्थिति',
+      'notifications_filter_all': 'सभी',
+      'notifications_filter_unread_only': 'केवल अपठित',
+      'notifications_filter_type': 'प्रकार',
+      'notifications_filter_type_any': 'सभी प्रकार',
+      'notifications_filter_from': 'से',
+      'notifications_filter_from_any': 'कोई भी',
+      'notifications_filter_from_empty_hint':
+          'जब उनकी सूचनाएँ लोड की सूची में हों तो लोग यहाँ दिखते हैं। और लोड करें का उपयोग करें।',
+      'notifications_filter_priority': 'प्राथमिकता',
+      'notifications_filter_priority_any': 'कोई भी प्राथमिकता',
+      'notifications_filter_priority_normal': 'सामान्य',
+      'notifications_filter_priority_high': 'उच्च',
+      'notifications_filter_priority_urgent': 'तत्काल',
+      'notifications_filter_apply': 'लागू करें',
+      'notifications_filter_reset': 'सभी रीसेट करें',
+      'notifications_filter_no_matches_loaded':
+          'लोड की सूची में इन फ़िल्टर से मेल खाती कोई सूचना नहीं। और लोड करें या फ़िल्टर बदलें।',
       'mark_all_read': 'सभी को पढ़ा हुआ चिह्नित करें',
       'mark_read': 'पढ़ा हुआ चिह्नित करें',
       'mark_unread': 'अपठित चिह्नित करें',
@@ -4318,6 +4488,23 @@ class AppLocalizations {
       'remove_offline_copy': 'ऑफ़लाइन प्रति हटाएँ',
       'offline_form_removed':
           'ऑफ़लाइन प्रति हटा दी गई। ऑनलाइन होने पर फिर से डाउनलोड करें।',
+      'offline_saved_copy_details_tooltip':
+          'ऑफ़लाइन प्रति — विवरण और हटाएँ',
+      'offline_copy_sheet_title': 'ऑफ़लाइन फ़ॉर्म प्रति',
+      'offline_copy_saved_on_label': 'सहेजा गया',
+      'offline_copy_files_cached': '%(count)d कैश संसाधन',
+      'offline_stale_bundle_banner_title': 'ऑफ़लाइन फ़ॉर्म अपडेट करें',
+      'offline_stale_bundle_banner_body_online':
+          'ऑनलाइन फ़ॉर्म बदल गया। कनेक्ट होने पर डिवाइस ऑफ़लाइन प्रतियाँ स्वतः अपडेट करता है। यदि न हो, चेतावनी वाले प्रत्येक फ़ॉर्म पर जाकर ऑफ़लाइन प्रति अपडेट करें पर टैप करें।',
+      'offline_stale_bundle_banner_body_offline':
+          'ऑनलाइन फ़ॉर्म बदल गया। इंटरनेट से जुड़ें ताकि डिवाइस ऑफ़लाइन प्रतियाँ स्वतः अपडेट कर सके।',
+      'offline_stale_bundle_updates_snackbar':
+          'ऑफ़लाइन प्रतियाँ नवीनतम संस्करण पर अपडेट हो गईं।',
+      'offline_stale_bundle_partial_refresh':
+          'कुछ ऑफ़लाइन प्रतियाँ अपडेट नहीं हो सकीं। फ़ॉर्म पर चेतावनी बैज पर टैप करें, फिर ऑफ़लाइन प्रति अपडेट करें।',
+      'offline_stale_bundle_sheet_notice':
+          'यह ऑफ़लाइन प्रति वर्तमान ऑनलाइन फ़ॉर्म से मेल नहीं खा सकती। संस्करण समस्याओं से बचने के लिए अपडेट करें।',
+      'offline_stale_bundle_update_now': 'ऑफ़लाइन प्रति अपडेट करें',
       'approve': 'अनुमोदित करें',
       'reopen': 'पुनः खोलें',
       'view_public_submissions': 'सार्वजनिक सबमिशन देखें',
@@ -5054,6 +5241,26 @@ class AppLocalizations {
       'no_notifications': 'Нет уведомлений',
       'all_caught_up': 'Вы все наверстали',
       'notifications_load_more': 'Загрузить ещё',
+      'notifications_filter': 'Фильтры',
+      'notifications_filter_title': 'Фильтр уведомлений',
+      'notifications_filter_read_status': 'Статус прочтения',
+      'notifications_filter_all': 'Все',
+      'notifications_filter_unread_only': 'Только непрочитанные',
+      'notifications_filter_type': 'Тип',
+      'notifications_filter_type_any': 'Все типы',
+      'notifications_filter_from': 'От',
+      'notifications_filter_from_any': 'Любой',
+      'notifications_filter_from_empty_hint':
+          'Люди появляются, когда их уведомления есть в загруженном списке. Используйте «Загрузить ещё».',
+      'notifications_filter_priority': 'Приоритет',
+      'notifications_filter_priority_any': 'Любой приоритет',
+      'notifications_filter_priority_normal': 'Обычный',
+      'notifications_filter_priority_high': 'Высокий',
+      'notifications_filter_priority_urgent': 'Срочный',
+      'notifications_filter_apply': 'Применить',
+      'notifications_filter_reset': 'Сбросить всё',
+      'notifications_filter_no_matches_loaded':
+          'Нет уведомлений по фильтрам в загруженном списке. Загрузите ещё или измените фильтры.',
       'mark_all_read': 'Отметить все как прочитанные',
       'mark_read': 'Отметить как прочитанное',
       'mark_unread': 'Отметить как непрочитанное',
@@ -5237,6 +5444,23 @@ class AppLocalizations {
       'remove_offline_copy': 'Удалить офлайн-копию',
       'offline_form_removed':
           'Офлайн-копия удалена. Скачайте снова при подключении к сети.',
+      'offline_saved_copy_details_tooltip':
+          'Офлайн-копия — сведения и удаление',
+      'offline_copy_sheet_title': 'Офлайн-копия формы',
+      'offline_copy_saved_on_label': 'Сохранено',
+      'offline_copy_files_cached': '%(count)d кэшированных ресурсов',
+      'offline_stale_bundle_banner_title': 'Нужно обновить офлайн-формы',
+      'offline_stale_bundle_banner_body_online':
+          'Онлайн-форма изменилась. Устройство автоматически обновляет офлайн-копии при подключении. Если не получилось, откройте форму с предупреждением и нажмите «Обновить офлайн-копию».',
+      'offline_stale_bundle_banner_body_offline':
+          'Онлайн-форма изменилась. Подключитесь к интернету, чтобы устройство могло автоматически обновить офлайн-копии.',
+      'offline_stale_bundle_updates_snackbar':
+          'Офлайн-копии обновлены до последней версии.',
+      'offline_stale_bundle_partial_refresh':
+          'Не удалось обновить некоторые офлайн-копии. Нажмите значок предупреждения на форме, затем «Обновить офлайн-копию».',
+      'offline_stale_bundle_sheet_notice':
+          'Эта офлайн-копия может не соответствовать текущей онлайн-форме. Обновите её, чтобы избежать проблем с версией.',
+      'offline_stale_bundle_update_now': 'Обновить офлайн-копию',
       'approve': 'Одобрить',
       'reopen': 'Переоткрыть',
       'view_public_submissions': 'Просмотр Публичных Отправок',
@@ -5971,6 +6195,26 @@ class AppLocalizations {
       'no_notifications': '没有通知',
       'all_caught_up': '您已全部看完',
       'notifications_load_more': '加载更多',
+      'notifications_filter': '筛选',
+      'notifications_filter_title': '筛选通知',
+      'notifications_filter_read_status': '阅读状态',
+      'notifications_filter_all': '全部',
+      'notifications_filter_unread_only': '仅未读',
+      'notifications_filter_type': '类型',
+      'notifications_filter_type_any': '所有类型',
+      'notifications_filter_from': '来自',
+      'notifications_filter_from_any': '任何人',
+      'notifications_filter_from_empty_hint':
+          '当某人的通知出现在已加载列表中时，会显示在此处。请使用加载更多。',
+      'notifications_filter_priority': '优先级',
+      'notifications_filter_priority_any': '任意优先级',
+      'notifications_filter_priority_normal': '普通',
+      'notifications_filter_priority_high': '高',
+      'notifications_filter_priority_urgent': '紧急',
+      'notifications_filter_apply': '应用',
+      'notifications_filter_reset': '全部重置',
+      'notifications_filter_no_matches_loaded':
+          '已加载列表中没有符合这些筛选条件的通知。请加载更多或调整筛选。',
       'mark_all_read': '全部标记为已读',
       'mark_read': '标记为已读',
       'mark_unread': '标记为未读',
@@ -6133,6 +6377,21 @@ class AppLocalizations {
       'offline_open_saved_copy': '打开已保存的离线副本',
       'remove_offline_copy': '删除离线副本',
       'offline_form_removed': '已删除离线副本。联网后请重新下载。',
+      'offline_saved_copy_details_tooltip': '离线副本 — 详情与移除',
+      'offline_copy_sheet_title': '离线表单副本',
+      'offline_copy_saved_on_label': '保存时间',
+      'offline_copy_files_cached': '已缓存 %(count)d 个资源',
+      'offline_stale_bundle_banner_title': '离线表单需要更新',
+      'offline_stale_bundle_banner_body_online':
+          '在线表单已更改。联网时设备会自动刷新离线副本。若未成功，请点击带警告标记的表单并选择“更新离线副本”。',
+      'offline_stale_bundle_banner_body_offline':
+          '在线表单已更改。请连接互联网，以便设备自动刷新离线副本。',
+      'offline_stale_bundle_updates_snackbar': '离线副本已更新到最新版本。',
+      'offline_stale_bundle_partial_refresh':
+          '部分离线副本未能更新。请点击表单上的警告标记，然后选择“更新离线副本”。',
+      'offline_stale_bundle_sheet_notice':
+          '此离线副本可能与当前在线表单不一致。请更新以避免版本问题。',
+      'offline_stale_bundle_update_now': '更新离线副本',
       'approve': '批准',
       'reopen': '重新开放',
       'view_public_submissions': '查看公开提交',
@@ -6960,6 +7219,35 @@ class AppLocalizations {
   String get noNotifications => translate('no_notifications');
   String get allCaughtUp => translate('all_caught_up');
   String get notificationsLoadMore => translate('notifications_load_more');
+  String get notificationsFilter => translate('notifications_filter');
+  String get notificationsFilterTitle => translate('notifications_filter_title');
+  String get notificationsFilterReadStatus =>
+      translate('notifications_filter_read_status');
+  String get notificationsFilterAll => translate('notifications_filter_all');
+  String get notificationsFilterUnreadOnly =>
+      translate('notifications_filter_unread_only');
+  String get notificationsFilterType => translate('notifications_filter_type');
+  String get notificationsFilterTypeAny =>
+      translate('notifications_filter_type_any');
+  String get notificationsFilterFrom => translate('notifications_filter_from');
+  String get notificationsFilterFromAny =>
+      translate('notifications_filter_from_any');
+  String get notificationsFilterFromEmptyHint =>
+      translate('notifications_filter_from_empty_hint');
+  String get notificationsFilterPriority =>
+      translate('notifications_filter_priority');
+  String get notificationsFilterPriorityAny =>
+      translate('notifications_filter_priority_any');
+  String get notificationsFilterPriorityNormal =>
+      translate('notifications_filter_priority_normal');
+  String get notificationsFilterPriorityHigh =>
+      translate('notifications_filter_priority_high');
+  String get notificationsFilterPriorityUrgent =>
+      translate('notifications_filter_priority_urgent');
+  String get notificationsFilterApply => translate('notifications_filter_apply');
+  String get notificationsFilterReset => translate('notifications_filter_reset');
+  String get notificationsFilterNoMatchesLoaded =>
+      translate('notifications_filter_no_matches_loaded');
   String get markAllRead => translate('mark_all_read');
   String get markRead => translate('mark_read');
   String get markUnread => translate('mark_unread');
@@ -7301,6 +7589,28 @@ class AppLocalizations {
   String get offlineOpenSavedCopy => translate('offline_open_saved_copy');
   String get removeOfflineCopy => translate('remove_offline_copy');
   String get offlineFormRemoved => translate('offline_form_removed');
+  String get offlineSavedCopyDetailsTooltip =>
+      translate('offline_saved_copy_details_tooltip');
+  String get offlineCopySheetTitle => translate('offline_copy_sheet_title');
+  String get offlineCopySavedOnLabel =>
+      translate('offline_copy_saved_on_label');
+  String offlineCopyFilesCached(int count) =>
+      translate('offline_copy_files_cached')
+          .replaceAll('%(count)d', count.toString());
+  String get offlineStaleBundleBannerTitle =>
+      translate('offline_stale_bundle_banner_title');
+  String get offlineStaleBundleBannerBodyOnline =>
+      translate('offline_stale_bundle_banner_body_online');
+  String get offlineStaleBundleBannerBodyOffline =>
+      translate('offline_stale_bundle_banner_body_offline');
+  String get offlineStaleBundleUpdatesSnackbar =>
+      translate('offline_stale_bundle_updates_snackbar');
+  String get offlineStaleBundlePartialRefresh =>
+      translate('offline_stale_bundle_partial_refresh');
+  String get offlineStaleBundleSheetNotice =>
+      translate('offline_stale_bundle_sheet_notice');
+  String get offlineStaleBundleUpdateNow =>
+      translate('offline_stale_bundle_update_now');
   String get approve => translate('approve');
   String get reopen => translate('reopen');
   String get viewPublicSubmissions => translate('view_public_submissions');

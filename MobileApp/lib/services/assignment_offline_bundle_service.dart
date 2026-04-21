@@ -7,8 +7,43 @@ import 'package:html/parser.dart' as html_parser;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../models/shared/assignment.dart';
 import '../utils/debug_logger.dart' show DebugLogger, LogLevel;
 import '../utils/url_helper.dart';
+
+/// Metadata written alongside [AssignmentOfflineBundleService] disk snapshots.
+class AssignmentOfflineBundleMeta {
+  const AssignmentOfflineBundleMeta({
+    required this.assignmentId,
+    this.sourceUrl,
+    this.savedAtUtc,
+    required this.assetCount,
+    this.formDefinitionUpdatedAtIso,
+  });
+
+  final int assignmentId;
+  final String? sourceUrl;
+  final DateTime? savedAtUtc;
+  final int assetCount;
+  /// ISO-8601 UTC snapshot of [Assignment.formDefinitionUpdatedAt] when the bundle was saved.
+  final String? formDefinitionUpdatedAtIso;
+}
+
+/// True when the on-disk bundle was captured for an older form definition than the server reports.
+bool isAssignmentOfflineBundleStale(
+  Assignment assignment,
+  AssignmentOfflineBundleMeta? meta,
+) {
+  final server = assignment.formDefinitionUpdatedAt;
+  if (server == null) return false;
+  final raw = meta?.formDefinitionUpdatedAtIso;
+  if (raw == null || raw.isEmpty) return true;
+  final cached = DateTime.tryParse(raw);
+  if (cached == null) return true;
+  final delta = server.toUtc().millisecondsSinceEpoch -
+      cached.toUtc().millisecondsSinceEpoch;
+  return delta.abs() > 1500;
+}
 
 /// Persists a crawlable snapshot of an assignment entry form (HTML + same-origin
 /// static assets) so the form can open from disk when the device is offline.
@@ -67,6 +102,30 @@ class AssignmentOfflineBundleService {
     final index = File(p.join(dir.path, 'index.html'));
     final meta = File(p.join(dir.path, _metaFileName));
     return index.existsSync() && meta.existsSync();
+  }
+
+  /// Reads [bundle_meta.json] when a valid bundle exists.
+  Future<AssignmentOfflineBundleMeta?> readBundleMeta(int assignmentId) async {
+    if (!await hasOfflineBundle(assignmentId)) return null;
+    final dir = await bundleDirFor(assignmentId);
+    final f = File(p.join(dir.path, _metaFileName));
+    try {
+      final raw = jsonDecode(await f.readAsString());
+      if (raw is! Map) return null;
+      final savedAtStr = raw['saved_at']?.toString();
+      return AssignmentOfflineBundleMeta(
+        assignmentId: assignmentId,
+        sourceUrl: raw['source_url']?.toString(),
+        savedAtUtc: savedAtStr != null
+            ? DateTime.tryParse(savedAtStr)?.toLocal()
+            : null,
+        assetCount: (raw['asset_count'] as num?)?.toInt() ?? 0,
+        formDefinitionUpdatedAtIso:
+            raw['form_definition_updated_at']?.toString(),
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<String?> readOfflineIndexHtml(int assignmentId) async {
@@ -130,6 +189,7 @@ class AssignmentOfflineBundleService {
     required String formPath,
     required String language,
     String? sessionCookieHeader,
+    String? formDefinitionUpdatedAtIso,
   }) async {
     final resolved = UrlHelper.resolveWebViewInitialUrl(formPath, language);
     final pageUri = Uri.parse(resolved);
@@ -338,6 +398,9 @@ class AssignmentOfflineBundleService {
       'source_url': resolved,
       'saved_at': DateTime.now().toUtc().toIso8601String(),
       'asset_count': count,
+      if (formDefinitionUpdatedAtIso != null &&
+          formDefinitionUpdatedAtIso.isNotEmpty)
+        'form_definition_updated_at': formDefinitionUpdatedAtIso,
     };
     await File(p.join(dir.path, _metaFileName))
         .writeAsString(jsonEncode(meta), flush: true);

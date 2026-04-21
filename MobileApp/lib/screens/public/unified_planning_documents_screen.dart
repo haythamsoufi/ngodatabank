@@ -754,6 +754,28 @@ class _UnifiedPlanningDocCardState extends State<_UnifiedPlanningDocCard>
                   ),
                 ),
               ),
+              if (d.isPublishedWithinLastThreeDays)
+                Positioned(
+                  top: 10,
+                  left: 10,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2E7D32),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Text(
+                      loc.unifiedPlanningFreshBadge,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 8,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ),
               Positioned(
                 top: 10,
                 right: 10,

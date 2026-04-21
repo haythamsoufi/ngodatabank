@@ -91,13 +91,18 @@ class UnifiedPlanningDocument {
     return '__type_unknown__';
   }
 
-  /// True when [publishedAt] falls within the **last 3 days** (local clock).
+  /// True when the publication **calendar day** (local) is today, yesterday, or two
+  /// days ago — or up to one local calendar day "ahead" of today (server/UTC skew).
   bool get isPublishedWithinLastThreeDays {
     final t = publishedAt;
     if (t == null) return false;
     final now = DateTime.now();
-    const window = Duration(days: 3);
-    final start = now.subtract(window);
-    return !t.isBefore(start) && !t.isAfter(now);
+    final today = DateTime(now.year, now.month, now.day);
+    final pubDay = DateTime(t.year, t.month, t.day);
+    final daysBehind = today.difference(pubDay).inDays;
+    if (daysBehind >= 0 && daysBehind <= 2) return true;
+    // Same document stamped "tomorrow" in local time (common with UTC midnight).
+    if (daysBehind == -1) return true;
+    return false;
   }
 }

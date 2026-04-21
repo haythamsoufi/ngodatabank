@@ -22,6 +22,12 @@ def list_notifications():
     page, per_page = validate_pagination_params(request.args, default_per_page=20)
     unread_only = request.args.get('unread_only', 'false').lower() in ('1', 'true', 'yes')
     notification_type = request.args.get('type')
+    priority_raw = request.args.get('priority')
+    priority = None
+    if priority_raw:
+        p = str(priority_raw).strip().lower()
+        if p in ('normal', 'high', 'urgent'):
+            priority = p
 
     result = NotificationService.get_notifications(
         user_id=current_user.id,
@@ -29,6 +35,7 @@ def list_notifications():
         per_page=per_page,
         unread_only=unread_only,
         notification_type=notification_type,
+        priority=priority,
     )
     return mobile_paginated(
         items=result.get('notifications', []),

@@ -682,6 +682,7 @@ class NotificationService:
         per_page: int = 20,
         unread_only: bool = False,
         notification_type: Optional[str] = None,
+        priority: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Page-based wrapper around get_user_notifications for the mobile API.
@@ -693,6 +694,7 @@ class NotificationService:
             user_id=user_id,
             unread_only=unread_only,
             notification_type=notification_type,
+            priority=priority,
             limit=per_page,
             offset=offset,
         )
@@ -710,6 +712,7 @@ class NotificationService:
         user_id: int,
         unread_only: bool = False,
         notification_type: Optional[str] = None,
+        priority: Optional[str] = None,
         date_from: Optional[datetime] = None,
         date_to: Optional[datetime] = None,
         include_archived: bool = False,
@@ -727,6 +730,7 @@ class NotificationService:
             country_ids: List of country IDs the user has access to
             unread_only: Only return unread notifications
             notification_type: Filter by notification type
+            priority: Filter by ``normal``, ``high``, or ``urgent``
             date_from: Filter notifications from this date
             date_to: Filter notifications until this date
             include_archived: Include archived notifications (shows both archived and non-archived)
@@ -781,6 +785,11 @@ class NotificationService:
                     logger.debug("Could not normalize notification_type: %s", e)
                     nt_value = str(notification_type)
                 query = query.filter(cast(Notification.notification_type, String) == nt_value)
+
+            if priority:
+                p = str(priority).strip().lower()
+                if p in ('normal', 'high', 'urgent'):
+                    query = query.filter(Notification.priority == p)
 
             if date_from:
                 query = query.filter(Notification.created_at >= date_from)

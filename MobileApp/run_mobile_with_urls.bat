@@ -10,6 +10,8 @@ echo  API keys: add these once in MobileApp\.env — this script sets MOBILE_APP
 echo    MOBILE_APP_API_KEY_IFRC_PROD     — choice 1 ^(IFRC production^)
 echo    MOBILE_APP_API_KEY_IFRC_STAGING  — choice 2 ^(IFRC staging^)
 echo    MOBILE_APP_API_KEY_LOCAL_DEV     — choice 5 ^(local dev^)
+echo  Mapbox ^(optional^): add MAPBOX_ACCESS_TOKEN=pk... to .env for IFRC-style map tiles;
+echo    or pass  --dart-define=MAPBOX_ACCESS_TOKEN=pk...  ^(also forwarded from extra args below^).
 echo.
 
 echo  Backoffice (Flask / API^):

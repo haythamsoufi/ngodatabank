@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+
 import '../../models/shared/notification.dart';
 import '../../models/shared/notification_preferences.dart';
 import '../../services/notification_service.dart';
@@ -29,7 +30,82 @@ class NotificationProvider with ChangeNotifier {
   bool _isLoadingPreferences = false;
   String? _preferencesError;
 
+  /// Server-backed list filters (see mobile `/notifications` query params).
+  bool _filterUnreadOnly = false;
+  String? _filterNotificationType;
+  String? _filterPriority;
+
+  /// Client-side filter: actor user id from loaded rows only.
+  int? _filterActorUserId;
+
   List<Notification> get notifications => _notifications;
+
+  bool get filterUnreadOnly => _filterUnreadOnly;
+
+  String? get filterNotificationType => _filterNotificationType;
+
+  String? get filterPriority => _filterPriority;
+
+  int? get filterActorUserId => _filterActorUserId;
+
+  bool get hasActiveNotificationFilters =>
+      _filterUnreadOnly ||
+      (_filterNotificationType != null &&
+          _filterNotificationType!.isNotEmpty) ||
+      (_filterPriority != null && _filterPriority!.isNotEmpty) ||
+      _filterActorUserId != null;
+
+  /// Rows after optional client-side actor filter (server filters apply to [_notifications]).
+  List<Notification> get displayedNotifications {
+    if (_filterActorUserId == null) {
+      return List<Notification>.from(_notifications);
+    }
+    return _notifications
+        .where((n) => n.actor != null && n.actor!.id == _filterActorUserId)
+        .toList();
+  }
+
+  /// Distinct non-empty actors from the currently loaded list (for the From filter).
+  List<NotificationActor> get distinctActorsForFilter {
+    final seen = <int>{};
+    final out = <NotificationActor>[];
+    for (final n in _notifications) {
+      final a = n.actor;
+      if (a != null && a.id != 0 && seen.add(a.id)) {
+        out.add(a);
+      }
+    }
+    out.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    return out;
+  }
+
+  /// Updates list filters and reloads page 1 from the API.
+  Future<void> applyListFilters({
+    required bool unreadOnly,
+    String? notificationType,
+    String? priority,
+    int? actorUserId,
+  }) async {
+    _filterUnreadOnly = unreadOnly;
+    _filterNotificationType =
+        (notificationType != null && notificationType.isNotEmpty)
+            ? notificationType
+            : null;
+    _filterPriority =
+        (priority != null && priority.isNotEmpty) ? priority : null;
+    _filterActorUserId = actorUserId;
+    notifyListeners();
+    await loadNotifications();
+  }
+
+  Future<void> clearListFilters() async {
+    _filterUnreadOnly = false;
+    _filterNotificationType = null;
+    _filterPriority = null;
+    _filterActorUserId = null;
+    notifyListeners();
+    await loadNotifications();
+  }
   int get unreadCount => _unreadCount;
   bool get isLoading => _isLoading;
   bool get isLoadingMore => _isLoadingMore;
@@ -59,6 +135,9 @@ class NotificationProvider with ChangeNotifier {
       final result = await _notificationService.fetchNotificationsPage(
         page: 1,
         perPage: _perPage,
+        unreadOnly: _filterUnreadOnly,
+        notificationType: _filterNotificationType,
+        priority: _filterPriority,
       );
       if (result == null) {
         _notifications = [];
@@ -70,11 +149,12 @@ class NotificationProvider with ChangeNotifier {
         _notificationsTotal = result.total;
         _perPage = result.perPage;
         _lastLoadedPage = result.page;
-        _unreadCount = _notifications.where((n) => !n.isRead).length;
         DebugLogger.logNotifications(
           'loadNotifications() done: ${_notifications.length} items on page '
-          '$_lastLoadedPage, total=$_notificationsTotal, unread=$_unreadCount',
+          '$_lastLoadedPage, total=$_notificationsTotal',
         );
+        // Badge must reflect server-wide unread total, not unread rows in this page.
+        await refreshUnreadCount();
         _error = null;
       }
     } catch (e, stackTrace) {
@@ -108,6 +188,9 @@ class NotificationProvider with ChangeNotifier {
       final result = await _notificationService.fetchNotificationsPage(
         page: nextPage,
         perPage: _perPage,
+        unreadOnly: _filterUnreadOnly,
+        notificationType: _filterNotificationType,
+        priority: _filterPriority,
       );
       if (result == null) {
         _loadMoreError =
@@ -123,7 +206,6 @@ class NotificationProvider with ChangeNotifier {
             existing.add(n.id);
           }
         }
-        _unreadCount = _notifications.where((n) => !n.isRead).length;
       }
     } catch (e, stackTrace) {
       final err = _errorHandler.parseError(
@@ -192,8 +274,8 @@ class NotificationProvider with ChangeNotifier {
                 _notifications[index].copyWith(isRead: true);
           }
         }
-        _unreadCount = _notifications.where((n) => !n.isRead).length;
         notifyListeners();
+        await refreshUnreadCount();
       }
       return success;
     } on AuthenticationException {
@@ -219,8 +301,8 @@ class NotificationProvider with ChangeNotifier {
                 _notifications[index].copyWith(isRead: false);
           }
         }
-        _unreadCount = _notifications.where((n) => !n.isRead).length;
         notifyListeners();
+        await refreshUnreadCount();
       }
       return success;
     } on AuthenticationException {

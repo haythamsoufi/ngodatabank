@@ -40,15 +40,29 @@ class NotificationService {
     int page = 1,
     int perPage = 20,
     String? language,
+    bool unreadOnly = false,
+    String? notificationType,
+    String? priority,
   }) async {
     try {
       DebugLogger.logNotifications(
-          'Fetching notifications from ${AppConfig.notificationsEndpoint} (page=$page perPage=$perPage)');
+          'Fetching notifications from ${AppConfig.notificationsEndpoint} '
+          '(page=$page perPage=$perPage unreadOnly=$unreadOnly '
+          'type=$notificationType priority=$priority)');
 
       final queryParams = <String, String>{
         'page': page.toString(),
         'per_page': perPage.toString(),
       };
+      if (unreadOnly) {
+        queryParams['unread_only'] = 'true';
+      }
+      if (notificationType != null && notificationType.isNotEmpty) {
+        queryParams['type'] = notificationType;
+      }
+      if (priority != null && priority.isNotEmpty) {
+        queryParams['priority'] = priority;
+      }
 
       // Get language from parameter, or from storage if not provided
       String? currentLanguage = language;

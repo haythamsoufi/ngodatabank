@@ -487,6 +487,7 @@ The iOS and Android build workflows require API keys to be configured as GitHub 
 | Secret Name | Description | Required For |
 |-------------|-------------|--------------|
 | `MOBILE_APP_API_KEY` | DB-managed API key: Bearer `/api/v1` and `X-Mobile-Auth` on notification routes | All builds |
+| `MAPBOX_ACCESS_TOKEN` | Public Mapbox token for home FDRS map tiles (optional; Carto fallback if unset) | Map styling in CI builds |
 | `SENTRY_DSN` | Sentry error tracking DSN (optional) | Error tracking |
 
 ### Setting Up Mobile App Secrets
@@ -511,6 +512,7 @@ The mobile app workflows pass these secrets via `--dart-define` flags during the
 ```bash
 flutter build ios --release \
   --dart-define=MOBILE_APP_API_KEY="${{ secrets.MOBILE_APP_API_KEY }}" \
+  --dart-define=MAPBOX_ACCESS_TOKEN="${{ secrets.MAPBOX_ACCESS_TOKEN }}" \
   --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}"
 ```
 
@@ -522,6 +524,7 @@ For local development, you can create a `.env` file in the `MobileApp` directory
 
 ```
 MOBILE_APP_API_KEY=your_api_key_here
+MAPBOX_ACCESS_TOKEN=pk.your_public_mapbox_token
 SENTRY_DSN=your_sentry_dsn_here
 ```
 

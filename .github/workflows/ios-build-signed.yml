@@ -181,6 +181,7 @@ jobs:
             --dart-define=FRONTEND_URL="https://website-databank.fly.dev" \
             $ORG_CONFIG \
             --dart-define=MOBILE_APP_API_KEY="${{ steps.env_secrets.outputs.api_key }}" \
+            --dart-define=MAPBOX_ACCESS_TOKEN="${{ secrets.MAPBOX_ACCESS_TOKEN }}" \
             --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}"
 
       - name: Upload IPA

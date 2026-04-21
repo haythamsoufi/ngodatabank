@@ -166,34 +166,51 @@ class OfflineBanner extends StatelessWidget {
         }
 
         final l10n = AppLocalizations.of(context);
+        final closeTooltip = l10n?.close ?? 'Close';
+        void onDismiss() => dismissal.dismissForSession();
+
+        final strips = <Widget>[];
+        if (showOffline) {
+          strips.add(
+            _OfflineBannerStrip(
+              floatOverContent: floatOverContent,
+              background: context.offlineDisconnectedInlineBackground,
+              foreground: context.offlineDisconnectedInlineForeground,
+              icon: Icons.wifi_off_rounded,
+              title: l10n?.offlineNoInternet ?? 'No Internet Connection',
+              subtitle: null,
+              onDismiss: floatOverContent ? onDismiss : null,
+              dismissTooltip: closeTooltip,
+            ),
+          );
+        }
+        if (showServer) {
+          strips.add(
+            _OfflineBannerStrip(
+              floatOverContent: floatOverContent,
+              background: scheme.secondaryContainer,
+              foreground: scheme.onSecondaryContainer,
+              icon: Icons.cloud_off_rounded,
+              title: l10n?.backendUnreachableTitle ?? 'Cannot reach server',
+              subtitle: floatOverContent
+                  ? null
+                  : (l10n?.backendUnreachableSubtitle ??
+                      'Showing saved data where available. '
+                          'Actions may not sync until the server is available again.'),
+              onDismiss: floatOverContent && !showOffline ? onDismiss : null,
+              dismissTooltip: closeTooltip,
+            ),
+          );
+        }
+
         final column = Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (showOffline)
-              _OfflineBannerStrip(
-                floatOverContent: floatOverContent,
-                background: context.offlineDisconnectedInlineBackground,
-                foreground: context.offlineDisconnectedInlineForeground,
-                icon: Icons.wifi_off,
-                title: l10n?.offlineNoInternet ?? 'No Internet Connection',
-                subtitle: offlineProvider.queuedRequestsCount > 0
-                    ? (l10n?.offlineRequestsWillSync(
-                            offlineProvider.queuedRequestsCount) ??
-                        '${offlineProvider.queuedRequestsCount} request(s) will sync when online')
-                    : null,
-              ),
-            if (showServer)
-              _OfflineBannerStrip(
-                floatOverContent: floatOverContent,
-                background: scheme.secondaryContainer,
-                foreground: scheme.onSecondaryContainer,
-                icon: Icons.cloud_off,
-                title: l10n?.backendUnreachableTitle ?? 'Cannot reach server',
-                subtitle: l10n?.backendUnreachableSubtitle ??
-                    'Showing saved data where available. '
-                        'Actions may not sync until the server is available again.',
-              ),
+            for (var i = 0; i < strips.length; i++) ...[
+              if (i > 0 && floatOverContent) const SizedBox(height: 6),
+              strips[i],
+            ],
           ],
         );
 
@@ -201,42 +218,14 @@ class OfflineBanner extends StatelessWidget {
           return column;
         }
 
-        final closeTooltip = l10n?.close ?? 'Close';
-        final dismissIconColor = scheme.onSurface.withValues(alpha: 0.65);
-
         return SafeArea(
           bottom: false,
           left: false,
           right: false,
           minimum: EdgeInsets.zero,
-          child: Material(
-            elevation: 2,
-            shadowColor: Colors.black26,
-            color: Colors.transparent,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 36),
-                  child: column,
-                ),
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: IconButton(
-                    visualDensity: VisualDensity.compact,
-                    padding: const EdgeInsets.all(4),
-                    constraints: const BoxConstraints(
-                      minWidth: 36,
-                      minHeight: 36,
-                    ),
-                    tooltip: closeTooltip,
-                    onPressed: () => dismissal.dismissForSession(),
-                    icon: Icon(Icons.close, size: 20, color: dismissIconColor),
-                  ),
-                ),
-              ],
-            ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+            child: column,
           ),
         );
       },
@@ -251,6 +240,8 @@ class _OfflineBannerStrip extends StatelessWidget {
   final IconData icon;
   final String title;
   final String? subtitle;
+  final VoidCallback? onDismiss;
+  final String dismissTooltip;
 
   const _OfflineBannerStrip({
     required this.floatOverContent,
@@ -259,59 +250,96 @@ class _OfflineBannerStrip extends StatelessWidget {
     required this.icon,
     required this.title,
     this.subtitle,
+    this.onDismiss,
+    this.dismissTooltip = 'Close',
   });
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final horizontal = floatOverContent ? 12.0 : 16.0;
-    final vertical = floatOverContent ? 6.0 : 10.0;
+    final vertical = floatOverContent ? 8.0 : 10.0;
 
     if (!floatOverContent) {
       return Container(
         width: double.infinity,
         padding: EdgeInsets.symmetric(horizontal: horizontal, vertical: vertical),
         color: background,
-        child: _stripRow(foreground),
+        child: _messageRow(context, includeDismiss: false),
       );
     }
 
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: horizontal, vertical: vertical),
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: background,
-        border: Border(
-          bottom: BorderSide(
-            color: foreground.withValues(alpha: 0.12),
-          ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: scheme.outline.withValues(alpha: 0.32),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: scheme.shadow.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-      child: _stripRow(foreground),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: horizontal, vertical: vertical),
+        child: _messageRow(context, includeDismiss: onDismiss != null),
+      ),
     );
   }
 
-  Widget _stripRow(Color foreground) {
+  Widget _messageRow(
+    BuildContext context, {
+    required bool includeDismiss,
+  }) {
     final combined = (subtitle == null || subtitle!.isEmpty)
         ? title
         : '$title · $subtitle';
     final maxLines = floatOverContent ? 1 : 3;
+    final textStyle = Theme.of(context).textTheme.labelLarge?.copyWith(
+          color: foreground,
+          fontWeight: FontWeight.w500,
+          height: 1.2,
+          letterSpacing: -0.1,
+        ) ??
+        TextStyle(
+          color: foreground,
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          height: 1.2,
+        );
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Icon(icon, color: foreground, size: 18),
-        const SizedBox(width: 8),
+        const SizedBox(width: 10),
         Expanded(
           child: Text(
             combined,
             maxLines: maxLines,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: foreground,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
+            style: textStyle,
           ),
         ),
+        if (includeDismiss && onDismiss != null) ...[
+          const SizedBox(width: 4),
+          IconButton(
+            onPressed: onDismiss,
+            tooltip: dismissTooltip,
+            style: IconButton.styleFrom(
+              foregroundColor: foreground.withValues(alpha: 0.75),
+              visualDensity: VisualDensity.compact,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              minimumSize: const Size(32, 32),
+              padding: EdgeInsets.zero,
+            ),
+            icon: Icon(Icons.close_rounded, size: 20, color: foreground.withValues(alpha: 0.72)),
+          ),
+        ],
       ],
     );
   }

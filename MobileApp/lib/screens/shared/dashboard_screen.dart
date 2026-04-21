@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart' as cupertino;
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -55,6 +56,10 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   final Set<int> _offlineBundleAssignmentIds = {};
   final Set<int> _downloadingOfflineAssignmentIds = {};
+  final Set<int> _staleOfflineBundleAssignmentIds = {};
+  String? _dismissedStaleBundleSignature;
+  OfflineProvider? _offlineProviderListenerRef;
+  bool _offlineStaleAutoRefreshInProgress = false;
 
   @override
   void initState() {
@@ -74,13 +79,93 @@ class _DashboardScreenState extends State<DashboardScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
       _animationController.forward();
+      if (!mounted) return;
+      _offlineProviderListenerRef =
+          Provider.of<OfflineProvider>(context, listen: false);
+      _offlineProviderListenerRef!.addListener(_onOfflineProviderChanged);
     });
   }
 
   @override
   void dispose() {
+    _offlineProviderListenerRef?.removeListener(_onOfflineProviderChanged);
     _animationController.dispose();
     super.dispose();
+  }
+
+  void _onOfflineProviderChanged() {
+    if (!mounted) return;
+    unawaited(_tryAutoRefreshStaleOfflineCopies());
+  }
+
+  String _staleBundleSignature() {
+    final ids = _staleOfflineBundleAssignmentIds.toList()..sort();
+    return ids.join(',');
+  }
+
+  Future<void> _tryAutoRefreshStaleOfflineCopies() async {
+    if (!mounted || _offlineStaleAutoRefreshInProgress) return;
+    if (shouldDeferRemoteFetch || _staleOfflineBundleAssignmentIds.isEmpty) {
+      return;
+    }
+    final offline = Provider.of<OfflineProvider>(context, listen: false);
+    if (!offline.isOnline) return;
+
+    _offlineStaleAutoRefreshInProgress = true;
+    final loc = AppLocalizations.of(context)!;
+    final languageProvider =
+        Provider.of<LanguageProvider>(context, listen: false);
+    final dashboardProvider =
+        Provider.of<DashboardProvider>(context, listen: false);
+
+    var anyOk = false;
+    var anyFail = false;
+    try {
+      final ids = List<int>.from(_staleOfflineBundleAssignmentIds);
+      final byId = {
+        for (final a in [
+          ...dashboardProvider.currentAssignments,
+          ...dashboardProvider.pastAssignments,
+        ])
+          a.id: a,
+      };
+      for (final id in ids) {
+        if (!mounted) break;
+        if (shouldDeferRemoteFetch) break;
+        if (!_staleOfflineBundleAssignmentIds.contains(id)) continue;
+        final assignment = byId[id];
+        if (assignment == null) continue;
+        final ok = await _downloadOfflineBundle(
+          context,
+          assignment,
+          languageProvider,
+          silent: true,
+        );
+        if (ok) {
+          anyOk = true;
+        } else {
+          anyFail = true;
+        }
+      }
+      if (mounted && anyOk) {
+        await _syncOfflineBundleAndStaleState(
+          dashboardProvider.currentAssignments,
+          dashboardProvider.pastAssignments,
+        );
+      }
+      if (!mounted) return;
+      if (anyOk && !anyFail) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loc.offlineStaleBundleUpdatesSnackbar)),
+        );
+      } else if (anyFail) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loc.offlineStaleBundlePartialRefresh)),
+        );
+      }
+    } finally {
+      _offlineStaleAutoRefreshInProgress = false;
+    }
   }
 
   Future<void> _loadData({bool forceRefresh = false}) async {
@@ -97,7 +182,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     if (offline.isOffline || shouldDeferRemoteFetch) {
       await authProvider.checkAuthStatus(forceRevalidate: false);
       await dashboardProvider.refreshFromDiskOnly(allowStale: true);
-      await _syncOfflineBundleFlags(
+      await _syncOfflineBundleAndStaleState(
         dashboardProvider.currentAssignments,
         dashboardProvider.pastAssignments,
       );
@@ -120,7 +205,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     // Force refresh if authenticated or if explicitly requested (e.g., language change)
     await dashboardProvider.loadDashboard(forceRefresh: isAuthenticated || forceRefresh);
 
-    await _syncOfflineBundleFlags(
+    await _syncOfflineBundleAndStaleState(
       dashboardProvider.currentAssignments,
       dashboardProvider.pastAssignments,
     );
@@ -130,6 +215,10 @@ class _DashboardScreenState extends State<DashboardScreen>
       setState(() {
         _hasLoadedOnce = true;
       });
+    }
+
+    if (mounted) {
+      unawaited(_tryAutoRefreshStaleOfflineCopies());
     }
 
     // [checkAuthStatus(forceRevalidate: true)] already validated the session and
@@ -142,13 +231,14 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
-  /// Resolves which assignment IDs have a saved offline bundle on disk.
+  /// Resolves which assignment IDs have a saved offline bundle on disk and
+  /// which bundles are older than the server's published form definition.
   ///
   /// When the dashboard API fails (e.g. device just went offline), provider
   /// lists can be empty briefly or for an entire load; we must **not** clear
   /// [_offlineBundleAssignmentIds] in that case or the "downloaded for offline"
   /// indicator disappears even though files still exist.
-  Future<void> _syncOfflineBundleFlags(
+  Future<void> _syncOfflineBundleAndStaleState(
     List<Assignment> current,
     List<Assignment> past,
   ) async {
@@ -156,33 +246,44 @@ class _DashboardScreenState extends State<DashboardScreen>
     if (ids.isEmpty) {
       return;
     }
+    final byId = {for (final a in [...current, ...past]) a.id: a};
     final svc = AssignmentOfflineBundleService();
-    final next = <int>{};
+    final bundles = <int>{};
+    final stale = <int>{};
     for (final id in ids) {
-      if (await svc.hasOfflineBundle(id)) {
-        next.add(id);
+      if (!await svc.hasOfflineBundle(id)) continue;
+      bundles.add(id);
+      final assignment = byId[id];
+      if (assignment == null) continue;
+      final meta = await svc.readBundleMeta(id);
+      if (isAssignmentOfflineBundleStale(assignment, meta)) {
+        stale.add(id);
       }
     }
-    if (mounted) {
-      setState(() {
-        _offlineBundleAssignmentIds
-          ..clear()
-          ..addAll(next);
-      });
-    }
+    if (!mounted) return;
+    setState(() {
+      _offlineBundleAssignmentIds
+        ..clear()
+        ..addAll(bundles);
+      _staleOfflineBundleAssignmentIds
+        ..clear()
+        ..addAll(stale);
+      if (_staleOfflineBundleAssignmentIds.isEmpty) {
+        _dismissedStaleBundleSignature = null;
+      }
+    });
   }
 
   Future<void> _openAssignmentForm(
     BuildContext context,
     Assignment assignment,
   ) async {
-    final offline = Provider.of<OfflineProvider>(context, listen: false);
     final loc = AppLocalizations.of(context)!;
     final path = AppRoutes.formEntry(assignment.id);
 
-    // Use saved assignment bundle when there is no reliable path to the server
-    // (device offline, or Wi‑Fi "online" but backoffice transport is deferred).
-    if (offline.isOffline || shouldDeferRemoteFetch) {
+    // Use saved assignment bundle when connectivity or backend reachability says
+    // we should not rely on the live server (see [shouldDeferRemoteFetch]).
+    if (shouldDeferRemoteFetch) {
       final svc = AssignmentOfflineBundleService();
       if (await svc.hasOfflineBundle(assignment.id)) {
         if (!context.mounted) return;
@@ -210,20 +311,24 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  Future<void> _downloadOfflineBundle(
+  /// Returns whether the download succeeded.
+  Future<bool> _downloadOfflineBundle(
     BuildContext context,
     Assignment assignment,
-    LanguageProvider languageProvider,
-  ) async {
+    LanguageProvider languageProvider, {
+    bool silent = false,
+  }) async {
     final offline = Provider.of<OfflineProvider>(context, listen: false);
     final loc = AppLocalizations.of(context)!;
 
     if (!offline.isOnline) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(loc.offlineDownloadRequiresConnection)),
-      );
-      return;
+      if (!context.mounted) return false;
+      if (!silent) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loc.offlineDownloadRequiresConnection)),
+        );
+      }
+      return false;
     }
 
     setState(() {
@@ -239,26 +344,35 @@ class _DashboardScreenState extends State<DashboardScreen>
         formPath: AppRoutes.formEntry(assignment.id),
         language: languageProvider.currentLanguage,
         sessionCookieHeader: cookie,
+        formDefinitionUpdatedAtIso:
+            assignment.formDefinitionUpdatedAt?.toUtc().toIso8601String(),
       );
-      if (!context.mounted) return;
+      if (!context.mounted) return false;
       setState(() {
         _downloadingOfflineAssignmentIds.remove(assignment.id);
         _offlineBundleAssignmentIds.add(assignment.id);
+        _staleOfflineBundleAssignmentIds.remove(assignment.id);
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(loc.offlineFormSaved)),
-      );
+      if (!silent && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loc.offlineFormSaved)),
+        );
+      }
+      return true;
     } catch (e) {
-      if (!context.mounted) return;
+      if (!context.mounted) return false;
       setState(() {
         _downloadingOfflineAssignmentIds.remove(assignment.id);
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(loc.offlineFormSaveFailed),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
+      if (!silent) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(loc.offlineFormSaveFailed),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+      return false;
     }
   }
 
@@ -272,7 +386,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     try {
       await AssignmentOfflineBundleService().deleteBundle(assignment.id);
       if (!context.mounted) return;
-      await _syncOfflineBundleFlags(
+      await _syncOfflineBundleAndStaleState(
         dashboardProvider.currentAssignments,
         dashboardProvider.pastAssignments,
       );
@@ -291,18 +405,167 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
-  void _openOfflineCopyOnly(
+  String _formatOfflineBundleSavedAt(BuildContext context, DateTime date) {
+    final locale = Localizations.localeOf(context);
+    if (locale.languageCode == 'ar') {
+      DateFormat.useNativeDigitsByDefaultFor('ar', false);
+    }
+    var formatted = DateFormat('MMM d, y · HH:mm', locale.languageCode)
+        .format(date.toLocal());
+    formatted = formatted
+        .replaceAll('٠', '0')
+        .replaceAll('١', '1')
+        .replaceAll('٢', '2')
+        .replaceAll('٣', '3')
+        .replaceAll('٤', '4')
+        .replaceAll('٥', '5')
+        .replaceAll('٦', '6')
+        .replaceAll('٧', '7')
+        .replaceAll('٨', '8')
+        .replaceAll('٩', '9');
+    return formatted;
+  }
+
+  Future<void> _showOfflineBundleDetailsSheet(
     BuildContext context,
     Assignment assignment,
-  ) {
-    final path = AppRoutes.formEntry(assignment.id);
-    Navigator.of(context).pushNamed(
-      AppRoutes.webview,
-      arguments: WebViewScreenArgs(
-        initialUrl: path,
-        forceOfflineAssignmentBundle: true,
-        offlineAssignmentId: assignment.id,
-      ),
+  ) async {
+    final loc = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final meta =
+        await AssignmentOfflineBundleService().readBundleMeta(assignment.id);
+    if (!context.mounted) return;
+
+    final isStale = isAssignmentOfflineBundleStale(assignment, meta);
+    final offline = Provider.of<OfflineProvider>(context, listen: false);
+    final canUpdateNow =
+        offline.isOnline && !shouldDeferRemoteFetch && isStale;
+
+    final titleText = assignment.periodName != null &&
+            assignment.periodName!.isNotEmpty
+        ? '${assignment.templateName ?? assignment.name} — ${assignment.periodName}'
+        : (assignment.templateName ?? assignment.name);
+
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              IOSSpacing.lg,
+              8,
+              IOSSpacing.lg,
+              IOSSpacing.lg,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  loc.offlineCopySheetTitle,
+                  style: IOSTextStyle.title3(sheetContext).copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: IOSSpacing.smOf(sheetContext)),
+                Text(
+                  titleText,
+                  style: IOSTextStyle.subheadline(sheetContext).copyWith(
+                    color: scheme.onSurface.withValues(alpha: 0.85),
+                    height: 1.3,
+                  ),
+                ),
+                if (meta?.savedAtUtc != null) ...[
+                  SizedBox(height: IOSSpacing.mdOf(sheetContext)),
+                  Text(
+                    loc.offlineCopySavedOnLabel,
+                    style: IOSTextStyle.caption1(sheetContext).copyWith(
+                      color: scheme.onSurface.withValues(alpha: 0.55),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: IOSSpacing.xsOf(sheetContext)),
+                  Text(
+                    _formatOfflineBundleSavedAt(
+                      sheetContext,
+                      meta!.savedAtUtc!,
+                    ),
+                    style: IOSTextStyle.body(sheetContext).copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+                SizedBox(height: IOSSpacing.mdOf(sheetContext)),
+                Text(
+                  loc.offlineCopyFilesCached(meta?.assetCount ?? 0),
+                  style: IOSTextStyle.footnote(sheetContext).copyWith(
+                    color: scheme.onSurface.withValues(alpha: 0.7),
+                  ),
+                ),
+                if (isStale) ...[
+                  SizedBox(height: IOSSpacing.mdOf(sheetContext)),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(
+                        Icons.warning_amber_rounded,
+                        size: 20,
+                        color: Color(AppConstants.warningColor),
+                      ),
+                      SizedBox(width: IOSSpacing.smOf(sheetContext)),
+                      Expanded(
+                        child: Text(
+                          loc.offlineStaleBundleSheetNotice,
+                          style: IOSTextStyle.subheadline(sheetContext).copyWith(
+                            color: scheme.onSurface.withValues(alpha: 0.88),
+                            height: 1.35,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                if (canUpdateNow) ...[
+                  SizedBox(height: IOSSpacing.mdOf(sheetContext)),
+                  FilledButton.icon(
+                    onPressed: () async {
+                      Navigator.of(sheetContext).pop();
+                      final lang =
+                          Provider.of<LanguageProvider>(context, listen: false);
+                      await _downloadOfflineBundle(
+                        context,
+                        assignment,
+                        lang,
+                      );
+                    },
+                    icon: const Icon(Icons.sync_rounded, size: 20),
+                    label: Text(loc.offlineStaleBundleUpdateNow),
+                  ),
+                ],
+                SizedBox(height: IOSSpacing.lgOf(sheetContext)),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.of(sheetContext).pop();
+                    unawaited(_removeOfflineBundle(context, assignment));
+                  },
+                  icon: Icon(
+                    Icons.delete_outline_rounded,
+                    color: scheme.error,
+                  ),
+                  label: Text(loc.removeOfflineCopy),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: scheme.error,
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -342,6 +605,82 @@ class _DashboardScreenState extends State<DashboardScreen>
       return a.id.compareTo(b.id);
     });
     return copy;
+  }
+
+  Widget _buildOfflineStaleBundleBanner({
+    required AppLocalizations loc,
+    required OfflineProvider offline,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    final online = offline.isOnline && !shouldDeferRemoteFetch;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(
+        IOSSpacing.lg,
+        0,
+        IOSSpacing.lg,
+        IOSSpacing.md,
+      ),
+      padding: const EdgeInsets.all(IOSSpacing.md),
+      decoration: BoxDecoration(
+        color: const Color(AppConstants.warningColor).withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(
+          IOSDimensions.borderRadiusLargeOf(context),
+        ),
+        border: Border.all(
+          color: const Color(AppConstants.warningColor).withValues(alpha: 0.45),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.warning_amber_rounded,
+            color: Color(AppConstants.warningColor),
+            size: 22,
+          ),
+          SizedBox(width: IOSSpacing.mdOf(context)),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  loc.offlineStaleBundleBannerTitle,
+                  style: IOSTextStyle.subheadline(context).copyWith(
+                    fontWeight: FontWeight.w700,
+                    height: 1.25,
+                  ),
+                ),
+                SizedBox(height: IOSSpacing.xsOf(context)),
+                Text(
+                  online
+                      ? loc.offlineStaleBundleBannerBodyOnline
+                      : loc.offlineStaleBundleBannerBodyOffline,
+                  style: IOSTextStyle.footnote(context).copyWith(
+                    color: scheme.onSurface.withValues(alpha: 0.78),
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            icon: Icon(
+              Icons.close_rounded,
+              color: scheme.onSurface.withValues(alpha: 0.55),
+              size: 20,
+            ),
+            onPressed: () {
+              setState(() {
+                _dismissedStaleBundleSignature = _staleBundleSignature();
+              });
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   /// Open assignments: collapsible "You have …" header + list or empty hint.
@@ -447,21 +786,20 @@ class _DashboardScreenState extends State<DashboardScreen>
                                     languageProvider,
                                   )
                               : null,
-                          onOpenOfflineCopy: hasBundle
+                          onOfflineBundleDetails: hasBundle
                               ? () {
                                   HapticFeedback.lightImpact();
-                                  _openOfflineCopyOnly(context, assignment);
-                                }
-                              : null,
-                          onRemoveOfflineCopy: hasBundle
-                              ? () {
-                                  HapticFeedback.mediumImpact();
                                   unawaited(
-                                    _removeOfflineBundle(context, assignment),
+                                    _showOfflineBundleDetailsSheet(
+                                      context,
+                                      assignment,
+                                    ),
                                   );
                                 }
                               : null,
                           hasOfflineFormSnapshot: hasBundle,
+                          offlineBundleOutdated: _staleOfflineBundleAssignmentIds
+                              .contains(assignment.id),
                           isDownloadingOfflineForm:
                               _downloadingOfflineAssignmentIds
                                   .contains(assignment.id),
@@ -1145,6 +1483,14 @@ class _DashboardScreenState extends State<DashboardScreen>
                                   ),
                                 );
                               },
+                            ),
+
+                          if (_staleOfflineBundleAssignmentIds.isNotEmpty &&
+                              _dismissedStaleBundleSignature !=
+                                  _staleBundleSignature())
+                            _buildOfflineStaleBundleBanner(
+                              loc: localizations,
+                              offline: offlineProvider,
                             ),
 
                           // Open assignments (collapsible; title: "You have …")

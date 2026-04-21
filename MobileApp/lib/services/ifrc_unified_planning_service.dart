@@ -116,10 +116,13 @@ class IfrcUnifiedPlanningService {
     if (raw is DateTime) return raw.toLocal();
     if (raw is num) {
       final v = raw.round();
-      if (v.abs() > 2000000000000) {
+      final av = v.abs();
+      // IFRC may send Unix ms (≈1e12–1e13) or Unix seconds (≈1e9–1e10). Older logic
+      // used a 2e12 / 2e9 split that never matched current ms and dropped seconds.
+      if (av >= 1000000000000) {
         return DateTime.fromMillisecondsSinceEpoch(v, isUtc: true).toLocal();
       }
-      if (v.abs() > 2000000000) {
+      if (av >= 1000000000) {
         return DateTime.fromMillisecondsSinceEpoch(v * 1000, isUtc: true)
             .toLocal();
       }
@@ -242,6 +245,16 @@ class IfrcUnifiedPlanningService {
     }
 
     out.sort((a, b) {
+      final pa = a.publishedAt;
+      final pb = b.publishedAt;
+      if (pa != null && pb != null) {
+        final byDate = pb.compareTo(pa);
+        if (byDate != 0) return byDate;
+      } else if (pa != null && pb == null) {
+        return -1;
+      } else if (pa == null && pb != null) {
+        return 1;
+      }
       final yb = b.year ?? -1;
       final ya = a.year ?? -1;
       if (yb != ya) return yb.compareTo(ya);

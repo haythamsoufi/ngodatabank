@@ -18,6 +18,7 @@ import '../../config/app_config.dart';
 import '../../utils/url_helper.dart';
 import 'package:intl/intl.dart';
 import 'notification_preferences_screen.dart';
+import 'notifications_filter_sheet.dart';
 import '../../l10n/app_localizations.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -54,8 +55,28 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             title: localizations.notifications,
             actions: [
               Consumer<NotificationProvider>(
+                builder: (context, np, _) {
+                  return IconButton(
+                    tooltip: localizations.notificationsFilter,
+                    icon: Badge(
+                      isLabelVisible: np.hasActiveNotificationFilters,
+                      smallSize: 7,
+                      backgroundColor: theme.colorScheme.error,
+                      child: Icon(
+                        Icons.tune_outlined,
+                        color: context.isDarkTheme
+                            ? const Color(
+                                AppConstants.themeSwitchCheckboxActiveDark)
+                            : theme.colorScheme.primary,
+                      ),
+                    ),
+                    onPressed: () => showNotificationFiltersSheet(context),
+                  );
+                },
+              ),
+              Consumer<NotificationProvider>(
                 builder: (context, provider, child) {
-                  final unreadIds = provider.notifications
+                  final unreadIds = provider.displayedNotifications
                       .where((n) => !n.isRead)
                       .map((n) => n.id)
                       .toList();
@@ -341,6 +362,42 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   );
                 }
 
+                final displayed = provider.displayedNotifications;
+                if (displayed.isEmpty) {
+                  final localizations = AppLocalizations.of(context)!;
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.filter_alt_outlined,
+                            size: 56,
+                            color: Theme.of(context).textTheme.bodySmall?.color,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            localizations.notificationsFilterNoMatchesLoaded,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w600),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 16),
+                          FilledButton.icon(
+                            onPressed: () =>
+                                showNotificationFiltersSheet(context),
+                            icon: const Icon(Icons.tune_outlined, size: 18),
+                            label: Text(localizations.notificationsFilter),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
                 final localizations = AppLocalizations.of(context)!;
                 final showLoadMoreFooter = provider.hasMoreNotifications ||
                     provider.isLoadingMore ||
@@ -352,16 +409,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   color: context.navyIconColor,
                   child: ListView.builder(
                     padding: EdgeInsets.zero,
-                    itemCount: provider.notifications.length +
+                    itemCount: displayed.length +
                         (showLoadMoreFooter ? 1 : 0),
                     itemBuilder: (context, index) {
-                      if (index >= provider.notifications.length) {
+                      if (index >= displayed.length) {
                         return _NotificationsLoadMoreFooter(
                           localizations: localizations,
                           provider: provider,
                         );
                       }
-                      final notification = provider.notifications[index];
+                      final notification = displayed[index];
                       return AppFadeInUp(
                         staggerIndex: index,
                         child: _RestrictedSwipeDismissible(

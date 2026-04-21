@@ -18,9 +18,11 @@ class AssignmentCard extends StatefulWidget {
   final bool showEnterDataButton;
   final String? enterDataButtonText;
   final Future<void> Function()? onDownloadForOffline;
-  final VoidCallback? onOpenOfflineCopy;
-  final VoidCallback? onRemoveOfflineCopy;
+  /// When a bundle exists, tapping the green offline icon opens details (e.g. sheet).
+  final VoidCallback? onOfflineBundleDetails;
   final bool hasOfflineFormSnapshot;
+  /// True when the saved bundle is older than the server's published form definition.
+  final bool offlineBundleOutdated;
   final bool isDownloadingOfflineForm;
 
   const AssignmentCard({
@@ -31,9 +33,9 @@ class AssignmentCard extends StatefulWidget {
     this.showEnterDataButton = false,
     this.enterDataButtonText,
     this.onDownloadForOffline,
-    this.onOpenOfflineCopy,
-    this.onRemoveOfflineCopy,
+    this.onOfflineBundleDetails,
     this.hasOfflineFormSnapshot = false,
+    this.offlineBundleOutdated = false,
     this.isDownloadingOfflineForm = false,
   });
 
@@ -360,8 +362,7 @@ class _AssignmentCardState extends State<AssignmentCard>
     final canEnter =
         widget.showEnterDataButton && widget.onEnterData != null;
     final hasOfflineExtras = widget.hasOfflineFormSnapshot &&
-        (widget.onOpenOfflineCopy != null ||
-            widget.onRemoveOfflineCopy != null);
+        widget.onOfflineBundleDetails != null;
     final showDownloadOffline = canEnter &&
         widget.onDownloadForOffline != null &&
         !widget.hasOfflineFormSnapshot;
@@ -474,22 +475,14 @@ class _AssignmentCardState extends State<AssignmentCard>
                                     },
                             ),
                           if (widget.hasOfflineFormSnapshot &&
-                              widget.onOpenOfflineCopy != null)
+                              widget.onOfflineBundleDetails != null)
                             _OfflineFormIconButton(
-                              tooltip: localizations.offlineOpenSavedCopy,
+                              tooltip: localizations.offlineSavedCopyDetailsTooltip,
                               icon: Icons.offline_pin_rounded,
                               busy: false,
                               color: const Color(AppConstants.successColor),
-                              onPressed: widget.onOpenOfflineCopy,
-                            ),
-                          if (widget.hasOfflineFormSnapshot &&
-                              widget.onRemoveOfflineCopy != null)
-                            _OfflineFormIconButton(
-                              tooltip: localizations.removeOfflineCopy,
-                              icon: Icons.delete_outline_rounded,
-                              busy: false,
-                              color: scheme.onSurfaceVariant,
-                              onPressed: widget.onRemoveOfflineCopy,
+                              showStaleBadge: widget.offlineBundleOutdated,
+                              onPressed: widget.onOfflineBundleDetails,
                             ),
                         ],
                       ),
@@ -724,6 +717,7 @@ class _OfflineFormIconButton extends StatelessWidget {
     required this.icon,
     required this.color,
     required this.busy,
+    this.showStaleBadge = false,
     this.onPressed,
   });
 
@@ -731,10 +725,12 @@ class _OfflineFormIconButton extends StatelessWidget {
   final IconData icon;
   final Color color;
   final bool busy;
+  final bool showStaleBadge;
   final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Tooltip(
       message: tooltip,
       child: InkWell(
@@ -751,7 +747,40 @@ class _OfflineFormIconButton extends StatelessWidget {
                     color: color,
                   ),
                 )
-              : Icon(icon, size: 19, color: color),
+              : SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    alignment: Alignment.center,
+                    children: [
+                      Icon(icon, size: 19, color: color),
+                      if (showStaleBadge)
+                        Positioned(
+                          right: -3,
+                          top: -4,
+                          child: Container(
+                            width: 14,
+                            height: 14,
+                            decoration: BoxDecoration(
+                              color: const Color(AppConstants.warningColor),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: scheme.surface,
+                                width: 1.2,
+                              ),
+                            ),
+                            alignment: Alignment.center,
+                            child: const Icon(
+                              Icons.priority_high_rounded,
+                              size: 10,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
         ),
       ),
     );

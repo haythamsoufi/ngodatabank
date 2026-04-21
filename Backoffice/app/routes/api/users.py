@@ -20,6 +20,7 @@ from app.routes.api import api_bp
 
 # Import models
 from app.models import User, Country, AssignedForm, FormSection, FormItem, FormData, EntityActivityLog
+from app.models.forms import FormTemplate
 from app.models.assignments import AssignmentEntityStatus, PublicSubmission
 from app.models.core import UserEntityPermission
 from app.models.enums import EntityType
@@ -597,7 +598,9 @@ def get_dashboard():
                 AssignmentEntityStatus.query
                 .join(AF, AF.id == AssignmentEntityStatus.assigned_form_id)
                 .options(
-                    joinedload(AssignmentEntityStatus.assigned_form).joinedload(AssignedForm.template),
+                    joinedload(AssignmentEntityStatus.assigned_form)
+                    .joinedload(AssignedForm.template)
+                    .joinedload(FormTemplate.published_version),
                     joinedload(AssignmentEntityStatus.submitted_by_user),
                     joinedload(AssignmentEntityStatus.approved_by_user),
                 )
@@ -895,6 +898,12 @@ def get_dashboard():
                     assigned_form and assigned_form.is_public_accessible()
                 )
 
+                form_definition_updated_at = None
+                if assigned_form and assigned_form.template:
+                    pv = assigned_form.template.published_version
+                    if pv is not None and getattr(pv, "updated_at", None):
+                        form_definition_updated_at = pv.updated_at.isoformat()
+
                 assignment_data = {
                     'id': aes.id,
                     'name': f"{period_name} - {localized_template_name if localized_template_name else 'Template Missing'}",
@@ -920,6 +929,7 @@ def get_dashboard():
                     'latest_public_submission_at': pub_latest_at.isoformat()
                     if pub_latest_at
                     else None,
+                    'form_definition_updated_at': form_definition_updated_at,
                 }
 
                 # Categorize as current or past (same rules as main.dashboard)

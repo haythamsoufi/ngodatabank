@@ -4,6 +4,7 @@ import '../../utils/debug_logger.dart';
 import '../../utils/constants.dart';
 import '../../utils/navigation_helper.dart';
 import '../../providers/shared/auth_provider.dart';
+import '../../providers/shared/notification_provider.dart';
 import '../../providers/shared/tab_customization_provider.dart';
 import '../../services/screen_view_tracker.dart';
 // Screens used inside the tab navigation
@@ -108,11 +109,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
     _registerNavigation();
     DebugLogger.logNav('init — startPage=$_currentIndex');
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _checkAuthStatus();
-        _loadTabPreferences();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      await _checkAuthStatus();
+      if (!mounted) return;
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      if (auth.isAuthenticated) {
+        await Provider.of<NotificationProvider>(context, listen: false)
+            .refreshUnreadCount(authProvider: auth);
       }
+      if (!mounted) return;
+      await _loadTabPreferences();
     });
   }
 
@@ -156,6 +163,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
       _clearDistantScreens();
     } else if (state == AppLifecycleState.resumed) {
       DebugLogger.logNav('lifecycle → resumed');
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        final auth = Provider.of<AuthProvider>(context, listen: false);
+        if (!auth.isAuthenticated) return;
+        await Provider.of<NotificationProvider>(context, listen: false)
+            .refreshUnreadCount(authProvider: auth);
+      });
     }
   }
 
