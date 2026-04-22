@@ -73,6 +73,15 @@ def _ai_doc_exists(storage_path: str) -> bool:
     return _storage.exists(_storage.AI_DOCUMENTS, storage_path)
 
 
+def _ai_doc_source_ready(doc) -> bool:
+    """Check that *doc*'s source file is available (uploads or system/submitted document)."""
+    if not doc.storage_path:
+        return False
+    if getattr(doc, "submitted_document_id", None):
+        return _storage.submitted_source_exists(doc.storage_path)
+    return _ai_doc_exists(doc.storage_path)
+
+
 # ---------------------------------------------------------------------------
 # In-flight document processing guards
 # ---------------------------------------------------------------------------

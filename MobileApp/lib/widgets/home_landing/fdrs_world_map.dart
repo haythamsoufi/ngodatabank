@@ -597,7 +597,7 @@ class _FdrsOverviewMapState extends State<FdrsOverviewMap> {
           maxZoom: widget.maxZoom,
           onTap: widget.onCountryIso2Tapped == null
               ? null
-              : (_, __) {
+              : (_, _) {
                   final hit = _hitNotifier.value;
                   if (hit == null || hit.hitValues.isEmpty) return;
                   HapticFeedback.selectionClick();

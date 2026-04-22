@@ -298,11 +298,11 @@ class _UnifiedPlanningParticipationMapScreenState
       alpha: isDark ? 0.35 : 0.5,
     );
     final fillFull = isDark
-        ? Color(AppConstants.semanticSuccessOnDarkSoft)
-        : Color(AppConstants.semanticSuccessOnLightStrong);
+        ? const Color(AppConstants.semanticSuccessOnDarkSoft)
+        : const Color(AppConstants.semanticSuccessOnLightStrong);
     final fillPartial = isDark
-        ? Color(AppConstants.semanticNotificationOrangeDarkUnread)
-        : Color(AppConstants.semanticNotificationOrangeTextStrongLight);
+        ? const Color(AppConstants.semanticNotificationOrangeDarkUnread)
+        : const Color(AppConstants.semanticNotificationOrangeTextStrongLight);
 
     final polys = _discreteParticipationPolygons(
       model: model,

@@ -14,7 +14,7 @@ from app.utils.api_responses import json_bad_request, json_forbidden, json_not_f
 from app.services import storage_service as _storage
 
 from . import ai_docs_bp
-from .helpers import _ai_doc_storage_delete, _ai_doc_exists, _validate_ifrc_fetch_url
+from .helpers import _ai_doc_storage_delete, _ai_doc_source_ready, _validate_ifrc_fetch_url
 
 logger = logging.getLogger(__name__)
 
@@ -179,8 +179,29 @@ def download_document(document_id: int):
                 return json_bad_request('External document URL is not from a trusted source')
             return redirect(doc.source_url, code=302)
 
-        if not doc.storage_path or not _ai_doc_exists(doc.storage_path):
+        if not doc.storage_path or not _ai_doc_source_ready(doc):
             return json_not_found('File not found')
+
+        if getattr(doc, "submitted_document_id", None):
+            p = doc.storage_path.strip()
+            cr = _storage.category_rel_for_submitted_storage_path(p)
+            if cr is None:
+                if p and os.path.exists(p):
+                    return send_file(
+                        p,
+                        as_attachment=True,
+                        download_name=doc.filename,
+                        mimetype='application/octet-stream',
+                    )
+                return json_not_found('File not found')
+            cat, rel = cr
+            return _storage.stream_response(
+                cat,
+                rel,
+                filename=doc.filename,
+                mimetype='application/octet-stream',
+                as_attachment=True,
+            )
 
         if os.path.isabs(doc.storage_path):
             return send_file(doc.storage_path, as_attachment=True,
@@ -214,7 +235,8 @@ def delete_document(document_id: int):
             if doc.user_id != current_user.id:
                 return json_forbidden('Access denied')
 
-        if doc.storage_path:
+        # Do not delete underlying SubmittedDocument blob when removing the AI index row.
+        if doc.storage_path and not getattr(doc, "submitted_document_id", None):
             try:
                 _ai_doc_storage_delete(doc.storage_path)
             except Exception as e:

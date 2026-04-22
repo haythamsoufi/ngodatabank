@@ -18,7 +18,7 @@ import mimetypes
 import os
 import re
 import tempfile
-from typing import Optional, Union
+from typing import Optional, Tuple, Union
 
 from flask import current_app, send_file
 
@@ -383,6 +383,123 @@ def submitted_document_rel_storage_category(rel_path: str | None) -> str:
             return SUBMISSIONS
         return ENTITY_REPO_ROOT
     return ADMIN_DOCUMENTS
+
+
+def _is_effectively_absolute_stored_path(sp: str) -> bool:
+    """True for normal OS absolute paths and for POSIX /foo/... (Linux deploy paths
+    on Windows return False for :func:`os.path.isabs`, so we need this for Azure-style paths)."""
+    if not sp or not (sp.strip()):
+        return False
+    if os.path.isabs(sp):
+        return True
+    s = (sp or "").replace("\\", "/")
+    if s.startswith("/") and not s.startswith("//"):
+        return True
+    return False
+
+
+def category_rel_for_submitted_storage_path(
+    storage_path: str,
+) -> Optional[Tuple[str, str]]:
+    """Map a ``SubmittedDocument.storage_path`` (relative or legacy absolute) to
+    ``(category, rel)`` for :func:`exists`, :func:`get_absolute_path`, and
+    :func:`stream_response`. Returns ``None`` when *storage_path* is a non-empty
+    absolute local path that exists on disk (callers may ``send_file`` it directly).
+    """
+    from app.utils.file_paths import get_upload_base_path, normalize_stored_relative_path
+
+    sp = (storage_path or "").strip()
+    if not sp:
+        return None
+    rel_effective: Optional[str] = None
+    if _is_effectively_absolute_stored_path(sp):
+        if os.path.exists(sp):
+            return None
+        # Prefer stripping the configured upload base (works when DB path matches this host).
+        try:
+            base = os.path.normpath(get_upload_base_path())
+            b_s = base.replace("\\", "/")
+            a_s = sp.replace("\\", "/")
+            if a_s.lower().startswith(b_s.lower() + "/") or a_s.lower() == b_s.lower():
+                prefix = b_s if b_s.endswith("/") else b_s + "/"
+                rel_effective = a_s[len(prefix) :].lstrip("/") if a_s.lower() != b_s.lower() else ""
+        except (ValueError, OSError) as e:
+            logger.debug("submitted path strip from upload base: %s", e)
+        if not rel_effective:
+            # Linux deploy path on another machine, or /home/site/.../uploads/... in DB: take after /uploads/
+            spu = sp.replace("\\", "/")
+            u = "/uploads/"
+            ix = spu.lower().rfind(u)
+            if ix != -1:
+                rel_effective = spu[ix + len(u) :].lstrip("/")
+        if not rel_effective:
+            return None
+    else:
+        rel_effective = _normalize_rel(sp)
+
+    cat = submitted_document_rel_storage_category(rel_effective)
+    if cat not in (SUBMISSIONS, ENTITY_REPO_ROOT):
+        rel_key = normalize_stored_relative_path(rel_effective, root_folder="admin_documents")
+        out_cat = ADMIN_DOCUMENTS
+    else:
+        rel_key = _normalize_rel(rel_effective)
+        out_cat = cat
+    return (out_cat, rel_key)
+
+
+def submitted_source_exists(storage_path: str) -> bool:
+    """Return whether the file exists in the active storage provider (filesystem or Azure)."""
+    sp = (storage_path or "").strip()
+    if not sp:
+        return False
+    if _is_effectively_absolute_stored_path(sp) and os.path.exists(sp):
+        return True
+    pair = category_rel_for_submitted_storage_path(sp)
+    if not pair:
+        return False
+    cat, rel_key = pair
+    return exists(cat, rel_key)
+
+
+def local_path_for_submitted_document_processing(
+    storage_path: str,
+) -> Tuple[Optional[str], bool]:
+    """Resolve a submitted-document path to a local path for the AI pipeline.
+
+    For Azure Blob, returns a **temporary file**; the second return value is
+    ``True`` when the caller should delete *local_path* after processing.
+    For filesystem, returns the real path and ``False``.
+    """
+    sp = (storage_path or "").strip()
+    if not sp:
+        return None, False
+    if _is_effectively_absolute_stored_path(sp) and os.path.exists(sp):
+        return sp, False
+    pair = category_rel_for_submitted_storage_path(sp)
+    if not pair:
+        return None, False
+    cat, rel_key = pair
+    if not exists(cat, rel_key):
+        return None, False
+    return get_absolute_path(cat, rel_key), is_azure()
+
+
+def ai_aidoc_storage_path_for_submitted(
+    original_storage_path: str,
+) -> str:
+    """Return the ``AIDocument.storage_path`` value: canonical forward-slash
+    relative key when the DB had a legacy absolute path under *uploads*."""
+    sp = (original_storage_path or "").strip()
+    if not sp:
+        return sp
+    if not _is_effectively_absolute_stored_path(sp):
+        return sp.replace("\\", "/")
+    if os.path.exists(sp):
+        return sp.replace("\\", "/")
+    pair = category_rel_for_submitted_storage_path(sp)
+    if not pair:
+        return sp.replace("\\", "/")
+    return pair[1]
 
 
 def is_azure() -> bool:

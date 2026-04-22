@@ -1638,145 +1638,40 @@ def document_processing_status(document_id):
 def process_submitted_document(submitted_doc_id):
     """Process a submitted document through the AI system."""
     try:
-        from app.models import SubmittedDocument, AIDocument
-        from app.routes.ai_documents.upload import _process_document_sync
-        from app.services.ai_document_processor import AIDocumentProcessor
+        from app.services.ai_submitted_document_ingest import enqueue_submitted_document_ai_processing
 
-        # Get submitted document
-        submitted_doc = SubmittedDocument.query.get(submitted_doc_id)
-        if not submitted_doc:
-            # For this AJAX endpoint, prefer an application-level error over an HTTP 404
-            # so the frontend can display a clean per-document failure without logging a
-            # confusing "route not found" network error.
-            return json_error(f'Submitted document not found: {submitted_doc_id}', 200, success=False, code='submitted_document_not_found')
-
-        # Check if file exists
-        if not (submitted_doc.storage_path or '').strip():
-            return json_error('Document has no storage path', 200, success=False, code='missing_storage_path')
-
-        # Build full file path using proper path resolution
-        # storage_path is relative to either submissions or admin_documents root.
-        from app.utils.file_paths import (
-            resolve_submitted_document_file,
-            resolve_admin_document,
-            normalize_stored_relative_path,
+        result = enqueue_submitted_document_ai_processing(
+            submitted_doc_id,
+            user_id=getattr(current_user, "id", None),
         )
-        storage_path = (submitted_doc.storage_path or '').strip()
-        file_path = None
-        resolve_error = None
-        try:
-            from app.services import storage_service as _ai_storage
-            if os.path.isabs(storage_path):
-                file_path = storage_path
-            else:
-                rel_norm = storage_path.replace("\\", "/").strip()
-                cat = _ai_storage.submitted_document_rel_storage_category(rel_norm)
-                if cat in (_ai_storage.SUBMISSIONS, _ai_storage.ENTITY_REPO_ROOT):
-                    file_path = resolve_submitted_document_file(storage_path)
-                else:
-                    normalized_rel = normalize_stored_relative_path(storage_path, root_folder='admin_documents')
-                    file_path = resolve_admin_document(normalized_rel)
-        except Exception as e:
-            resolve_error = e
-            logger.error(f"Error resolving file path for document {submitted_doc_id}: {e}", exc_info=True)
+        if not result.get("ok"):
+            code = result.get("code")
+            msg = result.get("message") or GENERIC_ERROR_MESSAGE
+            if code == "submitted_document_not_found":
+                return json_error(
+                    f"Submitted document not found: {submitted_doc_id}",
+                    200,
+                    success=False,
+                    code="submitted_document_not_found",
+                )
+            if code == "missing_storage_path":
+                return json_error("Document has no storage path", 200, success=False, code="missing_storage_path")
+            if code == "file_not_found":
+                return json_error(msg, 200, success=False, code="file_not_found")
+            if code == "unsupported_file_type":
+                return json_bad_request(msg)
+            return json_server_error(msg)
 
-        if not file_path or not os.path.exists(file_path):
-            logger.error(
-                "File not found for submitted document: id=%s filename=%s storage_path=%s resolved_path=%s",
-                submitted_doc_id,
-                submitted_doc.filename,
-                storage_path,
-                file_path,
-            )
-            details = f"path: {file_path}" if file_path else "path: unresolved"
-            if resolve_error:
-                details += f" (resolve error: {resolve_error})"
-            return json_error(
-                f'File not found: {submitted_doc.filename} ({details})',
-                200,
-                success=False,
-                code='file_not_found',
-                filename=submitted_doc.filename,
-                storage_path=storage_path,
-                resolved_path=file_path,
-            )
-
-        # Check if already processed
-        existing_ai_doc = AIDocument.query.filter_by(submitted_document_id=submitted_doc_id).first()
-        if existing_ai_doc:
-            # Reprocess existing in background so frontend can poll status and show stages
-            existing_ai_doc.processing_status = 'pending'
-            existing_ai_doc.processing_error = None
-            db.session.commit()
-            from app.routes.ai_documents.upload import _run_import_process_in_thread
-            _run_import_process_in_thread(
-                current_app._get_current_object(),
-                existing_ai_doc.id,
-                file_path,
-                submitted_doc.filename,
-                cleanup_temp=False,
-                clear_storage_path=False,
-            )
-            return json_accepted(
-                message='Processing started; poll document status for progress.',
-                ai_document_id=existing_ai_doc.id,
-                status='processing',
-            )
-
-        # Create new AI document
-        processor = AIDocumentProcessor()
-
-        # Check if file type is supported
-        if not processor.is_supported_file(submitted_doc.filename):
-            return json_bad_request(f'Unsupported file type. Supported: {", ".join(processor.SUPPORTED_TYPES.keys())}')
-
-        # Calculate content hash
-        content_hash = processor.calculate_content_hash(file_path)
-
-        # Get file type and size
-        file_type = processor.get_file_type(submitted_doc.filename)
-        file_size = os.path.getsize(file_path)
-
-        # Create AI document record
-        derived_country = None
-        try:
-            derived_country = getattr(submitted_doc, "document_country", None)
-        except Exception as e:
-            logger.debug("AI doc import: document_country resolution failed for %s: %s", submitted_doc_id, e)
-            derived_country = None
-
-        ai_doc = AIDocument(
-            submitted_document_id=submitted_doc_id,
-            title=submitted_doc.filename,
-            filename=submitted_doc.filename,
-            file_type=file_type,
-            file_size_bytes=file_size,
-            storage_path=file_path,
-            content_hash=content_hash,
-            processing_status='pending',
-            user_id=current_user.id,
-            is_public=submitted_doc.is_public,
-            searchable=True,
-            country_id=(int(getattr(derived_country, "id", 0)) or None) if derived_country else None,
-            country_name=(getattr(derived_country, "name", None) if derived_country else None),
+        logger.info(
+            "Admin %s started processing submitted document %s -> AI doc %s",
+            getattr(current_user, "email", None),
+            submitted_doc_id,
+            result.get("ai_document_id"),
         )
-        db.session.add(ai_doc)
-        db.session.commit()
-        # Process in background so frontend can poll status and show stages
-        from app.routes.ai_documents.upload import _run_import_process_in_thread
-        _run_import_process_in_thread(
-            current_app._get_current_object(),
-            ai_doc.id,
-            file_path,
-            submitted_doc.filename,
-            cleanup_temp=False,
-            clear_storage_path=False,
-        )
-        logger.info(f"Admin {current_user.email} started processing submitted document {submitted_doc_id} -> AI doc {ai_doc.id}")
         return json_accepted(
-            message='Processing started; poll document status for progress.',
-            ai_document_id=ai_doc.id,
-            status='processing',
+            message="Processing started; poll document status for progress.",
+            ai_document_id=result.get("ai_document_id"),
+            status="processing",
         )
 
     except Exception as e:

@@ -321,7 +321,8 @@ class _UnifiedPlanningDocumentsScreenState
                   ),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<UnifiedPlanningListSort>(
-                    value: tempSort,
+                    key: ValueKey<UnifiedPlanningListSort>(tempSort),
+                    initialValue: tempSort,
                     isExpanded: true,
                     menuMaxHeight: menuMaxH,
                     decoration: _filterFieldDecoration(context),
@@ -350,7 +351,8 @@ class _UnifiedPlanningDocumentsScreenState
                   ),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<String?>(
-                    value: tempCountry,
+                    key: ValueKey<String?>(tempCountry),
+                    initialValue: tempCountry,
                     isExpanded: true,
                     menuMaxHeight: menuMaxH,
                     decoration: _filterFieldDecoration(context),
@@ -378,7 +380,8 @@ class _UnifiedPlanningDocumentsScreenState
                   ),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<int?>(
-                    value: tempType,
+                    key: ValueKey<int?>(tempType),
+                    initialValue: tempType,
                     isExpanded: true,
                     menuMaxHeight: menuMaxH,
                     decoration: _filterFieldDecoration(context),
@@ -406,7 +409,8 @@ class _UnifiedPlanningDocumentsScreenState
                   ),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<int?>(
-                    value: tempYear,
+                    key: ValueKey<int?>(tempYear),
+                    initialValue: tempYear,
                     isExpanded: true,
                     menuMaxHeight: menuMaxH,
                     decoration: _filterFieldDecoration(context),

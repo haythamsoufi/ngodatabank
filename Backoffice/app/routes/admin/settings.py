@@ -238,6 +238,12 @@ def _build_ai_groups():
             'icon': 'fas fa-file-alt',
             'description': 'Configure how documents are processed, chunked, and indexed.',
             'fields': [
+                bln(
+                    'AI_AUTO_PROCESS_APPROVED_DOCUMENTS',
+                    'Auto-process approved documents for AI',
+                    'When enabled, documents that are set to Approved (upload, edit, or Approve action) are queued for the AI knowledge base without a separate manual import.',
+                    True,
+                ),
                 num('AI_MAX_DOCUMENT_SIZE_MB', 'Max Document Size (MB)', 'Maximum file size for AI processing.', 50),
                 num('AI_CHUNK_SIZE', 'Chunk Size (tokens)', 'Smaller = more precise, larger = more context.', 512),
                 num('AI_CHUNK_OVERLAP', 'Chunk Overlap (tokens)', 'Overlap to maintain context across chunk boundaries.', 50),

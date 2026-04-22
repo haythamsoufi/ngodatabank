@@ -166,7 +166,8 @@ function _showConfirmationWithButtons(message, onConfirm, onCancel, confirmText,
     const { contentDiv, closeModal } = createModalShell(title, {
         iconType,
         maxWidth: 'md',
-        zIndex: 1100,
+        // Stack above high-z app modals (e.g. AI Upload/Import modal at 11000; IFRC dropdown at 11050).
+        zIndex: 12000,
         onCancel: () => {
             closeModal();
             if (onCancel) onCancel();

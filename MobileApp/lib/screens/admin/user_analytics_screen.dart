@@ -240,7 +240,7 @@ class _UserAnalyticsScreenState extends State<UserAnalyticsScreen>
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: recentActivity.length.clamp(0, 12),
-                        separatorBuilder: (_, __) => Divider(
+                        separatorBuilder: (_, _) => Divider(
                           height: 1,
                           color: context.borderColor,
                         ),

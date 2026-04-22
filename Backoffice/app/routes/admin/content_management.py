@@ -42,6 +42,10 @@ from app.utils.advanced_validation import AdvancedValidator
 from app.utils.datetime_helpers import utcnow
 from app.utils.sql_utils import safe_ilike_pattern
 from app.utils.transactions import request_transaction_rollback
+from app.services.ai_submitted_document_ingest import (
+    maybe_enqueue_submitted_document_ai_processing_after_approval,
+    sync_ai_document_is_public_from_submitted,
+)
 
 # Allowed file extensions for uploads
 ALLOWED_DOCUMENT_EXTENSIONS = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt']
@@ -1365,8 +1369,18 @@ def upload_document():
                         "[DOCUMENT_UPLOAD] Notification error: %s", e, exc_info=True,
                     )
 
-                db.session.flush()
+                db.session.commit()
                 uploaded_paths.clear()  # commit succeeded; no cleanup needed
+
+                if effective_status == DocumentStatus.APPROVED:
+                    try:
+                        maybe_enqueue_submitted_document_ai_processing_after_approval(
+                            document.id, user_id=getattr(current_user, "id", None)
+                        )
+                    except Exception as ai_exc:
+                        current_app.logger.error(
+                            "[DOCUMENT_UPLOAD] Auto AI processing failed: %s", ai_exc, exc_info=True,
+                        )
 
                 flash(f"Document '{filename}' uploaded successfully.", "success")
                 return safe_redirect(request.args.get("next"), default_route="content_management.manage_documents")
@@ -1412,6 +1426,7 @@ def edit_document(doc_id):
 
     if request.method == 'POST':
         try:
+            prev_status = DocumentStatus.normalize(document.status)
             new_filename = request.form.get('filename', '').strip()
             if new_filename and new_filename != document.filename:
                 document.filename = secure_filename(new_filename) or document.filename
@@ -1617,7 +1632,18 @@ def edit_document(doc_id):
                     current_app.logger.error(f"Error uploading thumbnail: {e}", exc_info=True)
                     flash("Error uploading thumbnail.", "warning")
 
-            db.session.flush()
+            sync_ai_document_is_public_from_submitted(document)
+            db.session.commit()
+            new_status = DocumentStatus.normalize(document.status)
+            if new_status == DocumentStatus.APPROVED and prev_status != DocumentStatus.APPROVED:
+                try:
+                    maybe_enqueue_submitted_document_ai_processing_after_approval(
+                        document.id, user_id=getattr(current_user, "id", None)
+                    )
+                except Exception as ai_exc:
+                    current_app.logger.error(
+                        "[DOCUMENT_EDIT] Auto AI processing failed: %s", ai_exc, exc_info=True,
+                    )
             flash("Document updated successfully.", "success")
             return safe_redirect(request.args.get("next"), default_route="content_management.manage_documents")
 
@@ -1810,8 +1836,18 @@ def approve_document(doc_id):
     document = SubmittedDocument.query.get_or_404(doc_id)
 
     try:
+        old_status = DocumentStatus.normalize(document.status)
         document.status = DocumentStatus.APPROVED
-        db.session.flush()
+        db.session.commit()
+        if old_status != DocumentStatus.APPROVED:
+            try:
+                maybe_enqueue_submitted_document_ai_processing_after_approval(
+                    document.id, user_id=getattr(current_user, "id", None)
+                )
+            except Exception as ai_exc:
+                current_app.logger.error(
+                    "[DOCUMENT_APPROVE] Auto AI processing failed: %s", ai_exc, exc_info=True,
+                )
         flash(f"Document '{document.filename}' approved.", "success")
         if is_json_request():
             return json_ok(message=f"Document '{document.filename}' approved successfully.")

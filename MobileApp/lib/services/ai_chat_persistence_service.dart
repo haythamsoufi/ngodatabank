@@ -287,7 +287,7 @@ class AiChatPersistenceService {
             try {
               final decoded = jsonDecode(jsonEncode(rawMeta));
               if (decoded is Map) {
-                metaMap = Map<String, dynamic>.from(decoded as Map);
+                metaMap = Map<String, dynamic>.from(decoded);
               }
             } catch (_) {
               metaMap = {};
@@ -296,7 +296,7 @@ class AiChatPersistenceService {
             try {
               final decoded = jsonDecode(rawMeta);
               if (decoded is Map) {
-                metaMap = Map<String, dynamic>.from(decoded as Map);
+                metaMap = Map<String, dynamic>.from(decoded);
               }
             } catch (_) {}
           }

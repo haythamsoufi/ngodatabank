@@ -31,7 +31,7 @@ from app.services import storage_service as _storage
 from . import ai_docs_bp
 from .helpers import (
     MAX_AI_DOCUMENT_SIZE,
-    _ai_doc_exists,
+    _ai_doc_source_ready,
     _ai_doc_storage_delete,
     _try_claim_inflight_document,
     _release_inflight_document,
@@ -217,6 +217,7 @@ def reprocess_document(document_id: int):
         file_path = None
         filename = doc.filename or 'document'
 
+        temp_from_submitted = None
         if doc.source_url:
             try:
                 temp_path, filename, file_size, content_hash, file_type = _download_ifrc_document(doc.source_url)
@@ -229,9 +230,16 @@ def reprocess_document(document_id: int):
                 logger.error(f"Failed to download URL for reprocess: {e}", exc_info=True)
                 return json_server_error('Failed to download document.')
         else:
-            if not doc.storage_path or not _ai_doc_exists(doc.storage_path):
+            if not doc.storage_path or not _ai_doc_source_ready(doc):
                 return json_not_found('Source file not found')
-            if os.path.isabs(doc.storage_path):
+            if getattr(doc, "submitted_document_id", None):
+                lp, is_temp = _storage.local_path_for_submitted_document_processing(doc.storage_path)
+                if not lp:
+                    return json_not_found('Source file not found')
+                file_path = lp
+                if is_temp:
+                    temp_from_submitted = lp
+            elif os.path.isabs(doc.storage_path):
                 file_path = doc.storage_path
             else:
                 file_path = _storage.get_absolute_path(_storage.AI_DOCUMENTS, doc.storage_path)
@@ -244,6 +252,11 @@ def reprocess_document(document_id: int):
                     os.remove(temp_path)
                 except OSError as e:
                     logger.warning(f"Could not remove temp file {temp_path}: {e}")
+            if temp_from_submitted and os.path.exists(temp_from_submitted):
+                try:
+                    os.remove(temp_from_submitted)
+                except OSError as e:
+                    logger.warning(f"Could not remove temp file {temp_from_submitted}: {e}")
             if doc.source_url:
                 doc.storage_path = None
                 db.session.commit()

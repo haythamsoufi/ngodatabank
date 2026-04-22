@@ -701,6 +701,10 @@ class Config:
     AI_EXCLUDE_TABLE_TEXT_FROM_PDF_TEXT = _parse_bool(os.environ.get('AI_EXCLUDE_TABLE_TEXT_FROM_PDF_TEXT'), default=True)
     # Optional: attempt to extract approximate cell background colors (slower; raster sampling).
     AI_TABLE_EXTRACT_COLORS_ENABLED = _parse_bool(os.environ.get('AI_TABLE_EXTRACT_COLORS_ENABLED'), default=False)
+    # When True (default), documents that reach Approved status are queued for AI embedding/indexing automatically.
+    AI_AUTO_PROCESS_APPROVED_DOCUMENTS = _parse_bool(
+        os.environ.get('AI_AUTO_PROCESS_APPROVED_DOCUMENTS'), default=True
+    )
 
     # Vector Search
     AI_TOP_K_RESULTS = int(os.environ.get('AI_TOP_K_RESULTS', '5'))
