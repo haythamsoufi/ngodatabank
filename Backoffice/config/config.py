@@ -978,7 +978,8 @@ class Config:
     # Team email for BCC (defaults to sender email)
     TEAM_EMAIL = os.environ.get('TEAM_EMAIL', '')
 
-    # Legacy: recipient email protection is disabled. This key is kept for backwards compatibility only.
+    # Comma-separated allowlist (lowercased in code). When non-empty, ``send_email`` only
+    # delivers to these addresses. Used in local dev and staging; **ignored when FLASK_CONFIG=production.**
     allowed_recipients_str = os.environ.get('ALLOWED_EMAIL_RECIPIENTS_DEV', '')
     ALLOWED_EMAIL_RECIPIENTS_DEV = [email.strip().lower() for email in allowed_recipients_str.split(',') if email.strip()] if allowed_recipients_str else []
 

@@ -1,4 +1,6 @@
 import base64
+import json
+import os
 import requests
 from typing import Iterable, Optional, List, Tuple
 from flask import current_app
@@ -15,9 +17,12 @@ def _filter_recipients_for_environment(recipients: List[str], cc: List[str], bcc
     """
     Filter email recipients based on ALLOWED_EMAIL_RECIPIENTS_DEV.
 
-    When ALLOWED_EMAIL_RECIPIENTS_DEV is set (comma-separated list), only those addresses
-    receive emails. All others are filtered out. Use in dev/staging to avoid sending to real users.
+    When the allowlist is non-empty, only those addresses receive mail. Intended for
+    local development and staging; **never applied in production** (``FLASK_CONFIG=production``)
+    so a mis-set env var cannot block real recipients.
     """
+    if (os.environ.get("FLASK_CONFIG", "") or "").lower() == "production":
+        return recipients, cc, bcc
     allowed = current_app.config.get("ALLOWED_EMAIL_RECIPIENTS_DEV") or []
     if not allowed:
         return recipients, cc, bcc
@@ -202,17 +207,31 @@ def _send_via_ifrc(
 
     # Build payload with base64-encoded fields
     # Note: IFRC Email API uses fixed To address, actual recipients go in CC/BCC
-    payload = {
+    # Omit empty string fields some APIs reject; only include template keys when set.
+    body_b64 = str(
+        base64.b64encode(html.strip().encode("utf-8")),
+        "utf-8",
+    )
+    payload: dict = {
         "FromAsBase64": str(base64.b64encode(sender.encode("utf-8")), "utf-8"),
-        "ToAsBase64": str(base64.b64encode(fixed_to_address.encode("utf-8")), "utf-8"),
-        "CcAsBase64": str(base64.b64encode(cc_string.encode("utf-8")), "utf-8") if cc_string else "",
-        "BccAsBase64": str(base64.b64encode(bcc_string.encode("utf-8")), "utf-8") if bcc_string else "",
+        "ToAsBase64": str(
+            base64.b64encode(fixed_to_address.encode("utf-8")),
+            "utf-8",
+        ),
         "SubjectAsBase64": str(base64.b64encode(subject.encode("utf-8")), "utf-8"),
-        "BodyAsBase64": str(base64.b64encode(html.strip().encode("utf-8")), "utf-8"),
+        "BodyAsBase64": body_b64,
         "IsBodyHtml": True,
-        "TemplateName": "",
-        "TemplateLanguage": "",
     }
+    if cc_string:
+        payload["CcAsBase64"] = str(
+            base64.b64encode(cc_string.encode("utf-8")),
+            "utf-8",
+        )
+    if bcc_string:
+        payload["BccAsBase64"] = str(
+            base64.b64encode(bcc_string.encode("utf-8")),
+            "utf-8",
+        )
     # Add attachments if supported by the API (optional; API may use AttachmentsAsBase64 or similar)
     if attachments:
         try:
@@ -227,16 +246,14 @@ def _send_via_ifrc(
         except Exception as e:
             current_app.logger.warning(f"Email attachments skipped (API may not support them): {e}")
 
-    # Legacy behavior: If we have To recipients but no CC/BCC, combine To recipients with CC/BCC in BCC
-    # This maintains backward compatibility with existing code
+    # IFRC Email API: keep the dummy/organizational address in To (ToAsBase64 = noreply, set above) and
+    # put the actual delivery addresses in Bcc (also for a single recipient). Some environments return
+    # HTTP 400 if the real recipient is placed in To instead.
     if recipients_string and not cc_string and not bcc_string:
-        # Single recipient: use To field directly
-        if len(recipients) == 1:
-            payload["ToAsBase64"] = str(base64.b64encode(recipients[0].encode("utf-8")), "utf-8")
-            payload["BccAsBase64"] = ""
-        else:
-            # Multiple recipients: put in BCC (legacy behavior)
-            payload["BccAsBase64"] = str(base64.b64encode(recipients_string.encode("utf-8")), "utf-8")
+        payload["BccAsBase64"] = str(
+            base64.b64encode(recipients_string.encode("utf-8")),
+            "utf-8",
+        )
     elif recipients_string:
         # We have To recipients along with CC/BCC - combine To with BCC for legacy compatibility
         # But also set CC if provided
@@ -295,7 +312,19 @@ def _send_via_ifrc(
             parsed_base.fragment
         ))
 
-        error_message = resp.text[:200] if resp.text else 'No response body'
+        t = resp.text
+        if t is not None and str(t).strip():
+            error_message = str(t)[:200]
+        else:
+            # Some gateways return 400 with empty text; try raw bytes for triage
+            try:
+                raw = (resp.content or b"")[:500]
+                if raw:
+                    error_message = f"(body empty as text, raw len={len(raw)} repr={raw!r})"
+                else:
+                    error_message = "No response body"
+            except Exception:
+                error_message = "No response body"
         if resp.status_code == 401:
             current_app.logger.error(
                 f"Email API authentication failed (401) for {safe_url}. "
@@ -307,9 +336,22 @@ def _send_via_ifrc(
                 f"Check API key permissions. Response: {error_message}"
             )
         elif resp.status_code == 400:
+            try:
+                approx_json = len(json.dumps(payload, ensure_ascii=False))
+            except Exception:
+                approx_json = -1
             current_app.logger.error(
-                f"Email API bad request (400) for {safe_url}. "
-                f"Check payload format. Response: {error_message}"
+                "Email API bad request (400) for %s. Response: %s. "
+                "Diagnostic (no secrets): approx_json_len=%s body_b64_len=%s "
+                "recipients_n=%s cc_n=%s bcc_n=%s has_keys=%s",
+                safe_url,
+                error_message,
+                approx_json,
+                len((payload.get("BodyAsBase64") or "")),
+                len(recipients),
+                len(cc),
+                len(bcc),
+                sorted(payload.keys()),
             )
         else:
             current_app.logger.error(
