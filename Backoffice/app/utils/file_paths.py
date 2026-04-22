@@ -232,13 +232,16 @@ _ALLOWED_LOGO_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.webp'}
 _MAX_LOGO_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
 
 
-def save_system_logo(file_storage, item_name: str, item_type: str, is_sector: bool = True) -> str:
+def save_system_logo(file_storage, item_name: str, is_sector: bool = True) -> str:
     """Save a system logo (sector or subsector) and return the filename.
+
+    Storage path is ``sectors/<filename>`` or ``subsectors/<filename>``; the basename is
+    the sanitized display name plus the uploaded file's extension. Sector and subsector
+    names are unique, and the two trees are separate, so no ``_sector`` suffix is needed.
 
     Args:
         file_storage: The file storage object from Flask request
         item_name: The name of the item (for filename generation)
-        item_type: The type of item (e.g., 'sector', 'subsector')
         is_sector: True for sector, False for subsector
 
     Returns:
@@ -253,7 +256,7 @@ def save_system_logo(file_storage, item_name: str, item_type: str, is_sector: bo
         return None
 
     filename = secure_filename(file_storage.filename)
-    name, ext = os.path.splitext(filename)
+    _, ext = os.path.splitext(filename)
 
     if ext.lower() not in _ALLOWED_LOGO_EXTENSIONS:
         raise ValueError(
@@ -269,9 +272,8 @@ def save_system_logo(file_storage, item_name: str, item_type: str, is_sector: bo
             f"Logo file is too large ({file_size // 1024}KB). Maximum size is {_MAX_LOGO_SIZE_BYTES // (1024*1024)}MB."
         )
 
-    # Deterministic name: one file per item; sector/subsector names are unique in the DB.
-    # Edit flow deletes the previous file before saving a new upload.
-    stored_filename = f"{secure_filename(item_name)}_{item_type}{ext}"
+    # Deterministic name: edit flow deletes the previous file before a new upload.
+    stored_filename = f"{secure_filename(item_name)}{ext}"
 
     from app.services import storage_service as _ss
     sub = "sectors" if is_sector else "subsectors"

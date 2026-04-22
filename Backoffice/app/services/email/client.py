@@ -44,6 +44,7 @@ def send_email(
     importance: Optional[str] = None,
     attachments: Optional[List[Tuple[str, bytes, str]]] = None,
     _filtered_out: Optional[list] = None,
+    _failure_info: Optional[List[dict]] = None,
 ) -> bool:
     """
     Send an email using the Email API.
@@ -59,6 +60,9 @@ def send_email(
         bcc: List of BCC email addresses (optional)
         importance: Email importance level ('high', 'normal', 'low'). If 'high', adds [HIGH PRIORITY] prefix to subject.
         attachments: Optional list of (filename, content_bytes, content_type) to attach.
+        _failure_info: If provided, a single failure dict is appended on False returns
+        (``code`` one of: no_recipients, no_default_sender, dev_recipient_filter, no_email_api_key,
+        no_email_api_url, email_api_http_error, email_api_request_error; ``http_status`` for HTTP cases).
 
     Returns:
         True if email was sent successfully, False otherwise
@@ -70,6 +74,8 @@ def send_email(
 
     if not recipients_list and not cc_list and not bcc_list:
         current_app.logger.warning("send_email called with no recipients")
+        if _failure_info is not None:
+            _failure_info.append({"code": "no_recipients"})
         return False
 
     # Validate sender email is configured
@@ -78,6 +84,8 @@ def send_email(
             "MAIL_DEFAULT_SENDER is not configured. "
             "Please set MAIL_DEFAULT_SENDER in your environment variables."
         )
+        if _failure_info is not None:
+            _failure_info.append({"code": "no_default_sender"})
         return False
 
     # Apply recipient filtering (e.g. ALLOWED_EMAIL_RECIPIENTS_DEV in dev)
@@ -87,6 +95,8 @@ def send_email(
     if not recipients_list and not cc_list and not bcc_list:
         if _filtered_out is not None:
             _filtered_out.append(True)
+        if _failure_info is not None:
+            _failure_info.append({"code": "dev_recipient_filter"})
         return False
 
     # Add priority prefix to subject when high or urgent
@@ -107,6 +117,8 @@ def send_email(
         reply_to=reply_to,
         cc=cc_list,
         bcc=bcc_list,
+        attachments=attachments,
+        _failure_info=_failure_info,
     )
 
 
@@ -120,6 +132,7 @@ def _send_via_ifrc(
     cc: List[str],
     bcc: List[str],
     attachments: Optional[List[Tuple[str, bytes, str]]] = None,
+    _failure_info: Optional[List[dict]] = None,
 ) -> bool:
     """
     Send email via IFRC Email API.
@@ -137,12 +150,16 @@ def _send_via_ifrc(
             "Missing EMAIL_API_KEY for Email API. "
             "Please configure EMAIL_API_KEY or environment-specific key (EMAIL_API_KEY_PROD/STG) in your environment."
         )
+        if _failure_info is not None:
+            _failure_info.append({"code": "no_email_api_key"})
         return False
     if not api_url_base:
         current_app.logger.error(
             "Missing EMAIL_API_URL configuration. "
             "Please set EMAIL_API_URL_PROD or EMAIL_API_URL_STG based on your environment."
         )
+        if _failure_info is not None:
+            _failure_info.append({"code": "no_email_api_url"})
         return False
 
     # Check if API key is already in URL
@@ -299,9 +316,13 @@ def _send_via_ifrc(
                 f"Email API error {resp.status_code} for {safe_url}. Response: {error_message}"
             )
 
+        if _failure_info is not None:
+            _failure_info.append({"code": "email_api_http_error", "http_status": resp.status_code})
         return False
     except Exception as e:
         current_app.logger.error(
             f"Email API request failed for endpoint {api_url_base}: {str(e)}"
         )
+        if _failure_info is not None:
+            _failure_info.append({"code": "email_api_request_error"})
         return False

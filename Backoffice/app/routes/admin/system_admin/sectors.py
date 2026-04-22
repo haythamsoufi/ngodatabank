@@ -69,7 +69,6 @@ def new_sector():
                     form.logo_file.data,
                     get_sector_logo_path(),
                     form.name.data,
-                    'sector'
                 )
                 if logo_filename:
                     new_sector.logo_filename = logo_filename
@@ -145,7 +144,6 @@ def edit_sector(sector_id):
                     form.logo_file.data,
                     get_sector_logo_path(),
                     sector.name,
-                    'sector'
                 )
                 if logo_filename:
                     sector.logo_filename = logo_filename
@@ -228,7 +226,6 @@ def new_subsector():
                     form.logo_file.data,
                     get_subsector_logo_path(),
                     form.name.data,
-                    'subsector'
                 )
                 if logo_filename:
                     new_subsector.logo_filename = logo_filename
@@ -304,7 +301,6 @@ def edit_subsector(subsector_id):
                     form.logo_file.data,
                     get_subsector_logo_path(),
                     subsector.name,
-                    'subsector'
                 )
                 if logo_filename:
                     subsector.logo_filename = logo_filename

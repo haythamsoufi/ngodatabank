@@ -22,7 +22,7 @@ def _safe_logo_mimetype(filename: str) -> str:
     return _SAFE_LOGO_MIMETYPES.get(ext, 'application/octet-stream')
 
 
-def _save_logo_file(file_storage, base_path, item_name, item_type):
+def _save_logo_file(file_storage, base_path, item_name):
     """Save a logo file using standardized path functions.
 
     Note: This function is kept for backward compatibility but now uses
@@ -33,7 +33,7 @@ def _save_logo_file(file_storage, base_path, item_name, item_type):
             return None
 
         is_sector = 'sectors' in base_path or base_path == get_sector_logo_path()
-        return save_system_logo(file_storage, item_name, item_type, is_sector=is_sector)
+        return save_system_logo(file_storage, item_name, is_sector=is_sector)
 
     except Exception as e:
         current_app.logger.exception("Error saving logo file: %s", e)

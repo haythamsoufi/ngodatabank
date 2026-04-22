@@ -1365,6 +1365,53 @@ _EMAIL_TEMPLATE_TEST_LABELS = {
     "email_template_notification": "Notification Email Wrapper",
 }
 
+_EMAIL_TEST_SEND_FAILURE_MESSAGES = {
+    "dev_recipient_filter": (
+        "The test email was not sent because this environment only allows delivery to "
+        "addresses listed in ALLOWED_EMAIL_RECIPIENTS_DEV, and your account email is not on that list. "
+        "Add it in configuration or ask an administrator, or clear the allowlist in local development."
+    ),
+    "no_default_sender": (
+        "Email is not configured: set MAIL_DEFAULT_SENDER (outbound from-address) in the application environment."
+    ),
+    "no_email_api_key": (
+        "Email is not configured: set EMAIL_API_KEY (or the environment-specific key used by this deployment) "
+        "in the application environment."
+    ),
+    "no_email_api_url": (
+        "Email is not configured: set EMAIL_API_URL (or the environment-specific URL) in the application environment."
+    ),
+    "no_recipients": "Your account has no valid recipient address for this test send.",
+    "email_api_request_error": (
+        "The mail service could not be reached. Check network connectivity, EMAIL_API_URL, and application logs."
+    ),
+}
+
+
+def _message_for_email_test_send_failure(failure: list) -> str:
+    if not failure:
+        return (
+            "The test email was not sent. See application logs for the mail service response, "
+            "and verify EMAIL_API_KEY, EMAIL_API_URL, and MAIL_DEFAULT_SENDER."
+        )
+    code = (failure[0] or {}).get("code")
+    if code in _EMAIL_TEST_SEND_FAILURE_MESSAGES:
+        return _EMAIL_TEST_SEND_FAILURE_MESSAGES[code]
+    if code == "email_api_http_error":
+        status = (failure[0] or {}).get("http_status")
+        if status == 401:
+            return "The email API returned HTTP 401. Verify that EMAIL_API_KEY is correct in this environment."
+        if status == 403:
+            return "The email API returned HTTP 403. Check that the API key is allowed to send."
+        if status == 400:
+            return "The email API returned HTTP 400 (rejected the payload). Check application logs for details."
+        if status is not None:
+            return f"The email API returned HTTP {status}. Check application logs for the response body."
+    return (
+        "The test email was not sent. See application logs for the mail service response, "
+        "and verify EMAIL_API_KEY, EMAIL_API_URL, and MAIL_DEFAULT_SENDER."
+    )
+
 
 @bp.route("/api/settings/email-template-test-send", methods=["POST"])
 @admin_permission_required("admin.settings.manage")
@@ -1413,18 +1460,31 @@ def api_settings_email_template_test_send():
     subject = f"[Test email] {label} ({tlang})"
 
     try:
+        failure: list = []
         ok = send_email(
             subject=subject,
             recipients=[current_user.email],
             html=rendered,
             sender=current_app.config.get("MAIL_DEFAULT_SENDER"),
+            _failure_info=failure,
         )
     except Exception as e:  # pragma: no cover
         current_app.logger.warning("email template test send failed: %s", e, exc_info=True)
         return json_server_error("Failed to send email. Check mail configuration and logs.")
 
     if not ok:
-        return json_server_error("Email was not sent (no recipients or mail API rejected the request).")
+        msg = _message_for_email_test_send_failure(failure)
+        # Always one visible line for local debugging (Werkzeug console may not show
+        # app.logger.error depending on log configuration).
+        current_app.logger.warning(
+            "email template test send failed: template=%s tlang=%s user_id=%s failure=%r message=%s",
+            template_key,
+            tlang,
+            getattr(current_user, "id", None),
+            failure,
+            msg,
+        )
+        return json_server_error(msg)
 
     current_app.logger.info(
         "Test email sent for template %s (%s) to user id %s",
