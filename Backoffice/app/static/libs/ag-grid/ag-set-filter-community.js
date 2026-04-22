@@ -318,9 +318,16 @@
         this.valueCounts = valueCountMap;
         this.availableValueCounts = availableValueCountMap;
 
-        // Convert to sorted array
+        // Convert to sorted array: under currently applied (other) filters, values with
+        // available count > 0 first; zero-available values last; natural sort within each band.
         this.uniqueValues = Object.keys(valueCountMap).sort((a, b) => {
-            // Natural sort for better UX
+            const availA = availableValueCountMap[a] || 0;
+            const availB = availableValueCountMap[b] || 0;
+            const bandA = availA > 0 ? 0 : 1;
+            const bandB = availB > 0 ? 0 : 1;
+            if (bandA !== bandB) {
+                return bandA - bandB;
+            }
             if (typeof a === 'string' && typeof b === 'string') {
                 return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
             }

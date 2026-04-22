@@ -34,6 +34,17 @@ def register_template_context(app, config_class):
 
     register_filters(app)
 
+    try:
+        from app.utils.form_localization import (
+            get_indicator_bank_type_display,
+            get_indicator_bank_unit_display,
+        )
+
+        app.jinja_env.globals['get_indicator_bank_type_display'] = get_indicator_bank_type_display
+        app.jinja_env.globals['get_indicator_bank_unit_display'] = get_indicator_bank_unit_display
+    except Exception as e:
+        app.logger.debug("Failed to register indicator bank Jinja display helpers: %s", e)
+
     # Globals
     app.jinja_env.globals['hasattr'] = hasattr
     app.jinja_env.globals['isinstance'] = isinstance

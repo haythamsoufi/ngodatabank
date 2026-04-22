@@ -482,6 +482,12 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
         const outerPad = 4.0;
         final segmentW = (maxW - outerPad * 2) / 2;
         final isGrid = provider.viewMode == 'grid';
+        final isRtl = Directionality.of(context) == TextDirection.rtl;
+        // [Row] order is always Grid then Table; in RTL the first child is on the
+        // physical right, so the thumb must use mirrored horizontal offsets.
+        final thumbLeft = isRtl
+            ? (isGrid ? segmentW : 0.0)
+            : (isGrid ? 0.0 : segmentW);
 
         final trackColor = isDark
             ? theme.colorScheme.surfaceContainerLow
@@ -505,7 +511,7 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
                 AnimatedPositioned(
                   duration: const Duration(milliseconds: 240),
                   curve: Curves.easeOutCubic,
-                  left: isGrid ? 0 : segmentW,
+                  left: thumbLeft,
                   top: 0,
                   width: segmentW,
                   height: 38,
@@ -898,8 +904,8 @@ class _IndicatorBankScreenState extends State<IndicatorBankScreen> {
 
                         return Expanded(
                           child: Padding(
-                            padding: EdgeInsets.only(
-                              right: index < row.length - 1 ? 16 : 0,
+                            padding: EdgeInsetsDirectional.only(
+                              end: index < row.length - 1 ? 16 : 0,
                             ),
                             child: Card(
                               elevation: 0,

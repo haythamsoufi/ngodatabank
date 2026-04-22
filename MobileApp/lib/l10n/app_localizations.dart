@@ -70,6 +70,11 @@ class AppLocalizations {
       'access_requests_by': 'By',
       'access_requests_load_failed': 'Could not load access requests.',
       'access_requests_action_failed': 'Action could not be completed.',
+      'access_requests_view_forbidden':
+          'You do not have permission to view access requests on the server.',
+      'access_requests_unexpected_response': 'Unexpected response from server.',
+      'access_requests_action_forbidden':
+          'You do not have permission for this action.',
       'users_directory_read_only':
           'This directory is read-only. Create or change accounts in the web backoffice.',
       'login_logs_title': 'Login Logs',
@@ -178,6 +183,10 @@ class AppLocalizations {
       'enable_chatbot_assistance': 'Enable chatbot assistance',
       'dark_theme': 'Dark Theme',
       'enable_dark_theme': 'Enable dark theme',
+      'settings_theme': 'Theme',
+      'light_theme': 'Light Theme',
+      'system_theme': 'System',
+      'select_theme': 'Select theme',
       'arabic_text_font': 'Arabic text font',
       'arabic_font_tajawal': 'Tajawal',
       'arabic_font_system': 'System default',
@@ -1162,6 +1171,20 @@ class AppLocalizations {
       'ai_chat_error_timeout':
           'The request timed out. Check your connection and try again.',
       'ai_chat_error_server': 'Something went wrong. Please try again.',
+      'ai_agent_progress_title': 'Steps in progress',
+      'ai_agent_step_done': 'Done.',
+      'ai_agent_step_preparing_query': 'Preparing query…',
+      'ai_agent_step_planning': 'Planning approach…',
+      'ai_agent_step_reviewing': 'Reviewing results…',
+      'ai_agent_step_drafting': 'Drafting answer…',
+      'ai_agent_step_replying': 'Replying…',
+      'ai_agent_step_thinking_next': 'Thinking about what to do next.',
+      'ai_agent_step_no_shortcut_full':
+          'No single-tool shortcut — using the full planning path.',
+      'ai_agent_step_no_shortcut_reviewing':
+          'No single-tool shortcut for this request — reviewing: %s',
+      'ai_response_sources': 'Sources',
+      'ai_response_sources_with_count': 'Sources (%s)',
       'ai_tooltip_configure_sources': 'Configure data sources',
       'ai_input_policy_required':
           'Acknowledge the AI policy above to send messages',
@@ -1250,6 +1273,38 @@ class AppLocalizations {
       'system_configuration': 'Configuración del Sistema',
       'user_management': 'Gestión de Usuarios',
       'manage_users': 'Gestionar Usuarios',
+      'access_requests_title': 'Solicitudes de acceso por país',
+      'access_requests_subtitle':
+          'Apruebe o rechace solicitudes de acceso a nivel de país.',
+      'access_requests_pending': 'Pendiente',
+      'access_requests_processed': 'Decisiones recientes',
+      'access_requests_empty': 'No hay solicitudes de acceso.',
+      'access_requests_approve': 'Aprobar',
+      'access_requests_reject': 'Rechazar',
+      'access_requests_approve_all': 'Aprobar todas',
+      'access_requests_approve_all_confirm':
+          '¿Aprobar todas las solicitudes de acceso por país pendientes?',
+      'access_requests_reject_confirm':
+          '¿Rechazar esta solicitud de acceso? El usuario no obtendrá acceso.',
+      'access_requests_country': 'País',
+      'access_requests_message': 'Mensaje',
+      'access_requests_requested_at': 'Solicitado',
+      'access_requests_processed_at': 'Procesado',
+      'access_requests_auto_approve_hint':
+          'La aprobación automática puede estar habilitada en la configuración del servidor.',
+      'access_requests_status_pending': 'Pendiente',
+      'access_requests_status_approved': 'Aprobado',
+      'access_requests_status_rejected': 'Rechazado',
+      'access_requests_by': 'Por',
+      'access_requests_load_failed':
+          'No se pudieron cargar las solicitudes de acceso.',
+      'access_requests_action_failed': 'No se pudo completar la acción.',
+      'access_requests_view_forbidden':
+          'No tiene permiso para ver las solicitudes de acceso en el servidor.',
+      'access_requests_unexpected_response':
+          'Respuesta inesperada del servidor.',
+      'access_requests_action_forbidden':
+          'No tiene permiso para realizar esta acción.',
       'users_directory_read_only':
           'Este listado es solo lectura. Cree o modifique cuentas en el backoffice web.',
       'login_logs_title': 'Registros de inicio de sesión',
@@ -1335,6 +1390,11 @@ class AppLocalizations {
       'enable_chatbot_assistance': 'Habilitar asistencia de chatbot',
       'dark_theme': 'Tema Oscuro',
       'enable_dark_theme': 'Habilitar tema oscuro',
+      'settings_theme': 'Tema',
+      'light_theme': 'Tema claro',
+      'system_theme': 'Sistema',
+      'select_theme': 'Seleccionar tema',
+      'settings_theme_set_to': 'Tema configurado como %s',
       'arabic_text_font': 'Tipografía árabe',
       'arabic_font_tajawal': 'Tajawal',
       'arabic_font_system': 'Predeterminado del sistema',
@@ -2134,6 +2194,20 @@ class AppLocalizations {
       'ai_chat_error_timeout':
           'La solicitud tardó demasiado. Compruebe su conexión e inténtelo de nuevo.',
       'ai_chat_error_server': 'Algo salió mal. Inténtelo de nuevo.',
+      'ai_agent_progress_title': 'Pasos en curso',
+      'ai_agent_step_done': 'Hecho.',
+      'ai_agent_step_preparing_query': 'Preparando la consulta…',
+      'ai_agent_step_planning': 'Planificando el enfoque…',
+      'ai_agent_step_reviewing': 'Revisando resultados…',
+      'ai_agent_step_drafting': 'Redactando la respuesta…',
+      'ai_agent_step_replying': 'Respondiendo…',
+      'ai_agent_step_thinking_next': 'Pensando qué hacer a continuación.',
+      'ai_agent_step_no_shortcut_full':
+          'Sin atajo de una sola herramienta — usando la planificación completa.',
+      'ai_agent_step_no_shortcut_reviewing':
+          'Sin atajo de una sola herramienta para esta solicitud — revisando: %s',
+      'ai_response_sources': 'Fuentes',
+      'ai_response_sources_with_count': 'Fuentes (%s)',
       'ai_tooltip_configure_sources': 'Configurar fuentes de datos',
       'ai_input_policy_required':
           'Reconozca la política de IA arriba para enviar mensajes',
@@ -2224,6 +2298,39 @@ class AppLocalizations {
       'system_configuration': 'Configuration du Système',
       'user_management': 'Gestion des Utilisateurs',
       'manage_users': 'Gérer les Utilisateurs',
+      'access_requests_title': 'Demandes d\'accès par pays',
+      'access_requests_subtitle':
+          'Approuvez ou refusez les demandes d\'accès au niveau pays.',
+      'access_requests_pending': 'En attente',
+      'access_requests_processed': 'Décisions récentes',
+      'access_requests_empty': 'Aucune demande d\'accès.',
+      'access_requests_approve': 'Approuver',
+      'access_requests_reject': 'Refuser',
+      'access_requests_approve_all': 'Tout approuver',
+      'access_requests_approve_all_confirm':
+          'Approuver toutes les demandes d\'accès par pays en attente ?',
+      'access_requests_reject_confirm':
+          'Refuser cette demande d\'accès ? L\'utilisateur n\'obtiendra pas l\'accès.',
+      'access_requests_country': 'Pays',
+      'access_requests_message': 'Message',
+      'access_requests_requested_at': 'Demandé',
+      'access_requests_processed_at': 'Traité',
+      'access_requests_auto_approve_hint':
+          'L\'approbation automatique peut être activée dans les paramètres du serveur.',
+      'access_requests_status_pending': 'En attente',
+      'access_requests_status_approved': 'Approuvé',
+      'access_requests_status_rejected': 'Refusé',
+      'access_requests_by': 'Par',
+      'access_requests_load_failed':
+          'Impossible de charger les demandes d\'accès.',
+      'access_requests_action_failed':
+          'L\'action n\'a pas pu être effectuée.',
+      'access_requests_view_forbidden':
+          'Vous n\'avez pas l\'autorisation de consulter les demandes d\'accès sur le serveur.',
+      'access_requests_unexpected_response':
+          'Réponse inattendue du serveur.',
+      'access_requests_action_forbidden':
+          'Vous n\'avez pas l\'autorisation d\'effectuer cette action.',
       'users_directory_read_only':
           'Annuaire en lecture seule. Créez ou modifiez les comptes sur le backoffice web.',
       'login_logs_title': 'Journaux de connexion',
@@ -2309,6 +2416,11 @@ class AppLocalizations {
       'enable_chatbot_assistance': 'Activer l\'assistance chatbot',
       'dark_theme': 'Thème Sombre',
       'enable_dark_theme': 'Activer le thème sombre',
+      'settings_theme': 'Thème',
+      'light_theme': 'Thème clair',
+      'system_theme': 'Système',
+      'select_theme': 'Choisir le thème',
+      'settings_theme_set_to': 'Thème défini sur %s',
       'arabic_text_font': 'Police arabe',
       'arabic_font_tajawal': 'Tajawal',
       'arabic_font_system': 'Police système',
@@ -3112,6 +3224,20 @@ class AppLocalizations {
       'ai_chat_error_timeout':
           'La requête a expiré. Vérifiez votre connexion et réessayez.',
       'ai_chat_error_server': 'Un problème est survenu. Veuillez réessayer.',
+      'ai_agent_progress_title': 'Étapes en cours',
+      'ai_agent_step_done': 'Terminé.',
+      'ai_agent_step_preparing_query': 'Préparation de la requête…',
+      'ai_agent_step_planning': 'Planification de l\'approche…',
+      'ai_agent_step_reviewing': 'Examen des résultats…',
+      'ai_agent_step_drafting': 'Rédaction de la réponse…',
+      'ai_agent_step_replying': 'Réponse en cours…',
+      'ai_agent_step_thinking_next': 'Réflexion sur la suite à donner.',
+      'ai_agent_step_no_shortcut_full':
+          'Pas de raccourci à un seul outil — chemin de planification complet.',
+      'ai_agent_step_no_shortcut_reviewing':
+          'Pas de raccourci à un seul outil pour cette demande — examen : %s',
+      'ai_response_sources': 'Sources',
+      'ai_response_sources_with_count': 'Sources (%s)',
       'ai_tooltip_configure_sources': 'Configurer les sources de données',
       'ai_input_policy_required':
           'Reconnaissez la politique IA ci-dessus pour envoyer des messages',
@@ -3202,6 +3328,36 @@ class AppLocalizations {
       'system_configuration': 'إعدادات النظام',
       'user_management': 'إدارة المستخدمين',
       'manage_users': 'إدارة المستخدمين',
+      'access_requests_title': 'طلبات الوصول على مستوى البلد',
+      'access_requests_subtitle':
+          'وافق على طلبات الوصول أو ارفضها على مستوى البلد.',
+      'access_requests_pending': 'قيد الانتظار',
+      'access_requests_processed': 'قرارات حديثة',
+      'access_requests_empty': 'لا توجد طلبات وصول.',
+      'access_requests_approve': 'موافقة',
+      'access_requests_reject': 'رفض',
+      'access_requests_approve_all': 'الموافقة على الكل',
+      'access_requests_approve_all_confirm':
+          'الموافقة على جميع طلبات الوصول على مستوى البلد المعلقة؟',
+      'access_requests_reject_confirm':
+          'رفض طلب الوصول هذا؟ لن يُمنح المستخدم الوصول.',
+      'access_requests_country': 'البلد',
+      'access_requests_message': 'الرسالة',
+      'access_requests_requested_at': 'طُلب في',
+      'access_requests_processed_at': 'عُولج في',
+      'access_requests_auto_approve_hint':
+          'قد تكون الموافقة التلقائية مفعّلة في إعدادات الخادم.',
+      'access_requests_status_pending': 'قيد الانتظار',
+      'access_requests_status_approved': 'موافق عليه',
+      'access_requests_status_rejected': 'مرفوض',
+      'access_requests_by': 'بواسطة',
+      'access_requests_load_failed': 'تعذر تحميل طلبات الوصول.',
+      'access_requests_action_failed': 'تعذر إتمام الإجراء.',
+      'access_requests_view_forbidden':
+          'ليس لديك إذن لعرض طلبات الوصول على الخادم.',
+      'access_requests_unexpected_response': 'استجابة غير متوقعة من الخادم.',
+      'access_requests_action_forbidden':
+          'ليس لديك إذن لتنفيذ هذا الإجراء.',
       'users_directory_read_only':
           'هذا الدليل للقراءة فقط. أنشئ الحسابات أو عدّلها من لوحة الويب.',
       'login_logs_title': 'سجلات تسجيل الدخول',
@@ -3287,6 +3443,11 @@ class AppLocalizations {
       'enable_chatbot_assistance': 'تفعيل المساعدة الذكية',
       'dark_theme': 'المظهر الداكن',
       'enable_dark_theme': 'تفعيل المظهر الداكن',
+      'settings_theme': 'المظهر',
+      'light_theme': 'المظهر الفاتح',
+      'system_theme': 'النظام',
+      'select_theme': 'اختر المظهر',
+      'settings_theme_set_to': 'تم تعيين المظهر إلى %s',
       'arabic_text_font': 'خط النص العربي',
       'arabic_font_tajawal': 'تجوال',
       'arabic_font_system': 'خط النظام',
@@ -4050,6 +4211,20 @@ class AppLocalizations {
           'تعذر الوصول إلى خدمة الذكاء الاصطناعي. تحقق من اتصال الإنترنت وحاول مرة أخرى.',
       'ai_chat_error_timeout': 'انتهت مهلة الطلب. تحقق من الاتصال وحاول مرة أخرى.',
       'ai_chat_error_server': 'حدث خطأ. يرجى المحاولة مرة أخرى.',
+      'ai_agent_progress_title': 'خطوات قيد التنفيذ',
+      'ai_agent_step_done': 'تم.',
+      'ai_agent_step_preparing_query': 'جارٍ تحضير الاستفسار…',
+      'ai_agent_step_planning': 'جارٍ التخطيط للنهج…',
+      'ai_agent_step_reviewing': 'جارٍ مراجعة النتائج…',
+      'ai_agent_step_drafting': 'جارٍ صياغة الإجابة…',
+      'ai_agent_step_replying': 'جارٍ الرد…',
+      'ai_agent_step_thinking_next': 'أفكر فيما يجب فعله بعد ذلك.',
+      'ai_agent_step_no_shortcut_full':
+          'لا يوجد اختصار بأداة واحدة — استخدام مسار التخطيط الكامل.',
+      'ai_agent_step_no_shortcut_reviewing':
+          'لا يوجد اختصار بأداة واحدة لهذا الطلب — جارٍ المراجعة: %s',
+      'ai_response_sources': 'المصادر',
+      'ai_response_sources_with_count': 'المصادر (%s)',
       'ai_tooltip_configure_sources': 'تهيئة مصادر البيانات',
       'ai_input_policy_required':
           'أقر بسياسة الذكاء الاصطناعي أعلاه لإرسال الرسائل',
@@ -4140,6 +4315,37 @@ class AppLocalizations {
       'system_configuration': 'सिस्टम कॉन्फ़िगरेशन',
       'user_management': 'उपयोगकर्ता प्रबंधन',
       'manage_users': 'उपयोगकर्ता प्रबंधित करें',
+      'access_requests_title': 'देश स्तरीय पहुँच अनुरोध',
+      'access_requests_subtitle':
+          'देश-स्तर की पहुँच के अनुरोधों को स्वीकार या अस्वीकार करें।',
+      'access_requests_pending': 'लंबित',
+      'access_requests_processed': 'हाल के निर्णय',
+      'access_requests_empty': 'कोई पहुँच अनुरोध नहीं।',
+      'access_requests_approve': 'स्वीकार करें',
+      'access_requests_reject': 'अस्वीकार करें',
+      'access_requests_approve_all': 'सभी स्वीकार करें',
+      'access_requests_approve_all_confirm':
+          'सभी लंबित देश स्तरीय पहुँच अनुरोध स्वीकार करें?',
+      'access_requests_reject_confirm':
+          'इस पहुँच अनुरोध को अस्वीकार करें? उपयोगकर्ता को पहुँच नहीं मिलेगी।',
+      'access_requests_country': 'देश',
+      'access_requests_message': 'संदेश',
+      'access_requests_requested_at': 'अनुरोधित',
+      'access_requests_processed_at': 'संसाधित',
+      'access_requests_auto_approve_hint':
+          'सर्वर सेटिंग्स में स्वचालित स्वीकृति सक्षम हो सकती है।',
+      'access_requests_status_pending': 'लंबित',
+      'access_requests_status_approved': 'स्वीकृत',
+      'access_requests_status_rejected': 'अस्वीकृत',
+      'access_requests_by': 'द्वारा',
+      'access_requests_load_failed':
+          'पहुँच अनुरोध लोड नहीं किए जा सके।',
+      'access_requests_action_failed': 'कार्रवाई पूरी नहीं हो सकी।',
+      'access_requests_view_forbidden':
+          'आपके पास सर्वर पर पहुँच अनुरोध देखने की अनुमति नहीं है।',
+      'access_requests_unexpected_response': 'सर्वर से अप्रत्याशित प्रतिक्रिया।',
+      'access_requests_action_forbidden':
+          'आपके पास यह कार्रवाई करने की अनुमति नहीं है।',
       'users_directory_read_only':
           'यह सूची केवल पढ़ने योग्य है। वेब बैकऑफ़िस में खाते बनाएं या बदलें।',
       'login_logs_title': 'लॉगिन लॉग',
@@ -4225,6 +4431,11 @@ class AppLocalizations {
       'enable_chatbot_assistance': 'चैटबॉट सहायता सक्षम करें',
       'dark_theme': 'डार्क थीम',
       'enable_dark_theme': 'डार्क थीम सक्षम करें',
+      'settings_theme': 'थीम',
+      'light_theme': 'लाइट थीम',
+      'system_theme': 'सिस्टम',
+      'select_theme': 'थीम चुनें',
+      'settings_theme_set_to': 'थीम %s पर सेट की गई',
       'arabic_text_font': 'अरबी टेक्स्ट फ़ॉन्ट',
       'arabic_font_tajawal': 'ताजवाल',
       'arabic_font_system': 'सिस्टम डिफ़ॉल्ट',
@@ -5016,6 +5227,20 @@ class AppLocalizations {
       'ai_chat_error_timeout':
           'अनुरोध का समय समाप्त हो गया। कनेक्शन जांचें और फिर कोशिश करें।',
       'ai_chat_error_server': 'कुछ गलत हुआ। कृपया फिर कोशिश करें।',
+      'ai_agent_progress_title': 'प्रगति में चरण',
+      'ai_agent_step_done': 'पूर्ण।',
+      'ai_agent_step_preparing_query': 'क्वेरी तैयार की जा रही है…',
+      'ai_agent_step_planning': 'दृष्टिकोण की योजना बनाई जा रही है…',
+      'ai_agent_step_reviewing': 'परिणामों की समीक्षा…',
+      'ai_agent_step_drafting': 'उत्तर का मसौदा…',
+      'ai_agent_step_replying': 'उत्तर दिया जा रहा है…',
+      'ai_agent_step_thinking_next': 'आगे क्या करना है, सोच रहा हूँ।',
+      'ai_agent_step_no_shortcut_full':
+          'एकल-टूल शॉर्टकट नहीं — पूर्ण योजना मार्ग का उपयोग।',
+      'ai_agent_step_no_shortcut_reviewing':
+          'इस अनुरोध के लिए एकल-टूल शॉर्टकट नहीं — समीक्षा: %s',
+      'ai_response_sources': 'स्रोत',
+      'ai_response_sources_with_count': 'स्रोत (%s)',
       'ai_tooltip_configure_sources': 'डेटा स्रोत कॉन्फ़िगर करें',
       'ai_input_policy_required':
           'संदेश भेजने के लिए ऊपर AI नीति स्वीकार करें',
@@ -5106,6 +5331,38 @@ class AppLocalizations {
       'system_configuration': 'Конфигурация Системы',
       'user_management': 'Управление Пользователями',
       'manage_users': 'Управлять Пользователями',
+      'access_requests_title': 'Запросы доступа к странам',
+      'access_requests_subtitle':
+          'Одобряйте или отклоняйте запросы доступа на уровне страны.',
+      'access_requests_pending': 'В ожидании',
+      'access_requests_processed': 'Недавние решения',
+      'access_requests_empty': 'Нет запросов доступа.',
+      'access_requests_approve': 'Одобрить',
+      'access_requests_reject': 'Отклонить',
+      'access_requests_approve_all': 'Одобрить все',
+      'access_requests_approve_all_confirm':
+          'Одобрить все ожидающие запросы доступа к странам?',
+      'access_requests_reject_confirm':
+          'Отклонить этот запрос доступа? Пользователь не получит доступ.',
+      'access_requests_country': 'Страна',
+      'access_requests_message': 'Сообщение',
+      'access_requests_requested_at': 'Запрошено',
+      'access_requests_processed_at': 'Обработано',
+      'access_requests_auto_approve_hint':
+          'Автоодобрение может быть включено в настройках сервера.',
+      'access_requests_status_pending': 'В ожидании',
+      'access_requests_status_approved': 'Одобрено',
+      'access_requests_status_rejected': 'Отклонено',
+      'access_requests_by': 'Кем',
+      'access_requests_load_failed':
+          'Не удалось загрузить запросы доступа.',
+      'access_requests_action_failed': 'Не удалось выполнить действие.',
+      'access_requests_view_forbidden':
+          'У вас нет прав на просмотр запросов доступа на сервере.',
+      'access_requests_unexpected_response':
+          'Неожиданный ответ сервера.',
+      'access_requests_action_forbidden':
+          'У вас нет прав на это действие.',
       'users_directory_read_only':
           'Список только для чтения. Создавайте и меняйте учётные записи в веб-бэкофисе.',
       'login_logs_title': 'Журналы входа',
@@ -5191,6 +5448,11 @@ class AppLocalizations {
       'enable_chatbot_assistance': 'Включить помощь чатбота',
       'dark_theme': 'Темная Тема',
       'enable_dark_theme': 'Включить темную тему',
+      'settings_theme': 'Тема',
+      'light_theme': 'Светлая тема',
+      'system_theme': 'Системная',
+      'select_theme': 'Выберите тему',
+      'settings_theme_set_to': 'Тема: %s',
       'arabic_text_font': 'Арабский шрифт',
       'arabic_font_tajawal': 'Tajawal',
       'arabic_font_system': 'Системный',
@@ -5987,6 +6249,20 @@ class AppLocalizations {
       'ai_chat_error_timeout':
           'Время ожидания запроса истекло. Проверьте соединение и повторите попытку.',
       'ai_chat_error_server': 'Что-то пошло не так. Повторите попытку.',
+      'ai_agent_progress_title': 'Шаги выполняются',
+      'ai_agent_step_done': 'Готово.',
+      'ai_agent_step_preparing_query': 'Подготовка запроса…',
+      'ai_agent_step_planning': 'Планирование подхода…',
+      'ai_agent_step_reviewing': 'Проверка результатов…',
+      'ai_agent_step_drafting': 'Формулировка ответа…',
+      'ai_agent_step_replying': 'Ответ…',
+      'ai_agent_step_thinking_next': 'Думаю, что делать дальше.',
+      'ai_agent_step_no_shortcut_full':
+          'Нет быстрого пути одним инструментом — полный цикл планирования.',
+      'ai_agent_step_no_shortcut_reviewing':
+          'Для этого запроса нет быстрого пути одним инструментом — проверка: %s',
+      'ai_response_sources': 'Источники',
+      'ai_response_sources_with_count': 'Источники (%s)',
       'ai_tooltip_configure_sources': 'Настроить источники данных',
       'ai_input_policy_required':
           'Подтвердите политику ИИ выше, чтобы отправлять сообщения',
@@ -6077,6 +6353,31 @@ class AppLocalizations {
       'system_configuration': '系统配置',
       'user_management': '用户管理',
       'manage_users': '管理用户',
+      'access_requests_title': '国家访问权限申请',
+      'access_requests_subtitle': '批准或拒绝国家级访问权限申请。',
+      'access_requests_pending': '待处理',
+      'access_requests_processed': '最近处理结果',
+      'access_requests_empty': '暂无访问申请。',
+      'access_requests_approve': '批准',
+      'access_requests_reject': '拒绝',
+      'access_requests_approve_all': '全部批准',
+      'access_requests_approve_all_confirm': '批准所有待处理的国家访问权限申请？',
+      'access_requests_reject_confirm':
+          '拒绝此访问申请？该用户将不会获得访问权限。',
+      'access_requests_country': '国家',
+      'access_requests_message': '留言',
+      'access_requests_requested_at': '申请时间',
+      'access_requests_processed_at': '处理时间',
+      'access_requests_auto_approve_hint': '服务器设置中可能已启用自动批准。',
+      'access_requests_status_pending': '待处理',
+      'access_requests_status_approved': '已批准',
+      'access_requests_status_rejected': '已拒绝',
+      'access_requests_by': '由',
+      'access_requests_load_failed': '无法加载访问申请。',
+      'access_requests_action_failed': '无法完成操作。',
+      'access_requests_view_forbidden': '您无权在服务器上查看访问申请。',
+      'access_requests_unexpected_response': '服务器返回了意外响应。',
+      'access_requests_action_forbidden': '您无权执行此操作。',
       'users_directory_read_only': '此列表为只读。请在网页管理后台创建或修改账户。',
       'login_logs_title': '登录日志',
       'login_logs_filters': '筛选',
@@ -6159,6 +6460,11 @@ class AppLocalizations {
       'enable_chatbot_assistance': '启用聊天机器人协助',
       'dark_theme': '深色主题',
       'enable_dark_theme': '启用深色主题',
+      'settings_theme': '主题',
+      'light_theme': '浅色主题',
+      'system_theme': '系统',
+      'select_theme': '选择主题',
+      'settings_theme_set_to': '主题已设为 %s',
       'arabic_text_font': '阿拉伯语文本字体',
       'arabic_font_tajawal': 'Tajawal',
       'arabic_font_system': '系统默认',
@@ -6905,6 +7211,18 @@ class AppLocalizations {
       'ai_chat_error_network': '无法连接到 AI 服务。请检查网络连接后重试。',
       'ai_chat_error_timeout': '请求超时。请检查连接后重试。',
       'ai_chat_error_server': '出了点问题。请重试。',
+      'ai_agent_progress_title': '进行中的步骤',
+      'ai_agent_step_done': '完成。',
+      'ai_agent_step_preparing_query': '正在准备查询…',
+      'ai_agent_step_planning': '正在规划方案…',
+      'ai_agent_step_reviewing': '正在查看结果…',
+      'ai_agent_step_drafting': '正在起草回复…',
+      'ai_agent_step_replying': '正在回复…',
+      'ai_agent_step_thinking_next': '正在思考接下来该怎么做。',
+      'ai_agent_step_no_shortcut_full': '无单工具捷径 — 使用完整规划流程。',
+      'ai_agent_step_no_shortcut_reviewing': '此请求无单工具捷径 — 正在审核：%s',
+      'ai_response_sources': '来源',
+      'ai_response_sources_with_count': '来源（%s）',
       'ai_tooltip_configure_sources': '配置数据来源',
       'ai_input_policy_required':
           '请先确认上方的 AI 政策再发送消息',
@@ -7039,6 +7357,12 @@ class AppLocalizations {
       translate('access_requests_load_failed');
   String get accessRequestsActionFailed =>
       translate('access_requests_action_failed');
+  String get accessRequestsViewForbidden =>
+      translate('access_requests_view_forbidden');
+  String get accessRequestsUnexpectedResponse =>
+      translate('access_requests_unexpected_response');
+  String get accessRequestsActionForbidden =>
+      translate('access_requests_action_forbidden');
 
   String get loginLogsTitle => translate('login_logs_title');
   String get loginLogsFilters => translate('login_logs_filters');
@@ -7165,6 +7489,10 @@ class AppLocalizations {
   String get enableChatbotAssistance => translate('enable_chatbot_assistance');
   String get darkTheme => translate('dark_theme');
   String get enableDarkTheme => translate('enable_dark_theme');
+  String get settingsTheme => translate('settings_theme');
+  String get lightTheme => translate('light_theme');
+  String get systemTheme => translate('system_theme');
+  String get selectTheme => translate('select_theme');
   String get arabicTextFont => translate('arabic_text_font');
   String get arabicFontTajawal => translate('arabic_font_tajawal');
   String get arabicFontSystem => translate('arabic_font_system');
@@ -8363,6 +8691,26 @@ class AppLocalizations {
   String get aiChatErrorNetwork => translate('ai_chat_error_network');
   String get aiChatErrorTimeout => translate('ai_chat_error_timeout');
   String get aiChatErrorServer => translate('ai_chat_error_server');
+
+  String get aiAgentProgressTitle => translate('ai_agent_progress_title');
+  String get aiAgentStepDone => translate('ai_agent_step_done');
+  String get aiAgentStepPreparingQuery =>
+      translate('ai_agent_step_preparing_query');
+  String get aiAgentStepPlanning => translate('ai_agent_step_planning');
+  String get aiAgentStepReviewing => translate('ai_agent_step_reviewing');
+  String get aiAgentStepDrafting => translate('ai_agent_step_drafting');
+  String get aiAgentStepReplying => translate('ai_agent_step_replying');
+  String get aiAgentStepThinkingNext =>
+      translate('ai_agent_step_thinking_next');
+  String get aiAgentStepNoShortcutFull =>
+      translate('ai_agent_step_no_shortcut_full');
+  String aiAgentStepNoShortcutReviewing(String snippet) =>
+      translate('ai_agent_step_no_shortcut_reviewing')
+          .replaceAll('%s', snippet);
+  String get aiResponseSources => translate('ai_response_sources');
+  String aiResponseSourcesWithCount(int n) =>
+      translate('ai_response_sources_with_count').replaceAll('%s', '$n');
+
   String get aiTooltipConfigureSources => translate('ai_tooltip_configure_sources');
   String get aiInputPolicyRequired => translate('ai_input_policy_required');
   String get aiInputPlaceholderMessage => translate('ai_input_placeholder_message');

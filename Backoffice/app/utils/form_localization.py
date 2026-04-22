@@ -92,7 +92,14 @@ def get_localized_indicator_type(indicator_type: str) -> str:
         return type_translation_map[indicator_type]
 
     type_key = indicator_type.lower()
-    return type_translation_map.get(type_key, indicator_type)
+    if type_key in type_translation_map:
+        return type_translation_map[type_key]
+    s = str(indicator_type).strip()
+    if not s:
+        return ""
+    if s.islower() or s.isupper():
+        return " ".join(w.capitalize() for w in s.replace("_", " ").split())
+    return indicator_type
 
 
 def get_localized_indicator_unit(indicator_unit: str) -> str:
@@ -116,9 +123,14 @@ def get_localized_indicator_unit(indicator_unit: str) -> str:
             from app.extensions import db
             from app.models import IndicatorBankUnit
 
+            key = " ".join(str(indicator_unit).strip().lower().split())
             row = IndicatorBankUnit.query.filter(
-                db.func.lower(IndicatorBankUnit.code) == str(indicator_unit).strip().lower()
+                db.func.lower(IndicatorBankUnit.code) == key
             ).first()
+            if not row:
+                row = IndicatorBankUnit.query.filter(
+                    db.func.lower(IndicatorBankUnit.name) == key
+                ).first()
             if row and row.is_active:
                 loc = get_translation_key()
                 lab = row.get_name_translation(loc)
@@ -163,7 +175,37 @@ def get_localized_indicator_unit(indicator_unit: str) -> str:
     }
 
     unit_key = indicator_unit.lower()
-    return unit_translation_map.get(unit_key, indicator_unit)
+    unmapped = unit_translation_map.get(unit_key, None)
+    if unmapped is not None:
+        return unmapped
+    s = str(indicator_unit).strip()
+    if not s:
+        return ""
+    if s.islower() or s.isupper():
+        return " ".join(w.capitalize() for w in s.replace("-", " ").split())
+    return indicator_unit
+
+
+def get_indicator_bank_type_display(indicator_bank) -> str:
+    """Type label for admin grids: catalog name (locale-aware) when FK is set, else localized code string."""
+    if indicator_bank is None:
+        return ""
+    mt = getattr(indicator_bank, "measurement_type", None)
+    if mt is not None:
+        loc = get_translation_key()
+        return (mt.get_name_translation(loc) or mt.name or "").strip()
+    return get_localized_indicator_type(getattr(indicator_bank, "type", None) or "")
+
+
+def get_indicator_bank_unit_display(indicator_bank) -> str:
+    """Unit label for admin grids: catalog name (locale-aware) when FK is set, else localized code string."""
+    if indicator_bank is None:
+        return ""
+    mu = getattr(indicator_bank, "measurement_unit", None)
+    if mu is not None:
+        loc = get_translation_key()
+        return (mu.get_name_translation(loc) or mu.name or "").strip()
+    return get_localized_indicator_unit(getattr(indicator_bank, "unit", None) or "")
 
 
 def _get_localized_from_json(translations: Any, default_value: str) -> str:

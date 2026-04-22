@@ -264,8 +264,8 @@ class IndicatorBank(db.Model):
             self.type = (self.measurement_type.code or "")[:50]
         if self.indicator_unit_id and self.measurement_unit is not None:
             self.unit = (self.measurement_unit.code or "")[:50]
-        elif not self.indicator_unit_id:
-            self.unit = None
+        # If there is no unit FK, keep ``self.unit`` (e.g. IFRC free text) so we do not
+        # wipe values that failed to resolve before backfill runs.
 
     @property
     def template_instances(self):

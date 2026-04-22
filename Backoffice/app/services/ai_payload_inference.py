@@ -17,6 +17,8 @@ import time as _time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
+from flask_babel import gettext as _
+
 from app.services.upr.ux import UPR_SOURCE_QUALIFIER
 
 logger = logging.getLogger(__name__)
@@ -204,12 +206,19 @@ def _is_focus_area(d: dict) -> bool:
 
 
 def _derive_metric(d: dict) -> str:
+    disp = d.get("indicator_display_name")
+    if isinstance(disp, str) and disp.strip():
+        return str(disp).strip()[:160]
     ri = d.get("resolved_indicator")
     if isinstance(ri, dict) and ri.get("name"):
         return str(ri["name"]).strip()[:160]
     ind = d.get("indicator")
-    if isinstance(ind, dict) and ind.get("name"):
-        return str(ind["name"]).strip()[:160]
+    if isinstance(ind, dict):
+        dn = ind.get("display_name")
+        if isinstance(dn, str) and dn.strip():
+            return str(dn).strip()[:160]
+        if ind.get("name"):
+            return str(ind["name"]).strip()[:160]
     if isinstance(ind, str) and ind.strip():
         return ind.strip()[:160]
     for key in ("metric", "indicator_name", "indicator_name_resolved"):
@@ -263,14 +272,14 @@ def _build_line_chart(d: dict, query: str = "") -> Optional[Dict[str, Any]]:
 
     points.sort(key=lambda r: r["x"])
     metric = _derive_metric(d)
-    country = str(d.get("country_name") or "").strip()[:160]
+    country = str(d.get("country_display_name") or d.get("country_name") or "").strip()[:160]
     qual = _source_qualifier(d)
 
-    title = f"{metric} over time"
+    title = _("%(metric)s over time", metric=metric)
     if country:
-        title = f"{metric} in {country} over time"
+        title = _("%(metric)s in %(country)s over time", metric=metric, country=country)
     if qual:
-        title += f" ({qual})"
+        title = f"{title} ({qual})"
 
     return {
         "type": "line",

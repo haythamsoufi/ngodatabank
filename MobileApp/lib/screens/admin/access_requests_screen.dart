@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../models/admin/access_requests_failure.dart';
 import '../../models/admin/country_access_request_item.dart';
 import '../../models/shared/user.dart';
 import '../../providers/admin/access_requests_provider.dart';
@@ -138,6 +139,22 @@ class _AccessRequestsScreenState extends State<AccessRequestsScreen>
     }
   }
 
+  String _accessRequestsFailureMessage(
+    AccessRequestsFailure failure,
+    AppLocalizations loc,
+  ) {
+    return switch (failure) {
+      AccessRequestsFailureLoad() => loc.accessRequestsLoadFailed,
+      AccessRequestsFailureViewForbidden() => loc.accessRequestsViewForbidden,
+      AccessRequestsFailureUnexpectedResponse() =>
+        loc.accessRequestsUnexpectedResponse,
+      AccessRequestsFailureAction() => loc.accessRequestsActionFailed,
+      AccessRequestsFailureActionForbidden() =>
+        loc.accessRequestsActionForbidden,
+      AccessRequestsFailureServerMessage(:final message) => message,
+    };
+  }
+
   Future<void> _confirmReject(
     BuildContext context,
     AccessRequestsProvider provider,
@@ -167,9 +184,13 @@ class _AccessRequestsScreenState extends State<AccessRequestsScreen>
     if (ok != true || !context.mounted) return;
     final success = await provider.reject(item.id);
     if (!context.mounted) return;
-    if (!success && provider.error != null) {
+    if (!success && provider.failure != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(provider.error!)),
+        SnackBar(
+          content: Text(
+            _accessRequestsFailureMessage(provider.failure!, loc),
+          ),
+        ),
       );
     }
   }
@@ -257,7 +278,7 @@ class _AccessRequestsScreenState extends State<AccessRequestsScreen>
     AppLocalizations loc,
     ThemeData theme,
   ) {
-    if (provider.error != null &&
+    if (provider.failure != null &&
         provider.pending.isEmpty &&
         provider.processed.isEmpty) {
       final cs = theme.colorScheme;
@@ -279,7 +300,7 @@ class _AccessRequestsScreenState extends State<AccessRequestsScreen>
                 Icon(Icons.cloud_off_outlined, size: 40, color: cs.error),
                 const SizedBox(height: 12),
                 Text(
-                  provider.error!,
+                  _accessRequestsFailureMessage(provider.failure!, loc),
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyLarge?.copyWith(
                     color: cs.onSurface,
@@ -324,9 +345,16 @@ class _AccessRequestsScreenState extends State<AccessRequestsScreen>
                   : () async {
                       final ok = await provider.approve(item.id);
                       if (!context.mounted) return;
-                      if (!ok && provider.error != null) {
+                      if (!ok && provider.failure != null) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(provider.error!)),
+                          SnackBar(
+                            content: Text(
+                              _accessRequestsFailureMessage(
+                                provider.failure!,
+                                loc,
+                              ),
+                            ),
+                          ),
                         );
                       }
                     },

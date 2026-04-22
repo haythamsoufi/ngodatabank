@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:html/dom.dart' as html;
 
+import '../l10n/app_localizations.dart';
 import '../theme/chat_immersive_palette.dart';
 
 /// Custom collapsible for `<details class="chat-response-sources">`.
@@ -52,6 +53,32 @@ String _summaryPlainText(html.Element? details) {
   if (summaries.isEmpty) return 'Sources';
   final t = summaries.first.text.trim();
   return t.isEmpty ? 'Sources' : t;
+}
+
+bool _isEnglishSourcesSummary(String plain) {
+  final t = plain.trim();
+  if (RegExp(r'^Sources\s*$', caseSensitive: false).hasMatch(t)) {
+    return true;
+  }
+  return RegExp(r'^Sources\s*\(\d+\)\s*$', caseSensitive: false).hasMatch(t);
+}
+
+String _localizedSourcesHeader(
+  AppLocalizations loc,
+  String summaryPlain,
+  int sourceCount,
+  bool expanded,
+) {
+  if (_isEnglishSourcesSummary(summaryPlain)) {
+    return expanded
+        ? loc.aiResponseSources
+        : loc.aiResponseSourcesWithCount(sourceCount);
+  }
+  return expanded
+      ? summaryPlain
+      : (sourceCount > 0
+          ? '$summaryPlain ($sourceCount)'
+          : summaryPlain);
 }
 
 /// [Backoffice] `app/services/ai_answer_verifier.py` appends a markdown blockquote
@@ -139,6 +166,7 @@ class _ChatResponseSourcesDetailsTileState
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final ctx = widget.extensionContext;
     final childList = ctx.builtChildrenMap!;
     final children = childList.values;
@@ -146,8 +174,12 @@ class _ChatResponseSourcesDetailsTileState
     final html.Element? detailsEl = ctx.element;
     final summaryPlain = _summaryPlainText(detailsEl);
     final sourceCount = _countSourcesInBody(detailsEl);
-    final headerLabel =
-        _expanded ? summaryPlain : '$summaryPlain ($sourceCount)';
+    final headerLabel = _localizedSourcesHeader(
+      loc,
+      summaryPlain,
+      sourceCount,
+      _expanded,
+    );
 
     TextStyle? titleStyle;
     if (childList.keys.isNotEmpty && childList.keys.first.name == 'summary') {

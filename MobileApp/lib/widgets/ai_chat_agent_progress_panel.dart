@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/shared/ai_chat.dart';
+import '../utils/ai_chat_agent_progress_localize.dart';
 import '../utils/constants.dart';
 
 /// Mirrors Backoffice `chat-progress-panel` / `chat-progress-steps` (chatbot.css).
@@ -23,6 +25,7 @@ class _AiChatAgentProgressPanelState extends State<AiChatAgentProgressPanel> {
   Widget build(BuildContext context) {
     if (widget.steps.isEmpty) return const SizedBox.shrink();
 
+    final loc = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final muted = cs.onSurfaceVariant;
@@ -42,7 +45,7 @@ class _AiChatAgentProgressPanelState extends State<AiChatAgentProgressPanel> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Steps in progress',
+                AiChatAgentProgressCopy.panelTitle(loc),
                 style: theme.textTheme.titleSmall?.copyWith(
                       color: muted,
                     ) ??
@@ -56,9 +59,11 @@ class _AiChatAgentProgressPanelState extends State<AiChatAgentProgressPanel> {
               ...List.generate(widget.steps.length, (i) {
                 final step = widget.steps[i];
                 final isLast = i == widget.steps.length - 1;
-                final hasDetail = step.detailLines.isNotEmpty;
+                final displayDetails =
+                    AiChatAgentProgressCopy.detailLinesForDisplay(loc, step.detailLines);
+                final hasDetail = displayDetails.isNotEmpty;
                 final collapsed = _collapsed.contains(i);
-                final detailText = step.detailLines.join('\n');
+                final detailText = displayDetails.join('\n');
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 6),
@@ -102,7 +107,7 @@ class _AiChatAgentProgressPanelState extends State<AiChatAgentProgressPanel> {
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
-                                step.message,
+                                AiChatAgentProgressCopy.stepMessage(loc, step.message),
                                 style: theme.textTheme.bodyLarge?.copyWith(
                                       height: 1.35,
                                       letterSpacing: -0.2,

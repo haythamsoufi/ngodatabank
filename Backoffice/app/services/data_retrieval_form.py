@@ -32,6 +32,7 @@ from app.extensions import db
 from app.utils.api_helpers import service_error, GENERIC_ERROR_MESSAGE
 from app.utils.constants import DEFAULT_LIMIT_PERIODS, MAX_LIMIT_PERIODS
 from app.utils.datetime_helpers import utcnow
+from app.utils.form_localization import get_localized_country_name, get_localized_indicator_name
 from app.services.app_settings_service import get_organization_name
 from app.utils.sql_utils import safe_ilike_pattern
 from flask_babel import gettext as _
@@ -94,16 +95,33 @@ def get_indicator_timeseries(
         if not indicator:
             return service_error("Indicator not found", series=[])
 
-        _nm = ((indicator.name or str(primary_id)).strip() or str(primary_id))
-        if len(_nm) > 200:
-            _nm = _nm[:197] + "…"
-        _progress(_("Selected indicator: %(name)s", name=_nm))
+        ind_display = get_localized_indicator_name(indicator)
+        _disp_progress = ind_display.strip() or str(primary_id)
+        if len(_disp_progress) > 200:
+            _disp_progress = _disp_progress[:197] + "…"
+        _progress(_("Selected indicator: %(name)s", name=_disp_progress))
 
         # RBAC: ensure the caller can access this country (same rule as other tools)
         try:
             check_country_access(int(country_id))
         except Exception as e_access:
             return service_error(str(e_access), series=[])
+
+        country = db.session.get(Country, int(country_id))
+        country_display = get_localized_country_name(country) if country else ""
+
+        def _timeseries_common_fields() -> Dict[str, Any]:
+            return {
+                "country_name": (country.name if country else str(country_id)),
+                "country_display_name": country_display,
+                "indicator": {
+                    "id": int(indicator.id),
+                    "name": indicator.name,
+                    "display_name": ind_display,
+                    "unit": getattr(indicator, "unit", None),
+                },
+                "indicator_display_name": ind_display,
+            }
 
         # Determine point-indicator behavior
         is_point_indicator = False
@@ -118,13 +136,13 @@ def get_indicator_timeseries(
             logger.debug("get_indicator_timeseries: is_point_indicator heuristic failed: %s", e)
             is_point_indicator = False
 
-        _progress("Querying form data…")
+        _progress(_("Querying form data…"))
         item_ids = [int(fi.id) for fi in FormItem.query.filter(FormItem.indicator_bank_id == int(primary_id)).all()]
         if not item_ids:
             return {
                 "success": True,
                 "country_id": country_id,
-                "indicator": {"id": int(indicator.id), "name": indicator.name, "unit": getattr(indicator, "unit", None)},
+                **_timeseries_common_fields(),
                 "series": [],
                 "count": 0,
             }
@@ -157,7 +175,7 @@ def get_indicator_timeseries(
             return {
                 "success": True,
                 "country_id": country_id,
-                "indicator": {"id": int(indicator.id), "name": indicator.name, "unit": getattr(indicator, "unit", None)},
+                **_timeseries_common_fields(),
                 "series": [],
                 "count": 0,
             }
@@ -500,13 +518,11 @@ def get_indicator_timeseries(
         if len(series) > limit_n:
             series = series[-limit_n:]
 
-        country = db.session.get(Country, int(country_id))
         return {
             "success": True,
             "country_id": int(country_id),
-            "country_name": (country.name if country else str(country_id)),
+            **_timeseries_common_fields(),
             "iso3": (getattr(country, "iso3", None) or "") if country else "",
-            "indicator": {"id": int(indicator.id), "name": indicator.name, "unit": getattr(indicator, "unit", None)},
             "series": series,
             "count": len(series),
             "aggregation": ("point_latest_per_year" if is_point_indicator else "sum_per_year"),

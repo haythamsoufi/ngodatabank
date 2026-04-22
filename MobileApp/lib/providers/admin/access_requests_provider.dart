@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../../config/app_config.dart';
+import '../../models/admin/access_requests_failure.dart';
 import '../../models/admin/country_access_request_item.dart';
 import '../../services/api_service.dart';
 import '../../services/error_handler.dart';
@@ -20,14 +21,14 @@ class AccessRequestsProvider with ChangeNotifier {
   List<CountryAccessRequestItem> _processed = [];
   bool _autoApproveEnabled = false;
   bool _isLoading = false;
-  String? _error;
+  AccessRequestsFailure? _failure;
   bool _actionInFlight = false;
 
   List<CountryAccessRequestItem> get pending => List.unmodifiable(_pending);
   List<CountryAccessRequestItem> get processed => List.unmodifiable(_processed);
   bool get autoApproveEnabled => _autoApproveEnabled;
   bool get isLoading => _isLoading;
-  String? get error => _error;
+  AccessRequestsFailure? get failure => _failure;
   bool get actionInFlight => _actionInFlight;
 
   Future<void> load({bool showLoading = true}) async {
@@ -40,7 +41,7 @@ class AccessRequestsProvider with ChangeNotifier {
     }
     if (showLoading) {
       _isLoading = true;
-      _error = null;
+      _failure = null;
       notifyListeners();
     }
 
@@ -57,7 +58,7 @@ class AccessRequestsProvider with ChangeNotifier {
     );
 
     if (response == null) {
-      _error = 'Unable to load access requests.';
+      _failure = const AccessRequestsFailureLoad();
       _pending = [];
       _processed = [];
       if (showLoading) _isLoading = false;
@@ -66,8 +67,7 @@ class AccessRequestsProvider with ChangeNotifier {
     }
 
     if (response.statusCode == 403) {
-      _error =
-          'You do not have permission to view access requests on the server.';
+      _failure = const AccessRequestsFailureViewForbidden();
       _pending = [];
       _processed = [];
       if (showLoading) _isLoading = false;
@@ -96,24 +96,24 @@ class AccessRequestsProvider with ChangeNotifier {
               : [];
           _sortAccessRequestsNewestFirst();
           _autoApproveEnabled = (rawData['auto_approve_enabled'] ?? decoded['auto_approve_enabled']) == true;
-          _error = null;
+          _failure = null;
         } else {
-          _error = 'Unexpected response from server.';
+          _failure = const AccessRequestsFailureUnexpectedResponse();
           _pending = [];
           _processed = [];
         }
       } catch (e, stackTrace) {
-        final err = _errorHandler.parseError(
+        _errorHandler.parseError(
           error: e,
           stackTrace: stackTrace,
           context: 'Parse access requests',
         );
-        _error = err.getUserMessage();
+        _failure = const AccessRequestsFailureLoad();
         _pending = [];
         _processed = [];
       }
     } else {
-      _error = 'Unable to load access requests.';
+      _failure = const AccessRequestsFailureLoad();
       _pending = [];
       _processed = [];
     }
@@ -141,7 +141,7 @@ class AccessRequestsProvider with ChangeNotifier {
     required String contextLabel,
   }) async {
     _actionInFlight = true;
-    _error = null;
+    _failure = null;
     notifyListeners();
 
     final response =
@@ -156,13 +156,13 @@ class AccessRequestsProvider with ChangeNotifier {
     _actionInFlight = false;
 
     if (response == null) {
-      _error = 'Request failed.';
+      _failure = const AccessRequestsFailureAction();
       notifyListeners();
       return false;
     }
 
     if (response.statusCode == 403) {
-      _error = 'You do not have permission for this action.';
+      _failure = const AccessRequestsFailureActionForbidden();
       notifyListeners();
       return false;
     }
@@ -171,19 +171,21 @@ class AccessRequestsProvider with ChangeNotifier {
       try {
         final decoded = jsonDecode(response.body);
         if (decoded is Map && decoded['error'] != null) {
-          _error = decoded['error'].toString();
+          _failure = AccessRequestsFailureServerMessage(
+            decoded['error'].toString(),
+          );
         } else {
-          _error = 'Request could not be completed.';
+          _failure = const AccessRequestsFailureAction();
         }
       } catch (_) {
-        _error = 'Request could not be completed.';
+        _failure = const AccessRequestsFailureAction();
       }
       notifyListeners();
       return false;
     }
 
     if (response.statusCode != 200) {
-      _error = 'Request could not be completed.';
+      _failure = const AccessRequestsFailureAction();
       notifyListeners();
       return false;
     }

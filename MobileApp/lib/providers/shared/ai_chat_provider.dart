@@ -113,6 +113,8 @@ class AiChatProvider with ChangeNotifier {
   }
 
   static const _preparingQueryLabel = 'Preparing query…';
+  /// [AiChatAgentProgressCopy] maps this to a localized "Done." in the UI.
+  static const aiAgentStepDoneSentinel = '__AI_STEP_DONE__';
   static final RegExp _progressTickRe = RegExp(r'^(.+?):\s*(\d+)\s*/\s*(\d+)\s*$');
 
   /// Sub-step lines from [Backoffice] databank tools (`data_retrieval_form` progress)
@@ -419,7 +421,7 @@ class AiChatProvider with ChangeNotifier {
       _agentSteps[index] = step.copyWith(detailLines: [_lastPreparingQueryDetail!]);
       _lastPreparingQueryDetail = null;
     } else {
-      _agentSteps[index] = step.copyWith(detailLines: const ['Done.']);
+      _agentSteps[index] = step.copyWith(detailLines: const [aiAgentStepDoneSentinel]);
     }
   }
 

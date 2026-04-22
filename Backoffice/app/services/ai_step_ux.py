@@ -74,6 +74,17 @@ def step_display_message(tool_name: str, tool_args: Dict[str, Any]) -> str:
         if indicator:
             return _("Getting %(indicator)s for all countries", indicator=indicator_short)
         return _("Getting indicator values for all countries")
+    if tool_name == "get_indicator_timeseries":
+        country = (tool_args or {}).get("country_identifier") or ""
+        indicator = (tool_args or {}).get("indicator_name") or ""
+        indicator_short = (indicator[:40] + ("…" if len(indicator) > 40 else "")) if indicator else ""
+        if country and indicator:
+            return _("Getting data (%(indicator)s — %(country)s)", indicator=indicator_short, country=country)
+        if country:
+            return _("Getting data for %(country)s", country=country)
+        if indicator:
+            return _("Getting data (%(indicator)s)", indicator=indicator_short)
+        return _("Getting data")
     return _("Checking data…")
 
 
@@ -113,6 +124,13 @@ def format_tool_args_detail(tool_name: str, tool_args: Dict[str, Any]) -> str:
             logger.debug("list_documents step_display_message failed: %s", e)
             return ""
     skip = {"_progress_callback"}
+    # Internal / tuning args — not meaningful in the progress panel.
+    skip_internal = frozenset(
+        {
+            "include_saved",
+            "limit_periods",
+        }
+    )
     key_labels = {
         "country_identifier": _("Country"),
         "metric": _("Metric"),
@@ -124,7 +142,9 @@ def format_tool_args_detail(tool_name: str, tool_args: Dict[str, Any]) -> str:
     }
     parts = []
     for k, v in sorted(tool_args.items()):
-        if k in skip or v is None or v == "":
+        if k in skip or k in skip_internal or v is None or v == "":
+            continue
+        if str(k).startswith("_"):
             continue
         if isinstance(v, (list, dict)) and len(str(v)) > 60:
             label = key_labels.get(k, k)

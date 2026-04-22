@@ -14,6 +14,8 @@ from app import db
 from app.models import (
     IndicatorBank,
     IndicatorBankHistory,
+    IndicatorBankType,
+    IndicatorBankUnit,
     IndicatorSuggestion,
     Sector,
     SubSector,
@@ -63,7 +65,18 @@ def import_indicators():
                 current_app.logger.info(f"Import result: {result}")
 
                 if result['success']:
-                    message = f"Successfully imported {result['imported']} indicators. {result['updated']} indicators were updated."
+                    message = (
+                        f"Successfully imported {result['imported']} indicators. "
+                        f"{result['updated']} indicators were updated."
+                    )
+                    mt_i = result.get("measurement_types_imported") or 0
+                    mt_u = result.get("measurement_types_updated") or 0
+                    mu_i = result.get("measurement_units_imported") or 0
+                    mu_u = result.get("measurement_units_updated") or 0
+                    if mt_i or mt_u:
+                        message += f" Measurement types: {mt_i} new, {mt_u} updated."
+                    if mu_i or mu_u:
+                        message += f" Measurement units: {mu_i} new, {mu_u} updated."
                     if result['errors']:
                         message += f" Encountered {len(result['errors'])} errors during import."
                     return json_ok(message=message)
@@ -210,6 +223,10 @@ def _process_indicator_import(file_path):
             'subsectors_updated': 0,
             'common_words_imported': 0,
             'common_words_updated': 0,
+            'measurement_types_imported': 0,
+            'measurement_types_updated': 0,
+            'measurement_units_imported': 0,
+            'measurement_units_updated': 0,
             'errors': [],
             'message': ''
         }
@@ -295,7 +312,13 @@ def _process_indicator_import(file_path):
         sheetnames = set(wb.sheetnames or [])
 
         # If file contains hidden DB_* sheets (from export), use full relational import; otherwise use main sheet
-        if "DB_Indicators" in sheetnames or "DB_Sectors_SubSectors" in sheetnames or "DB_CommonWords" in sheetnames:
+        if (
+            "DB_Indicators" in sheetnames
+            or "DB_Sectors_SubSectors" in sheetnames
+            or "DB_CommonWords" in sheetnames
+            or "DB_MeasurementTypes" in sheetnames
+            or "DB_MeasurementUnits" in sheetnames
+        ):
             # 1) Sectors/SubSectors
             if "DB_Sectors_SubSectors" in sheetnames:
                 from app.models import Sector, SubSector
@@ -412,6 +435,106 @@ def _process_indicator_import(file_path):
                         current_app.logger.error(f"Error processing DB_CommonWords row {idx}: {e}", exc_info=True)
                         result["errors"].append(f"DB_CommonWords row {idx}: Validation error.")
 
+            if "DB_MeasurementTypes" in sheetnames or "DB_MeasurementUnits" in sheetnames:
+                from sqlalchemy.orm.attributes import flag_modified
+
+            # 2b) Measurement types (central catalog; run before DB_Indicators)
+            if "DB_MeasurementTypes" in sheetnames:
+                ws_mt = wb["DB_MeasurementTypes"]
+                mt_rows = _sheet_rows_as_dicts(ws_mt)
+                for idx, r in enumerate(mt_rows, 2):
+                    try:
+                        rid = _to_int(r.get("id"))
+                        code = (r.get("code") or "").strip().lower()
+                        name = (r.get("name") or "").strip()
+                        name_translations = _to_json_dict(r.get("name_translations_json")) or {}
+                        sort_order = _to_int(r.get("sort_order"))
+                        is_active = _to_bool(r.get("is_active"))
+                        if not code and not rid:
+                            continue
+                        obj = IndicatorBankType.query.get(rid) if rid else None
+                        if obj is None and code:
+                            obj = (
+                                IndicatorBankType.query.filter(
+                                    db.func.lower(IndicatorBankType.code) == code
+                                ).first()
+                            )
+                        is_new = obj is None
+                        if obj is None:
+                            obj = IndicatorBankType()
+                            if rid:
+                                obj.id = rid
+                            db.session.add(obj)
+                        if code:
+                            obj.code = code
+                        if name:
+                            obj.name = name
+                        obj.name_translations = name_translations or {}
+                        flag_modified(obj, "name_translations")
+                        if sort_order is not None:
+                            obj.sort_order = sort_order
+                        if is_active is not None:
+                            obj.is_active = is_active
+                        if is_new:
+                            result["measurement_types_imported"] += 1
+                        else:
+                            result["measurement_types_updated"] += 1
+                    except Exception as e:
+                        current_app.logger.error(
+                            f"Error processing DB_MeasurementTypes row {idx}: {e}", exc_info=True
+                        )
+                        result["errors"].append(f"DB_MeasurementTypes row {idx}: error.")
+
+            # 2c) Measurement units
+            if "DB_MeasurementUnits" in sheetnames:
+                ws_mu = wb["DB_MeasurementUnits"]
+                mu_rows = _sheet_rows_as_dicts(ws_mu)
+                for idx, r in enumerate(mu_rows, 2):
+                    try:
+                        rid = _to_int(r.get("id"))
+                        code = (r.get("code") or "").strip().lower()
+                        name = (r.get("name") or "").strip()
+                        name_translations = _to_json_dict(r.get("name_translations_json")) or {}
+                        sort_order = _to_int(r.get("sort_order"))
+                        is_active = _to_bool(r.get("is_active"))
+                        allows_disaggregation = _to_bool(r.get("allows_disaggregation"))
+                        if not code and not rid:
+                            continue
+                        obj = IndicatorBankUnit.query.get(rid) if rid else None
+                        if obj is None and code:
+                            obj = (
+                                IndicatorBankUnit.query.filter(
+                                    db.func.lower(IndicatorBankUnit.code) == code
+                                ).first()
+                            )
+                        is_new = obj is None
+                        if obj is None:
+                            obj = IndicatorBankUnit()
+                            if rid:
+                                obj.id = rid
+                            db.session.add(obj)
+                        if code:
+                            obj.code = code
+                        if name:
+                            obj.name = name
+                        obj.name_translations = name_translations or {}
+                        flag_modified(obj, "name_translations")
+                        if sort_order is not None:
+                            obj.sort_order = sort_order
+                        if is_active is not None:
+                            obj.is_active = is_active
+                        if allows_disaggregation is not None:
+                            obj.allows_disaggregation = allows_disaggregation
+                        if is_new:
+                            result["measurement_units_imported"] += 1
+                        else:
+                            result["measurement_units_updated"] += 1
+                    except Exception as e:
+                        current_app.logger.error(
+                            f"Error processing DB_MeasurementUnits row {idx}: {e}", exc_info=True
+                        )
+                        result["errors"].append(f"DB_MeasurementUnits row {idx}: error.")
+
             # 3) Indicators (from hidden DB_Indicators sheet when present)
             if "DB_Indicators" in sheetnames:
                 ws_ind = wb["DB_Indicators"]
@@ -442,6 +565,8 @@ def _process_indicator_import(file_path):
 
                         name_translations = _to_json_dict(r.get("name_translations_json")) or {}
                         definition_translations = _to_json_dict(r.get("definition_translations_json")) or {}
+                        itid = _to_int(r.get("indicator_type_id"))
+                        iuid = _to_int(r.get("indicator_unit_id"))
 
                         existing = IndicatorBank.query.get(rid) if rid else IndicatorBank.query.filter_by(name=name).first()
                         is_new = existing is None
@@ -482,6 +607,12 @@ def _process_indicator_import(file_path):
                         existing.definition_translations = definition_translations or {}
 
                         backfill_fk_from_strings_bank(existing)
+                        if itid is not None:
+                            existing.indicator_type_id = itid
+                        if iuid is not None:
+                            existing.indicator_unit_id = iuid
+                        if hasattr(existing, "sync_type_unit_string_columns"):
+                            existing.sync_type_unit_string_columns()
 
                         # Create history record (minimal but consistent)
                         history = IndicatorBankHistory(

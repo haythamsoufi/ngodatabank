@@ -350,12 +350,10 @@ class SettingsScreen extends StatelessWidget {
               case 'dark':
                 return localizations.darkTheme;
               case 'light':
-                // Reuse existing label if available; otherwise fall back to English.
-                // (Keeping this lightweight avoids adding new l10n keys right now.)
-                return 'Light theme';
+                return localizations.lightTheme;
               case 'system':
               default:
-                return 'System';
+                return localizations.systemTheme;
             }
           }
 
@@ -365,7 +363,7 @@ class SettingsScreen extends StatelessWidget {
               cupertino.CupertinoIcons.circle_lefthalf_fill,
             ),
             title: Text(
-              'Theme',
+              localizations.settingsTheme,
               style: IOSSettingsStyle.rowTitleStyle(context),
             ),
             subtitle: Text(
@@ -632,13 +630,14 @@ class SettingsScreen extends StatelessWidget {
 
   /// Shows a theme mode picker dialog (Light / Dark / System)
   void _showThemeModePicker(BuildContext context, ThemeProvider themeProvider) {
+    final loc = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     // Use Cupertino action sheet for iOS-native feel (consistent with language picker)
     final options = <Map<String, String>>[
-      {'code': 'system', 'name': 'System'},
-      {'code': 'light', 'name': 'Light theme'},
-      {'code': 'dark', 'name': AppLocalizations.of(context)!.darkTheme},
+      {'code': 'system', 'name': loc.systemTheme},
+      {'code': 'light', 'name': loc.lightTheme},
+      {'code': 'dark', 'name': loc.darkTheme},
     ];
 
     final actions = options.map<cupertino.CupertinoActionSheetAction>((opt) {
@@ -653,7 +652,7 @@ class SettingsScreen extends StatelessWidget {
             Navigator.of(context).pop();
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(AppLocalizations.of(context)!.settingsThemeSetTo(name)),
+                content: Text(loc.settingsThemeSetTo(name)),
                 duration: const Duration(seconds: 2),
                 backgroundColor: Color(AppConstants.ifrcRed),
               ),
@@ -687,7 +686,7 @@ class SettingsScreen extends StatelessWidget {
 
     IOSActionSheet.show(
       context: context,
-      title: 'Select theme',
+      title: loc.selectTheme,
       actions: actions,
     );
   }

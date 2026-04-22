@@ -16,9 +16,16 @@ from flask_login import current_user
 from app import db
 from config import Config
 from app.models import (
-    Sector, SubSector, IndicatorBank, IndicatorBankHistory, IndicatorSuggestion,
+    Sector,
+    SubSector,
+    IndicatorBank,
+    IndicatorBankHistory,
+    IndicatorSuggestion,
     CommonWord,
+    IndicatorBankType,
+    IndicatorBankUnit,
 )
+from sqlalchemy.orm import joinedload
 from app.forms.system import IndicatorBankForm, CommonWordForm
 from app.routes.admin.shared import permission_required
 from app.utils.request_utils import get_json_or_form, is_json_request
@@ -43,7 +50,10 @@ def manage_indicator_bank():
     sector_filter = request.args.get('sector', '')
     type_filter = request.args.get('type', '')
 
-    query = IndicatorBank.query
+    query = IndicatorBank.query.options(
+        joinedload(IndicatorBank.measurement_type),
+        joinedload(IndicatorBank.measurement_unit),
+    )
 
     if search:
         query = query.filter(
@@ -830,6 +840,7 @@ def export_indicators():
             "subsector_primary_id", "subsector_secondary_id", "subsector_tertiary_id",
             "name_translations_json", "definition_translations_json",
             "created_at", "updated_at",
+            "indicator_type_id", "indicator_unit_id",
         ]
         for col, header in enumerate(db_ind_headers, 1):
             cell = ws_db_ind.cell(row=1, column=col, value=header)
@@ -858,6 +869,66 @@ def export_indicators():
             ws_db_ind.cell(row=row, column=18, value=_json_dump(indicator.definition_translations or {}))
             ws_db_ind.cell(row=row, column=19, value=indicator.created_at.isoformat() if indicator.created_at else "")
             ws_db_ind.cell(row=row, column=20, value=indicator.updated_at.isoformat() if getattr(indicator, "updated_at", None) else "")
+            ws_db_ind.cell(row=row, column=21, value=indicator.indicator_type_id)
+            ws_db_ind.cell(row=row, column=22, value=indicator.indicator_unit_id)
+
+        ws_db_mt = wb.create_sheet(title="DB_MeasurementTypes")
+        ws_db_mt.sheet_state = "hidden"
+        db_mt_headers = [
+            "id",
+            "code",
+            "name",
+            "name_translations_json",
+            "sort_order",
+            "is_active",
+            "created_at",
+            "updated_at",
+        ]
+        for col, header in enumerate(db_mt_headers, 1):
+            cell = ws_db_mt.cell(row=1, column=col, value=header)
+            cell.font = Font(bold=True)
+        for row, mt in enumerate(
+            IndicatorBankType.query.order_by(IndicatorBankType.sort_order, IndicatorBankType.name).all(),
+            2,
+        ):
+            ws_db_mt.cell(row=row, column=1, value=mt.id)
+            ws_db_mt.cell(row=row, column=2, value=mt.code)
+            ws_db_mt.cell(row=row, column=3, value=mt.name)
+            ws_db_mt.cell(row=row, column=4, value=_json_dump(mt.name_translations or {}))
+            ws_db_mt.cell(row=row, column=5, value=mt.sort_order)
+            ws_db_mt.cell(row=row, column=6, value=mt.is_active)
+            ws_db_mt.cell(row=row, column=7, value=mt.created_at.isoformat() if getattr(mt, "created_at", None) else "")
+            ws_db_mt.cell(row=row, column=8, value=mt.updated_at.isoformat() if getattr(mt, "updated_at", None) else "")
+
+        ws_db_mu = wb.create_sheet(title="DB_MeasurementUnits")
+        ws_db_mu.sheet_state = "hidden"
+        db_mu_headers = [
+            "id",
+            "code",
+            "name",
+            "name_translations_json",
+            "sort_order",
+            "is_active",
+            "allows_disaggregation",
+            "created_at",
+            "updated_at",
+        ]
+        for col, header in enumerate(db_mu_headers, 1):
+            cell = ws_db_mu.cell(row=1, column=col, value=header)
+            cell.font = Font(bold=True)
+        for row, mu in enumerate(
+            IndicatorBankUnit.query.order_by(IndicatorBankUnit.sort_order, IndicatorBankUnit.name).all(),
+            2,
+        ):
+            ws_db_mu.cell(row=row, column=1, value=mu.id)
+            ws_db_mu.cell(row=row, column=2, value=mu.code)
+            ws_db_mu.cell(row=row, column=3, value=mu.name)
+            ws_db_mu.cell(row=row, column=4, value=_json_dump(mu.name_translations or {}))
+            ws_db_mu.cell(row=row, column=5, value=mu.sort_order)
+            ws_db_mu.cell(row=row, column=6, value=mu.is_active)
+            ws_db_mu.cell(row=row, column=7, value=mu.allows_disaggregation)
+            ws_db_mu.cell(row=row, column=8, value=mu.created_at.isoformat() if getattr(mu, "created_at", None) else "")
+            ws_db_mu.cell(row=row, column=9, value=mu.updated_at.isoformat() if getattr(mu, "updated_at", None) else "")
 
         ws_db_ss = wb.create_sheet(title="DB_Sectors_SubSectors")
         ws_db_ss.sheet_state = "hidden"

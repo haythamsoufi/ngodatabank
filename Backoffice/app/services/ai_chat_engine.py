@@ -329,7 +329,11 @@ def _chart_payload_from_answer_content(answer_content: Any, output_hint: Optiona
     pts.sort(key=lambda i: int(i.get("x") or 0))
     metric = str(answer_content.get("metric") or "Value").strip()[:120] or "Value"
     country = str(answer_content.get("country") or "").strip()[:160] or None
-    title = f"{metric} over time" if not country else f"{metric} in {country} over time"
+    title = (
+        _("%(metric)s over time", metric=metric)
+        if not country
+        else _("%(metric)s in %(country)s over time", metric=metric, country=country)
+    )
     return {
         "type": "line",
         "title": title[:180],
@@ -910,35 +914,36 @@ class AIChatEngine:
                 table_payload = None
                 answer_content = meta.get("answer_content") if isinstance(meta, dict) else None
                 output_hint = meta.get("output_hint") if isinstance(meta, dict) else None
-                # Always honor explicit structured payload from agent metadata when present,
-                # even if the user phrasing didn't match worldmap trigger heuristics.
-                if isinstance(meta, dict) and isinstance(meta.get("map_payload"), dict):
-                    _raw_mp = meta.get("map_payload")
-                    _mp_countries = _raw_mp.get("countries") if isinstance(_raw_mp, dict) else []
-                    _mp_sample = (_mp_countries or [])[:2]
-                    logger.debug(
-                        "ai_chat_engine: coercing map_payload — %d countries, sample regions: %s",
-                        len(_mp_countries or []),
-                        [c.get("region") for c in _mp_sample],
-                    )
-                    map_payload = _coerce_map_payload(_raw_mp)
-                    _cp_countries = map_payload.get("countries") if isinstance(map_payload, dict) else []
-                    logger.debug(
-                        "ai_chat_engine: after _coerce_map_payload — %d countries, sample regions: %s",
-                        len(_cp_countries or []),
-                        [c.get("region") for c in (_cp_countries or [])[:2]],
-                    )
-                if isinstance(meta, dict) and isinstance(meta.get("chart_payload"), dict):
-                    chart_payload = _coerce_chart_payload(meta.get("chart_payload"))
+                with force_locale(locale_code):
+                    # Always honor explicit structured payload from agent metadata when present,
+                    # even if the user phrasing didn't match worldmap trigger heuristics.
+                    if isinstance(meta, dict) and isinstance(meta.get("map_payload"), dict):
+                        _raw_mp = meta.get("map_payload")
+                        _mp_countries = _raw_mp.get("countries") if isinstance(_raw_mp, dict) else []
+                        _mp_sample = (_mp_countries or [])[:2]
+                        logger.debug(
+                            "ai_chat_engine: coercing map_payload — %d countries, sample regions: %s",
+                            len(_mp_countries or []),
+                            [c.get("region") for c in _mp_sample],
+                        )
+                        map_payload = _coerce_map_payload(_raw_mp)
+                        _cp_countries = map_payload.get("countries") if isinstance(map_payload, dict) else []
+                        logger.debug(
+                            "ai_chat_engine: after _coerce_map_payload — %d countries, sample regions: %s",
+                            len(_cp_countries or []),
+                            [c.get("region") for c in (_cp_countries or [])[:2]],
+                        )
+                    if isinstance(meta, dict) and isinstance(meta.get("chart_payload"), dict):
+                        chart_payload = _coerce_chart_payload(meta.get("chart_payload"))
+                    # Generic output-type layer: infer map/chart from normalized answer content
+                    # when the agent did not explicitly provide payloads.
+                    if not map_payload:
+                        map_payload = _map_payload_from_answer_content(answer_content, output_hint=output_hint)
+                    if not chart_payload:
+                        chart_payload = _chart_payload_from_answer_content(answer_content, output_hint=output_hint)
                 # table_payload is passed through as-is (already structured by the executor).
                 if isinstance(meta, dict) and isinstance(meta.get("table_payload"), dict):
                     table_payload = meta.get("table_payload")
-                # Generic output-type layer: infer map/chart from normalized answer content
-                # when the agent did not explicitly provide payloads.
-                if not map_payload:
-                    map_payload = _map_payload_from_answer_content(answer_content, output_hint=output_hint)
-                if not chart_payload:
-                    chart_payload = _chart_payload_from_answer_content(answer_content, output_hint=output_hint)
                 if worldmap_requested and not map_payload and response_text:
                     response_text, map_payload = _extract_map_payload_and_clean_text(response_text)
                 if chart_requested and not chart_payload and response_text:
