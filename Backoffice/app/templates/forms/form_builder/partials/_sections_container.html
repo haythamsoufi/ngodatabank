@@ -101,7 +101,7 @@
         <div class="p-6">
             <div class="section-header-row flex justify-between items-center mb-4 pb-4 border-b">
                 <div class="flex items-center section-header-banner cursor-pointer flex-1 min-w-0">
-                    <button type="button" class="section-toggle btn btn-icon btn-sm btn-secondary flex-shrink-0 mr-2" aria-expanded="true" title="{{ _('Collapse section') }}">
+                    <button type="button" class="section-toggle fb-icon-btn fb-icon-btn--neutral flex-shrink-0 mr-2" aria-expanded="true" title="{{ _('Collapse section') }}">
                         <i class="fas fa-chevron-down w-4 h-4 transition-transform duration-200"></i>
                     </button>
                     <div class="flex items-center">
@@ -140,23 +140,23 @@
                         <form action="{{ url_for('form_builder.unarchive_section', section_id=item_s_f.section.id) }}" method="POST" class="inline-block">
                             <input name="csrf_token" type="hidden" value="{{ section_form.csrf_token.current_token }}">
                             <input type="hidden" name="version_id" value="{{ active_version_id }}">
-                            <button type="submit" class="btn btn-icon btn-sm btn-success" title="{{ _('Unarchive Section') }}">
+                            <button type="submit" class="fb-icon-btn fb-icon-btn--success" title="{{ _('Unarchive Section') }}">
                                 <i class="fas fa-undo w-4 h-4"></i>
                             </button>
                         </form>
                     {% else %}
-                    <button type="button" class="add-item-to-section-btn btn btn-icon btn-sm btn-success" title="{{ _('Add Item') }}"
+                    <button type="button" class="add-item-to-section-btn fb-icon-btn fb-icon-btn--success" title="{{ _('Add Item') }}"
                             data-section-id="{{ item_s_f.section.id }}"
                             data-section-name="{{ item_s_f.section.name | e }}">
                         <i class="fas fa-plus w-4 h-4"></i>
                     </button>
-                    <button type="button" class="add-subsection-btn btn btn-icon btn-sm btn-primary" title="{{ _('Add Subsection') }}"
+                    <button type="button" class="add-subsection-btn fb-icon-btn fb-icon-btn--primary" title="{{ _('Add Subsection') }}"
                             data-section-id="{{ item_s_f.section.id }}"
                             data-section-order="{{ item_s_f.section.order }}"
                             data-page-id="{{ item_s_f.section.page_id or '' }}">
                         <i class="fas fa-indent w-4 h-4"></i>
                     </button>
-                    <button type="button" class="edit-section-btn btn btn-icon btn-sm btn-primary" title="{{ _('Edit Section') }}"
+                    <button type="button" class="edit-section-btn fb-icon-btn fb-icon-btn--primary" title="{{ _('Edit Section') }}"
                             data-section-id="{{ item_s_f.section.id }}"
                             data-section-name="{{ item_s_f.section.name | e }}"
                             data-section-order="{{ item_s_f.section.order }}"
@@ -174,7 +174,7 @@
                     <form action="{{ url_for('form_builder.duplicate_template_section', section_id=item_s_f.section.id) }}" method="POST" class="inline-block duplicate-section-form" data-confirm-message="{{ _('Duplicate this section? This will copy the section, all sub-sections, and their items.') }}">
                         <input name="csrf_token" type="hidden" value="{{ section_form.csrf_token.current_token }}">
                         <input type="hidden" name="version_id" value="{{ active_version_id }}">
-                        <button type="submit" class="btn btn-icon btn-sm btn-purple" title="{{ _('Duplicate Section') }}">
+                        <button type="submit" class="fb-icon-btn fb-icon-btn--purple" title="{{ _('Duplicate Section') }}">
                             <i class="fas fa-copy w-4 h-4"></i>
                         </button>
                     </form>
@@ -185,7 +185,7 @@
                    <form action="{{ url_for('form_builder.delete_template_section', section_id=current_section_id) }}" method="POST" class="inline-block delete-section-form" data-data-count="{{ _sec_count }}" data-item-type="section" data-confirm-message="{% if _sec_count > 0 %}{{ _('This section contains %(count)s saved data entries.', count=_sec_count) }}{% else %}{{ _('Are you sure you want to delete this section and all its contents?') }}{% endif %}"{% if _has_child_sections %} data-has-child-sections="true" data-child-sections-count="{{ _child_sections_count }}"{% endif %}>
                         <input id="section-csrf_token-{{ current_section_id }}" name="csrf_token" type="hidden" value="{{ section_form.csrf_token.current_token }}">
                         <input type="hidden" name="delete_data" value="true">
-                        <button type="submit" class="btn btn-icon btn-sm btn-danger" title="{{ _('Delete Section') }}">
+                        <button type="submit" class="fb-icon-btn fb-icon-btn--danger" title="{{ _('Delete Section') }}">
                             <i class="fas fa-trash-alt w-4 h-4"></i>
                         </button>
                     </form>
@@ -196,7 +196,7 @@
             <div class="section-body">
             {# Dynamic configuration will be shown after the items table #}
             <div class="mb-4 space-x-2 hidden">
-                <button type="button" class="add-item-to-section-btn btn btn-icon btn-sm btn-success" title="Add Item"
+                <button type="button" class="add-item-to-section-btn fb-icon-btn fb-icon-btn--success" title="Add Item"
                         data-section-id="{{ item_s_f.section.id }}"
                         data-section-name="{{ item_s_f.section.name | e }}">
                     <i class="fas fa-plus w-4 h-4"></i>
@@ -287,7 +287,7 @@
                         {% if is_subsection_archived %}data-archived="true"{% endif %}>
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 w-1/16 subsection-header-banner-cell">
                             <div class="flex items-center">
-                                <button type="button" class="subsection-toggle btn btn-icon btn-sm btn-primary flex-shrink-0 mr-2" aria-expanded="true" title="{{ _('Collapse subsection') }}">
+                                <button type="button" class="subsection-toggle fb-icon-btn fb-icon-btn--primary flex-shrink-0 mr-2" aria-expanded="true" title="{{ _('Collapse subsection') }}">
                                     <i class="fas fa-chevron-down w-3 h-3 transition-transform duration-200"></i>
                                 </button>
                                 <i class="fas fa-indent w-4 h-4 mr-2 text-teal-600"></i>
@@ -317,17 +317,17 @@
                                     <form action="{{ url_for('form_builder.unarchive_section', section_id=item_instance.id) }}" method="POST" class="inline-block">
                                         <input name="csrf_token" type="hidden" value="{{ section_form.csrf_token.current_token }}">
                                         <input type="hidden" name="version_id" value="{{ active_version_id }}">
-                                        <button type="submit" class="btn btn-icon btn-sm btn-success" title="{{ _('Unarchive Sub-section') }}">
+                                        <button type="submit" class="fb-icon-btn fb-icon-btn--success" title="{{ _('Unarchive Sub-section') }}">
                                             <i class="fas fa-undo w-3 h-3"></i>
                                         </button>
                                     </form>
                                 {% else %}
-                                <button type="button" class="add-item-to-section-btn btn btn-icon btn-sm btn-success" title="{{ _('Add Item to Sub-section') }}"
+                                <button type="button" class="add-item-to-section-btn fb-icon-btn fb-icon-btn--success" title="{{ _('Add Item to Sub-section') }}"
                                         data-section-id="{{ item_instance.id }}"
                                         data-section-name="{{ item_instance.name | e }}">
                                     <i class="fas fa-plus w-3 h-3"></i>
                                 </button>
-                                <button type="button" class="edit-section-btn btn btn-icon btn-sm btn-primary" title="{{ _('Edit Sub-section') }}"
+                                <button type="button" class="edit-section-btn fb-icon-btn fb-icon-btn--primary" title="{{ _('Edit Sub-section') }}"
                                         data-section-id="{{ item_instance.id }}"
                                         data-section-name="{{ item_instance.name | e }}"
                                         data-section-order="{{ item_instance.order }}"
@@ -346,7 +346,7 @@
                                 <form action="{{ url_for('form_builder.duplicate_template_section', section_id=item_instance.id) }}" method="POST" class="inline-block duplicate-section-form" data-confirm-message="{{ _('Duplicate this sub-section? This will copy the sub-section along with all of its items.') }}">
                                     <input name="csrf_token" type="hidden" value="{{ section_form.csrf_token.current_token }}">
                                     <input type="hidden" name="version_id" value="{{ active_version_id }}">
-                                    <button type="submit" class="btn btn-icon btn-sm btn-purple" title="{{ _('Duplicate Sub-section') }}">
+                                    <button type="submit" class="fb-icon-btn fb-icon-btn--purple" title="{{ _('Duplicate Sub-section') }}">
                                         <i class="fas fa-copy w-3 h-3"></i>
                                     </button>
                                 </form>
@@ -354,7 +354,7 @@
                                 <form action="{{ url_for('form_builder.delete_template_section', section_id=item_instance.id) }}" method="POST" class="inline-block delete-section-form" data-data-count="{{ _sub_sec_count }}" data-item-type="sub-section" data-confirm-message="{% if _sub_sec_count > 0 %}{{ _('This sub-section contains %(count)s saved data entries.', count=_sub_sec_count) }}{% else %}{{ _('Are you sure you want to delete this sub-section and all its contents?') }}{% endif %}">
                                     <input name="csrf_token" type="hidden" value="{{ section_form.csrf_token.current_token }}">
                                     <input type="hidden" name="delete_data" value="true">
-                                    <button type="submit" class="btn btn-icon btn-sm btn-danger" title="{{ _('Delete Sub-section') }}">
+                                    <button type="submit" class="fb-icon-btn fb-icon-btn--danger" title="{{ _('Delete Sub-section') }}">
                                         <i class="fas fa-trash w-3 h-3"></i>
                                     </button>
                                 </form>
@@ -576,12 +576,12 @@
                                     <form action="{{ url_for('form_builder.unarchive_item', item_id=item_instance.id) }}" method="POST" class="inline-block">
                                         <input name="csrf_token" type="hidden" value="{{ section_form.csrf_token.current_token }}">
                                         <input type="hidden" name="version_id" value="{{ active_version_id }}">
-                                        <button type="submit" class="btn btn-icon btn-sm btn-success" title="{{ _('Unarchive Item') }}">
+                                        <button type="submit" class="fb-icon-btn fb-icon-btn--success" title="{{ _('Unarchive Item') }}">
                                             <i class="fas fa-undo w-4 h-4"></i>
                                         </button>
                                     </form>
                                 {% elif item_type == 'indicator' %}
-                                    <button type="button" class="edit-indicator-btn btn btn-icon btn-sm btn-purple" title="{{ _('Edit Indicator') }}"
+                                    <button type="button" class="edit-indicator-btn fb-icon-btn fb-icon-btn--purple" title="{{ _('Edit Indicator') }}"
                                             data-indicator-id="{{ item_instance.id }}"
                                             data-indicator-order="{{ item_instance.order }}"
                                             data-indicator-bank-id="{{ item_instance.indicator_bank_id }}"
@@ -611,7 +611,7 @@
                                     <form action="{{ url_for('form_builder.duplicate_item', item_id=item_instance.id) }}" method="POST" class="inline-block duplicate-item-form" data-confirm-message="{{ _('Duplicate this indicator? This will create a copy with the same calculations and settings.') }}">
                                         <input name="csrf_token" type="hidden" value="{{ section_form.csrf_token.current_token }}">
                                         <input type="hidden" name="version_id" value="{{ active_version_id }}">
-                                        <button type="submit" class="btn btn-icon btn-sm btn-purple" title="{{ _('Duplicate Indicator') }}">
+                                        <button type="submit" class="fb-icon-btn fb-icon-btn--purple" title="{{ _('Duplicate Indicator') }}">
                                             <i class="fas fa-copy w-4 h-4"></i>
                                         </button>
                                     </form>
@@ -620,12 +620,12 @@
                                    <form action="{{ url_for('form_builder.delete_item', item_id=item_instance.id) }}" method="POST" class="inline-block delete-item-form delete-indicator-form" data-data-count="{{ _item_count }}" data-item-type="indicator" data-confirm-message="{% if _item_count > 0 %}{{ _('This item has %(count)s saved data entries.', count=_item_count) }}{% else %}{{ _('Are you sure you want to delete this indicator instance?') }}{% endif %}">
                                         <input id="section-csrf_token-indicator-{{ item_instance.id }}" name="csrf_token" type="hidden" value="{{ section_form.csrf_token.current_token }}">
                                         <input type="hidden" name="delete_data" value="true">
-                                        <button type="submit" class="btn btn-icon btn-sm btn-danger" title="{{ _('Remove Indicator') }}">
+                                        <button type="submit" class="fb-icon-btn fb-icon-btn--danger" title="{{ _('Remove Indicator') }}">
                                             <i class="fas fa-times w-4 h-4"></i>
                                         </button>
                                     </form>
                                 {% elif item_type == 'question' %}
-                                    <button type="button" class="edit-question-btn btn btn-icon btn-sm btn-success" title="{{ _('Edit Question') }}"
+                                    <button type="button" class="edit-question-btn fb-icon-btn fb-icon-btn--success" title="{{ _('Edit Question') }}"
                                             data-question-id="{{ item_instance.id }}"
                                             data-question-order="{{ item_instance.order }}"
                                             data-current-section-id="{{ item_data.parent_subsection_id if is_subsection_item else item_s_f.section.id }}"
@@ -658,7 +658,7 @@
                                     <form action="{{ url_for('form_builder.duplicate_item', item_id=item_instance.id) }}" method="POST" class="inline-block duplicate-item-form" data-confirm-message="{{ _('Duplicate this question? This will copy its options, logic, and translations.') }}">
                                         <input name="csrf_token" type="hidden" value="{{ section_form.csrf_token.current_token }}">
                                         <input type="hidden" name="version_id" value="{{ active_version_id }}">
-                                        <button type="submit" class="btn btn-icon btn-sm btn-purple" title="{{ _('Duplicate Question') }}">
+                                        <button type="submit" class="fb-icon-btn fb-icon-btn--purple" title="{{ _('Duplicate Question') }}">
                                             <i class="fas fa-copy w-4 h-4"></i>
                                         </button>
                                     </form>
@@ -667,12 +667,12 @@
                                    <form action="{{ url_for('form_builder.delete_item', item_id=item_instance.id) }}" method="POST" class="inline-block delete-item-form delete-question-form" data-data-count="{{ _item_count }}" data-item-type="question" data-confirm-message="{% if _item_count > 0 %}{{ _('This item has %(count)s saved data entries.', count=_item_count) }}{% else %}{{ _('Are you sure you want to delete this question?') }}{% endif %}">
                                         <input id="section-csrf_token-question-{{ item_instance.id }}" name="csrf_token" type="hidden" value="{{ section_form.csrf_token.current_token }}">
                                         <input type="hidden" name="delete_data" value="true">
-                                        <button type="submit" class="btn btn-icon btn-sm btn-danger" title="{{ _('Remove Question') }}">
+                                        <button type="submit" class="fb-icon-btn fb-icon-btn--danger" title="{{ _('Remove Question') }}">
                                             <i class="fas fa-times w-4 h-4"></i>
                                         </button>
                                     </form>
                                 {% elif item_type == 'document' %}
-                                    <button type="button" class="edit-document-field-btn btn btn-icon btn-sm btn-primary" title="{{ _('Edit Document Field') }}"
+                                    <button type="button" class="edit-document-field-btn fb-icon-btn fb-icon-btn--primary" title="{{ _('Edit Document Field') }}"
                                             data-document-field-id="{{ item_instance.id }}"
                                             data-document-field-label="{{ item_instance.label | e }}"
                                             data-document-field-order="{{ item_instance.order }}"
@@ -691,7 +691,7 @@
                                     <form action="{{ url_for('form_builder.duplicate_item', item_id=item_instance.id) }}" method="POST" class="inline-block duplicate-item-form" data-confirm-message="{{ _('Duplicate this document field? This will copy its upload configuration and permissions.') }}">
                                         <input name="csrf_token" type="hidden" value="{{ section_form.csrf_token.current_token }}">
                                         <input type="hidden" name="version_id" value="{{ active_version_id }}">
-                                        <button type="submit" class="btn btn-icon btn-sm btn-purple" title="{{ _('Duplicate Document Field') }}">
+                                        <button type="submit" class="fb-icon-btn fb-icon-btn--purple" title="{{ _('Duplicate Document Field') }}">
                                             <i class="fas fa-copy w-4 h-4"></i>
                                         </button>
                                     </form>
@@ -700,12 +700,12 @@
                                    <form action="{{ url_for('form_builder.delete_item', item_id=item_instance.id) }}" method="POST" class="inline-block delete-item-form delete-document-field-form" data-data-count="{{ _item_count }}" data-item-type="document field" data-confirm-message="{% if _item_count > 0 %}{{ _('This item has %(count)s saved data entries.', count=_item_count) }}{% else %}{{ _('Are you sure you want to delete this document field and any associated uploaded documents?') }}{% endif %}">
                                         <input id="section-csrf_token-document-{{ item_instance.id }}" name="csrf_token" type="hidden" value="{{ section_form.csrf_token.current_token }}">
                                         <input type="hidden" name="delete_data" value="true">
-                                        <button type="submit" class="btn btn-icon btn-sm btn-danger" title="{{ _('Remove Document Field') }}">
+                                        <button type="submit" class="fb-icon-btn fb-icon-btn--danger" title="{{ _('Remove Document Field') }}">
                                             <i class="fas fa-times w-4 h-4"></i>
                                         </button>
                                     </form>
                                 {% elif item_type == 'matrix' %}
-                                    <button type="button" class="edit-matrix-item-btn btn btn-icon btn-sm btn-warning" title="{{ _('Edit Matrix') }}"
+                                    <button type="button" class="edit-matrix-item-btn fb-icon-btn fb-icon-btn--warning" title="{{ _('Edit Matrix') }}"
                                             data-matrix-item-id="{{ item_instance.id }}"
                                             data-matrix-item-label="{{ item_instance.label | e }}"
                                             data-matrix-item-description="{{ item_instance.description | default('', true) | e }}"
@@ -724,7 +724,7 @@
                                     <form action="{{ url_for('form_builder.duplicate_item', item_id=item_instance.id) }}" method="POST" class="inline-block duplicate-item-form" data-confirm-message="{{ _('Duplicate this matrix? This will copy all rows, columns, and validation rules.') }}">
                                         <input name="csrf_token" type="hidden" value="{{ section_form.csrf_token.current_token }}">
                                         <input type="hidden" name="version_id" value="{{ active_version_id }}">
-                                        <button type="submit" class="btn btn-icon btn-sm btn-purple" title="{{ _('Duplicate Matrix') }}">
+                                        <button type="submit" class="fb-icon-btn fb-icon-btn--purple" title="{{ _('Duplicate Matrix') }}">
                                             <i class="fas fa-copy w-4 h-4"></i>
                                         </button>
                                     </form>
@@ -733,12 +733,12 @@
                                    <form action="{{ url_for('form_builder.delete_item', item_id=item_instance.id) }}" method="POST" class="inline-block delete-item-form delete-matrix-item-form" data-data-count="{{ _item_count }}" data-item-type="matrix" data-confirm-message="{% if _item_count > 0 %}{{ _('This item has %(count)s saved data entries.', count=_item_count) }}{% else %}{{ _('Are you sure you want to delete this matrix table?') }}{% endif %}">
                                         <input id="section-csrf_token-matrix-{{ item_instance.id }}" name="csrf_token" type="hidden" value="{{ section_form.csrf_token.current_token }}">
                                         <input type="hidden" name="delete_data" value="true">
-                                        <button type="submit" class="btn btn-icon btn-sm btn-danger" title="{{ _('Remove Matrix') }}">
+                                        <button type="submit" class="fb-icon-btn fb-icon-btn--danger" title="{{ _('Remove Matrix') }}">
                                             <i class="fas fa-times w-4 h-4"></i>
                                         </button>
                                     </form>
                                 {% elif item_type == 'plugin' %}
-                                    <button type="button" class="edit-plugin-item-btn btn btn-icon btn-sm btn-warning" title="{{ _('Edit Plugin Item') }}"
+                                    <button type="button" class="edit-plugin-item-btn fb-icon-btn fb-icon-btn--warning" title="{{ _('Edit Plugin Item') }}"
                                             data-plugin-item-id="{{ item_instance.id }}"
                                             data-plugin-item-type="{{ item_instance.item_type }}"
                                             data-plugin-item-label="{{ item_instance.label | e }}"
@@ -761,7 +761,7 @@
                                     <form action="{{ url_for('form_builder.duplicate_item', item_id=item_instance.id) }}" method="POST" class="inline-block duplicate-item-form" data-confirm-message="{{ _('Duplicate this plugin item? This will copy its configuration and logic.') }}">
                                         <input name="csrf_token" type="hidden" value="{{ section_form.csrf_token.current_token }}">
                                         <input type="hidden" name="version_id" value="{{ active_version_id }}">
-                                        <button type="submit" class="btn btn-icon btn-sm btn-purple" title="{{ _('Duplicate Plugin Item') }}">
+                                        <button type="submit" class="fb-icon-btn fb-icon-btn--purple" title="{{ _('Duplicate Plugin Item') }}">
                                             <i class="fas fa-copy w-4 h-4"></i>
                                         </button>
                                     </form>
@@ -770,7 +770,7 @@
                                    <form action="{{ url_for('form_builder.delete_item', item_id=item_instance.id) }}" method="POST" class="inline-block delete-item-form delete-plugin-item-form" data-data-count="{{ _item_count }}" data-item-type="plugin item" data-confirm-message="{% if _item_count > 0 %}{{ _('This item has %(count)s saved data entries.', count=_item_count) }}{% else %}{{ _('Are you sure you want to delete this plugin item?') }}{% endif %}">
                                         <input id="section-csrf_token-plugin-{{ item_instance.id }}" name="csrf_token" type="hidden" value="{{ section_form.csrf_token.current_token }}">
                                         <input type="hidden" name="delete_data" value="true">
-                                        <button type="submit" class="btn btn-icon btn-sm btn-danger" title="{{ _('Remove Plugin Item') }}">
+                                        <button type="submit" class="fb-icon-btn fb-icon-btn--danger" title="{{ _('Remove Plugin Item') }}">
                                             <i class="fas fa-times w-4 h-4"></i>
                                         </button>
                                     </form>

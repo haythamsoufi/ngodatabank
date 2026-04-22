@@ -69,14 +69,14 @@ export class TemplateVariablesManager {
         countSpan.textContent = count > 0 ? `(${count})` : '(0)';
         countSpan.classList.remove('hidden');
 
-        // Grey when no variables; purple when any exist (styles: form-builder-page.css)
+        // Grey when no variables; purple when any exist (semantic .btn only)
         if (count === 0) {
-            btn.classList.remove('template-variables-btn--has-vars');
+            btn.classList.remove('btn-purple');
             btn.classList.add('template-variables-btn--empty');
             btn.disabled = false;
         } else {
             btn.classList.remove('template-variables-btn--empty');
-            btn.classList.add('template-variables-btn--has-vars');
+            btn.classList.add('btn-purple');
             btn.disabled = false;
         }
     }
@@ -292,7 +292,7 @@ export class TemplateVariablesManager {
         modal.id = 'variable-form-modal';
 
         const formHtml = `
-            <form id="variable-form" class="space-y-4">
+            <form id="variable-form" class="space-y-4 px-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -545,15 +545,23 @@ export class TemplateVariablesManager {
                             </div>
                         </div>
                         </div>
-
-                        <div class="flex justify-end space-x-3 pt-4 border-t">
-                            <button type="button" class="cancel-variable-form px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded">Cancel</button>
-                            <button type="button" class="variable-form-submit px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">${editVarName ? 'Update' : 'Create'} Variable</button>
-                        </div>
                     </form>
         `;
 
-        contentDiv.innerHTML = '<div class="max-h-[75vh] overflow-y-auto">' + formHtml + '</div>';
+        const footerHtml = `
+            <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200 px-6 -mx-6 mt-0 shrink-0 bg-white">
+                <button type="button" class="cancel-variable-form btn btn-secondary">Cancel</button>
+                <button type="button" class="variable-form-submit btn btn-primary">${editVarName ? 'Update' : 'Create'} Variable</button>
+            </div>
+        `;
+
+        contentDiv.innerHTML =
+            '<div class="flex flex-col min-h-0 max-h-[75vh]">' +
+            '<div class="min-h-0 flex-1 overflow-y-auto -mx-6">' +
+            formHtml +
+            '</div>' +
+            footerHtml +
+            '</div>';
 
         // Attach tooltip positioning handlers (CSP-safe: no inline mouse handlers)
         this.attachTooltipHandlers(modal);
@@ -960,7 +968,7 @@ export class TemplateVariablesManager {
 
         // Form submission
         // Use button click to submit so we never trigger a native form submit (which would reload the page)
-        const submitBtn = form.querySelector('.variable-form-submit');
+        const submitBtn = modal.querySelector('.variable-form-submit');
         if (submitBtn) {
             submitBtn.addEventListener('click', () => {
                 form.requestSubmit();

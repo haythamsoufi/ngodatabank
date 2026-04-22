@@ -24,8 +24,20 @@ export function initTooltips() {
  * @param {HTMLElement} tooltipContainer - The container element with the tooltip
  */
 export function positionTooltip(tooltipContainer) {
-    const tooltip = tooltipContainer.querySelector('.tooltip-text');
-    if (!tooltip) return;
+    // Cache span reference — after portaling, .tooltip-text is not under the container
+    // (querySelector would miss), and fixed positioning would break without this.
+    let tooltip = tooltipContainer.__tooltipTextEl;
+    if (!tooltip) {
+        tooltip = tooltipContainer.querySelector('.tooltip-text');
+        if (!tooltip) return;
+        tooltipContainer.__tooltipTextEl = tooltip;
+    }
+    // Any ancestor with transform/filter (e.g. modal shell's `transform`) makes
+    // position:fixed lay out relative to that ancestor, while getBoundingClientRect
+    // returns viewport coordinates — so tooltips appear offset. Portaling to body fixes it.
+    if (tooltip.parentNode !== document.body) {
+        document.body.appendChild(tooltip);
+    }
 
     const iconRect = tooltipContainer.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
@@ -106,12 +118,16 @@ export function positionTooltip(tooltipContainer) {
  * @param {HTMLElement} tooltipContainer - The container element with the tooltip
  */
 export function hideTooltip(tooltipContainer) {
-    const tooltip = tooltipContainer.querySelector('.tooltip-text');
+    const tooltip = tooltipContainer.__tooltipTextEl
+        || tooltipContainer.querySelector('.tooltip-text');
     if (!tooltip) return;
 
     tooltip.style.visibility = 'hidden';
     tooltip.style.opacity = '0';
     tooltip.style.display = 'none';
+    if (tooltip.parentNode === document.body) {
+        tooltipContainer.appendChild(tooltip);
+    }
 }
 
 /**
