@@ -202,6 +202,9 @@ jobs:
 
       - name: Build APK (release)
         working-directory: ${{ steps.flutter_path.outputs.path }}
+        env:
+          IFRC_API_USER: ${{ secrets.IFRC_API_USER }}
+          IFRC_API_PASSWORD: ${{ secrets.IFRC_API_PASSWORD }}
         run: |
           # Compile-time flag must match .env (derived from BACKEND_URL in resolve_env step)
           case "${{ steps.resolve_env.outputs.profile }}" in
@@ -222,11 +225,16 @@ jobs:
             $ORG_CONFIG \
             --dart-define=MOBILE_APP_API_KEY="${{ steps.env_secrets.outputs.api_key }}" \
             --dart-define=MAPBOX_ACCESS_TOKEN="${{ secrets.MAPBOX_ACCESS_TOKEN }}" \
+            --dart-define=IFRC_API_USER="$IFRC_API_USER" \
+            --dart-define=IFRC_API_PASSWORD="$IFRC_API_PASSWORD" \
             --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}"
 
       - name: Build App Bundle (Play Store .aab)
         if: github.event_name != 'workflow_dispatch' || inputs.build_app_bundle
         working-directory: ${{ steps.flutter_path.outputs.path }}
+        env:
+          IFRC_API_USER: ${{ secrets.IFRC_API_USER }}
+          IFRC_API_PASSWORD: ${{ secrets.IFRC_API_PASSWORD }}
         run: |
           # Compile-time flag must match .env (derived from BACKEND_URL in resolve_env step)
           case "${{ steps.resolve_env.outputs.profile }}" in
@@ -247,6 +255,8 @@ jobs:
             $ORG_CONFIG \
             --dart-define=MOBILE_APP_API_KEY="${{ steps.env_secrets.outputs.api_key }}" \
             --dart-define=MAPBOX_ACCESS_TOKEN="${{ secrets.MAPBOX_ACCESS_TOKEN }}" \
+            --dart-define=IFRC_API_USER="$IFRC_API_USER" \
+            --dart-define=IFRC_API_PASSWORD="$IFRC_API_PASSWORD" \
             --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}"
 
       # Tag pushes always build the bundle (see build_app_bundle default). Manual runs can skip bundle

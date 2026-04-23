@@ -1366,10 +1366,13 @@ _EMAIL_TEMPLATE_TEST_LABELS = {
 }
 
 _EMAIL_TEST_SEND_FAILURE_MESSAGES = {
-    "dev_recipient_filter": (
-        "The test email was not sent because this environment only allows delivery to "
-        "addresses listed in ALLOWED_EMAIL_RECIPIENTS_DEV, and your account email is not on that list. "
-        "Add it in configuration or ask an administrator, or clear the allowlist in local development."
+    "recipient_allowlist": (
+        "The test email was not sent: your address is not in ALLOWED_EMAIL_RECIPIENTS_DEV. "
+        "Add it (comma-separated) or clear the variable in dev/staging settings. "
+        "Production (FLASK_CONFIG=production) ignores this list."
+    ),
+    "empty_email_body": (
+        "The rendered message was empty, so nothing was sent. Fix the template or preview content."
     ),
     "no_default_sender": (
         "Email is not configured: set MAIL_DEFAULT_SENDER (outbound from-address) in the application environment."

@@ -7,6 +7,10 @@ from flask import current_app
 from urllib.parse import urlparse, urlunparse, parse_qs, urlencode
 
 
+def _b64_utf8(plain: str) -> str:
+    return str(base64.b64encode(plain.encode("utf-8")), "utf-8")
+
+
 def _to_list(values: Optional[Iterable[str]]) -> List[str]:
     if not values:
         return []
@@ -37,6 +41,32 @@ def _filter_recipients_for_environment(recipients: List[str], cc: List[str], bcc
     return _filter(recipients), _filter(cc), _filter(bcc)
 
 
+def _ifrc_envelope_to_cc_bcc(
+    noreply: str, recipients: List[str], cc: List[str], bcc: List[str]
+) -> Tuple[str, str, str]:
+    """
+    Return plain-text ``(to_address, cc_csv, bcc_csv)`` for IFRC ``*AsBase64`` fields.
+
+    IFRC's gateway matches historical behaviour in this app:
+    - **Single** logical To, no Cc/Bcc: put that person in **To** (visible recipient).
+    - **Multiple** To, no Cc/Bcc: **To** = noreply, **Bcc** = all To (comma-separated).
+    - **To + Cc and/or Bcc:** **To** = noreply, **Cc** / **Bcc** combined as before.
+    - **No To** but Cc and/or Bcc: **To** = noreply, pass Cc / Bcc.
+    """
+    if recipients and not cc and not bcc:
+        if len(recipients) == 1:
+            return recipients[0], "", ""
+        return noreply, "", ",".join(recipients)
+    if recipients and (cc or bcc):
+        combined_bcc: List[str] = list(recipients)
+        if bcc:
+            combined_bcc.extend(bcc)
+        return noreply, (",".join(cc) if cc else ""), ",".join(combined_bcc)
+    if not recipients and (cc or bcc):
+        return noreply, (",".join(cc) if cc else ""), (",".join(bcc) if bcc else "")
+    return noreply, "", ""
+
+
 def send_email(
     subject: str,
     recipients: Iterable[str],
@@ -52,21 +82,25 @@ def send_email(
     _failure_info: Optional[List[dict]] = None,
 ) -> bool:
     """
-    Send an email using the Email API.
+    Send an email using the IFRC Email API (HTML body, base64 fields).
+
+    ``text`` and ``reply_to`` are accepted for API compatibility with callers, but
+    the current IFRC JSON contract only sends the HTML body; extra fields are not
+    added until the gateway documents optional keys (avoids 400s from unknown names).
 
     Args:
         subject: Email subject line
         recipients: List of recipient email addresses (To field)
         html: HTML email content
         sender: Sender email address (optional, uses MAIL_DEFAULT_SENDER if not provided)
-        text: Plain text email content (optional)
-        reply_to: Reply-to email address (optional)
+        text: Reserved / not sent in current IFRC payload
+        reply_to: Reserved / not sent in current IFRC payload
         cc: List of CC email addresses (optional)
         bcc: List of BCC email addresses (optional)
         importance: Email importance level ('high', 'normal', 'low'). If 'high', adds [HIGH PRIORITY] prefix to subject.
         attachments: Optional list of (filename, content_bytes, content_type) to attach.
         _failure_info: If provided, a single failure dict is appended on False returns
-        (``code`` one of: no_recipients, no_default_sender, dev_recipient_filter, no_email_api_key,
+        (``code`` one of: no_recipients, no_default_sender, recipient_allowlist, no_email_api_key,
         no_email_api_url, email_api_http_error, email_api_request_error; ``http_status`` for HTTP cases).
 
     Returns:
@@ -93,7 +127,7 @@ def send_email(
             _failure_info.append({"code": "no_default_sender"})
         return False
 
-    # Apply recipient filtering (e.g. ALLOWED_EMAIL_RECIPIENTS_DEV in dev)
+    # Apply recipient filtering (ALLOWED_EMAIL_RECIPIENTS_DEV, disabled in production)
     recipients_list, cc_list, bcc_list = _filter_recipients_for_environment(recipients_list, cc_list, bcc_list)
 
     # If all recipients were filtered out, skip send and signal to caller
@@ -101,7 +135,7 @@ def send_email(
         if _filtered_out is not None:
             _filtered_out.append(True)
         if _failure_info is not None:
-            _failure_info.append({"code": "dev_recipient_filter"})
+            _failure_info.append({"code": "recipient_allowlist"})
         return False
 
     # Add priority prefix to subject when high or urgent
@@ -140,15 +174,13 @@ def _send_via_ifrc(
     _failure_info: Optional[List[dict]] = None,
 ) -> bool:
     """
-    Send email via IFRC Email API.
+    Send email via IFRC Email API (base64-encoded fields).
 
-    Uses base64-encoded fields matching the API format:
-    - Fixed "To" address (no-reply@example.com)
-    - Actual recipients go in To/CC/BCC based on parameters
-    - All fields are base64 encoded
+    Envelope shape follows :func:`_ifrc_envelope_to_cc_bcc` (single recipient in To,
+    or noreply To + Bcc for bulk, including mixed Cc/Bcc).
     """
     api_key = current_app.config.get("EMAIL_API_KEY")
-    api_url_base = current_app.config.get("EMAIL_API_URL", "")
+    api_url_base = (current_app.config.get("EMAIL_API_URL") or "").strip()
 
     if not api_key:
         current_app.logger.error(
@@ -187,83 +219,56 @@ def _send_via_ifrc(
         ))
         api_key_in_url = False
 
-    # Prepare request payload - IFRC Email API uses base64-encoded fields.
-    # The "To" field is a required dummy address in the API payload; actual
-    # recipients are delivered via To/CC/BCC fields below. Use the configured
-    # noreply sender so the envelope looks coherent rather than example.com.
-    fixed_to_address = current_app.config.get("MAIL_NOREPLY_SENDER") or sender
+    # Dummy / organizational "To" in the API envelope; real delivery in Cc/Bcc
+    fixed_to_address = (current_app.config.get("MAIL_NOREPLY_SENDER") or sender or "").strip() or sender
 
-    # Convert recipients to comma-separated strings for encoding
-    recipients_string = ",".join(recipients) if recipients else ""
-    cc_string = ",".join(cc) if cc else ""
-    bcc_string = ",".join(bcc) if bcc else ""
+    raw_html = (html or "").strip()
+    if not raw_html:
+        current_app.logger.warning("send via IFRC: empty HTML body after strip, aborting")
+        if _failure_info is not None:
+            _failure_info.append({"code": "empty_email_body"})
+        return False
 
-    # Calculate total recipients for logging
-    all_recipients = recipients.copy()
-    if cc:
-        all_recipients.extend(cc)
-    if bcc:
-        all_recipients.extend(bcc)
+    to_addr, out_cc, out_bcc = _ifrc_envelope_to_cc_bcc(fixed_to_address, recipients, cc, bcc)
+    is_single_in_to = bool(recipients and not cc and not bcc and len(recipients) == 1)
+    has_cc_bcc = bool((out_cc or "").strip() or (out_bcc or "").strip())
+    if not is_single_in_to and not has_cc_bcc:
+        current_app.logger.error(
+            "IFRC email: no delivery addresses after envelope mapping. "
+            "This should be unreachable if send_email validated recipients."
+        )
+        if _failure_info is not None:
+            _failure_info.append({"code": "no_recipients"})
+        return False
 
-    # Build payload with base64-encoded fields
-    # Note: IFRC Email API uses fixed To address, actual recipients go in CC/BCC
-    # Omit empty string fields some APIs reject; only include template keys when set.
-    body_b64 = str(
-        base64.b64encode(html.strip().encode("utf-8")),
-        "utf-8",
-    )
+    body_b64 = _b64_utf8(raw_html)
     payload: dict = {
-        "FromAsBase64": str(base64.b64encode(sender.encode("utf-8")), "utf-8"),
-        "ToAsBase64": str(
-            base64.b64encode(fixed_to_address.encode("utf-8")),
-            "utf-8",
-        ),
-        "SubjectAsBase64": str(base64.b64encode(subject.encode("utf-8")), "utf-8"),
+        "FromAsBase64": _b64_utf8(sender),
+        "ToAsBase64": _b64_utf8(to_addr),
+        "SubjectAsBase64": _b64_utf8(subject),
         "BodyAsBase64": body_b64,
         "IsBodyHtml": True,
+        "TemplateName": "",
+        "TemplateLanguage": "",
     }
-    if cc_string:
-        payload["CcAsBase64"] = str(
-            base64.b64encode(cc_string.encode("utf-8")),
-            "utf-8",
-        )
-    if bcc_string:
-        payload["BccAsBase64"] = str(
-            base64.b64encode(bcc_string.encode("utf-8")),
-            "utf-8",
-        )
+    if out_cc and out_cc.strip():
+        payload["CcAsBase64"] = _b64_utf8(out_cc)
+    if out_bcc and out_bcc.strip():
+        payload["BccAsBase64"] = _b64_utf8(out_bcc)
+
     # Add attachments if supported by the API (optional; API may use AttachmentsAsBase64 or similar)
     if attachments:
         try:
             payload["Attachments"] = [
                 {
-                    "FileNameAsBase64": str(base64.b64encode((fn or "attachment").encode("utf-8")), "utf-8"),
+                    "FileNameAsBase64": _b64_utf8(fn or "attachment"),
                     "ContentAsBase64": str(base64.b64encode(content), "utf-8"),
                     "ContentType": (ct or "application/octet-stream"),
                 }
                 for fn, content, ct in attachments
             ]
         except Exception as e:
-            current_app.logger.warning(f"Email attachments skipped (API may not support them): {e}")
-
-    # IFRC Email API: keep the dummy/organizational address in To (ToAsBase64 = noreply, set above) and
-    # put the actual delivery addresses in Bcc (also for a single recipient). Some environments return
-    # HTTP 400 if the real recipient is placed in To instead.
-    if recipients_string and not cc_string and not bcc_string:
-        payload["BccAsBase64"] = str(
-            base64.b64encode(recipients_string.encode("utf-8")),
-            "utf-8",
-        )
-    elif recipients_string:
-        # We have To recipients along with CC/BCC - combine To with BCC for legacy compatibility
-        # But also set CC if provided
-        combined_bcc = recipients.copy()
-        if bcc:
-            combined_bcc.extend(bcc)
-        bcc_combined_string = ",".join(combined_bcc)
-        payload["BccAsBase64"] = str(base64.b64encode(bcc_combined_string.encode("utf-8")), "utf-8")
-        if cc_string:
-            payload["CcAsBase64"] = str(base64.b64encode(cc_string.encode("utf-8")), "utf-8")
+            current_app.logger.warning("Email attachments skipped (API may not support them): %s", e)
 
     try:
         headers = {"Content-Type": "application/json"}
@@ -343,11 +348,12 @@ def _send_via_ifrc(
             current_app.logger.error(
                 "Email API bad request (400) for %s. Response: %s. "
                 "Diagnostic (no secrets): approx_json_len=%s body_b64_len=%s "
-                "recipients_n=%s cc_n=%s bcc_n=%s has_keys=%s",
+                "envelope_single_to=%s recipients_n=%s cc_n=%s bcc_n=%s has_keys=%s",
                 safe_url,
                 error_message,
                 approx_json,
                 len((payload.get("BodyAsBase64") or "")),
+                is_single_in_to,
                 len(recipients),
                 len(cc),
                 len(bcc),
