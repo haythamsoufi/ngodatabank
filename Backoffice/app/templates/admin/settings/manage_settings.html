@@ -2750,6 +2750,7 @@
   log('init', 'bound');
 
   var noChangesMsg = {{ _('No settings were changed.') | tojson }};
+  var emailSavedMsg = {{ _('Settings saved successfully.') | tojson }};
 
   window.addEventListener('load', function () {
     setTimeout(function () {
@@ -2990,7 +2991,7 @@
     if (!resp.ok || !payload || payload.success !== true) {
       throw new Error((payload && payload.message) ? payload.message : ('Failed to save email templates (' + resp.status + ')'));
     }
-    return payload;
+    return { success: true, skipped: false };
   }
 
   form.addEventListener('submit', async function (e) {
@@ -3008,7 +3009,7 @@
 
     try {
       log('email-templates');
-      await saveEmailTemplatesIfChanged();
+      var emailTemplatesSaveResult = await saveEmailTemplatesIfChanged();
       log('email-templates-done');
 
       // Snapshot while email-template hiddens are still enabled so diff matches page-load snapshot.
@@ -3037,11 +3038,21 @@
       if (initialSnap && window.formDataToJson) {
         var diff = diffSettingsPayload(initialSnap, currentPayloadSnapshot);
         var changedKeys = Object.keys(diff).filter(function (k) { return k !== 'csrf_token'; });
+        /* Email template JSON lives in inputs without a `name` attribute (WAF / size), so they are
+           omitted from FormData and never appear in this diff. Email content is saved via the
+           dedicated API above; when that ran, treat as a successful save even if changedKeys is empty. */
+        var emailTemplatesPersisted = emailTemplatesSaveResult && emailTemplatesSaveResult.skipped !== true;
         if (changedKeys.length === 0) {
-          log('no-changes');
           disabled.forEach(function (inp) { inp.disabled = false; });
           delete form.dataset.settingsSaveInFlight;
           setSaveButtonSaving(false, originalSubmitHtml);
+          if (emailTemplatesPersisted) {
+            log('email-only-save');
+            if (window.showAlert) window.showAlert(emailSavedMsg, 'success');
+            window.location.reload();
+            return;
+          }
+          log('no-changes');
           if (window.showAlert) window.showAlert(noChangesMsg, 'info');
           else if (typeof window.__clientWarn === 'function') window.__clientWarn(noChangesMsg);
           else console.warn(noChangesMsg);
