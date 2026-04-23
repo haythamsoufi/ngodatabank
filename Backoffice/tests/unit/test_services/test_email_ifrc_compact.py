@@ -20,8 +20,8 @@ def test_compact_squishes_style_block():
     )
     out = _compact_ifrc_html_body(html)
     assert "\n" not in out or out.count("\n") <= 0
-    assert "body { margin: 0; }" in out
-    assert ".a { color: red; }" in out
+    assert "margin:0" in out and "body{" in out
+    assert "color:red" in out and ".a{" in out
 
 
 def test_compact_reduces_utf8_size_on_verbose_template():
@@ -51,3 +51,16 @@ def test_compact_reduces_utf8_size_on_verbose_template():
 def test_compact_empty_and_whitespace():
     assert _compact_ifrc_html_body("") == ""
     assert _compact_ifrc_html_body("   \n  ") == ""
+
+
+def test_compact_css_minify_saves_bytes_like_verbose_templates():
+    """Verbose spacing in CSS (common in admin-edited email HTML) shrinks with minify."""
+    html = (
+        "<!DOCTYPE html><html><head><style>\n"
+        "body { margin: 0; padding: 0; background: #eef2f7; }\n"
+        ".email-outer { max-width: 960px; margin: 0 auto; }\n"
+        "</style></head><body><div class=\"email-outer\"><p>Hi</p></div></body></html>"
+    )
+    out = _compact_ifrc_html_body(html)
+    assert len(out.encode("utf-8")) < len(html.encode("utf-8"))
+    assert "margin:0" in out and "padding:0" in out

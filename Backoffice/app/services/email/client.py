@@ -12,13 +12,33 @@ def _b64_utf8(plain: str) -> str:
     return str(base64.b64encode(plain.encode("utf-8")), "utf-8")
 
 
+def _minify_css_for_email(css: str) -> str:
+    """
+    Shrink CSS text inside ``<style>`` blocks for IFRC gateways with ~4KB HTML limits.
+
+    Removes comments and non-semantic whitespace around ``{};:``, and after property ``:``.
+    Avoids touching URL/content strings beyond normal minifier rules used for email layouts.
+    """
+    if not css:
+        return css
+    s = re.sub(r"/\*[\s\S]*?\*/", "", css)
+    s = s.strip()
+    s = re.sub(r"\s+", " ", s)
+    s = re.sub(r"\s*;\s*", ";", s)
+    s = re.sub(r"\s*\{\s*", "{", s)
+    s = re.sub(r"\s*\}\s*", "}", s)
+    s = re.sub(r"\s*,\s*", ",", s)
+    s = re.sub(r":\s+", ":", s)
+    return s
+
+
 def _compact_ifrc_html_body(html: str) -> str:
     """
     Reduce UTF-8 size for IFRC Email API payloads. Some gateways return HTTP 400 with an
     empty body when ``BodyAsBase64`` decodes to more than ~4KB of HTML.
 
-    Uses rendering-safe transforms only: strip HTML comments, collapse whitespace between
-    tags, and minify ``<style>`` blocks to a single line.
+    Uses rendering-safe transforms: strip HTML comments, collapse whitespace between
+    tags, and minify ``<style>`` blocks (whitespace + light CSS minify).
     """
     if not html:
         return html
@@ -28,7 +48,7 @@ def _compact_ifrc_html_body(html: str) -> str:
 
     def _squish_style(m: re.Match) -> str:
         open_tag, body, close_tag = m.group(1), m.group(2), m.group(3)
-        body = re.sub(r"\s+", " ", body.strip())
+        body = _minify_css_for_email(body)
         return f"{open_tag}{body}{close_tag}"
 
     h = re.sub(
@@ -37,6 +57,8 @@ def _compact_ifrc_html_body(html: str) -> str:
         h,
         flags=re.IGNORECASE,
     )
+    # Second pass: squishing styles can leave new `> <` gaps in rare cases
+    h = re.sub(r">\s+<", "><", h)
     return h.strip()
 
 
