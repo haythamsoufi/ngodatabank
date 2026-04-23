@@ -1452,7 +1452,14 @@ def _message_for_email_test_send_failure(failure: list) -> str:
                 "The email API returned HTTP 400 (rejected the payload). Check application logs for details."
             ) + _api_detail_suffix()
             nbytes = (failure[0] or {}).get("html_utf8_bytes")
-            if isinstance(nbytes, int) and nbytes > 4096:
+            nb64 = (failure[0] or {}).get("body_b64_chars")
+            if isinstance(nb64, int) and nb64 > 4090:
+                msg += (
+                    f" The encoded body is {nb64} Base64 characters; some gateways cap ~4096 on that field "
+                    f"(raw HTML may be smaller, e.g. {nbytes} UTF-8 bytes). Shorten CSS in <style> or contact "
+                    "the mail API team for the exact limit."
+                )
+            elif isinstance(nbytes, int) and nbytes > 4096:
                 msg += (
                     f" Your HTML body is {nbytes} bytes (UTF-8). Some mail gateways return HTTP 400 with "
                     "no response body when the message exceeds a 4KB limit—try shortening the template "

@@ -29,26 +29,39 @@ def _minify_css_for_email(css: str) -> str:
     s = re.sub(r"\s*\}\s*", "}", s)
     s = re.sub(r"\s*,\s*", ",", s)
     s = re.sub(r":\s+", ":", s)
+    # Last declaration in a block does not need a semicolon before `}`.
+    s = re.sub(r";}", "}", s)
     return s
 
 
-def _compact_ifrc_html_body(html: str) -> str:
+def _minify_css_aggressive_for_email(css: str) -> str:
+    """Extra CSS shrinking when ``BodyAsBase64`` length must stay under a low cap (e.g. 4096 chars)."""
+    s = _minify_css_for_email(css)
+    # ``0px`` / ``0em`` / … → ``0`` (keep ``0%`` and decimals like ``0.5``).
+    s = re.sub(r"(?<![\w.%])0(?:px|pt|pc|em|rem|ex|ch|cm|mm|in)(?![\w%])", "0", s, flags=re.IGNORECASE)
+    return s
+
+
+def _compact_ifrc_html_body(html: str, *, aggressive_css: bool = False) -> str:
     """
     Reduce UTF-8 size for IFRC Email API payloads. Some gateways return HTTP 400 with an
-    empty body when ``BodyAsBase64`` decodes to more than ~4KB of HTML.
+    empty body when ``BodyAsBase64`` *string* length exceeds ~4096 (Base64 expands UTF-8 by ~4/3).
 
     Uses rendering-safe transforms: strip HTML comments, collapse whitespace between
-    tags, and minify ``<style>`` blocks (whitespace + light CSS minify).
+    tags, and minify ``<style>`` blocks (light or aggressive CSS minify).
     """
     if not html:
         return html
     h = html
+    h = re.sub(r'<style\s+type\s*=\s*"text/css"\s*>', "<style>", h, flags=re.IGNORECASE)
+    h = re.sub(r"<style\s+type\s*=\s*'text/css'\s*>", "<style>", h, flags=re.IGNORECASE)
     h = re.sub(r"<!--[\s\S]*?-->", "", h)
     h = re.sub(r">\s+<", "><", h)
+    minifier = _minify_css_aggressive_for_email if aggressive_css else _minify_css_for_email
 
     def _squish_style(m: re.Match) -> str:
         open_tag, body, close_tag = m.group(1), m.group(2), m.group(3)
-        body = _minify_css_for_email(body)
+        body = minifier(body)
         return f"{open_tag}{body}{close_tag}"
 
     h = re.sub(
@@ -60,6 +73,17 @@ def _compact_ifrc_html_body(html: str) -> str:
     # Second pass: squishing styles can leave new `> <` gaps in rare cases
     h = re.sub(r">\s+<", "><", h)
     return h.strip()
+
+
+def _ifrc_max_body_b64_chars() -> int:
+    """Cap for ``BodyAsBase64`` character count; 0 = do not apply extra compaction by length."""
+    try:
+        v = current_app.config.get("EMAIL_API_MAX_BODY_B64_CHARS")
+        if v is None:
+            return 4096
+        return max(0, int(v))
+    except (TypeError, ValueError):
+        return 4096
 
 
 def _to_list(values: Optional[Iterable[str]]) -> List[str]:
@@ -315,6 +339,30 @@ def _send_via_ifrc(
             _pre_compact,
             _post_compact,
         )
+    _max_b64 = _ifrc_max_body_b64_chars()
+    if _max_b64 > 0:
+        _b64_len = len(_b64_utf8(raw_html))
+        if _b64_len > _max_b64:
+            _b64_before = _b64_len
+            _html_before = len(raw_html.encode("utf-8"))
+            raw_html = _compact_ifrc_html_body(raw_html, aggressive_css=True)
+            _b64_after = len(_b64_utf8(raw_html))
+            _html_after = len(raw_html.encode("utf-8"))
+            current_app.logger.info(
+                "IFRC email: aggressive CSS compaction for BodyAsBase64 cap (max %s chars): "
+                "b64 %s -> %s, html_utf8 %s -> %s bytes",
+                _max_b64,
+                _b64_before,
+                _b64_after,
+                _html_before,
+                _html_after,
+            )
+            if _b64_after > _max_b64:
+                current_app.logger.warning(
+                    "IFRC email: BodyAsBase64 still %s chars (cap %s); gateway may reject. Shorten template CSS/HTML.",
+                    _b64_after,
+                    _max_b64,
+                )
     if not raw_html:
         current_app.logger.warning("send via IFRC: empty HTML body after strip, aborting")
         if _failure_info is not None:
@@ -472,6 +520,7 @@ def _send_via_ifrc(
                 excerpt = f"{excerpt} | {diag}"
             fail["response_excerpt"] = excerpt
             fail["html_utf8_bytes"] = len(raw_html.encode("utf-8"))
+            fail["body_b64_chars"] = len(body_b64)
             _failure_info.append(fail)
         return False
     except Exception as e:

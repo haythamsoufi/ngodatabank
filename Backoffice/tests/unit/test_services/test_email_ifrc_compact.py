@@ -1,6 +1,12 @@
 """Unit tests for IFRC email HTML compaction (gateway body size limits)."""
 
+import base64
+
 from app.services.email.client import _compact_ifrc_html_body
+
+
+def _utf8_b64_len(html: str) -> int:
+    return len(base64.b64encode(html.encode("utf-8")))
 
 
 def test_compact_preserves_meaningful_content():
@@ -51,6 +57,24 @@ def test_compact_reduces_utf8_size_on_verbose_template():
 def test_compact_empty_and_whitespace():
     assert _compact_ifrc_html_body("") == ""
     assert _compact_ifrc_html_body("   \n  ") == ""
+
+
+def test_aggressive_compact_drops_zero_px_units_for_smaller_b64():
+    html = (
+        "<style>.a{margin:0px;padding:0px;border:0px solid #e2e8f0}"
+        ".b{margin:0px}</style><p>x</p>"
+    )
+    normal = _compact_ifrc_html_body(html)
+    aggressive = _compact_ifrc_html_body(html, aggressive_css=True)
+    assert _utf8_b64_len(aggressive) <= _utf8_b64_len(normal)
+    assert "0px" not in aggressive
+
+
+def test_compact_strips_text_css_type_attribute():
+    html = '<html><head><style type="text/css">body{margin:0;}</style></head><body></body></html>'
+    out = _compact_ifrc_html_body(html)
+    assert 'type="text/css"' not in out.lower()
+    assert "<style>" in out
 
 
 def test_compact_css_minify_saves_bytes_like_verbose_templates():
