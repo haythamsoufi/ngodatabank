@@ -147,20 +147,29 @@ def pre_exec(server):
     server.log.info("Forking new master process")
 
 def worker_exit(server, worker):
-    """Called when a worker process exits — shut down APScheduler cleanly."""
-    try:
-        from flask import current_app
-        app = current_app._get_current_object()
-    except (RuntimeError, AttributeError):
-        app = None
+    """Called when a worker process exits — shut down APScheduler cleanly.
 
-    if app and hasattr(app, 'scheduler') and app.scheduler is not None:
-        try:
-            if app.scheduler.running:
-                app.scheduler.shutdown(wait=False)
-            app.scheduler = None
-        except Exception:
-            pass
+    Must not use Flask `current_app` here: there is no app/request context
+    in this hook, so the worker would have skipped shutdown every time.
+    Gunicorn loads the WSGI callable (e.g. `run:app`) as `worker.wsgi`.
+    """
+    wsgi = getattr(worker, "wsgi", None)
+    if wsgi is None or not hasattr(wsgi, "scheduler"):
+        return
+    sched = wsgi.scheduler
+    if sched is None:
+        return
+    try:
+        if sched.running:
+            # Match app.scheduler: wait for the scheduler loop to stop so the
+            # default ThreadPoolExecutor is not half-shut while still submitting.
+            sched.shutdown(wait=True)
+    except Exception:
+        pass
+    try:
+        wsgi.scheduler = None
+    except Exception:
+        pass
 
 
 def worker_abort(worker):

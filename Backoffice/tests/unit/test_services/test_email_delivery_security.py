@@ -15,7 +15,6 @@ def email_app():
     app.config["EMAIL_API_URL"] = "https://email-api.example.com/send"
     app.config["MAIL_DEFAULT_SENDER"] = "sender@example.com"
     app.config["MAIL_NOREPLY_SENDER"] = "noreply@example.com"
-    app.config["EMAIL_API_MAX_BODY_B64_CHARS"] = 0
     return app
 
 

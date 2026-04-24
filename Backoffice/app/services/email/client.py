@@ -1,89 +1,123 @@
 import base64
 import json
 import os
-import re
+import time
 import requests
+from requests import Response
 from typing import Iterable, Optional, List, Tuple
 from flask import current_app
 from urllib.parse import urlparse, urlunparse, parse_qs, urlencode
+
+# Response headers logged to help IT compare edge/WAF/proxy vs origin (values truncated).
+_EMAIL_API_LOG_RESPONSE_HEADER_EXACT = frozenset(
+    {
+        "server",
+        "via",
+        "date",
+        "content-type",
+        "content-length",
+        "transfer-encoding",
+        "x-azure-ref",
+        "x-ms-request-id",
+        "x-ms-edge-ref",
+        "request-context",
+        "x-correlation-id",
+        "x-request-id",
+        "request-id",
+        "x-cache",
+        "x-cdn-pop",
+        "cf-ray",
+        "x-envoy-upstream-service-time",
+        "x-powered-by",
+        "x-akamai-request-id",
+        "x-amzn-requestid",
+        "x-amz-cf-id",
+    }
+)
+
+
+def _email_api_edge_headers_for_log(resp: Response) -> str:
+    """Safe subset of response headers for WAF / CDN / Azure Front Door / proxy triage."""
+    collected: dict = {}
+    for name, value in resp.headers.items():
+        ln = name.lower()
+        if ln in _EMAIL_API_LOG_RESPONSE_HEADER_EXACT or ln.startswith("x-azure") or ln.startswith(
+            "x-ms-"
+        ):
+            v = str(value).replace("\n", " ").replace("\r", " ")
+            if len(v) > 200:
+                v = v[:200] + "…"
+            collected[name] = v
+    if not collected:
+        return "edge_headers=none_matched_whitelist"
+    return " | ".join(f"{k}={collected[k]!r}" for k in sorted(collected.keys()))
+
+
+def _email_api_response_body_metrics(resp: Response) -> Tuple[int, str, int]:
+    """Raw body byte length, primary content-type (no charset), stripped text length."""
+    try:
+        raw_len = len(resp.content or b"")
+    except Exception:
+        raw_len = -1
+    ct_full = resp.headers.get("Content-Type") or ""
+    ct = (ct_full.split(";")[0].strip().lower() or "missing") if ct_full else "missing"
+    try:
+        text_len = len((resp.text or "").strip())
+    except Exception:
+        text_len = -1
+    return raw_len, ct, text_len
+
+
+def _email_api_waf_vnet_triage_hint(
+    status_code: int,
+    body_bytes_len: int,
+    text_stripped_len: int,
+    response_ct: str,
+) -> str:
+    """Plain-language hints for logs; compare prod vs staging with same lines."""
+    if 200 <= status_code < 300:
+        return "compare_envs=if_staging_differs_check_egress_IP_and_response_headers_above"
+    hints: List[str] = []
+    if body_bytes_len == 0 and status_code >= 400:
+        hints.append(
+            "empty_response_body_often_gateway_WAF_or_proxy_not_the_mail_API_JSON_validator"
+        )
+    if body_bytes_len > 0 and "html" in response_ct and status_code >= 400:
+        hints.append("HTML_response_body_suggests_WAF_block_page_or_reverse_proxy_error_HTML")
+    if status_code in (403, 429, 503):
+        hints.append("status_may_be_edge_rate_limit_IP_reputation_or_backpressure_check_WAF_logs")
+    hints.append(
+        "VNet_NSG_NAT=prod_egress_IP_may_differ_from_staging_firewall_must_allow_HTTPS_to_mail_API_host"
+    )
+    hints.append("same_app_code_if_staging_OK_headers_and_body_shape_here_vs_staging_pinpoints_network_layer")
+    return " ; ".join(hints)
 
 
 def _b64_utf8(plain: str) -> str:
     return str(base64.b64encode(plain.encode("utf-8")), "utf-8")
 
 
-def _minify_css_for_email(css: str) -> str:
-    """
-    Shrink CSS text inside ``<style>`` blocks for IFRC gateways with ~4KB HTML limits.
-
-    Removes comments and non-semantic whitespace around ``{};:``, and after property ``:``.
-    Avoids touching URL/content strings beyond normal minifier rules used for email layouts.
-    """
-    if not css:
-        return css
-    s = re.sub(r"/\*[\s\S]*?\*/", "", css)
-    s = s.strip()
-    s = re.sub(r"\s+", " ", s)
-    s = re.sub(r"\s*;\s*", ";", s)
-    s = re.sub(r"\s*\{\s*", "{", s)
-    s = re.sub(r"\s*\}\s*", "}", s)
-    s = re.sub(r"\s*,\s*", ",", s)
-    s = re.sub(r":\s+", ":", s)
-    # Last declaration in a block does not need a semicolon before `}`.
-    s = re.sub(r";}", "}", s)
-    return s
-
-
-def _minify_css_aggressive_for_email(css: str) -> str:
-    """Extra CSS shrinking when ``BodyAsBase64`` length must stay under a low cap (e.g. 4096 chars)."""
-    s = _minify_css_for_email(css)
-    # ``0px`` / ``0em`` / … → ``0`` (keep ``0%`` and decimals like ``0.5``).
-    s = re.sub(r"(?<![\w.%])0(?:px|pt|pc|em|rem|ex|ch|cm|mm|in)(?![\w%])", "0", s, flags=re.IGNORECASE)
-    return s
-
-
-def _compact_ifrc_html_body(html: str, *, aggressive_css: bool = False) -> str:
-    """
-    Reduce UTF-8 size for IFRC Email API payloads. Some gateways return HTTP 400 with an
-    empty body when ``BodyAsBase64`` *string* length exceeds ~4096 (Base64 expands UTF-8 by ~4/3).
-
-    Uses rendering-safe transforms: strip HTML comments, collapse whitespace between
-    tags, and minify ``<style>`` blocks (light or aggressive CSS minify).
-    """
-    if not html:
-        return html
-    h = html
-    h = re.sub(r'<style\s+type\s*=\s*"text/css"\s*>', "<style>", h, flags=re.IGNORECASE)
-    h = re.sub(r"<style\s+type\s*=\s*'text/css'\s*>", "<style>", h, flags=re.IGNORECASE)
-    h = re.sub(r"<!--[\s\S]*?-->", "", h)
-    h = re.sub(r">\s+<", "><", h)
-    minifier = _minify_css_aggressive_for_email if aggressive_css else _minify_css_for_email
-
-    def _squish_style(m: re.Match) -> str:
-        open_tag, body, close_tag = m.group(1), m.group(2), m.group(3)
-        body = minifier(body)
-        return f"{open_tag}{body}{close_tag}"
-
-    h = re.sub(
-        r"(<style[^>]*>)([\s\S]*?)(</style\s*>)",
-        _squish_style,
-        h,
-        flags=re.IGNORECASE,
-    )
-    # Second pass: squishing styles can leave new `> <` gaps in rare cases
-    h = re.sub(r">\s+<", "><", h)
-    return h.strip()
-
-
-def _ifrc_max_body_b64_chars() -> int:
-    """Cap for ``BodyAsBase64`` character count; 0 = do not apply extra compaction by length."""
+def _redact_email_api_url_for_logs(url: str) -> str:
+    """Return a log-safe URL: ``apiKey`` / ``apikey`` query values are replaced (never log secrets)."""
+    if not url or not str(url).strip():
+        return url
     try:
-        v = current_app.config.get("EMAIL_API_MAX_BODY_B64_CHARS")
-        if v is None:
-            return 4096
-        return max(0, int(v))
-    except (TypeError, ValueError):
-        return 4096
+        p = urlparse(url)
+        qs = parse_qs(p.query, keep_blank_values=True)
+        if not qs:
+            return url
+        pairs: List[Tuple[str, str]] = []
+        for key, vals in qs.items():
+            if key.lower() == "apikey":
+                for _ in vals or [""]:
+                    pairs.append((key, "***REDACTED***"))
+            else:
+                for v in vals or [""]:
+                    pairs.append((key, v))
+        new_q = urlencode(pairs, doseq=True)
+        return urlunparse((p.scheme, p.netloc, p.path, p.params, new_q, p.fragment))
+    except Exception:
+        return "<email_api_url_unparseable>"
 
 
 def _to_list(values: Optional[Iterable[str]]) -> List[str]:
@@ -399,39 +433,6 @@ def _send_via_ifrc(
 
     # Drop NULs (some DB/editor paths inject them; gateways may reject the JSON or body).
     raw_html = (html or "").strip().replace("\x00", "")
-    _pre_compact = len(raw_html.encode("utf-8"))
-    raw_html = _compact_ifrc_html_body(raw_html)
-    _post_compact = len(raw_html.encode("utf-8"))
-    if _post_compact < _pre_compact:
-        current_app.logger.debug(
-            "IFRC email HTML compacted for size: %s -> %s bytes (UTF-8)",
-            _pre_compact,
-            _post_compact,
-        )
-    _max_b64 = _ifrc_max_body_b64_chars()
-    if _max_b64 > 0:
-        _b64_len = len(_b64_utf8(raw_html))
-        if _b64_len > _max_b64:
-            _b64_before = _b64_len
-            _html_before = len(raw_html.encode("utf-8"))
-            raw_html = _compact_ifrc_html_body(raw_html, aggressive_css=True)
-            _b64_after = len(_b64_utf8(raw_html))
-            _html_after = len(raw_html.encode("utf-8"))
-            current_app.logger.info(
-                "IFRC email: aggressive CSS compaction for BodyAsBase64 cap (max %s chars): "
-                "b64 %s -> %s, html_utf8 %s -> %s bytes",
-                _max_b64,
-                _b64_before,
-                _b64_after,
-                _html_before,
-                _html_after,
-            )
-            if _b64_after > _max_b64:
-                current_app.logger.warning(
-                    "IFRC email: BodyAsBase64 still %s chars (cap %s); gateway may reject. Shorten template CSS/HTML.",
-                    _b64_after,
-                    _max_b64,
-                )
     if not raw_html:
         current_app.logger.warning("send via IFRC: empty HTML body after strip, aborting")
         if _failure_info is not None:
@@ -481,18 +482,20 @@ def _send_via_ifrc(
         except Exception as e:
             current_app.logger.warning("Email attachments skipped (API may not support them): %s", e)
 
+    effective_url = ""
+    redacted_url = ""
     try:
         headers = {"Content-Type": "application/json"}
 
-        # Add API key to URL if not already present
         if api_key_in_url:
-            resp = requests.post(api_url, headers=headers, json=payload, timeout=15)
+            effective_url = api_url
+            api_key_appended_by_client = False
         else:
             parsed_url_with_key = urlparse(api_url)
             query_params_with_key = parse_qs(parsed_url_with_key.query)
-            query_params_with_key['apiKey'] = [api_key]
+            query_params_with_key["apiKey"] = [api_key]
             new_query_with_key = urlencode(query_params_with_key, doseq=True)
-            api_url_with_key = urlunparse((
+            effective_url = urlunparse((
                 parsed_url_with_key.scheme,
                 parsed_url_with_key.netloc,
                 parsed_url_with_key.path,
@@ -500,7 +503,75 @@ def _send_via_ifrc(
                 new_query_with_key,
                 parsed_url_with_key.fragment
             ))
-            resp = requests.post(api_url_with_key, headers=headers, json=payload, timeout=15)
+            api_key_appended_by_client = True
+
+        redacted_url = _redact_email_api_url_for_logs(effective_url)
+        parsed_eff = urlparse(effective_url)
+        query_names = sorted(parse_qs(parsed_eff.query).keys())
+        try:
+            approx_json_bytes = len(json.dumps(payload, ensure_ascii=False))
+        except Exception:
+            approx_json_bytes = -1
+
+        current_app.logger.info(
+            "email_api outbound | method=POST | redacted_url=%s | scheme=%s netloc=%s path=%s "
+            "query_param_names=%s | api_key_already_in_EMAIL_API_URL=%s api_key_appended_by_app=%s | "
+            "request_headers=Content-Type:application/json | json_body_utf8_approx_bytes=%s "
+            "payload_keys=%s | BodyAsBase64_chars=%s html_utf8_bytes=%s envelope_single_logical_to=%s | "
+            "path_note=HTTPS_TLS_from_this_process_via_requests_library_no_app_HTTP_proxy "
+            "egress_IP_is_Azure_subnet_NSG_NAT_or_peer_route_VNet_rules_apply_outside_app",
+            redacted_url,
+            parsed_eff.scheme or "",
+            parsed_eff.netloc or "",
+            parsed_eff.path or "/",
+            query_names,
+            api_key_in_url,
+            api_key_appended_by_client,
+            approx_json_bytes,
+            sorted(payload.keys()),
+            len(body_b64),
+            len(raw_html.encode("utf-8")),
+            is_single_in_to,
+        )
+
+        _t_req_start = time.perf_counter()
+        resp = requests.post(effective_url, headers=headers, json=payload, timeout=15)
+        elapsed_ms = (time.perf_counter() - _t_req_start) * 1000.0
+
+        final_redacted = _redact_email_api_url_for_logs(getattr(resp, "url", "") or "")
+        redirect_hops = len(getattr(resp, "history", None) or [])
+        raw_len, resp_ct, text_stripped_len = _email_api_response_body_metrics(resp)
+        edge_hdr = _email_api_edge_headers_for_log(resp)
+        triage_hint = _email_api_waf_vnet_triage_hint(
+            resp.status_code, raw_len, text_stripped_len, resp_ct
+        )
+
+        corr = ""
+        for hk in ("X-Request-Id", "X-Correlation-Id", "Request-Id"):
+            v = resp.headers.get(hk)
+            if v:
+                corr = f"{hk}={str(v)[:96]}"
+                break
+
+        url_changed = (final_redacted != redacted_url) and bool(final_redacted)
+        current_app.logger.info(
+            "email_api response | http_status=%s | elapsed_ms=%.0f | redacted_request_url=%s | "
+            "redacted_final_url=%s | redirect_hops=%s | url_changed_after_redirects=%s | "
+            "response_bytes=%s | response_content_type=%s | response_text_stripped_len=%s | %s | "
+            "edge_headers: %s | waf_vnet_triage: %s",
+            resp.status_code,
+            elapsed_ms,
+            redacted_url,
+            final_redacted,
+            redirect_hops,
+            url_changed,
+            raw_len,
+            resp_ct,
+            text_stripped_len,
+            corr or "response_correlation_header=none",
+            edge_hdr,
+            triage_hint,
+        )
 
         if 200 <= resp.status_code < 300:
             guid = resp.text.replace('"', '').strip() if resp.text else None
@@ -593,8 +664,12 @@ def _send_via_ifrc(
             _failure_info.append(fail)
         return False
     except Exception as e:
+        err_url = redacted_url or _redact_email_api_url_for_logs(api_url_base)
         current_app.logger.error(
-            f"Email API request failed for endpoint {api_url_base}: {str(e)}"
+            "Email API request failed (no HTTP response) | redacted_url=%s | error=%s",
+            err_url,
+            str(e),
+            exc_info=True,
         )
         if _failure_info is not None:
             _failure_info.append({"code": "email_api_request_error"})

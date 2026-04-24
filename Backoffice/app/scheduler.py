@@ -12,10 +12,14 @@ def _graceful_shutdown(scheduler, app):
     atexit handler (LIFO order), preventing the
     'cannot schedule new futures after shutdown' RuntimeError that occurs
     when Gunicorn recycles workers (max_requests) or during normal exit.
+
+    wait=True: shutdown must not return until the scheduler thread and its
+    executor are fully stopped. wait=False was racing: the default pool can be
+    closed while the scheduler loop is still calling submit() for the next job.
     """
     try:
         if scheduler.running:
-            scheduler.shutdown(wait=False)
+            scheduler.shutdown(wait=True)
     except Exception:
         pass
     finally:

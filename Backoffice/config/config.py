@@ -971,10 +971,6 @@ class Config:
         EMAIL_API_KEY = os.environ.get('EMAIL_API_KEY_STG') or os.environ.get('EMAIL_API_KEY', '')
         EMAIL_API_URL = os.environ.get('EMAIL_API_URL_STG', '')
 
-    # IFRC (and similar) gateways may cap ``BodyAsBase64`` *string* length (~4096), not raw UTF-8 length.
-    # ``send_email`` applies extra HTML/CSS compaction when Base64 exceeds this. Set 0 to disable.
-    EMAIL_API_MAX_BODY_B64_CHARS = int(os.environ.get('EMAIL_API_MAX_BODY_B64_CHARS', '4096'))
-
     # Admin email addresses for notifications
     admin_emails_str = os.environ.get('ADMIN_EMAILS', '')
     ADMIN_EMAILS = [email.strip() for email in admin_emails_str.split(',') if email.strip()] if admin_emails_str else []
