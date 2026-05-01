@@ -185,13 +185,7 @@
                         <div class="flex items-center gap-2">
                             {% if read_only %}
                             <div class="flex-shrink-0 w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center text-white text-xs font-semibold overflow-hidden" id="user-profile-color-preview" style="background-color: {{ _pc_init }};" aria-hidden="true">
-                                {% if user and user.name %}
-                                    {{ user.name.split() | map('first') | join('') | upper | truncate(2, true, '') }}
-                                {% elif user and user.email %}
-                                    {{ user.email.split('@')[0] | upper | truncate(2, true, '') }}
-                                {% else %}
-                                    ?
-                                {% endif %}
+                                {% if user %}{{ user | profile_initials }}{% else %}?{% endif %}
                             </div>
                             {{ form.profile_color(type="hidden") }}
                             {% else %}
@@ -203,13 +197,7 @@
                                     aria-expanded="false"
                                     aria-controls="user-profile-color-modal">
                                 <span id="user-profile-color-preview" class="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center text-white text-xs font-semibold overflow-hidden pointer-events-none" style="background-color: {{ _pc_init }};">
-                                    {% if user and user.name %}
-                                        {{ user.name.split() | map('first') | join('') | upper | truncate(2, true, '') }}
-                                    {% elif user and user.email %}
-                                        {{ user.email.split('@')[0] | upper | truncate(2, true, '') }}
-                                    {% else %}
-                                        ?
-                                    {% endif %}
+                                    {% if user %}{{ user | profile_initials }}{% else %}?{% endif %}
                                 </span>
                             </button>
                             {{ form.profile_color(type="hidden", id="user_profile_color_input") }}

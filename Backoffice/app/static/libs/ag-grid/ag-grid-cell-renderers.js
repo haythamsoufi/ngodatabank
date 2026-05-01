@@ -276,9 +276,7 @@
 
             if (!displayName) return '-';
 
-            var initials = name ?
-                name.split(' ').map(function(n) { return n[0]; }).join('').toUpperCase().substring(0, 2) :
-                email.split('@')[0].toUpperCase().substring(0, 2);
+            var initials = profileDisplayInitials(name, email);
 
             var profileColor = user.profile_color || '#3B82F6';
             var html = '<div class="flex items-center profile-icon">';
@@ -308,9 +306,7 @@
 
             if (!displayName) return '-';
 
-            var initials = name ?
-                name.split(' ').map(function(n) { return n[0]; }).join('').toUpperCase().substring(0, 2) :
-                email.split('@')[0].toUpperCase().substring(0, 2);
+            var initials = profileDisplayInitials(name, email);
 
             var profileColor = user.profile_color || '#3B82F6';
             var html = '<div class="flex items-start profile-icon" style="min-width: 0; width: 100%;">';

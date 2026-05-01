@@ -94,6 +94,12 @@ def nl2br(value):
     return Markup(str(escaped).replace('\n', '<br>'))
 
 
+def profile_initials_filter(user):
+    """Two-letter profile avatar initials (matches user form colour preview)."""
+    from app.utils.profile_utils import display_initials_for_user
+    return display_initials_for_user(user)
+
+
 def register_filters(app):
     """Register custom Jinja filters."""
     app.jinja_env.filters['normalize_type'] = normalize_type
@@ -103,3 +109,4 @@ def register_filters(app):
     app.jinja_env.filters['format_number'] = format_number
     app.jinja_env.filters['to_number'] = to_number
     app.jinja_env.filters['nl2br'] = nl2br
+    app.jinja_env.filters['profile_initials'] = profile_initials_filter

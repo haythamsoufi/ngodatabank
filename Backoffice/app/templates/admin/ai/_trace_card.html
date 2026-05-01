@@ -27,10 +27,9 @@
         <div class="flex items-start gap-3 mb-6">
             <div class="flex-shrink-0">
                 {% if user %}
-                    {% set initials = (user.name.split() | map('first') | join('') if user.name else user.email.split('@')[0]) %}
                     <div class="w-10 h-10 rounded-full text-white text-xs font-semibold flex items-center justify-center shadow-sm"
                          style="background-color: {{ user.profile_color if user.profile_color else '#3B82F6' }};">
-                        {{ initials | upper | truncate(2, true, '') }}
+                        {{ user | profile_initials }}
                     </div>
                 {% else %}
                     <div class="w-10 h-10 rounded-full bg-gray-400 text-white text-xs font-semibold flex items-center justify-center shadow-sm">?</div>

@@ -622,6 +622,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{{ static_url('libs/profile-initials.js') }}"></script>
 <script src="{{ static_url('js/template-access-modal.js') }}"></script>
 <script type="module" nonce="{{ csp_nonce() }}">
 import { TranslationModal } from '{{ static_url('js/components/translation-modal.js') }}';

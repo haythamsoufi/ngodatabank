@@ -107,7 +107,7 @@
                                 {{ form.profile_color(class="profile-color-select shadow-sm appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm w-full", id="profile_color") }}
                             </div>
                             <div id="profile-color-preview" class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center text-white text-xs font-semibold overflow-hidden" style="background-color: {{ current_user.profile_color if current_user.profile_color and current_user.profile_color != '#3B82F6' else current_user.generate_profile_color() }};">
-                                {{ current_user.name.split() | map('first') | join('') | upper | truncate(2, true, '') if current_user.name else current_user.email.split('@')[0] | upper | truncate(2, true, '') }}
+                                {{ current_user | profile_initials }}
                             </div>
                         </div>
                         <p class="mt-1 text-xs text-gray-500">Choose a color for your profile icon.</p>
@@ -437,6 +437,7 @@
 {% from "components/datetime_utils_js.html" import datetime_utils_js %}
 {{ datetime_utils_js() }}
 
+<script src="{{ static_url('libs/profile-initials.js') }}"></script>
 <script nonce="{{ csp_nonce() }}">
 document.addEventListener('DOMContentLoaded', function() {
     const A = window.AdminUnderlineTabs;
@@ -571,13 +572,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Get user initials
     const getUserInitials = () => {
-        {% if current_user.name %}
-            const name = "{{ current_user.name }}";
-            return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-        {% else %}
-            const email = "{{ current_user.email }}";
-            return email.split('@')[0].toUpperCase().substring(0, 2);
-        {% endif %}
+        return profileDisplayInitials(
+            {{ (current_user.name or '') | tojson }},
+            {{ (current_user.email or '') | tojson }}
+        );
     };
 
     // Update preview based on selected color

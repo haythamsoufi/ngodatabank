@@ -1,5 +1,6 @@
 import random
 import hashlib
+from typing import Any, Optional
 
 # Predefined color palette for profile icons
 PROFILE_COLORS = [
@@ -52,6 +53,36 @@ def get_user_profile_color(user):
 
     # Generate a consistent color based on email
     return generate_color_from_email(user.email)
+
+def display_initials(name: Optional[str] = None, email: Optional[str] = None) -> str:
+    """
+    Two-character label for profile avatars (matches user form colour preview JS).
+    With two or more name tokens: first letter of the first two tokens.
+    With one token: up to two letters from that token. Else: first two of email local-part.
+    """
+    n = (name or '').strip()
+    if n:
+        parts = n.split()
+        if len(parts) >= 2:
+            return (parts[0][0] + parts[1][0]).upper()
+        if parts:
+            return parts[0][:2].upper()
+        return '?'
+    if email:
+        local = (email.split('@', 1)[0] if '@' in email else email)[:2]
+        return local.upper() if local else '?'
+    return '?'
+
+
+def display_initials_for_user(user: Any) -> str:
+    """Initials for a User-like object with optional .name and .email."""
+    if user is None:
+        return '?'
+    return display_initials(
+        name=getattr(user, 'name', None),
+        email=getattr(user, 'email', None),
+    )
+
 
 def is_valid_hex_color(color):
     """Validate if a string is a valid hex color."""

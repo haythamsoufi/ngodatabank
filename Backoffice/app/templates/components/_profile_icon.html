@@ -44,11 +44,7 @@ Parameters:
             {% set size_classes = {'xs': 'w-5 h-5 text-xs', 'sm': 'w-6 h-6 text-xs', 'md': 'w-8 h-8 text-xs', 'lg': 'w-12 h-12 text-sm'} %}
             {% set icon_size = size_classes.get(size, 'w-8 h-8 text-xs') %}
             <div class="{{ icon_size }} rounded-full text-white font-semibold flex items-center justify-center mr-2 flex-shrink-0 profile-icon-circle {{ shadow_class_str }}" style="background-color: {{ profile_color }};">
-                {% if user.name %}
-                    {{ user.name.split() | map('first') | join('') | upper | truncate(2, true, '') }}
-                {% else %}
-                    {{ user.email.split('@')[0] | upper | truncate(2, true, '') }}
-                {% endif %}
+                {{ user | profile_initials }}
             </div>
             {% if show_name or show_email or show_title %}
                 <div class="flex flex-col min-w-0">

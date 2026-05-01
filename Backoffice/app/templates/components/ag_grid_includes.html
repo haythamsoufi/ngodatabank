@@ -53,6 +53,7 @@ Optionally call ag_grid_css() in the head block to preload custom CSS earlier
 <script src="{{ static_url('libs/ag-grid/ag-grid-helper.js') }}"></script>
 {# DateTimeUtils must load before cell-renderers so renderers can use it #}
 <script src="{{ static_url('js/lib/datetime-utils.js') }}"></script>
+<script src="{{ static_url('libs/profile-initials.js') }}"></script>
 <script src="{{ static_url('libs/ag-grid/ag-grid-cell-renderers.js') }}"></script>
 <script src="{{ static_url('libs/user-hover-profile.js') }}"></script>
 {% include "components/ag_grid_i18n_js.html" %}

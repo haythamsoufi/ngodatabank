@@ -120,24 +120,16 @@ class NotificationService:
     @staticmethod
     def _serialize_actor_user(user: User) -> Dict[str, Any]:
         """Build JSON-safe actor payload for notification UIs (initials + colour)."""
-        from app.utils.profile_utils import generate_color_from_email
+        from app.utils.profile_utils import generate_color_from_email, display_initials
         name = (user.name or user.email or '').strip()
-        initials = '?'
-        if user.name:
-            parts = user.name.split()
-            if len(parts) >= 2:
-                initials = (parts[0][0] + parts[-1][0]).upper()
-            elif parts:
-                initials = parts[0][:2].upper()
-        elif user.email:
-            initials = user.email[:2].upper()
+        initials = display_initials(name=user.name, email=user.email)
         color = user.profile_color if user.profile_color and user.profile_color != '#3B82F6' else None
         if not color:
             color = generate_color_from_email(user.email or '')
         return {
             'id': user.id,
             'name': name,
-            'initials': initials[:2],
+            'initials': initials,
             'profile_color': color,
         }
 

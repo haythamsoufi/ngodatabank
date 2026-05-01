@@ -45,8 +45,7 @@ function showTemplateAccessModal(options = {}) {
 
     // Helper function to generate profile icon DOM node
     const generateProfileIcon = (userId, userName, userEmail, size = 'sm') => {
-        const initials = userName ? userName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) :
-                        userEmail ? userEmail.split('@')[0].substring(0, 2).toUpperCase() : '?';
+        const initials = profileDisplayInitials(userName, userEmail);
         const displayName = userName || userEmail || 'Unknown';
 
         // Generate a consistent color based on user ID

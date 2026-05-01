@@ -373,9 +373,7 @@
         var email = profile.email || '';
         var title = profile.title || '';
         var profileColor = profile.profile_color || '#3B82F6';
-        var initials = displayName.split(' ').map(function(part) {
-            return part ? part.charAt(0) : '';
-        }).join('').toUpperCase().slice(0, 2) || 'U';
+        var initials = profileDisplayInitials(profile.name, profile.email);
         var countriesCount = toNumber(profile.countries_count, 0);
         var entitySummary = profile.entity_summary || '';
         var scopeDisplayLines = Array.isArray(profile.scope_display_lines) ? profile.scope_display_lines : [];
